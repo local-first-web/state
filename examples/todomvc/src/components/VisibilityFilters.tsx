@@ -2,7 +2,7 @@ import React, { MouseEventHandler } from 'react'
 import cn from 'classnames'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { setFilter } from '../redux/actions'
+import { actions } from '../redux/actions'
 import { VisibilityFilter, VisibilityFilterKey } from '../types'
 
 export const VisibilityFilters = () => {
@@ -18,7 +18,7 @@ export const VisibilityFilters = () => {
 
         const onClick: MouseEventHandler = e => {
           e.preventDefault()
-          dispatch(setFilter(currentFilter))
+          dispatch(actions.setFilter(currentFilter))
         }
 
         return (

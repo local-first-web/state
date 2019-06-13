@@ -3,12 +3,31 @@ import hypercore from 'hypercore'
 import crypto from 'hypercore-crypto'
 import pump from 'pump'
 import rai from 'random-access-idb'
-import { Store, Middleware } from 'redux'
+import { Store, Middleware, Reducer } from 'redux'
 import signalhub from 'signalhub'
 import swarm from 'webrtc-swarm'
 import { addMiddleware } from './dynamicMiddleware'
 import { mockCrypto } from './mockCrypto'
 import automerge from 'automerge'
+
+const APPLY_CHANGE = '__CEVITXE_APPLY_CHANGE__'
+
+const actions = {
+  applyChange: (change: automerge.Change<any>) => ({
+    type: APPLY_CHANGE,
+    payload: { change },
+  }),
+}
+
+const reducer: Reducer = (prevState, { type, payload }) => {
+  console.log('our reducer', payload)
+  switch (type) {
+    case APPLY_CHANGE:
+      return automerge.applyChanges(prevState, [payload.change])
+    default:
+      return prevState
+  }
+}
 
 // This is currently a class but might make more sense as just a function
 class CevitxeFeed {
@@ -27,6 +46,7 @@ class CevitxeFeed {
     this.key = crypto.discoveryKey(Buffer.from(options.key))
     if (!options.secretKey)
       throw new Error('Secret key is required, should be XXXX in length')
+
     // hypercore doesn't seem to like the secret key being a discoveryKey,
     // but rather just a Buffer
     this.secretKey = Buffer.from(options.secretKey)
@@ -35,6 +55,9 @@ class CevitxeFeed {
       'https://signalhub-jccqtwhdwc.now.sh/', // default public signaling server
     ]
     this.reduxStore = reduxStore
+
+    // add our reducer for handling changes from feed
+    this.reduxStore.replaceReducer(reducer)
 
     // Init an indexedDB
     // I'm constructing a name here using the key because re-using the same name
@@ -55,7 +78,9 @@ class CevitxeFeed {
       console.log('discovery', this.feed.discoveryKey.toString('hex'))
       this.joinSwarm()
     })
+
     this.startStreamReader()
+
     // Inject our custom middleware using redux-dynamic-middlewares
     // I did this because we need a middleware that can use our feed instance
     // An alternative might be to instantiate Feed and then create the redux store,
@@ -77,15 +102,6 @@ class CevitxeFeed {
     return result
   }
 
-  // middleware = ({ key }: Options): Middleware => {
-  //   return store => next => action => {
-  //     const result = next(action)
-  //     const nextState = store.getState()
-  //     save(key, nextState)
-  //     return result
-  //   }
-  // }
-
   // Read items from this and peer feeds,
   // then dispatch them to our redux store
   startStreamReader = () => {
@@ -93,10 +109,9 @@ class CevitxeFeed {
     const stream = this.feed.createReadStream({ live: true })
     stream.on('data', (value: string) => {
       try {
-        const action = JSON.parse(value)
-        console.log('onData', action)
-        // duck typing so we only dispatch objects that are actions
-        if (false) this.reduxStore.dispatch(action)
+        const change = JSON.parse(value)
+        console.log('onData', change)
+        this.reduxStore.dispatch(actions.applyChange(change))
       } catch (err) {
         console.log('feed read error', err)
         console.log('feed stream returned an unknown value', value)

@@ -2,7 +2,7 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { useDispatch } from 'react-redux'
 
-import { destroyTodo } from '../redux/actions'
+import { actions } from '../redux/actions'
 import { getFilteredTodos } from '../redux/selectors'
 import { VisibilityFilter } from '../types'
 
@@ -16,7 +16,7 @@ export function ClearCompletedButton() {
   if (completedTodos.length === 0) return null
 
   const destroyCompletedTodos = () =>
-    completedTodos.forEach(({ id }) => dispatch(destroyTodo(id)))
+    completedTodos.forEach(({ id }) => dispatch(actions.destroyTodo(id)))
 
   return (
     <button className="clear-completed" onClick={destroyCompletedTodos}>

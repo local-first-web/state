@@ -7,7 +7,7 @@ import React, {
   useState,
 } from 'react'
 import { useDispatch } from 'react-redux'
-import { destroyTodo, editTodo, toggleTodo } from '../redux/actions'
+import { actions } from '../redux/actions'
 import { Todo as TodoType } from '../types'
 
 const ENTER_KEY = 13
@@ -37,10 +37,10 @@ export const Todo = ({ id, completed, content }: TodoType) => {
     const saveContent = (e.target as HTMLInputElement).value.trim()
     if (saveContent.length > 0) {
       // todo was changed - keep the edited content
-      dispatch(editTodo(id, saveContent))
+      dispatch(actions.editTodo(id, saveContent))
     } else {
       // user has removed all the content of the todo, so delete it
-      dispatch(destroyTodo(id))
+      dispatch(actions.destroyTodo(id))
     }
     leaveEditMode()
   }
@@ -71,13 +71,13 @@ export const Todo = ({ id, completed, content }: TodoType) => {
           className="toggle"
           type="checkbox"
           checked={completed}
-          onChange={() => dispatch(toggleTodo(id))}
+          onChange={() => dispatch(actions.toggleTodo(id))}
         />
         <label onDoubleClick={enterEditMode}>{content}</label>
         <button
           className="destroy"
           style={{ cursor: 'pointer' }}
-          onClick={() => dispatch(destroyTodo(id))}
+          onClick={() => dispatch(actions.destroyTodo(id))}
         />
       </div>
 

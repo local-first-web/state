@@ -1,8 +1,8 @@
-import Automerge from 'automerge'
-
 export interface Action {
   type: string
   payload: any
 }
 
-export type ProxyReducer<T> = (action: Action) => Automerge.ChangeFn<T> | null
+type ChangeFn<T> = (doc: T) => void
+
+export type ProxyReducer<T> = (action: Action) => ChangeFn<T> | null

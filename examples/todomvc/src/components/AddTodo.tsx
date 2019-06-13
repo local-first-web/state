@@ -1,6 +1,6 @@
 import React, { useRef, FormEventHandler } from 'react'
 import { useDispatch } from 'react-redux'
-import { addTodo } from '../redux/actions'
+import { actions } from '../redux/actions'
 
 export const AddTodo = () => {
   // input.current will contain a reference to the new todo input field
@@ -16,7 +16,7 @@ export const AddTodo = () => {
       // don't create empty todos
       if (newText.length === 0) return
       // update state with new todo
-      dispatch(addTodo(newText))
+      dispatch(actions.addTodo(newText))
       // clear input
       input.current.value = ''
     }

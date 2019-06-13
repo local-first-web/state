@@ -1,5 +1,5 @@
 import uuid from 'uuid'
-import { VisibilityFilter } from './types'
+import { VisibilityFilter } from '../types'
 
 export enum ActionType {
   ADD_TODO = 'ADD_TODO',
