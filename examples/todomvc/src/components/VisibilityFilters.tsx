@@ -1,13 +1,13 @@
-import React, { MouseEventHandler, useContext } from 'react'
-import cx from 'classnames'
-import { actions } from '../actions'
+import React, { MouseEventHandler } from 'react'
+import cn from 'classnames'
+import { useSelector, useDispatch } from 'react-redux'
+
+import { setFilter } from '../redux/actions'
 import { VisibilityFilter, VisibilityFilterKey } from '../types'
-import { StoreContext } from 'src/context'
 
 export const VisibilityFilters = () => {
-  const { state, dispatch } = useContext(StoreContext)
-
-  const activeFilter = state.visibilityFilter
+  const activeFilter = useSelector((state: any) => state.visibilityFilter)
+  const dispatch = useDispatch()
 
   return (
     <ul className="filters">
@@ -18,7 +18,7 @@ export const VisibilityFilters = () => {
 
         const onClick: MouseEventHandler = e => {
           e.preventDefault()
-          dispatch!(actions.setFilter(currentFilter))
+          dispatch(setFilter(currentFilter))
         }
 
         return (
@@ -26,7 +26,7 @@ export const VisibilityFilters = () => {
             {/* linter doesn't like not having an href */}
             {/* eslint-disable-next-line */}
             <a
-              className={cx({ selected })}
+              className={cn({ selected })}
               onClick={onClick}
               style={{ cursor: 'pointer' }}
             >

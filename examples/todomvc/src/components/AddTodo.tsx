@@ -1,12 +1,12 @@
-import React, { useRef, FormEventHandler, useContext } from 'react'
-import { actions } from '../actions'
-import { StoreContext } from 'src/context'
+import React, { useRef, FormEventHandler } from 'react'
+import { useDispatch } from 'react-redux'
+import { addTodo } from '../redux/actions'
 
 export const AddTodo = () => {
   // input.current will contain a reference to the new todo input field
   const input = useRef<HTMLInputElement>() as React.RefObject<HTMLInputElement>
 
-  const { dispatch } = useContext(StoreContext)
+  const dispatch = useDispatch()
 
   const save: FormEventHandler<HTMLFormElement> = e => {
     // don't post back
@@ -16,7 +16,7 @@ export const AddTodo = () => {
       // don't create empty todos
       if (newText.length === 0) return
       // update state with new todo
-      dispatch(actions.addTodo(newText))
+      dispatch(addTodo(newText))
       // clear input
       input.current.value = ''
     }

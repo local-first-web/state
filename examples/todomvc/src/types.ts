@@ -1,6 +1,3 @@
-import { ActionType } from './actions'
-import { Dispatch } from 'react'
-
 export interface Todo {
   id: string
   content: string
@@ -13,11 +10,6 @@ export interface State {
   visibilityFilter: VisibilityFilter
 }
 
-export interface Action {
-  type: ActionType
-  payload: any
-}
-
 export enum VisibilityFilter {
   ALL = 'All',
   INCOMPLETE = 'Active',
@@ -25,8 +17,3 @@ export enum VisibilityFilter {
 }
 
 export type VisibilityFilterKey = keyof typeof VisibilityFilter
-
-export interface ContextInterface {
-  state: State
-  dispatch: Dispatch<Action>
-}

@@ -1,6 +1,6 @@
 {
   "name": "todomvc",
-  "description": "TodoMVC implemented with React & Automerge.",
+  "description": "TodoMVC implemented with React-Redux & hooks.",
   "version": "0.1.0",
   "license": "MIT",
   "main": "src/index.tsx",
@@ -12,6 +12,11 @@
   "peerDependencies": {
     "react": ">=16"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged"
+    }
+  },
   "prettier": {
     "printWidth": 80,
     "semi": false,
@@ -20,15 +25,16 @@
   },
   "dependencies": {
     "@types/classnames": "^2.2.8",
-    "automerge": "^0.10.1",
     "classnames": "2.2.6",
     "hypermerge": "0.3.2",
     "immutable": "3.8.2",
     "npm-run-all": "^4.1.5",
     "react": "16.8.6",
     "react-dom": "16.8.6",
+    "react-redux": "7.1.0-alpha.4",
     "react-scripts-ts": "^3.1.0",
-    "redux": "^4.0.1",
+    "redux": "4.0.1",
+    "redux-persist": "^5.10.0",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
@@ -40,6 +46,7 @@
     "@types/uuid": "^3.4.4",
     "cypress": "^3.2.0",
     "hoist-non-react-statics": "^3.3.0",
+    "husky": "^2.3.0",
     "prettier": "^1.17.1",
     "pretty-quick": "^1.11.0",
     "start-server-and-test": "^1.9.0",

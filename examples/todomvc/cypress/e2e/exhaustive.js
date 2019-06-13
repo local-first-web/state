@@ -433,7 +433,7 @@ describe('TodoMVC - React/Apollo - Exhaustive', () => {
         .should('contain', TODO_ITEM_ONE)
       cy.get('@todos')
         .eq(1)
-        .should('contain', TODO_ITEM_THREE)
+        .should('contain', TODO_ITEM_TWO)
     })
 
     it.skip('should respect the back button', function() {

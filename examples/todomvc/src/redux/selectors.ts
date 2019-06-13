@@ -1,4 +1,4 @@
-import { VisibilityFilter, State } from './types'
+import { VisibilityFilter, State } from '../types'
 
 export const getVisibilityFilter = (state: State) => state.visibilityFilter
 

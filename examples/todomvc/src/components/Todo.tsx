@@ -1,23 +1,20 @@
-import cx from 'classnames'
+import cn from 'classnames'
 import React, {
   FormEventHandler,
   KeyboardEventHandler,
-  useContext,
   useEffect,
   useRef,
   useState,
 } from 'react'
-import { StoreContext } from 'src/context'
-import { actions } from '../actions'
+import { useDispatch } from 'react-redux'
+import { destroyTodo, editTodo, toggleTodo } from '../redux/actions'
 import { Todo as TodoType } from '../types'
-
-const { editTodo, destroyTodo, toggleTodo } = actions
 
 const ENTER_KEY = 13
 const ESCAPE_KEY = 27
 
 export const Todo = ({ id, completed, content }: TodoType) => {
-  const { dispatch } = useContext(StoreContext)
+  const dispatch = useDispatch()
 
   // component state
   const [editing, setEditing] = useState(false)
@@ -28,9 +25,10 @@ export const Todo = ({ id, completed, content }: TodoType) => {
 
   // side effect: need to select all content in the input when going into editing mode
   // this will only fire when `editing` changes
-  useEffect(() => {
+  const selectAllOnEdit = () => {
     if (editing && input.current) input.current.select()
-  }, [editing])
+  }
+  useEffect(selectAllOnEdit, [editing])
 
   // we save when the user has either tabbed or clicked away, or hit Enter
   const save: FormEventHandler<HTMLInputElement> = (
@@ -67,7 +65,7 @@ export const Todo = ({ id, completed, content }: TodoType) => {
   const restoreContent = () => setEditContent(content)
 
   return (
-    <li className={cx({ completed, editing })}>
+    <li className={cn({ completed, editing })}>
       <div className="view">
         <input
           className="toggle"

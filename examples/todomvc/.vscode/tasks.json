@@ -1,0 +1,45 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run tests on current file",
+      "type": "shell",
+      "command": "yarn",
+      "args": ["jest", "--findRelatedTests", "${relativeFile}"],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Start client",
+      "type": "shell",
+      "command": "yarn",
+      "args": ["start"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$tsc-watch",
+        {
+          "owner": "powershell",
+          "pattern": [
+            {
+              "regexp": "^([^\\\\s].*)\\\\((\\\\d+,\\\\d+)\\\\):\\\\s*(.*)$",
+              "file": 1,
+              "location": 2,
+              "message": 3
+            }
+          ],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": "Starting the development server",
+            "endsPattern": "You can now view"
+          }
+        }
+      ],
+      "isBackground": true
+    }
+  ]
+}

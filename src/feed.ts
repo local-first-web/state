@@ -7,21 +7,7 @@ import { Store } from 'redux'
 import signalhub from 'signalhub'
 import swarm from 'webrtc-swarm'
 import { addMiddleware } from './dynamicMiddleware'
-
-// TODO: Get crypto working properly
-// This is a hack because I was getting errors verifying the remove signature
-// I took the code from hypercore and am just always returning true for the verification
-// We need to look deeper into why it's not signing properly or maybe just provide our
-// own crypto methods here.
-const mockCrypto = {
-  sign: (data: any, sk: any, cb: any) => {
-    return cb(null, crypto.sign(data, sk))
-  },
-  verify: (_sig: any, _data: any, _pk: any, cb: any) => {
-    // Always say it's a valid signature (for testing)
-    return cb(null, true)
-  },
-}
+import { mockCrypto } from './mockCrypto'
 
 // This is currently a class but might make more sense as just a function
 class CevitxeFeed {
@@ -133,18 +119,4 @@ class CevitxeFeed {
   getKeyHex = () => this.key.toString('hex')
 }
 
-const FEED_ADD_ACTION = 'FEED_ADD_ACTION'
-
-// Method to wrap an action in a feed item action
-// Possible alternatives to this approach:
-// 1: Assume all actions are meant for the feed,
-//    remove the type check in our middleware
-// 2: Add a special prop to any action objects meant for the feed,
-//    then catch actions containing that prop in the middleware
-//    e.g. { action: 'foo', payload: { ... }, isFeedAction: true }
-const addFeedAction = (action: any) => {
-  console.log('addFeedAction', action)
-  return { type: FEED_ADD_ACTION, payload: { action } }
-}
-
-export { CevitxeFeed as Feed, addFeedAction }
+export { CevitxeFeed as Feed }
