@@ -1,27 +1,37 @@
-# TSDX Bootstrap
+## What is this
 
-This project was bootstrapped with [TSDX](https://github.com/jaredpalmer/tsdx).
+This is a Redux extension that gives your store peer-to-peer synchronization superpowers.
 
-## Local Development
+## Getting started
 
-Below is a list of commands you will probably find useful.
+#### 1. Pass your store to the Cevitxe feed
 
-### `npm start` or `yarn start`
+#### 2. Add Cevitxe as middleware
 
-Runs the project in development/watch mode. Your project will be rebuilt upon changes. TSDX has a special logger for you convenience. Error messages are pretty printed and formatted for compatibility VS Code's Problems tab.
+#### 3. Adjust any existing Redux reducers to work with Automerge objects (if you have them)
 
-<img src="https://user-images.githubusercontent.com/4060187/52168303-574d3a00-26f6-11e9-9f3b-71dbec9ebfcb.gif" width="600" />
+Redux reducers take a previous state object and an action, and return a new state object.
 
-Your library will be rebuilt if you make edits.
+```typescript
+newState = Automerge.change(prevState, s => {
+  s.foo = 'pizza'
+})
+```
 
-### `npm run build` or `yarn build`
+To modify an Automerge object, you use the `change` method. Inside that you treat the state you're given as mutable. You don't need to return anything; the modified object is the return value of `Automerge.change`.
 
-Bundles the package to the `dist` folder.
-The package is optimized and bundled with Rollup into multiple formats (CommonJS, UMD, and ES Module).
+```typescript
+newState = Automerge.change(prevState, s => {
+  // `s` is a mutable proxy to `prevState`
+  s.foo = 'pizza'
+})
+```
 
-<img src="https://user-images.githubusercontent.com/4060187/52168322-a98e5b00-26f6-11e9-8cf6-222d716b75ef.gif" width="600" />
+So your 
 
-### `npm test` or `yarn test`
 
-Runs the test watcher (Jest) in an interactive mode.
-By default, runs tests related to files changed since the last commit.
+## Running the examples
+
+## Known limitations
+
+## Why is it called Cevitxe
