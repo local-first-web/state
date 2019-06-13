@@ -1,0 +1,6 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "defaultCommandTimeout": 1000,
+  "integrationFolder": "cypress/e2e",
+  "projectId": "4qm1do"
+}
