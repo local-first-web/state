@@ -9,7 +9,8 @@
     "dist"
   ],
   "scripts": {
-    "start": "tsdx watch",
+    "start:todo": "cd examples/todomvc && yarn start",
+    "start": "run-s build start:todo",
     "build": "tsdx build",
     "test": "tsdx test"
   },
@@ -22,6 +23,8 @@
   },
   "devDependencies": {
     "@types/jest": "^24.0.14",
+    "npm-run-all": "^4.1.5",
+    "npm-watch": "^0.6.0",
     "prettier": "^1.18.2",
     "redux": "^4.0.1",
     "tsdx": "^0.6.1",

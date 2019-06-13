@@ -8,8 +8,10 @@ export const adaptReducer: ReducerAdapter = proxyReducer => (
 ) => {
   switch (type) {
     case APPLY_CHANGE: {
-      console.log('APPLY_CHANGE REDUCER!!')
-      return automerge.applyChanges(state, [payload.change])
+      console.log('APPLY_CHANGE REDUCER!!!!', payload)
+      const newState = automerge.applyChanges(state, [payload.change])
+      console.log(newState)
+      return newState 
     }
     default: {
       const msg = `${type}: ${JSON.stringify(payload)}`

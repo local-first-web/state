@@ -33,8 +33,10 @@
       switch (type) {
         case APPLY_CHANGE:
           {
-            console.log('APPLY_CHANGE REDUCER!!');
-            return automerge.applyChanges(state, [payload.change]);
+            console.log('APPLY_CHANGE REDUCER!!!!', payload);
+            var newState = automerge.applyChanges(state, [payload.change]);
+            console.log(newState);
+            return newState;
           }
 
         default:
