@@ -39,7 +39,7 @@ const createDynamicMiddlewares = () => {
 
 const dynamicMiddlewaresInstance = createDynamicMiddlewares()
 
-export default dynamicMiddlewaresInstance.enhancer
+export const cevitxeMiddleware = dynamicMiddlewaresInstance.enhancer
 
 export const {
   addMiddleware,

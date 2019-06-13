@@ -12,11 +12,6 @@
   "peerDependencies": {
     "react": ">=16"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged"
-    }
-  },
   "prettier": {
     "printWidth": 80,
     "semi": false,
@@ -25,6 +20,7 @@
   },
   "dependencies": {
     "@types/classnames": "^2.2.8",
+    "cevitxe": "file:../..",
     "classnames": "2.2.6",
     "hypermerge": "0.3.2",
     "immutable": "3.8.2",

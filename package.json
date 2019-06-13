@@ -2,8 +2,6 @@
   "name": "cevitxe",
   "version": "0.1.0",
   "main": "dist/index.js",
-  "umd:main": "dist/cevitxe.umd.production.js",
-  "module": "dist/cevitxe.es.production.js",
   "typings": "dist/index.d.ts",
   "files": [
     "dist"
@@ -14,11 +12,6 @@
     "test": "tsdx test"
   },
   "peerDependencies": {},
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged"
-    }
-  },
   "prettier": {
     "printWidth": 80,
     "semi": false,
@@ -27,9 +20,8 @@
   },
   "devDependencies": {
     "@types/jest": "^24.0.14",
-    "husky": "^2.4.1",
+    "redux": "^4.0.1",
     "prettier": "^1.18.2",
-    "pretty-quick": "^1.11.0",
     "tsdx": "^0.6.1",
     "tslib": "^1.10.0",
     "typescript": "^3.5.1"
@@ -41,7 +33,6 @@
     "hypercore-crypto": "^1.0.0",
     "pump": "^3.0.0",
     "random-access-idb": "^1.2.1",
-    "redux": "^4.0.1",
     "signalhub": "^4.9.0",
     "webrtc-swarm": "^2.9.0"
   }

@@ -1,15 +1,13 @@
+import { cevitxeMiddleware, Feed } from 'cevitxe'
 import { applyMiddleware, createStore } from 'redux'
-import { persistReducer, persistStore } from 'redux-persist'
-import storage from 'redux-persist/lib/storage' // LocalStorage by default
+import { key, secretKey } from '../secrets'
 import { logger } from './logger'
-import { reducers } from './reducers'
+import { reducer } from './reducers'
 
-const persistConfig = { key: 'root', storage }
-const reducer = persistReducer(persistConfig, reducers)
+export const store = createStore(
+  reducer,
+  applyMiddleware(logger, cevitxeMiddleware)
+)
 
-const enhancer = applyMiddleware(logger)
-//const enhancer = applyMiddleware(logger, cevitxe)
-
-export const store = createStore(reducer, enhancer)
-
-export const persistor = persistStore(store)
+// create a feed around our redux store
+new Feed(store, { key, secretKey })

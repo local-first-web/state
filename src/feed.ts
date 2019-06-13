@@ -3,11 +3,12 @@ import hypercore from 'hypercore'
 import crypto from 'hypercore-crypto'
 import pump from 'pump'
 import rai from 'random-access-idb'
-import { Store } from 'redux'
+import { Store, Middleware } from 'redux'
 import signalhub from 'signalhub'
 import swarm from 'webrtc-swarm'
 import { addMiddleware } from './dynamicMiddleware'
 import { mockCrypto } from './mockCrypto'
+import automerge from 'automerge'
 
 // This is currently a class but might make more sense as just a function
 class CevitxeFeed {
@@ -66,14 +67,24 @@ class CevitxeFeed {
   // This middleware has an extra function at the beginning that takes
   // a 'store' param, which we're not using so it's omitted.
   // This is an implementation detail with redux-dynamic-middlewares
-  feedMiddleware = (_store: any) => (next: any) => (action: any) => {
-    if (action.type === FEED_ADD_ACTION) {
-      // Watch for any actions that should be added to the feed
-      console.log('adding to feed', action.payload.action.type)
-      this.feed.append(JSON.stringify(action.payload.action))
-    }
-    return next(action)
+  feedMiddleware: Middleware = store => next => action => {
+    // this.feed.append(JSON.stringify(action.payload.action))
+    const prevState = store.getState()
+    const result = next(action)
+    const nextState = store.getState()
+    const changes = automerge.getChanges(prevState, nextState)
+    changes.forEach(c => this.feed.append(JSON.stringify(c)))
+    return result
   }
+
+  // middleware = ({ key }: Options): Middleware => {
+  //   return store => next => action => {
+  //     const result = next(action)
+  //     const nextState = store.getState()
+  //     save(key, nextState)
+  //     return result
+  //   }
+  // }
 
   // Read items from this and peer feeds,
   // then dispatch them to our redux store
@@ -85,7 +96,7 @@ class CevitxeFeed {
         const action = JSON.parse(value)
         console.log('onData', action)
         // duck typing so we only dispatch objects that are actions
-        if (action.type) this.reduxStore.dispatch(action)
+        if (false) this.reduxStore.dispatch(action)
       } catch (err) {
         console.log('feed read error', err)
         console.log('feed stream returned an unknown value', value)
