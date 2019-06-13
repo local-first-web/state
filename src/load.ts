@@ -1,6 +1,6 @@
-import Automerge from 'automerge'
+import automerge from 'automerge'
 
 export const load = <T>(key: string): T | null => {
   const history = localStorage.getItem(key)
-  return history ? Automerge.load(history) : null
+  return history ? automerge.load(history) : null
 }

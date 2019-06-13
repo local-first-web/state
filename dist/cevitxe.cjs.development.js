@@ -2,7 +2,7 @@
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var Automerge = _interopDefault(require('automerge'));
+var automerge = _interopDefault(require('automerge'));
 var redux = require('redux');
 var buffer = require('buffer');
 var hypercore = _interopDefault(require('hypercore'));
@@ -12,17 +12,42 @@ var rai = _interopDefault(require('random-access-idb'));
 var signalhub = _interopDefault(require('signalhub'));
 var swarm = _interopDefault(require('webrtc-swarm'));
 
-var automergeReducer = function automergeReducer(proxyReducer) {
-  return function (state, action) {
-    var type = action.type,
-        payload = action.payload;
-    var msg = type + ": " + JSON.stringify(payload);
-    var fn = proxyReducer({
-      type: type,
-      payload: payload
-    });
-    return fn && state ? Automerge.change(state, msg, fn) // return a modified Automerge object
-    : state; // no matching change function was found, return state unchanged
+var APPLY_CHANGE = 'cevitxe/APPLY_CHANGE';
+
+var actions = {
+  applyChange: function applyChange(change) {
+    return {
+      type: APPLY_CHANGE,
+      payload: {
+        change: change
+      }
+    };
+  }
+};
+
+var adaptReducer = function adaptReducer(proxyReducer) {
+  return function (state, _ref) {
+    var type = _ref.type,
+        payload = _ref.payload;
+
+    switch (type) {
+      case APPLY_CHANGE:
+        {
+          console.log('APPLY_CHANGE REDUCER!!');
+          return automerge.applyChanges(state, [payload.change]);
+        }
+
+      default:
+        {
+          var msg = type + ": " + JSON.stringify(payload);
+          var fn = proxyReducer({
+            type: type,
+            payload: payload
+          });
+          return fn && state ? automerge.change(state, msg, fn) // return a modified Automerge object
+          : state; // no matching change function was found, return state unchanged
+        }
+    }
   };
 };
 
@@ -111,22 +136,14 @@ var CevitxeFeed = function CevitxeFeed(reduxStore, options) {
         var prevState = store.getState();
         var result = next(action);
         var nextState = store.getState();
-        var changes = Automerge.getChanges(prevState, nextState);
+        var changes = automerge.getChanges(prevState, nextState);
         changes.forEach(function (c) {
           return _this.feed.append(JSON.stringify(c));
         });
         return result;
       };
     };
-  }; // middleware = ({ key }: Options): Middleware => {
-  //   return store => next => action => {
-  //     const result = next(action)
-  //     const nextState = store.getState()
-  //     save(key, nextState)
-  //     return result
-  //   }
-  // }
-  // Read items from this and peer feeds,
+  }; // Read items from this and peer feeds,
   // then dispatch them to our redux store
 
 
@@ -138,10 +155,10 @@ var CevitxeFeed = function CevitxeFeed(reduxStore, options) {
 
     stream.on('data', function (value) {
       try {
-        var action = JSON.parse(value);
-        console.log('onData', action); // duck typing so we only dispatch objects that are actions
+        var change = JSON.parse(value);
+        console.log('onData', change);
 
-        if (false) _this.reduxStore.dispatch(action);
+        _this.reduxStore.dispatch(actions.applyChange(change));
       } catch (err) {
         console.log('feed read error', err);
         console.log('feed stream returned an unknown value', value);
@@ -217,7 +234,7 @@ var CevitxeFeed = function CevitxeFeed(reduxStore, options) {
 };
 
 var initialize = function initialize(obj) {
-  return Automerge.change(Automerge.init(), 'initialize', function (d) {
+  return automerge.change(automerge.init(), 'initialize', function (d) {
     for (var k in obj) {
       d[k] = obj[k];
     }
@@ -226,11 +243,11 @@ var initialize = function initialize(obj) {
 
 var load = function load(key) {
   var history = localStorage.getItem(key);
-  return history ? Automerge.load(history) : null;
+  return history ? automerge.load(history) : null;
 };
 
 var save = function save(key, state) {
-  var history = Automerge.save(state);
+  var history = automerge.save(state);
   localStorage.setItem(key, history);
 };
 
@@ -248,9 +265,11 @@ var middleware = function middleware(_ref) {
   };
 };
 
+exports.APPLY_CHANGE = APPLY_CHANGE;
 exports.Feed = CevitxeFeed;
+exports.actions = actions;
+exports.adaptReducer = adaptReducer;
 exports.addMiddleware = addMiddleware;
-exports.automergeReducer = automergeReducer;
 exports.cevitxeMiddleware = cevitxeMiddleware;
 exports.createDynamicMiddlewares = createDynamicMiddlewares;
 exports.initialize = initialize;

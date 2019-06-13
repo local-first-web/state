@@ -1,10 +1,10 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('automerge'), require('redux'), require('buffer'), require('hypercore'), require('hypercore-crypto'), require('pump'), require('random-access-idb'), require('signalhub'), require('webrtc-swarm')) :
   typeof define === 'function' && define.amd ? define(['exports', 'automerge', 'redux', 'buffer', 'hypercore', 'hypercore-crypto', 'pump', 'random-access-idb', 'signalhub', 'webrtc-swarm'], factory) :
-  (global = global || self, factory(global.cevitxe = {}, global.Automerge, global.redux, global.buffer, global.hypercore, global.crypto, global.pump, global.rai, global.signalhub, global.swarm));
-}(this, function (exports, Automerge, redux, buffer, hypercore, crypto, pump, rai, signalhub, swarm) { 'use strict';
+  (global = global || self, factory(global.cevitxe = {}, global.automerge, global.redux, global.buffer, global.hypercore, global.crypto, global.pump, global.rai, global.signalhub, global.swarm));
+}(this, function (exports, automerge, redux, buffer, hypercore, crypto, pump, rai, signalhub, swarm) { 'use strict';
 
-  Automerge = Automerge && Automerge.hasOwnProperty('default') ? Automerge['default'] : Automerge;
+  automerge = automerge && automerge.hasOwnProperty('default') ? automerge['default'] : automerge;
   hypercore = hypercore && hypercore.hasOwnProperty('default') ? hypercore['default'] : hypercore;
   crypto = crypto && crypto.hasOwnProperty('default') ? crypto['default'] : crypto;
   pump = pump && pump.hasOwnProperty('default') ? pump['default'] : pump;
@@ -12,17 +12,42 @@
   signalhub = signalhub && signalhub.hasOwnProperty('default') ? signalhub['default'] : signalhub;
   swarm = swarm && swarm.hasOwnProperty('default') ? swarm['default'] : swarm;
 
-  var automergeReducer = function automergeReducer(proxyReducer) {
-    return function (state, action) {
-      var type = action.type,
-          payload = action.payload;
-      var msg = type + ": " + JSON.stringify(payload);
-      var fn = proxyReducer({
-        type: type,
-        payload: payload
-      });
-      return fn && state ? Automerge.change(state, msg, fn) // return a modified Automerge object
-      : state; // no matching change function was found, return state unchanged
+  var APPLY_CHANGE = 'cevitxe/APPLY_CHANGE';
+
+  var actions = {
+    applyChange: function applyChange(change) {
+      return {
+        type: APPLY_CHANGE,
+        payload: {
+          change: change
+        }
+      };
+    }
+  };
+
+  var adaptReducer = function adaptReducer(proxyReducer) {
+    return function (state, _ref) {
+      var type = _ref.type,
+          payload = _ref.payload;
+
+      switch (type) {
+        case APPLY_CHANGE:
+          {
+            console.log('APPLY_CHANGE REDUCER!!');
+            return automerge.applyChanges(state, [payload.change]);
+          }
+
+        default:
+          {
+            var msg = type + ": " + JSON.stringify(payload);
+            var fn = proxyReducer({
+              type: type,
+              payload: payload
+            });
+            return fn && state ? automerge.change(state, msg, fn) // return a modified Automerge object
+            : state; // no matching change function was found, return state unchanged
+          }
+      }
     };
   };
 
@@ -111,22 +136,14 @@
           var prevState = store.getState();
           var result = next(action);
           var nextState = store.getState();
-          var changes = Automerge.getChanges(prevState, nextState);
+          var changes = automerge.getChanges(prevState, nextState);
           changes.forEach(function (c) {
             return _this.feed.append(JSON.stringify(c));
           });
           return result;
         };
       };
-    }; // middleware = ({ key }: Options): Middleware => {
-    //   return store => next => action => {
-    //     const result = next(action)
-    //     const nextState = store.getState()
-    //     save(key, nextState)
-    //     return result
-    //   }
-    // }
-    // Read items from this and peer feeds,
+    }; // Read items from this and peer feeds,
     // then dispatch them to our redux store
 
 
@@ -138,10 +155,10 @@
 
       stream.on('data', function (value) {
         try {
-          var action = JSON.parse(value);
-          console.log('onData', action); // duck typing so we only dispatch objects that are actions
+          var change = JSON.parse(value);
+          console.log('onData', change);
 
-          if (false) _this.reduxStore.dispatch(action);
+          _this.reduxStore.dispatch(actions.applyChange(change));
         } catch (err) {
           console.log('feed read error', err);
           console.log('feed stream returned an unknown value', value);
@@ -217,7 +234,7 @@
   };
 
   var initialize = function initialize(obj) {
-    return Automerge.change(Automerge.init(), 'initialize', function (d) {
+    return automerge.change(automerge.init(), 'initialize', function (d) {
       for (var k in obj) {
         d[k] = obj[k];
       }
@@ -226,11 +243,11 @@
 
   var load = function load(key) {
     var history = localStorage.getItem(key);
-    return history ? Automerge.load(history) : null;
+    return history ? automerge.load(history) : null;
   };
 
   var save = function save(key, state) {
-    var history = Automerge.save(state);
+    var history = automerge.save(state);
     localStorage.setItem(key, history);
   };
 
@@ -248,9 +265,11 @@
     };
   };
 
+  exports.APPLY_CHANGE = APPLY_CHANGE;
   exports.Feed = CevitxeFeed;
+  exports.actions = actions;
+  exports.adaptReducer = adaptReducer;
   exports.addMiddleware = addMiddleware;
-  exports.automergeReducer = automergeReducer;
   exports.cevitxeMiddleware = cevitxeMiddleware;
   exports.createDynamicMiddlewares = createDynamicMiddlewares;
   exports.initialize = initialize;

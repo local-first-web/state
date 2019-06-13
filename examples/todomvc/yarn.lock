@@ -3034,8 +3034,10 @@ center-align@^0.1.1:
     align-text "^0.1.3"
     lazy-cache "^1.0.3"
 
-"cevitxe@file:../..":
-  version "0.1.0"
+cevitxe@^0.1.0:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/cevitxe/-/cevitxe-0.1.1.tgz#03de43210303ce0eaf8a17fc54c72b8692dde87c"
+  integrity sha512-+ltMIJF9Hiqt0BoQ5Bc2liozMZU5CIBH2CbUUx4NJI9/fNTB7wwiZ4nnwHk4ILg02wXld3K1nIoDziY6ptBdJA==
   dependencies:
     "@types/pump" "^1.1.0"
     automerge "^0.10.1"

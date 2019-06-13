@@ -1,33 +1,16 @@
+import automerge from 'automerge'
 import { Buffer } from 'buffer'
 import hypercore from 'hypercore'
 import crypto from 'hypercore-crypto'
 import pump from 'pump'
 import rai from 'random-access-idb'
-import { Store, Middleware, Reducer } from 'redux'
+import { Middleware, Store } from 'redux'
 import signalhub from 'signalhub'
 import swarm from 'webrtc-swarm'
+
+import { actions } from './actions'
 import { addMiddleware } from './dynamicMiddleware'
 import { mockCrypto } from './mockCrypto'
-import automerge from 'automerge'
-
-const APPLY_CHANGE = '__CEVITXE_APPLY_CHANGE__'
-
-const actions = {
-  applyChange: (change: automerge.Change<any>) => ({
-    type: APPLY_CHANGE,
-    payload: { change },
-  }),
-}
-
-const reducer: Reducer = (prevState, { type, payload }) => {
-  console.log('our reducer', payload)
-  switch (type) {
-    case APPLY_CHANGE:
-      return automerge.applyChanges(prevState, [payload.change])
-    default:
-      return prevState
-  }
-}
 
 // This is currently a class but might make more sense as just a function
 class CevitxeFeed {
@@ -55,9 +38,6 @@ class CevitxeFeed {
       'https://signalhub-jccqtwhdwc.now.sh/', // default public signaling server
     ]
     this.reduxStore = reduxStore
-
-    // add our reducer for handling changes from feed
-    this.reduxStore.replaceReducer(reducer)
 
     // Init an indexedDB
     // I'm constructing a name here using the key because re-using the same name
@@ -139,7 +119,7 @@ class CevitxeFeed {
         download: true,
       }),
       peer
-    )
+    ) 
   }
 
   getKeyHex = () => this.key.toString('hex')

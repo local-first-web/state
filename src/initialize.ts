@@ -1,8 +1,8 @@
-import Automerge from 'automerge'
+import automerge from 'automerge'
 
 // Builds a new automerge object from the object provided
 export const initialize = <T>(obj: T) =>
-  Automerge.change(Automerge.init<T>(), 'initialize', (d: T) => {
+  automerge.change(automerge.init<T>(), 'initialize', (d: T) => {
     for (const k in obj) {
       d[k] = obj[k]
     }
