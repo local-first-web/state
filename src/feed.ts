@@ -47,7 +47,7 @@ const CevitxeFeed = <T>() => {
         valueEncoding: 'utf-8',
         crypto: mockCrypto,
       })
-      
+
       feed.on('error', (err: any) => console.log(err))
 
       feed.on('ready', () => {
@@ -148,5 +148,4 @@ const CevitxeFeed = <T>() => {
   return { createStore }
 }
 
-const feedInstance = CevitxeFeed()
-export const { createStore } = feedInstance
+export const { createStore } = CevitxeFeed()
