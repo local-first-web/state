@@ -1,3 +1,1 @@
-export * from './constants'
-export * from './createStore'
-export * from './types'
+export { createStore } from './createStore'
