@@ -12,7 +12,7 @@
     "start:todo": "cd examples/todomvc && yarn start",
     "start": "run-p watch start:todo",
     "build": "tsdx build --format cjs",
-    "test": "tsdx test",
+    "test": "tsdx test --watch",
     "watch": "tsdx watch --format cjs"
   },
   "peerDependencies": {},
@@ -41,5 +41,10 @@
     "random-access-idb": "^1.2.1",
     "signalhub": "^4.9.0",
     "webrtc-swarm": "^2.9.0"
+  },
+  "jest": {
+    "testMatch": [
+      "**/*test.ts"
+    ]
   }
 }
