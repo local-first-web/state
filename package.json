@@ -10,9 +10,10 @@
   ],
   "scripts": {
     "start:todo": "cd examples/todomvc && yarn start",
-    "start": "run-s build start:todo",
+    "start": "run-p watch start:todo",
     "build": "tsdx build",
-    "test": "tsdx test"
+    "test": "tsdx test",
+    "watch": "tsdx watch"
   },
   "peerDependencies": {},
   "prettier": {
