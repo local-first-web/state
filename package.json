@@ -39,7 +39,6 @@
     "hypercore-crypto": "^1.0.0",
     "pump": "^3.0.0",
     "random-access-idb": "^1.2.1",
-    "reduce-reducers": "^1.0.4",
     "signalhub": "^4.9.0",
     "webrtc-swarm": "^2.9.0"
   }
