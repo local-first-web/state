@@ -31,11 +31,15 @@ describe('adaptReducer', () => {
 
   describe('should apply automerge changes from the feed', () => {
     const reducer = adaptReducer(A)
-    const state = automergify({} as Foo)
-    const state2 = automerge.change(state, s => (s.boo = 'foozball'))
-    const [change] = automerge.getChanges(state, state2)
-    const result = reducer(state, { type: APPLY_CHANGE_FROM_FEED, payload: { change } })
+
+    const state1 = automergify({} as Foo)
+    const state2 = automerge.change(state1, s => (s.boo = 'foozball'))
+
+    const [change] = automerge.getChanges(state1, state2)
+    const result = reducer(state1, { type: APPLY_CHANGE_FROM_FEED, payload: { change } })
 
     it('should apply the changes and return the new state', () => expect(result!.boo).toEqual('foozball'))
+
+    // TODO: test the INITIALIZE path in adaptReducer
   })
 })
