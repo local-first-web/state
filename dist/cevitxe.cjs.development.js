@@ -3,27 +3,16 @@
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var automerge = _interopDefault(require('automerge'));
-var redux = require('redux');
 var buffer = require('buffer');
 var hypercore = _interopDefault(require('hypercore'));
 var crypto = _interopDefault(require('hypercore-crypto'));
 var pump = _interopDefault(require('pump'));
 var rai = _interopDefault(require('random-access-idb'));
+var redux = require('redux');
 var signalhub = _interopDefault(require('signalhub'));
 var swarm = _interopDefault(require('webrtc-swarm'));
 
 var APPLY_CHANGE = 'cevitxe/APPLY_CHANGE';
-
-var actions = {
-  applyChange: function applyChange(change) {
-    return {
-      type: APPLY_CHANGE,
-      payload: {
-        change: change
-      }
-    };
-  }
-};
 
 var adaptReducer = function adaptReducer(proxyReducer) {
   return function (state, _ref) {
@@ -34,7 +23,15 @@ var adaptReducer = function adaptReducer(proxyReducer) {
       case APPLY_CHANGE:
         {
           console.log('APPLY_CHANGE REDUCER!!!!', payload);
-          var newState = automerge.applyChanges(state, [payload.change]);
+          var change = payload.change;
+          var startingState = state;
+
+          if (change[0].message === "initialize") {
+            startingState = automerge.init();
+            console.log('found initialize', change);
+          }
+
+          var newState = automerge.applyChanges(startingState, change);
           console.log(newState);
           return newState;
         }
@@ -53,62 +50,24 @@ var adaptReducer = function adaptReducer(proxyReducer) {
   };
 };
 
-var createDynamicMiddlewares = function createDynamicMiddlewares() {
-  var allDynamicMiddlewares = [];
-
-  var enhancer = function enhancer(store) {
-    return function (next) {
-      return function (action) {
-        var chain = allDynamicMiddlewares.map(function (middleware) {
-          return middleware(store);
-        });
-        return redux.compose.apply(void 0, chain)(next)(action);
-      };
-    };
-  };
-
-  var addMiddleware = function addMiddleware() {
-    for (var _len = arguments.length, middlewares = new Array(_len), _key = 0; _key < _len; _key++) {
-      middlewares[_key] = arguments[_key];
+var initialize = function initialize(obj) {
+  return automerge.change(automerge.init(), 'initialize', function (d) {
+    for (var k in obj) {
+      d[k] = obj[k];
     }
-
-    allDynamicMiddlewares = [].concat(allDynamicMiddlewares, middlewares);
-  };
-
-  var removeMiddleware = function removeMiddleware(middleware) {
-    var index = allDynamicMiddlewares.findIndex(function (d) {
-      return d === middleware;
-    });
-
-    if (index === -1) {
-      console.error('Middleware does not exist!', middleware);
-      return;
-    }
-
-    allDynamicMiddlewares = allDynamicMiddlewares.filter(function (_, mdwIndex) {
-      return mdwIndex !== index;
-    });
-  };
-
-  var resetMiddlewares = function resetMiddlewares() {
-    allDynamicMiddlewares = [];
-  };
-
-  return {
-    enhancer: enhancer,
-    addMiddleware: addMiddleware,
-    removeMiddleware: removeMiddleware,
-    resetMiddlewares: resetMiddlewares
-  };
+  });
 };
 
-var dynamicMiddlewaresInstance =
-/*#__PURE__*/
-createDynamicMiddlewares();
-var cevitxeMiddleware = dynamicMiddlewaresInstance.enhancer;
-var addMiddleware = dynamicMiddlewaresInstance.addMiddleware,
-    removeMiddleware = dynamicMiddlewaresInstance.removeMiddleware,
-    resetMiddlewares = dynamicMiddlewaresInstance.resetMiddlewares;
+var actions = {
+  applyChange: function applyChange(change) {
+    return {
+      type: APPLY_CHANGE,
+      payload: {
+        change: change
+      }
+    };
+  }
+};
 
 // This is a hack because I was getting errors verifying the remove signature
 // I took the code from hypercore and am just always returning true for the verification
@@ -125,25 +84,28 @@ var mockCrypto = {
   }
 };
 
-//import automerge from 'automerge'
+var keyString = 'ecc6212465b39a9a704d564f07da0402af210888e730f419a7faf5f347a33b3d';
+var secretKeyString = '2234567890abcdef1234567880abcdef1234567890abcdef1234567890fedcba'; // hypercore seems to be happy when I turn the key into a discoveryKey,
+// maybe we could get away with just using a Buffer (or just calling discoveryKey with a string?)
+
+var key =
+/*#__PURE__*/
+crypto.discoveryKey(
+/*#__PURE__*/
+buffer.Buffer.from(keyString)); // hypercore doesn't seem to like the secret key being a discoveryKey,
+// but rather just a Buffer
+
+var secretKey =
+/*#__PURE__*/
+buffer.Buffer.from(secretKeyString); // This is currently a class but might make more sense as just a function
 
 var CevitxeFeed = function CevitxeFeed() {
-  // private reduxStore: Store
   var feed;
   var databaseName;
-  var key;
-  var secretKey;
   var peerHubs;
+  var reduxStore;
 
-  var createFeed = function createFeed(options) {
-    if (!options.key) throw new Error('Key is required, should be XXXX in length'); // hypercore seems to be happy when I turn the key into a discoveryKey,
-    // maybe we could get away with just using a Buffer (or just calling discoveryKey with a string?)
-
-    key = crypto.discoveryKey(buffer.Buffer.from(options.key));
-    if (!options.secretKey) throw new Error('Secret key is required, should be XXXX in length'); // hypercore doesn't seem to like the secret key being a discoveryKey,
-    // but rather just a Buffer
-
-    secretKey = buffer.Buffer.from(options.secretKey);
+  var createStore = function createStore(options) {
     databaseName = options.databaseName || 'data';
     peerHubs = options.peerHubs || ['https://signalhub-jccqtwhdwc.now.sh/']; // Init an indexedDB
     // I'm constructing a name here using the key because re-using the same name
@@ -169,29 +131,39 @@ var CevitxeFeed = function CevitxeFeed() {
       console.log('discovery', feed.discoveryKey.toString('hex'));
       joinSwarm();
     });
-    startStreamReader(); // Inject our custom middleware using redux-dynamic-middlewares
-    // I did this because we need a middleware that can use our feed instance
-    // An alternative might be to instantiate Feed and then create the redux store,
-    // then you'd just need a Feed.assignStore(store) method or something to give this
-    // class a way to dispatch to the store.
-    //addMiddleware(feedMiddleware)
+    startStreamReader(); // Return the new Redux store
 
-    return {
-      createStore: createStore
+    reduxStore = createReduxStore(options); // Write the initial automerge state to the feed
+
+    var storeState = reduxStore.getState();
+
+    if (storeState !== null && storeState !== undefined) {
+      var history = automerge.getChanges(automerge.init(), storeState);
+      console.log('writing initial state to feed');
+      feed.append(JSON.stringify(history));
+    }
+
+    return reduxStore;
+  };
+
+  var feedMiddleware = function feedMiddleware(store) {
+    return function (next) {
+      return function (action) {
+        // feed.append(JSON.stringify(action.payload.action))
+        var prevState = store.getState();
+        var result = next(action);
+        var nextState = store.getState();
+        var existingState = prevState ? prevState : automerge.init();
+        console.log('existingState', existingState);
+        console.log('nextState', nextState);
+        var changes = automerge.getChanges(existingState, nextState);
+        changes.forEach(function (c) {
+          return feed.append(JSON.stringify(c));
+        });
+        return result;
+      };
     };
-  }; // This middleware has an extra function at the beginning that takes
-  // a 'store' param, which we're not using so it's omitted.
-  // This is an implementation detail with redux-dynamic-middlewares
-  // const feedMiddleware: Middleware = store => next => action => {
-  //   // feed.append(JSON.stringify(action.payload.action))
-  //   const prevState = store.getState()
-  //   const result = next(action)
-  //   const nextState = store.getState()
-  //   const changes = automerge.getChanges(prevState, nextState)
-  //   changes.forEach(c => feed.append(JSON.stringify(c)))
-  //   return result
-  // }
-  // Read items from this and peer feeds,
+  }; // Read items from this and peer feeds,
   // then dispatch them to our redux store
 
 
@@ -201,13 +173,13 @@ var CevitxeFeed = function CevitxeFeed() {
       live: true
     });
     stream.on('data', function (value) {
-      try {
-        var change = JSON.parse(value);
-        console.log('onData', change); //reduxStore.dispatch(actions.applyChange(change))
-      } catch (err) {
-        console.log('feed read error', err);
-        console.log('feed stream returned an unknown value', value);
-      }
+      // try {
+      var change = JSON.parse(value);
+      console.log('onData', change);
+      reduxStore.dispatch(actions.applyChange(change)); // } catch (err) {
+      //   console.log('feed read error', err)
+      //   console.log('feed stream returned an unknown value', value)
+      // }
     });
   }; // Join our feed to the swarm and accept peers
 
@@ -234,77 +206,73 @@ var CevitxeFeed = function CevitxeFeed() {
     return key.toString('hex');
   };
 
-  function createStore(reducer, preloadedState_orEnhancer, enhancer_or_undefined) {
-    var enhancer;
-    var preloadedState;
+  var createReduxStore = function createReduxStore(options) {
+    // let enhancer: StoreEnhancer<any> | undefined
+    var initialState; // let preloadedStateProvided: Boolean = false
+    // // We received 2 params: reducer and enhancer
+    // if (
+    //   typeof preloadedState_orEnhancer === 'function' &&
+    //   typeof enhancer_or_undefined === 'undefined'
+    // ) {
+    //   enhancer = preloadedState_orEnhancer
+    //   initialState = undefined
+    // } else {
+    //   preloadedStateProvided = true
+    //   enhancer = enhancer_or_undefined
+    //   // Convert the plain object preloadedState to Automerge using initialize()
+    //   initialState = initialize(preloadedState_orEnhancer as DeepPartial<
+    //     S
+    //   > | null)
+    //   //initialState = preloadedState_orEnhancer as DeepPartial<S> | null
+    //   console.log('initialized state', initialState)
+    //   // TODO: Push the initial state operations to the feed
+    // }
 
-    if (enhancer_or_undefined !== undefined) {
-      preloadedState = preloadedState_orEnhancer;
-      enhancer = enhancer_or_undefined;
-    } else {
-      enhancer = preloadedState_orEnhancer;
+    var optionMiddlewares = options.middlewares ? options.middlewares : [];
+    var middlewares = [].concat(optionMiddlewares, [feedMiddleware]); // check
+    //if (enhancer !== undefined) middlewares.push(enhancer)
+
+    console.log('adding a feed-enabled reducer here'); // Add the cevitxe reducer at the same level as the user's reducer
+    // This allows us to operate at the root state and the user can still
+    // have nested state reducers.
+    // note: Casting these as Reducer may not be right
+    // const combinedReducers = reduceReducers(
+    //   null,
+    //   adaptReducer as Reducer,
+    //   reducer as Reducer
+    // )
+    // console.log('combined reducers', combinedReducers)
+
+    if (options.preloadedState) {
+      // Convert the plain object preloadedState to Automerge using initialize()
+      initialState = initialize(options.preloadedState);
+      console.log('initialized state', initialState); // TODO: Push the initial state operations to the feed
+
+      console.log('creating redux store with initial state', initialState);
+      return redux.createStore(options.reducer, initialState, redux.applyMiddleware.apply(void 0, middlewares));
     }
 
-    console.log('add a feed-enabled reducer here'); // inject our reducer here
-
-    if (preloadedState !== undefined) return redux.createStore(reducer, preloadedState, enhancer);
-    return redux.createStore(reducer, enhancer);
-  }
+    console.log('creating redux store without initial state');
+    return redux.createStore(options.reducer, redux.applyMiddleware.apply(void 0, middlewares));
+  };
 
   return {
-    createFeed: createFeed
+    createStore: createStore
   };
 };
 
 var feedInstance =
 /*#__PURE__*/
 CevitxeFeed();
-var createFeed = feedInstance.createFeed; // export const { CevitxeFeed as Feed }
+var createStore = feedInstance.createStore; // export const { CevitxeFeed as Feed }
 
-var initialize = function initialize(obj) {
-  return automerge.change(automerge.init(), 'initialize', function (d) {
-    for (var k in obj) {
-      d[k] = obj[k];
-    }
-  });
-};
-
-var load = function load(key) {
-  var history = localStorage.getItem(key);
-  return history ? automerge.load(history) : null;
-};
-
-var save = function save(key, state) {
-  var history = automerge.save(state);
-  localStorage.setItem(key, history);
-};
-
-var middleware = function middleware(_ref) {
-  var key = _ref.key;
-  return function (store) {
-    return function (next) {
-      return function (action) {
-        var result = next(action);
-        var nextState = store.getState();
-        save(key, nextState);
-        return result;
-      };
-    };
-  };
-};
+//export * from './actions'
 
 exports.APPLY_CHANGE = APPLY_CHANGE;
-exports.actions = actions;
 exports.adaptReducer = adaptReducer;
-exports.addMiddleware = addMiddleware;
-exports.cevitxeMiddleware = cevitxeMiddleware;
-exports.createDynamicMiddlewares = createDynamicMiddlewares;
-exports.createFeed = createFeed;
+exports.createStore = createStore;
 exports.initialize = initialize;
-exports.load = load;
-exports.middleware = middleware;
+exports.keyString = keyString;
 exports.mockCrypto = mockCrypto;
-exports.removeMiddleware = removeMiddleware;
-exports.resetMiddlewares = resetMiddlewares;
-exports.save = save;
+exports.secretKeyString = secretKeyString;
 //# sourceMappingURL=cevitxe.cjs.development.js.map

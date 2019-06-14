@@ -1,38 +1,58 @@
-//import automerge from 'automerge'
+import automerge from 'automerge'
 import { Buffer } from 'buffer'
 import hypercore from 'hypercore'
 import crypto from 'hypercore-crypto'
 import pump from 'pump'
 import rai from 'random-access-idb'
-import { createStore as createReduxStore, Reducer, Action, StoreEnhancer, Store, DeepPartial } from 'redux'
+//import reduceReducers from 'reduce-reducers'
+import {
+  //Action,
+  applyMiddleware,
+  createStore as reduxCreateStore,
+  //DeepPartial,
+  Middleware,
+  Reducer,
+  Store,
+  //Store,
+  //StoreEnhancer,
+} from 'redux'
 import signalhub from 'signalhub'
 import swarm from 'webrtc-swarm'
-
-//import { actions } from './actions'
-//import { addMiddleware } from './dynamicMiddleware'
+//import { adaptReducer } from './adaptReducer'
+import { initialize } from './initialize'
+import { actions } from './actions'
 import { mockCrypto } from './mockCrypto'
+
+export const keyString =
+  'ecc6212465b39a9a704d564f07da0402af210888e730f419a7faf5f347a33b3d'
+export const secretKeyString =
+  '2234567890abcdef1234567880abcdef1234567890abcdef1234567890fedcba'
+
+// hypercore seems to be happy when I turn the key into a discoveryKey,
+// maybe we could get away with just using a Buffer (or just calling discoveryKey with a string?)
+const key: Key = crypto.discoveryKey(Buffer.from(keyString))
+// hypercore doesn't seem to like the secret key being a discoveryKey,
+// but rather just a Buffer
+const secretKey: Key = Buffer.from(secretKeyString)
+
+interface CevitxeStoreOptions {
+  // Redux store
+  reducer: Reducer
+  preloadedState?: any
+  middlewares?: Middleware[]
+  // hypercore feed options
+  databaseName?: string
+  peerHubs?: string[]
+}
 
 // This is currently a class but might make more sense as just a function
 const CevitxeFeed = () => {
-  // private reduxStore: Store
   let feed: Feed<any>
   let databaseName: string
-  let key: Key
-  let secretKey: Key
   let peerHubs: Array<string>
+  let reduxStore: Store
 
-  const createFeed = (options: any) => {
-    if (!options.key)
-      throw new Error('Key is required, should be XXXX in length')
-    // hypercore seems to be happy when I turn the key into a discoveryKey,
-    // maybe we could get away with just using a Buffer (or just calling discoveryKey with a string?)
-    key = crypto.discoveryKey(Buffer.from(options.key))
-    if (!options.secretKey)
-      throw new Error('Secret key is required, should be XXXX in length')
-
-    // hypercore doesn't seem to like the secret key being a discoveryKey,
-    // but rather just a Buffer
-    secretKey = Buffer.from(options.secretKey)
+  const createStore = (options: CevitxeStoreOptions) => {
     databaseName = options.databaseName || 'data'
     peerHubs = options.peerHubs || [
       'https://signalhub-jccqtwhdwc.now.sh/', // default public signaling server
@@ -60,28 +80,30 @@ const CevitxeFeed = () => {
 
     startStreamReader()
 
-    // Inject our custom middleware using redux-dynamic-middlewares
-    // I did this because we need a middleware that can use our feed instance
-    // An alternative might be to instantiate Feed and then create the redux store,
-    // then you'd just need a Feed.assignStore(store) method or something to give this
-    // class a way to dispatch to the store.
-    //addMiddleware(feedMiddleware)
-
-    return { createStore }
+    // Return the new Redux store
+    reduxStore = createReduxStore(options)
+    // Write the initial automerge state to the feed
+    const storeState = reduxStore.getState()
+    if (storeState !== null && storeState !== undefined){
+      const history = automerge.getChanges(automerge.init(), storeState)
+      console.log('writing initial state to feed')
+      feed.append(JSON.stringify(history))
+    }
+    return reduxStore
   }
 
-  // This middleware has an extra function at the beginning that takes
-  // a 'store' param, which we're not using so it's omitted.
-  // This is an implementation detail with redux-dynamic-middlewares
-  // const feedMiddleware: Middleware = store => next => action => {
-  //   // feed.append(JSON.stringify(action.payload.action))
-  //   const prevState = store.getState()
-  //   const result = next(action)
-  //   const nextState = store.getState()
-  //   const changes = automerge.getChanges(prevState, nextState)
-  //   changes.forEach(c => feed.append(JSON.stringify(c)))
-  //   return result
-  // }
+  const feedMiddleware: Middleware = store => next => action => {
+    // feed.append(JSON.stringify(action.payload.action))
+    const prevState = store.getState()
+    const result = next(action)
+    const nextState = store.getState()
+    const existingState = prevState ? prevState : automerge.init()
+    console.log('existingState', existingState)
+    console.log('nextState', nextState)
+    const changes = automerge.getChanges(existingState, nextState)
+    changes.forEach(c => feed.append(JSON.stringify(c)))
+    return result
+  }
 
   // Read items from this and peer feeds,
   // then dispatch them to our redux store
@@ -89,14 +111,14 @@ const CevitxeFeed = () => {
     // Wire up reading from the feed
     const stream = feed.createReadStream({ live: true })
     stream.on('data', (value: string) => {
-      try {
+      // try {
         const change = JSON.parse(value)
         console.log('onData', change)
-        //reduxStore.dispatch(actions.applyChange(change))
-      } catch (err) {
-        console.log('feed read error', err)
-        console.log('feed stream returned an unknown value', value)
-      }
+        reduxStore.dispatch(actions.applyChange(change))
+      // } catch (err) {
+      //   console.log('feed read error', err)
+      //   console.log('feed stream returned an unknown value', value)
+      // }
     })
   }
 
@@ -120,39 +142,75 @@ const CevitxeFeed = () => {
         download: true,
       }),
       peer
-    ) 
+    )
   }
 
   const getKeyHex = () => key.toString('hex')
-  
-  // This follows the type definitions for StoreCreator's two overloads in the Redux source
-  function createStore <S, A extends Action>(reducer: Reducer<S, A>, enhancer?: StoreEnhancer<any>): Store<S, A>
-  function createStore <S, A extends Action>(reducer: Reducer<S, A>, preloadedState?: DeepPartial<S>, enhancer?: StoreEnhancer<any>): Store<S, A>
-  function createStore <S, A extends Action>(reducer: Reducer<S, A>, preloadedState_orEnhancer?: DeepPartial<S> | StoreEnhancer<any>, enhancer_or_undefined?: StoreEnhancer<any>) {
-    let enhancer: StoreEnhancer<any>
-    let preloadedState: DeepPartial<S> | StoreEnhancer<any> | undefined
 
-    if (enhancer_or_undefined !== undefined) {
-      preloadedState = preloadedState_orEnhancer
-      enhancer = enhancer_or_undefined
-    } else {
-      enhancer = preloadedState_orEnhancer as StoreEnhancer<any>
+  const createReduxStore = (options: CevitxeStoreOptions) => {
+    // let enhancer: StoreEnhancer<any> | undefined
+    let initialState: any
+    // let preloadedStateProvided: Boolean = false
+
+    // // We received 2 params: reducer and enhancer
+    // if (
+    //   typeof preloadedState_orEnhancer === 'function' &&
+    //   typeof enhancer_or_undefined === 'undefined'
+    // ) {
+    //   enhancer = preloadedState_orEnhancer
+    //   initialState = undefined
+    // } else {
+    //   preloadedStateProvided = true
+    //   enhancer = enhancer_or_undefined
+    //   // Convert the plain object preloadedState to Automerge using initialize()
+    //   initialState = initialize(preloadedState_orEnhancer as DeepPartial<
+    //     S
+    //   > | null)
+    //   //initialState = preloadedState_orEnhancer as DeepPartial<S> | null
+    //   console.log('initialized state', initialState)
+    //   // TODO: Push the initial state operations to the feed
+    // }
+
+    let optionMiddlewares = options.middlewares ? options.middlewares : []
+    const middlewares = [...optionMiddlewares, feedMiddleware]
+    // check
+    //if (enhancer !== undefined) middlewares.push(enhancer)
+
+    console.log('adding a feed-enabled reducer here')
+
+    // Add the cevitxe reducer at the same level as the user's reducer
+    // This allows us to operate at the root state and the user can still
+    // have nested state reducers.
+    // note: Casting these as Reducer may not be right
+    // const combinedReducers = reduceReducers(
+    //   null,
+    //   adaptReducer as Reducer,
+    //   reducer as Reducer
+    // )
+    // console.log('combined reducers', combinedReducers)
+
+    if (options.preloadedState) {
+      // Convert the plain object preloadedState to Automerge using initialize()
+      initialState = initialize(options.preloadedState)
+      console.log('initialized state', initialState)
+      // TODO: Push the initial state operations to the feed
+
+      console.log('creating redux store with initial state', initialState)
+      return reduxCreateStore(
+        options.reducer,
+        initialState,
+        applyMiddleware(...middlewares)
+      )
     }
-    
-    console.log('add a feed-enabled reducer here')
-    // inject our reducer here
-    if (preloadedState !== undefined)
-      return createReduxStore(reducer, preloadedState as DeepPartial<S>, enhancer as StoreEnhancer<any>);
-    return createReduxStore(reducer, enhancer as StoreEnhancer<any>);
+    console.log('creating redux store without initial state')
+    return reduxCreateStore(options.reducer as Reducer, applyMiddleware(...middlewares))
   }
 
-  return { createFeed }
+  return { createStore }
 }
 
-const feedInstance = CevitxeFeed();
+const feedInstance = CevitxeFeed()
 
-export const {
-  createFeed
-} = feedInstance
+export const { createStore } = feedInstance
 
 // export const { CevitxeFeed as Feed }

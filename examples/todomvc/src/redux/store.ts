@@ -1,24 +1,22 @@
-import { createFeed, initialize } from 'cevitxe'
-//import { applyMiddleware } from 'redux'
-import { key, secretKey } from '../secrets'
+import { createStore } from 'cevitxe'
+import { logger } from './logger'
 import { reducer } from './reducers'
-import { VisibilityFilter } from 'src/types';
+// import { VisibilityFilter } from 'src/types'
+import { Reducer, AnyAction } from 'redux'
 
+// const initialState = {
+//   visibilityFilter: VisibilityFilter.ALL,
+//   todoList: [],
+//   todoMap: {},
+// }
 
+// Basic middlewares for now, no enhancers.
+// We'll need to figure out how to combine enhancers later
+const middlewares = [logger]
 
-const feed = createFeed({ key, secretKey })
-
-const initialState = initialize({
-  visibilityFilter: VisibilityFilter.ALL,
-  todoList: [],
-  todoMap: {},
+// Casting the reducer here to match redux's expectation. We'll need to figure out a better way
+export const store = createStore({
+  reducer: reducer as Reducer<any, AnyAction>,
+  preloadedState: null, //initialState,
+  middlewares,
 })
-// const enhancers = {}; // Use redux compose for custom middlewares
-
-export const store = feed.createStore(reducer, initialState);
-//   reducer,
-//   initialState,
-//   enhancers
-// )
-
-// create a feed around our redux store

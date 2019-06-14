@@ -9,7 +9,13 @@ export const adaptReducer: ReducerAdapter = proxyReducer => (
   switch (type) {
     case APPLY_CHANGE: {
       console.log('APPLY_CHANGE REDUCER!!!!', payload)
-      const newState = automerge.applyChanges(state, [payload.change])
+      const { change } = payload
+      let startingState = state
+      if (change[0].message === "initialize"){
+        startingState = automerge.init()
+        console.log('found initialize', change)
+      }
+      const newState = automerge.applyChanges(startingState, change)
       console.log(newState)
       return newState 
     }
