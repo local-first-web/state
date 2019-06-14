@@ -4,6 +4,6 @@ import { APPLY_CHANGE } from './constants'
 export const actions = {
   applyChange: (change: Change) => ({
     type: APPLY_CHANGE,
-    payload: { change },
+    payload: { change, fromCevitxe: true },
   }),
 }

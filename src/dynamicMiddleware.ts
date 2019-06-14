@@ -1,3 +1,5 @@
+// This should no longer be necessary since we're creating the redux store now
+
 import { compose, Middleware } from 'redux'
 
 const createDynamicMiddlewares = () => {

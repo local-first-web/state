@@ -10,9 +10,10 @@
   ],
   "scripts": {
     "start:todo": "cd examples/todomvc && yarn start",
-    "start": "run-s build start:todo",
-    "build": "tsdx build",
-    "test": "tsdx test"
+    "start": "run-p watch start:todo",
+    "build": "tsdx build --format cjs",
+    "test": "tsdx test",
+    "watch": "tsdx watch --format cjs"
   },
   "peerDependencies": {},
   "prettier": {
@@ -38,6 +39,7 @@
     "hypercore-crypto": "^1.0.0",
     "pump": "^3.0.0",
     "random-access-idb": "^1.2.1",
+    "reduce-reducers": "^1.0.4",
     "signalhub": "^4.9.0",
     "webrtc-swarm": "^2.9.0"
   }

@@ -1,14 +1,19 @@
 import { VisibilityFilter, State } from '../types'
 
-export const getVisibilityFilter = (state: State) => state.visibilityFilter
+export const getVisibilityFilter = (state: State) => {
+  if (!state || !state.visibilityFilter) return VisibilityFilter.ALL
+  return state.visibilityFilter
+}
 
 export const getTodo = (id: string) => (state: State) => ({
   ...state.todoMap[id],
   id,
 })
 
-export const getAllTodos = (state: State) =>
-  state.todoList.map(id => getTodo(id)(state))
+export const getAllTodos = (state: State) => {
+  if (!state || !state.todoList) return []
+  return state.todoList.map(id => getTodo(id)(state))
+}
 
 export const getFilteredTodos = (filter: VisibilityFilter) => (
   state: State
