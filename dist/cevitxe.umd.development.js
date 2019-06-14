@@ -130,20 +130,24 @@
         console.log('ready', key.toString('hex'));
         console.log('discovery', feed.discoveryKey.toString('hex'));
         joinSwarm();
+        if (window.location.search === '?debug') debugger;
       });
       startStreamReader(); // Return the new Redux store
 
       reduxStore = createReduxStore(options); // Write the initial automerge state to the feed
-      //const storeState = reduxStore.getState()
 
-      console.log('todos', todos);
-      debugger; // if (storeState !== null && storeState !== undefined) {
-      //   const history = automerge.getChanges(automerge.init(), storeState)
-      //   history.forEach(c => feed.append(JSON.stringify(c)))
-      //   console.log('writing initial state to feed')
-      //   // write history as an array of changes, abondonded for individual change writing
-      //   //feed.append(JSON.stringify(history))
-      // }
+      var storeState = reduxStore.getState(); // console.log('todos', todos)
+
+      if (window.location.search === '?debug') debugger;
+
+      if (storeState !== null && storeState !== undefined) {
+        var history = automerge.getChanges(automerge.init(), storeState);
+        history.forEach(function (c) {
+          return feed.append(JSON.stringify(c));
+        });
+        console.log('writing initial state to feed'); // write history as an array of changes, abondonded for individual change writing
+        //feed.append(JSON.stringify(history))
+      }
 
       return reduxStore;
     };
