@@ -24,6 +24,7 @@ let reduxStore: Redux.Store
 
 export const createStore = (options: CreateStoreOptions): Promise<Redux.Store> => {
   return new Promise((resolve, _) => {
+    
     if (!options.key) throw new Error('Key is required, should be XXXX in length')
 
     // hypercore seems to be happy when I turn the key into a discoveryKey,
@@ -69,8 +70,8 @@ export const createStore = (options: CreateStoreOptions): Promise<Redux.Store> =
     })
 
     const stream = feed.createReadStream({ live: true })
-
     // Read items from this and peer feeds, then dispatch them to our redux store
+
     stream.on('data', (value: string) => {
       const change = JSON.parse(value)
       reduxStore.dispatch(actions.applyChange(change))
