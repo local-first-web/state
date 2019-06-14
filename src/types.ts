@@ -1,23 +1,18 @@
-import { Reducer, Middleware } from 'redux'
+import { Reducer, Middleware, AnyAction } from 'redux'
 
-export interface Action {
-  type: string
-  payload: any
-}
-
-export type ProxyReducer<T> = (action: Action) => ChangeFn<T> | null
+export type ProxyReducer<T> = (action: AnyAction) => ChangeFn<T> | null
 
 export type ReducerAdapter = <T>(
   proxy: ProxyReducer<T>
-) => Reducer<T | undefined, Action>
+) => Reducer<T | undefined, AnyAction>
 
 // stand-ins for Automerge types
 type ChangeFn<T> = (doc: T) => void
 export interface Change {}
 
-export interface CevitxeStoreOptions {
+export interface CevitxeStoreOptions<T> {
   // Redux store
-  reducer: Reducer
+  reducer: ProxyReducer<T>
   preloadedState?: any
   middlewares?: Middleware[]
   // hypercore feed options
