@@ -1,16 +1,7 @@
-import { Middleware } from 'redux';
-declare class CevitxeFeed {
-    private reduxStore;
-    private feed;
-    private databaseName;
-    private key;
-    private secretKey;
-    private peerHubs;
-    constructor(reduxStore: any, options: any);
-    feedMiddleware: Middleware;
-    startStreamReader: () => void;
-    joinSwarm: () => void;
-    onPeerConnect: (peer: any, id: any) => void;
-    getKeyHex: () => string;
-}
-export { CevitxeFeed as Feed };
+import { Reducer, Action, StoreEnhancer, Store, DeepPartial } from 'redux';
+export declare const createFeed: (options: any) => {
+    createStore: {
+        <S, A extends Action<any>>(reducer: Reducer<S, A>, enhancer?: StoreEnhancer<any, {}> | undefined): Store<S, A>;
+        <S, A extends Action<any>>(reducer: Reducer<S, A>, preloadedState?: DeepPartial<S> | undefined, enhancer?: StoreEnhancer<any, {}> | undefined): Store<S, A>;
+    };
+};

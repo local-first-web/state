@@ -1,6 +1,5 @@
 import { adaptReducer, ProxyReducer } from 'cevitxe'
-import { Reducer } from 'redux'
-import { Action, State } from 'src/types'
+import { State } from 'src/types'
 import { ActionType } from './actions'
 
 const {
@@ -49,4 +48,4 @@ const proxyReducer: ProxyReducer<State> = ({ type, payload }) => {
   }
 }
 
-export const reducer = adaptReducer(proxyReducer) as Reducer<State, Action>
+export const reducer = adaptReducer(proxyReducer)

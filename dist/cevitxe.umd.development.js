@@ -125,42 +125,85 @@
     }
   };
 
-  var CevitxeFeed = function CevitxeFeed(reduxStore, options) {
-    var _this = this;
+  //import automerge from 'automerge'
 
-    // This middleware has an extra function at the beginning that takes
+  var CevitxeFeed = function CevitxeFeed() {
+    // private reduxStore: Store
+    var feed;
+    var databaseName;
+    var key;
+    var secretKey;
+    var peerHubs;
+
+    var createFeed = function createFeed(options) {
+      if (!options.key) throw new Error('Key is required, should be XXXX in length'); // hypercore seems to be happy when I turn the key into a discoveryKey,
+      // maybe we could get away with just using a Buffer (or just calling discoveryKey with a string?)
+
+      key = crypto.discoveryKey(buffer.Buffer.from(options.key));
+      if (!options.secretKey) throw new Error('Secret key is required, should be XXXX in length'); // hypercore doesn't seem to like the secret key being a discoveryKey,
+      // but rather just a Buffer
+
+      secretKey = buffer.Buffer.from(options.secretKey);
+      databaseName = options.databaseName || 'data';
+      peerHubs = options.peerHubs || ['https://signalhub-jccqtwhdwc.now.sh/']; // Init an indexedDB
+      // I'm constructing a name here using the key because re-using the same name
+      // with different keys throws an error "Another hypercore is stored here"
+
+      var todos = rai(databaseName + "-" + getKeyHex().substr(0, 12));
+
+      var storage = function storage(filename) {
+        return todos(filename);
+      }; // Create a new hypercore feed
+
+
+      feed = hypercore(storage, key, {
+        secretKey: secretKey,
+        valueEncoding: 'utf-8',
+        crypto: mockCrypto
+      });
+      feed.on('error', function (err) {
+        return console.log(err);
+      });
+      feed.on('ready', function () {
+        console.log('ready', key.toString('hex'));
+        console.log('discovery', feed.discoveryKey.toString('hex'));
+        joinSwarm();
+      });
+      startStreamReader(); // Inject our custom middleware using redux-dynamic-middlewares
+      // I did this because we need a middleware that can use our feed instance
+      // An alternative might be to instantiate Feed and then create the redux store,
+      // then you'd just need a Feed.assignStore(store) method or something to give this
+      // class a way to dispatch to the store.
+      //addMiddleware(feedMiddleware)
+
+      return {
+        createStore: createStore
+      };
+    }; // This middleware has an extra function at the beginning that takes
     // a 'store' param, which we're not using so it's omitted.
     // This is an implementation detail with redux-dynamic-middlewares
-    this.feedMiddleware = function (store) {
-      return function (next) {
-        return function (action) {
-          // this.feed.append(JSON.stringify(action.payload.action))
-          var prevState = store.getState();
-          var result = next(action);
-          var nextState = store.getState();
-          var changes = automerge.getChanges(prevState, nextState);
-          changes.forEach(function (c) {
-            return _this.feed.append(JSON.stringify(c));
-          });
-          return result;
-        };
-      };
-    }; // Read items from this and peer feeds,
+    // const feedMiddleware: Middleware = store => next => action => {
+    //   // feed.append(JSON.stringify(action.payload.action))
+    //   const prevState = store.getState()
+    //   const result = next(action)
+    //   const nextState = store.getState()
+    //   const changes = automerge.getChanges(prevState, nextState)
+    //   changes.forEach(c => feed.append(JSON.stringify(c)))
+    //   return result
+    // }
+    // Read items from this and peer feeds,
     // then dispatch them to our redux store
 
 
-    this.startStreamReader = function () {
+    var startStreamReader = function startStreamReader() {
       // Wire up reading from the feed
-      var stream = _this.feed.createReadStream({
+      var stream = feed.createReadStream({
         live: true
       });
-
       stream.on('data', function (value) {
         try {
           var change = JSON.parse(value);
-          console.log('onData', change);
-
-          _this.reduxStore.dispatch(actions.applyChange(change));
+          console.log('onData', change); //reduxStore.dispatch(actions.applyChange(change))
         } catch (err) {
           console.log('feed read error', err);
           console.log('feed stream returned an unknown value', value);
@@ -169,17 +212,17 @@
     }; // Join our feed to the swarm and accept peers
 
 
-    this.joinSwarm = function () {
+    var joinSwarm = function joinSwarm() {
       // could add option to disallow peer connectivity here
-      var hub = signalhub(_this.getKeyHex(), _this.peerHubs);
+      var hub = signalhub(getKeyHex(), peerHubs);
       var sw = swarm(hub);
-      sw.on('peer', _this.onPeerConnect);
+      sw.on('peer', onPeerConnect);
     }; // When a feed peer connects, replicate our feed to them
 
 
-    this.onPeerConnect = function (peer, id) {
+    var onPeerConnect = function onPeerConnect(peer, id) {
       console.log('peer', id, peer);
-      pump(peer, _this.feed.replicate({
+      pump(peer, feed.replicate({
         encrypt: false,
         live: true,
         upload: true,
@@ -187,53 +230,36 @@
       }), peer);
     };
 
-    this.getKeyHex = function () {
-      return _this.key.toString('hex');
+    var getKeyHex = function getKeyHex() {
+      return key.toString('hex');
     };
 
-    if (!options.key) throw new Error('Key is required, should be XXXX in length'); // hypercore seems to be happy when I turn the key into a discoveryKey,
-    // maybe we could get away with just using a Buffer (or just calling discoveryKey with a string?)
+    function createStore(reducer, preloadedState_orEnhancer, enhancer_or_undefined) {
+      var enhancer;
+      var preloadedState;
 
-    this.key = crypto.discoveryKey(buffer.Buffer.from(options.key));
-    if (!options.secretKey) throw new Error('Secret key is required, should be XXXX in length'); // hypercore doesn't seem to like the secret key being a discoveryKey,
-    // but rather just a Buffer
+      if (enhancer_or_undefined !== undefined) {
+        preloadedState = preloadedState_orEnhancer;
+        enhancer = enhancer_or_undefined;
+      } else {
+        enhancer = preloadedState_orEnhancer;
+      }
 
-    this.secretKey = buffer.Buffer.from(options.secretKey);
-    this.databaseName = options.databaseName || 'data';
-    this.peerHubs = options.peerHubs || ['https://signalhub-jccqtwhdwc.now.sh/'];
-    this.reduxStore = reduxStore; // Init an indexedDB
-    // I'm constructing a name here using the key because re-using the same name
-    // with different keys throws an error "Another hypercore is stored here"
+      console.log('add a feed-enabled reducer here'); // inject our reducer here
 
-    var todos = rai(this.databaseName + "-" + this.getKeyHex().substr(0, 12));
+      if (preloadedState !== undefined) return redux.createStore(reducer, preloadedState, enhancer);
+      return redux.createStore(reducer, enhancer);
+    }
 
-    var storage = function storage(filename) {
-      return todos(filename);
-    }; // Create a new hypercore feed
-
-
-    this.feed = hypercore(storage, this.key, {
-      secretKey: this.secretKey,
-      valueEncoding: 'utf-8',
-      crypto: mockCrypto
-    });
-    this.feed.on('error', function (err) {
-      return console.log(err);
-    });
-    this.feed.on('ready', function () {
-      console.log('ready', _this.key.toString('hex'));
-      console.log('discovery', _this.feed.discoveryKey.toString('hex'));
-
-      _this.joinSwarm();
-    });
-    this.startStreamReader(); // Inject our custom middleware using redux-dynamic-middlewares
-    // I did this because we need a middleware that can use our feed instance
-    // An alternative might be to instantiate Feed and then create the redux store,
-    // then you'd just need a Feed.assignStore(store) method or something to give this
-    // class a way to dispatch to the store.
-
-    addMiddleware(this.feedMiddleware);
+    return {
+      createFeed: createFeed
+    };
   };
+
+  var feedInstance =
+  /*#__PURE__*/
+  CevitxeFeed();
+  var createFeed = feedInstance.createFeed; // export const { CevitxeFeed as Feed }
 
   var initialize = function initialize(obj) {
     return automerge.change(automerge.init(), 'initialize', function (d) {
@@ -268,12 +294,12 @@
   };
 
   exports.APPLY_CHANGE = APPLY_CHANGE;
-  exports.Feed = CevitxeFeed;
   exports.actions = actions;
   exports.adaptReducer = adaptReducer;
   exports.addMiddleware = addMiddleware;
   exports.cevitxeMiddleware = cevitxeMiddleware;
   exports.createDynamicMiddlewares = createDynamicMiddlewares;
+  exports.createFeed = createFeed;
   exports.initialize = initialize;
   exports.load = load;
   exports.middleware = middleware;
