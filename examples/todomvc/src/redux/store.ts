@@ -1,8 +1,8 @@
 import { createStore } from 'cevitxe'
 import { logger } from './logger'
 import { reducer } from './reducers'
-// import { VisibilityFilter } from 'src/types'
 import { Reducer, AnyAction } from 'redux'
+// import { VisibilityFilter } from 'src/types'
 
 // const initialState = {
 //   visibilityFilter: VisibilityFilter.ALL,

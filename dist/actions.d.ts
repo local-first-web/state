@@ -4,6 +4,7 @@ export declare const actions: {
         type: string;
         payload: {
             change: Change;
+            fromCevitxe: boolean;
         };
     };
 };

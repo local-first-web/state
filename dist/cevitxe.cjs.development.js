@@ -22,16 +22,17 @@ var adaptReducer = function adaptReducer(proxyReducer) {
     switch (type) {
       case APPLY_CHANGE:
         {
+          //return state
           console.log('APPLY_CHANGE REDUCER!!!!', payload);
           var change = payload.change;
           var startingState = state;
 
-          if (change[0].message === "initialize") {
+          if (change.message === 'initialize') {
             startingState = automerge.init();
             console.log('found initialize', change);
           }
 
-          var newState = automerge.applyChanges(startingState, change);
+          var newState = automerge.applyChanges(startingState, [change]);
           console.log(newState);
           return newState;
         }
@@ -63,7 +64,8 @@ var actions = {
     return {
       type: APPLY_CHANGE,
       payload: {
-        change: change
+        change: change,
+        fromCevitxe: true
       }
     };
   }
@@ -108,10 +110,8 @@ var CevitxeFeed = function CevitxeFeed() {
   var createStore = function createStore(options) {
     databaseName = options.databaseName || 'data';
     peerHubs = options.peerHubs || ['https://signalhub-jccqtwhdwc.now.sh/']; // Init an indexedDB
-    // I'm constructing a name here using the key because re-using the same name
-    // with different keys throws an error "Another hypercore is stored here"
 
-    var todos = rai(databaseName + "-" + getKeyHex().substr(0, 12));
+    var todos = rai(getStoreName());
 
     var storage = function storage(filename) {
       return todos(filename);
@@ -134,14 +134,16 @@ var CevitxeFeed = function CevitxeFeed() {
     startStreamReader(); // Return the new Redux store
 
     reduxStore = createReduxStore(options); // Write the initial automerge state to the feed
+    //const storeState = reduxStore.getState()
 
-    var storeState = reduxStore.getState();
-
-    if (storeState !== null && storeState !== undefined) {
-      var history = automerge.getChanges(automerge.init(), storeState);
-      console.log('writing initial state to feed');
-      feed.append(JSON.stringify(history));
-    }
+    console.log('todos', todos);
+    debugger; // if (storeState !== null && storeState !== undefined) {
+    //   const history = automerge.getChanges(automerge.init(), storeState)
+    //   history.forEach(c => feed.append(JSON.stringify(c)))
+    //   console.log('writing initial state to feed')
+    //   // write history as an array of changes, abondonded for individual change writing
+    //   //feed.append(JSON.stringify(history))
+    // }
 
     return reduxStore;
   };
@@ -151,7 +153,13 @@ var CevitxeFeed = function CevitxeFeed() {
       return function (action) {
         // feed.append(JSON.stringify(action.payload.action))
         var prevState = store.getState();
-        var result = next(action);
+        var result = next(action); // Don't re-write items to the feed
+
+        if (action.payload.fromCevitxe) {
+          console.log('already from cevitxe, skipping the feed write');
+          return result;
+        }
+
         var nextState = store.getState();
         var existingState = prevState ? prevState : automerge.init();
         console.log('existingState', existingState);
@@ -204,6 +212,12 @@ var CevitxeFeed = function CevitxeFeed() {
 
   var getKeyHex = function getKeyHex() {
     return key.toString('hex');
+  }; // I'm constructing a name here using the key because re-using the same name
+  // with different keys throws an error "Another hypercore is stored here"
+
+
+  var getStoreName = function getStoreName() {
+    return databaseName + "-" + getKeyHex().substr(0, 12);
   };
 
   var createReduxStore = function createReduxStore(options) {

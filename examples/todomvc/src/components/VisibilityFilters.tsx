@@ -6,7 +6,10 @@ import { actions } from '../redux/actions'
 import { VisibilityFilter, VisibilityFilterKey } from '../types'
 
 export const VisibilityFilters = () => {
-  const activeFilter = useSelector((state: any) => state.visibilityFilter)
+  const activeFilter = useSelector((state: any) => {
+    if (!state || !state.visibilityFilter) return VisibilityFilter.ALL
+    return state.visibilityFilter
+  })
   const dispatch = useDispatch()
 
   return (

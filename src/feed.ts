@@ -59,9 +59,7 @@ const CevitxeFeed = () => {
     ]
 
     // Init an indexedDB
-    // I'm constructing a name here using the key because re-using the same name
-    // with different keys throws an error "Another hypercore is stored here"
-    const todos = rai(`${databaseName}-${getKeyHex().substr(0, 12)}`)
+    const todos = rai(getStoreName())
     const storage = (filename: any) => todos(filename)
 
     // Create a new hypercore feed
@@ -83,12 +81,16 @@ const CevitxeFeed = () => {
     // Return the new Redux store
     reduxStore = createReduxStore(options)
     // Write the initial automerge state to the feed
-    const storeState = reduxStore.getState()
-    if (storeState !== null && storeState !== undefined){
-      const history = automerge.getChanges(automerge.init(), storeState)
-      console.log('writing initial state to feed')
-      feed.append(JSON.stringify(history))
-    }
+    //const storeState = reduxStore.getState()
+    console.log('todos', todos)
+    debugger
+    // if (storeState !== null && storeState !== undefined) {
+    //   const history = automerge.getChanges(automerge.init(), storeState)
+    //   history.forEach(c => feed.append(JSON.stringify(c)))
+    //   console.log('writing initial state to feed')
+    //   // write history as an array of changes, abondonded for individual change writing
+    //   //feed.append(JSON.stringify(history))
+    // }
     return reduxStore
   }
 
@@ -96,6 +98,11 @@ const CevitxeFeed = () => {
     // feed.append(JSON.stringify(action.payload.action))
     const prevState = store.getState()
     const result = next(action)
+    // Don't re-write items to the feed
+    if (action.payload.fromCevitxe) {
+      console.log('already from cevitxe, skipping the feed write')
+      return result
+    }
     const nextState = store.getState()
     const existingState = prevState ? prevState : automerge.init()
     console.log('existingState', existingState)
@@ -112,9 +119,9 @@ const CevitxeFeed = () => {
     const stream = feed.createReadStream({ live: true })
     stream.on('data', (value: string) => {
       // try {
-        const change = JSON.parse(value)
-        console.log('onData', change)
-        reduxStore.dispatch(actions.applyChange(change))
+      const change = JSON.parse(value)
+      console.log('onData', change)
+      reduxStore.dispatch(actions.applyChange(change))
       // } catch (err) {
       //   console.log('feed read error', err)
       //   console.log('feed stream returned an unknown value', value)
@@ -146,6 +153,9 @@ const CevitxeFeed = () => {
   }
 
   const getKeyHex = () => key.toString('hex')
+  // I'm constructing a name here using the key because re-using the same name
+  // with different keys throws an error "Another hypercore is stored here"
+  const getStoreName = () => `${databaseName}-${getKeyHex().substr(0, 12)}`
 
   const createReduxStore = (options: CevitxeStoreOptions) => {
     // let enhancer: StoreEnhancer<any> | undefined
@@ -203,7 +213,10 @@ const CevitxeFeed = () => {
       )
     }
     console.log('creating redux store without initial state')
-    return reduxCreateStore(options.reducer as Reducer, applyMiddleware(...middlewares))
+    return reduxCreateStore(
+      options.reducer as Reducer,
+      applyMiddleware(...middlewares)
+    )
   }
 
   return { createStore }
