@@ -1,12 +1,8 @@
 /// <reference types="node" />
 
 declare module 'hypercore'
-// function hypercore<T>(storage: Storage, options: Options): Feed<T>
-// function hypercore<T>(storage: Storage, key: Key, options: Options): Feed<T>
-// function hypercore<T>(storage: Storage, arg2: any, arg3?: any): Feed<T>
 
 type Key = string | Buffer
-// type Storage = string | Function
 
 interface Options {
   secretKey?: Key
@@ -80,26 +76,12 @@ declare interface Feed<T> {
   get(index: number, cb: (err: Error, data: T) => void): void
   get(index: number, config: any, cb: (err: Error, data: T) => void): void
   getBatch(start: number, end: number, cb: (Err: any, data: T[]) => void): void
-  getBatch(
-    start: number,
-    end: number,
-    config: any,
-    cb: (Err: any, data: T[]) => void
-  ): void
+  getBatch(start: number, end: number, config: any, cb: (Err: any, data: T[]) => void): void
 }
 
-declare function readFeedN<T>(
-  id: string,
-  feed: Feed<T>,
-  index: number,
-  cb: (data: T[]) => void
-): void
+declare function readFeedN<T>(id: string, feed: Feed<T>, index: number, cb: (data: T[]) => void): void
 
-declare function readFeed<T>(
-  id: string,
-  feed: Feed<T>,
-  cb: (data: T[]) => void
-): void
+declare function readFeed<T>(id: string, feed: Feed<T>, cb: (data: T[]) => void): void
 
 declare interface Peer {
   feed: any
