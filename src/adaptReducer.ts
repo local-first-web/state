@@ -19,6 +19,7 @@ export const adaptReducer: ReducerAdapter = proxyReducer => (
       console.log(newState)
       return newState
     }
+
     default: {
       const msg = `${type}: ${JSON.stringify(payload)}`
       const fn = proxyReducer({ type, payload })
