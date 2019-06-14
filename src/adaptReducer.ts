@@ -8,7 +8,6 @@ export const adaptReducer: ReducerAdapter = proxyReducer => (
 ) => {
   switch (type) {
     case APPLY_CHANGE: {
-      //return state
       console.log('APPLY_CHANGE REDUCER!!!!', payload)
       const { change } = payload
       let startingState = state

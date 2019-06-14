@@ -6,15 +6,11 @@ import pump from 'pump'
 import rai from 'random-access-idb'
 //import reduceReducers from 'reduce-reducers'
 import {
-  //Action,
   applyMiddleware,
   createStore as reduxCreateStore,
-  //DeepPartial,
   Middleware,
   Reducer,
   Store,
-  //Store,
-  //StoreEnhancer,
 } from 'redux'
 import signalhub from 'signalhub'
 import swarm from 'webrtc-swarm'
@@ -45,7 +41,6 @@ interface CevitxeStoreOptions {
   peerHubs?: string[]
 }
 
-// This is currently a class but might make more sense as just a function
 const CevitxeFeed = () => {
   let feed: Feed<any>
   let databaseName: string
@@ -87,10 +82,7 @@ const CevitxeFeed = () => {
           const history = automerge.getChanges(automerge.init(), storeState)
           history.forEach(c => feed.append(JSON.stringify(c)))
           console.log('writing initial state to feed')
-          // write history as an array of changes, abondonded for individual change writing
-          //feed.append(JSON.stringify(history))
         }
-
         resolve(reduxStore)
       })
 
@@ -99,7 +91,6 @@ const CevitxeFeed = () => {
   }
 
   const feedMiddleware: Middleware = store => next => action => {
-    // feed.append(JSON.stringify(action.payload.action))
     const prevState = store.getState()
     const result = next(action)
     // Don't re-write items to the feed
@@ -122,14 +113,15 @@ const CevitxeFeed = () => {
     // Wire up reading from the feed
     const stream = feed.createReadStream({ live: true })
     stream.on('data', (value: string) => {
-      // try {
-      const change = JSON.parse(value)
-      console.log('onData', change)
-      reduxStore.dispatch(actions.applyChange(change))
-      // } catch (err) {
-      //   console.log('feed read error', err)
-      //   console.log('feed stream returned an unknown value', value)
-      // }
+      try {
+        const change = JSON.parse(value)
+        console.log('onData', change)
+        reduxStore.dispatch(actions.applyChange(change))
+      }
+      catch (err) {
+        console.log('%c feed read err', 'color: red;', err)
+        console.log('%c feed value', 'color: red;', value)
+      }
     })
   }
 
@@ -162,29 +154,7 @@ const CevitxeFeed = () => {
   const getStoreName = () => `${databaseName}-${getKeyHex().substr(0, 12)}`
 
   const createReduxStore = (options: CevitxeStoreOptions) => {
-    // let enhancer: StoreEnhancer<any> | undefined
     let initialState: any
-    // let preloadedStateProvided: Boolean = false
-
-    // // We received 2 params: reducer and enhancer
-    // if (
-    //   typeof preloadedState_orEnhancer === 'function' &&
-    //   typeof enhancer_or_undefined === 'undefined'
-    // ) {
-    //   enhancer = preloadedState_orEnhancer
-    //   initialState = undefined
-    // } else {
-    //   preloadedStateProvided = true
-    //   enhancer = enhancer_or_undefined
-    //   // Convert the plain object preloadedState to Automerge using initialize()
-    //   initialState = initialize(preloadedState_orEnhancer as DeepPartial<
-    //     S
-    //   > | null)
-    //   //initialState = preloadedState_orEnhancer as DeepPartial<S> | null
-    //   console.log('initialized state', initialState)
-    //   // TODO: Push the initial state operations to the feed
-    // }
-
     let optionMiddlewares = options.middlewares ? options.middlewares : []
     const middlewares = [...optionMiddlewares, feedMiddleware]
     // check
@@ -192,6 +162,7 @@ const CevitxeFeed = () => {
 
     console.log('adding a feed-enabled reducer here')
 
+    // TODO: Automatically apply adaptReducer so the user doesn't have to do it
     // Add the cevitxe reducer at the same level as the user's reducer
     // This allows us to operate at the root state and the user can still
     // have nested state reducers.
@@ -201,14 +172,10 @@ const CevitxeFeed = () => {
     //   adaptReducer as Reducer,
     //   reducer as Reducer
     // )
-    // console.log('combined reducers', combinedReducers)
 
     if (options.preloadedState) {
       // Convert the plain object preloadedState to Automerge using initialize()
       initialState = initialize(options.preloadedState)
-      console.log('initialized state', initialState)
-      // TODO: Push the initial state operations to the feed
-
       console.log('creating redux store with initial state', initialState)
       return reduxCreateStore(
         options.reducer,
@@ -227,7 +194,4 @@ const CevitxeFeed = () => {
 }
 
 const feedInstance = CevitxeFeed()
-
 export const { createStore } = feedInstance
-
-// export const { CevitxeFeed as Feed }
