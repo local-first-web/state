@@ -3,7 +3,9 @@ import { Reducer, Middleware, AnyAction } from 'redux'
 export type ProxyReducer<T> = (action: AnyAction) => ChangeFn<T> | null
 export type ReducerAdapter = <T>(proxy: ProxyReducer<T>) => Reducer<T | undefined, AnyAction>
 
-export type MiddlewareFactory = (feed: Feed<string>) => Middleware
+// HACK - after building, can't get it to pick up the Feed type from the ambient hypercore types
+export type MiddlewareFactory = (feed: any) => Middleware
+// export type MiddlewareFactory = (feed: Feed<string>) => Middleware
 
 // stand-ins for Automerge types
 type ChangeFn<T> = (doc: T) => void
