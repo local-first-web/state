@@ -3,6 +3,7 @@ import { logger } from './logger'
 import { reducer } from './reducers'
 import { Reducer, AnyAction } from 'redux'
 import { VisibilityFilter } from 'src/types'
+import { key, secretKey } from '../secrets'
 
 const initialState = {
   visibilityFilter: VisibilityFilter.ALL,
@@ -21,4 +22,6 @@ export const store = createStore({
   reducer: reducer as Reducer<any, AnyAction>,
   preloadedState: initialState,
   middlewares,
+  key,
+  secretKey,
 })

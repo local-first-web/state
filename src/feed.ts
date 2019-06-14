@@ -18,37 +18,29 @@ import swarm from 'webrtc-swarm'
 import { initialize } from './initialize'
 import { actions } from './actions'
 import { mockCrypto } from './mockCrypto'
-
-export const keyString =
-  'ecc6212465b39a9a704d564f07da0402af210888e730f419a7faf5f347a33b3d'
-export const secretKeyString =
-  '2234567890abcdef1234567880abcdef1234567890abcdef1234567890fedcba'
-
-// hypercore seems to be happy when I turn the key into a discoveryKey,
-// maybe we could get away with just using a Buffer (or just calling discoveryKey with a string?)
-const key: Key = crypto.discoveryKey(Buffer.from(keyString))
-// hypercore doesn't seem to like the secret key being a discoveryKey,
-// but rather just a Buffer
-const secretKey: Key = Buffer.from(secretKeyString)
-
-interface CevitxeStoreOptions {
-  // Redux store
-  reducer: Reducer
-  preloadedState?: any
-  middlewares?: Middleware[]
-  // hypercore feed options
-  databaseName?: string
-  peerHubs?: string[]
-}
+import { CevitxeStoreOptions } from './types'
 
 const CevitxeFeed = () => {
   let feed: Feed<any>
+  let key: Key
+  let secretKey: Key
   let databaseName: string
   let peerHubs: Array<string>
   let reduxStore: Store
 
   const createStore = (options: CevitxeStoreOptions): Promise<Store> => {
     return new Promise((resolve, _) => {
+      if (!options.key)
+        throw new Error('Key is required, should be XXXX in length')
+      // hypercore seems to be happy when I turn the key into a discoveryKey,
+      // maybe we could get away with just using a Buffer (or just calling discoveryKey with a string?)
+      key = crypto.discoveryKey(Buffer.from(options.key))
+      if (!options.secretKey)
+        throw new Error('Secret key is required, should be XXXX in length')
+      // hypercore doesn't seem to like the secret key being a discoveryKey,
+      // but rather just a Buffer
+      secretKey = Buffer.from(options.secretKey)
+
       databaseName = options.databaseName || 'data'
       peerHubs = options.peerHubs || [
         'https://signalhub-jccqtwhdwc.now.sh/', // default public signaling server
@@ -117,8 +109,7 @@ const CevitxeFeed = () => {
         const change = JSON.parse(value)
         console.log('onData', change)
         reduxStore.dispatch(actions.applyChange(change))
-      }
-      catch (err) {
+      } catch (err) {
         console.log('%c feed read err', 'color: red;', err)
         console.log('%c feed value', 'color: red;', value)
       }

@@ -1,4 +1,4 @@
-import { Reducer } from 'redux'
+import { Reducer, Middleware } from 'redux'
 
 export interface Action {
   type: string
@@ -14,3 +14,15 @@ export type ReducerAdapter = <T>(
 // stand-ins for Automerge types
 type ChangeFn<T> = (doc: T) => void
 export interface Change {}
+
+export interface CevitxeStoreOptions {
+  // Redux store
+  reducer: Reducer
+  preloadedState?: any
+  middlewares?: Middleware[]
+  // hypercore feed options
+  key: string
+  secretKey: string
+  databaseName?: string
+  peerHubs?: string[]
+}
