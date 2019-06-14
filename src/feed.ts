@@ -74,6 +74,8 @@ const CevitxeFeed = () => {
       console.log('ready', key.toString('hex'))
       console.log('discovery', feed.discoveryKey.toString('hex'))
       joinSwarm()
+      if (window.location.search === '?debug') debugger
+
     })
 
     startStreamReader()
@@ -81,16 +83,15 @@ const CevitxeFeed = () => {
     // Return the new Redux store
     reduxStore = createReduxStore(options)
     // Write the initial automerge state to the feed
-    //const storeState = reduxStore.getState()
-    console.log('todos', todos)
-    debugger
-    // if (storeState !== null && storeState !== undefined) {
-    //   const history = automerge.getChanges(automerge.init(), storeState)
-    //   history.forEach(c => feed.append(JSON.stringify(c)))
-    //   console.log('writing initial state to feed')
-    //   // write history as an array of changes, abondonded for individual change writing
-    //   //feed.append(JSON.stringify(history))
-    // }
+    const storeState = reduxStore.getState()
+    if (window.location.search === '?debug') debugger
+    if (storeState !== null && storeState !== undefined) {
+      const history = automerge.getChanges(automerge.init(), storeState)
+      history.forEach(c => feed.append(JSON.stringify(c)))
+      console.log('writing initial state to feed')
+      // write history as an array of changes, abondonded for individual change writing
+      //feed.append(JSON.stringify(history))
+    }
     return reduxStore
   }
 
