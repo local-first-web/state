@@ -11,9 +11,9 @@
   "scripts": {
     "start:todo": "cd examples/todomvc && yarn start",
     "start": "run-p watch start:todo",
-    "build": "tsdx build",
+    "build": "tsdx build --format cjs",
     "test": "tsdx test",
-    "watch": "tsdx watch"
+    "watch": "tsdx watch --format cjs"
   },
   "peerDependencies": {},
   "prettier": {
