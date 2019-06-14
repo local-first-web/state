@@ -1,7 +1,6 @@
 import { createStore } from 'cevitxe'
 import { logger } from './logger'
-import { reducer } from './reducers'
-import { Reducer, AnyAction } from 'redux'
+import { proxyReducer } from './reducers'
 import { VisibilityFilter } from 'src/types'
 import { key, secretKey } from '../secrets'
 
@@ -19,7 +18,7 @@ const middlewares = [logger]
 
 // Casting the reducer here to match redux's expectation. We'll need to figure out a better way
 export const store = createStore({
-  reducer: reducer as Reducer<any, AnyAction>,
+  proxyReducer,
   preloadedState: initialState,
   middlewares,
   key,

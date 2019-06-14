@@ -1,4 +1,4 @@
-import { adaptReducer, ProxyReducer } from 'cevitxe'
+import { ProxyReducer } from 'cevitxe'
 import { State } from 'src/types'
 import { ActionType } from './actions'
 
@@ -7,11 +7,10 @@ const {
   ADD_TODO,
   DESTROY_TODO,
   TOGGLE_TODO,
-
   EDIT_TODO,
 } = ActionType
 
-const proxyReducer: ProxyReducer<State> = ({ type, payload }) => {
+export const proxyReducer: ProxyReducer<State> = ({ type, payload }) => {
   switch (type) {
     case SET_FILTER:
       return state => (state.visibilityFilter = payload.filter)
@@ -47,5 +46,3 @@ const proxyReducer: ProxyReducer<State> = ({ type, payload }) => {
       return null
   }
 }
-
-export const reducer = adaptReducer(proxyReducer)
