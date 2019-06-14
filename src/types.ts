@@ -1,14 +1,15 @@
 import { Reducer, Middleware, AnyAction } from 'redux'
 
 export type ProxyReducer<T> = (action: AnyAction) => ChangeFn<T> | null
-
 export type ReducerAdapter = <T>(proxy: ProxyReducer<T>) => Reducer<T | undefined, AnyAction>
+
+export type MiddlewareFactory = (feed: Feed<string>) => Middleware
 
 // stand-ins for Automerge types
 type ChangeFn<T> = (doc: T) => void
 export interface Change {}
 
-export interface CevitxeStoreOptions {
+export interface CreateStoreOptions {
   // Redux store
   proxyReducer: ProxyReducer<any>
   preloadedState?: any
@@ -19,5 +20,3 @@ export interface CevitxeStoreOptions {
   databaseName?: string
   peerHubs?: string[]
 }
-
-export type MiddlewareFactory = (feed: Feed<string>) => Middleware

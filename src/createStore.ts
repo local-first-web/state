@@ -10,9 +10,9 @@ import swarm from 'webrtc-swarm'
 
 import { adaptReducer } from './adaptReducer'
 import { actions } from './actions'
-import { initialize } from './initialize'
+import { automergify } from './automergify'
 import { mockCrypto } from './mockCrypto'
-import { CevitxeStoreOptions } from './types'
+import { CreateStoreOptions } from './types'
 import { getMiddleware } from './getMiddleware'
 
 let feed: Feed<any>
@@ -22,7 +22,7 @@ let databaseName: string
 let peerHubs: Array<string>
 let reduxStore: Redux.Store
 
-export const createStore = (options: CevitxeStoreOptions): Promise<Redux.Store> => {
+export const createStore = (options: CreateStoreOptions): Promise<Redux.Store> => {
   return new Promise((resolve, _) => {
     if (!options.key) throw new Error('Key is required, should be XXXX in length')
 
@@ -52,8 +52,6 @@ export const createStore = (options: CevitxeStoreOptions): Promise<Redux.Store> 
     feed.on('error', (err: any) => console.log(err))
 
     feed.on('ready', () => {
-      console.log('ready', key.toString('hex'))
-      console.log('discovery', feed.discoveryKey.toString('hex'))
       joinSwarm()
 
       reduxStore = createReduxStore({
@@ -66,25 +64,17 @@ export const createStore = (options: CevitxeStoreOptions): Promise<Redux.Store> 
         const storeState = reduxStore.getState()
         const history = automerge.getChanges(automerge.init(), storeState)
         history.forEach(c => feed.append(JSON.stringify(c)))
-        console.log('writing initial state to feed')
       }
       resolve(reduxStore)
     })
 
-    startStreamReader()
-  })
-}
+    const stream = feed.createReadStream({ live: true })
 
-// Read items from this and peer feeds, then dispatch them to our redux store
-const startStreamReader = () => {
-  // Wire up reading from the feed
-  const stream = feed.createReadStream({ live: true })
-
-  stream.on('data', (value: string) => {
-    try {
+    // Read items from this and peer feeds, then dispatch them to our redux store
+    stream.on('data', (value: string) => {
       const change = JSON.parse(value)
       reduxStore.dispatch(actions.applyChange(change))
-    } catch (err) {}
+    })
   })
 }
 
@@ -117,8 +107,8 @@ const getKeyHex = () => key.toString('hex')
 // with different keys throws an error "Another hypercore is stored here"
 const getStoreName = () => `${databaseName}-${getKeyHex().substr(0, 12)}`
 
-const createReduxStore = ({ middlewares = [], preloadedState, proxyReducer }: CevitxeStoreOptions) => {
+const createReduxStore = ({ middlewares = [], preloadedState, proxyReducer }: CreateStoreOptions) => {
   middlewares.push(getMiddleware(feed))
-  const initialState = preloadedState ? initialize(preloadedState) : undefined
+  const initialState = preloadedState ? automergify(preloadedState) : undefined
   return Redux.createStore(adaptReducer(proxyReducer), initialState, Redux.applyMiddleware(...middlewares))
 }
