@@ -4,13 +4,16 @@ import { Provider } from 'react-redux'
 import App from './components/App'
 import { store } from './redux/store'
 
-console.log('index store', store)
-console.log('index store state', store.getState())
+// console.log('index store', store)
+// console.log('index store state', store.getState())
 
-const rootElement = document.getElementById('root')
-ReactDOM.render(
-  <Provider store={store}>
-    <App />
-  </Provider>,
-  rootElement
-)
+const start = async () => {
+  const rootElement = document.getElementById('root')
+  ReactDOM.render(
+    <Provider store={await store}>
+      <App />
+    </Provider>,
+    rootElement
+  )
+}
+start()

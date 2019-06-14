@@ -51,6 +51,24 @@
     };
   };
 
+  function _extends() {
+    _extends = Object.assign || function (target) {
+      for (var i = 1; i < arguments.length; i++) {
+        var source = arguments[i];
+
+        for (var key in source) {
+          if (Object.prototype.hasOwnProperty.call(source, key)) {
+            target[key] = source[key];
+          }
+        }
+      }
+
+      return target;
+    };
+
+    return _extends.apply(this, arguments);
+  }
+
   var initialize = function initialize(obj) {
     return automerge.change(automerge.init(), 'initialize', function (d) {
       for (var k in obj) {
@@ -108,48 +126,48 @@
     var reduxStore;
 
     var createStore = function createStore(options) {
-      databaseName = options.databaseName || 'data';
-      peerHubs = options.peerHubs || ['https://signalhub-jccqtwhdwc.now.sh/']; // Init an indexedDB
+      return new Promise(function (resolve, _) {
+        databaseName = options.databaseName || 'data';
+        peerHubs = options.peerHubs || ['https://signalhub-jccqtwhdwc.now.sh/']; // Init an indexedDB
 
-      var todos = rai(getStoreName());
+        var todos = rai(getStoreName());
 
-      var storage = function storage(filename) {
-        return todos(filename);
-      }; // Create a new hypercore feed
+        var storage = function storage(filename) {
+          return todos(filename);
+        }; // Create a new hypercore feed
 
 
-      feed = hypercore(storage, key, {
-        secretKey: secretKey,
-        valueEncoding: 'utf-8',
-        crypto: mockCrypto
-      });
-      feed.on('error', function (err) {
-        return console.log(err);
-      });
-      feed.on('ready', function () {
-        console.log('ready', key.toString('hex'));
-        console.log('discovery', feed.discoveryKey.toString('hex'));
-        joinSwarm();
-        if (window.location.search === '?debug') debugger;
-      });
-      startStreamReader(); // Return the new Redux store
-
-      reduxStore = createReduxStore(options); // Write the initial automerge state to the feed
-
-      var storeState = reduxStore.getState(); // console.log('todos', todos)
-
-      if (window.location.search === '?debug') debugger;
-
-      if (storeState !== null && storeState !== undefined) {
-        var history = automerge.getChanges(automerge.init(), storeState);
-        history.forEach(function (c) {
-          return feed.append(JSON.stringify(c));
+        feed = hypercore(storage, key, {
+          secretKey: secretKey,
+          valueEncoding: 'utf-8',
+          crypto: mockCrypto
         });
-        console.log('writing initial state to feed'); // write history as an array of changes, abondonded for individual change writing
-        //feed.append(JSON.stringify(history))
-      }
+        feed.on('error', function (err) {
+          return console.log(err);
+        });
+        feed.on('ready', function () {
+          console.log('ready', key.toString('hex'));
+          console.log('discovery', feed.discoveryKey.toString('hex'));
+          joinSwarm();
+          reduxStore = createReduxStore(_extends({}, options, {
+            preloadedState: feed.length === 0 ? options.preloadedState : null
+          }));
 
-      return reduxStore;
+          if (feed.length === 0) {
+            // Write the initial automerge state to the feed
+            var storeState = reduxStore.getState();
+            var history = automerge.getChanges(automerge.init(), storeState);
+            history.forEach(function (c) {
+              return feed.append(JSON.stringify(c));
+            });
+            console.log('writing initial state to feed'); // write history as an array of changes, abondonded for individual change writing
+            //feed.append(JSON.stringify(history))
+          }
+
+          resolve(reduxStore);
+        });
+        startStreamReader();
+      });
     };
 
     var feedMiddleware = function feedMiddleware(store) {

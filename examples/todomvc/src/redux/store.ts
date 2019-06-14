@@ -14,11 +14,11 @@ const initialState = {
 // We'll need to figure out how to combine enhancers later
 const middlewares = [logger]
 
-const startingState = window.location.search === "?bootstrap" ? initialState : null
+// const startingState = window.location.search === "?bootstrap" ? initialState : null
 
 // Casting the reducer here to match redux's expectation. We'll need to figure out a better way
 export const store = createStore({
   reducer: reducer as Reducer<any, AnyAction>,
-  preloadedState: startingState,
+  preloadedState: initialState,
   middlewares,
 })

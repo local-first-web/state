@@ -52,47 +52,50 @@ const CevitxeFeed = () => {
   let peerHubs: Array<string>
   let reduxStore: Store
 
-  const createStore = (options: CevitxeStoreOptions) => {
-    databaseName = options.databaseName || 'data'
-    peerHubs = options.peerHubs || [
-      'https://signalhub-jccqtwhdwc.now.sh/', // default public signaling server
-    ]
+  const createStore = (options: CevitxeStoreOptions): Promise<Store> => {
+    return new Promise((resolve, _) => {
+      databaseName = options.databaseName || 'data'
+      peerHubs = options.peerHubs || [
+        'https://signalhub-jccqtwhdwc.now.sh/', // default public signaling server
+      ]
 
-    // Init an indexedDB
-    const todos = rai(getStoreName())
-    const storage = (filename: any) => todos(filename)
+      // Init an indexedDB
+      const todos = rai(getStoreName())
+      const storage = (filename: any) => todos(filename)
 
-    // Create a new hypercore feed
-    feed = hypercore(storage, key, {
-      secretKey: secretKey,
-      valueEncoding: 'utf-8',
-      crypto: mockCrypto,
+      // Create a new hypercore feed
+      feed = hypercore(storage, key, {
+        secretKey: secretKey,
+        valueEncoding: 'utf-8',
+        crypto: mockCrypto,
+      })
+      feed.on('error', (err: any) => console.log(err))
+
+      feed.on('ready', () => {
+        console.log('ready', key.toString('hex'))
+        console.log('discovery', feed.discoveryKey.toString('hex'))
+        joinSwarm()
+
+        reduxStore = createReduxStore({
+          ...options,
+          preloadedState: feed.length === 0 ? options.preloadedState : null,
+        })
+
+        if (feed.length === 0) {
+          // Write the initial automerge state to the feed
+          const storeState = reduxStore.getState()
+          const history = automerge.getChanges(automerge.init(), storeState)
+          history.forEach(c => feed.append(JSON.stringify(c)))
+          console.log('writing initial state to feed')
+          // write history as an array of changes, abondonded for individual change writing
+          //feed.append(JSON.stringify(history))
+        }
+
+        resolve(reduxStore)
+      })
+
+      startStreamReader()
     })
-    feed.on('error', (err: any) => console.log(err))
-
-    feed.on('ready', () => {
-      console.log('ready', key.toString('hex'))
-      console.log('discovery', feed.discoveryKey.toString('hex'))
-      joinSwarm()
-      if (window.location.search === '?debug') debugger
-
-    })
-
-    startStreamReader()
-
-    // Return the new Redux store
-    reduxStore = createReduxStore(options)
-    // Write the initial automerge state to the feed
-    const storeState = reduxStore.getState()
-    if (window.location.search === '?debug') debugger
-    if (storeState !== null && storeState !== undefined) {
-      const history = automerge.getChanges(automerge.init(), storeState)
-      history.forEach(c => feed.append(JSON.stringify(c)))
-      console.log('writing initial state to feed')
-      // write history as an array of changes, abondonded for individual change writing
-      //feed.append(JSON.stringify(history))
-    }
-    return reduxStore
   }
 
   const feedMiddleware: Middleware = store => next => action => {

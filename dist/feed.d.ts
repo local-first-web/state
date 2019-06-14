@@ -8,5 +8,5 @@ interface CevitxeStoreOptions {
     databaseName?: string;
     peerHubs?: string[];
 }
-export declare const createStore: (options: CevitxeStoreOptions) => Store<any, import("redux").AnyAction>;
+export declare const createStore: (options: CevitxeStoreOptions) => Promise<Store<any, import("redux").AnyAction>>;
 export {};
