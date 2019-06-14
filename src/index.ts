@@ -1,3 +1,3 @@
 export * from './constants'
-export * from './feed'
+export * from './createStore'
 export * from './types'

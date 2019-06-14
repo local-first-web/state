@@ -1,4 +1,3 @@
-import { adaptReducer } from 'adaptReducer'
 import automerge from 'automerge'
 import { Buffer } from 'buffer'
 import hypercore from 'hypercore'
@@ -8,6 +7,8 @@ import rai from 'random-access-idb'
 import Redux from 'redux'
 import signalhub from 'signalhub'
 import swarm from 'webrtc-swarm'
+
+import { adaptReducer } from './adaptReducer'
 import { actions } from './actions'
 import { initialize } from './initialize'
 import { mockCrypto } from './mockCrypto'
