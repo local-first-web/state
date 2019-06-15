@@ -70,7 +70,6 @@ export const createStore = (options: CreateStoreOptions): Promise<Redux.Store> =
     })
 
     // Read items from this and peer feeds, then dispatch them to our redux store
-
     stream.on('data', (value: string) => {
       const change = JSON.parse(value)
       reduxStore.dispatch(actions.applyChange(change))
