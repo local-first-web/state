@@ -1,5 +1,4 @@
-// TODO: figure out where these come from
 export const key =
-  'ecc6212465b39a9a704d564f07da0402af210888e730f419a7faf5f347a33b3d'
+  '922e233117982b2fddaed3ad6adf8fc7bde6b4d8d8802a67663fdedbfedf00ea'
 export const secretKey =
-  '2234567890abcdef1234567880abcdef1234567890abcdef1234567890fedcba'
+  '6ed567d0e9cdfa7392c0514e67561c94b9c6a91cd07bc0b647eb3d777e87c5ad922e233117982b2fddaed3ad6adf8fc7bde6b4d8d8802a67663fdedbfedf00ea'

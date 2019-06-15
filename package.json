@@ -13,7 +13,8 @@
     "start": "run-p watch start:todo",
     "build": "tsdx build --format cjs",
     "test": "tsdx test --watch",
-    "watch": "tsdx watch --format cjs"
+    "watch": "tsdx watch --format cjs",
+    "keys": "node scripts/generateKeys.js"
   },
   "peerDependencies": {},
   "prettier": {
