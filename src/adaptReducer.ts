@@ -1,25 +1,35 @@
-import {} from './types'
-import { ReducerAdapter } from './types'
 import automerge from 'automerge'
+import { Reducer } from 'redux'
 import { APPLY_CHANGE_FROM_FEED, INITIALIZE } from './constants'
+import { ReducerConverter } from './types'
 
-export const adaptReducer: ReducerAdapter = proxyReducer => (state, { type, payload }) => {
+const convertToReduxReducer: ReducerConverter = proxyReducer => (state, { type, payload }) => {
+  const msg = `${type}: ${JSON.stringify(payload)}`
+  const fn = proxyReducer({ type, payload })
+  return fn && state
+    ? automerge.change(state, msg, fn) // return a modified Automerge object
+    : state // no matching function - return the unmodified state
+}
+
+const feedReducer: Reducer = (state, { type, payload }) => {
+  if (state === undefined) return {}
   switch (type) {
     case APPLY_CHANGE_FROM_FEED: {
       const { change } = payload
-      let startingState = state
-
-      if (change.message === INITIALIZE) startingState = automerge.init()
-      const newState = automerge.applyChanges(startingState, [change])
+      const isInitialState = change.message === INITIALIZE || state === undefined
+      const prevState = isInitialState ? automerge.init() : state
+      const newState = automerge.applyChanges(prevState, [change])
       return newState
     }
 
-    default: {
-      const msg = `${type}: ${JSON.stringify(payload)}`
-      const fn = proxyReducer({ type, payload })
-      return fn && state
-        ? automerge.change(state, msg, fn) // return a modified Automerge object
-        : state // no matching change function was found, return state unchanged
-    }
+    default:
+      return state
   }
+}
+
+export const adaptReducer: ReducerConverter = proxyReducer => (state, action) => {
+  const state0 = state
+  const state1 = feedReducer(state0, action)
+  const state2 = convertToReduxReducer(proxyReducer)(state1, action)
+  return state2
 }

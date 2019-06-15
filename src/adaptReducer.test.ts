@@ -1,15 +1,15 @@
-import { adaptReducer } from './adaptReducer'
-import { ProxyReducer } from './types'
+import automerge from 'automerge'
 import { automergify } from './automergify'
 import { APPLY_CHANGE_FROM_FEED } from './constants'
-import automerge from 'automerge'
+import { adaptReducer } from './adaptReducer'
+import { ProxyReducer } from './types'
 
-interface Foo {
+interface FooState {
   foo?: string
   boo?: string
 }
 
-const A: ProxyReducer<Foo> = () => state => (state.foo = 'pizza')
+const proxyReducer: ProxyReducer<FooState> = () => state => (state.foo = 'pizza')
 
 describe('adaptReducer', () => {
   it('should be a function', () => {
@@ -17,7 +17,7 @@ describe('adaptReducer', () => {
   })
 
   describe('should return a working reducer', () => {
-    const reducer = adaptReducer(A)
+    const reducer = adaptReducer(proxyReducer)
     const state = automergify({})
     const result = reducer(state, { type: 'FOO' })
 
@@ -30,9 +30,9 @@ describe('adaptReducer', () => {
   })
 
   describe('should apply automerge changes from the feed', () => {
-    const reducer = adaptReducer(A)
+    const reducer = adaptReducer(proxyReducer)
 
-    const state1 = automergify({} as Foo)
+    const state1 = automergify({} as FooState)
     const state2 = automerge.change(state1, s => (s.boo = 'foozball'))
 
     const [change] = automerge.getChanges(state1, state2)

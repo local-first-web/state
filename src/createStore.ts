@@ -24,7 +24,6 @@ let reduxStore: Redux.Store
 
 export const createStore = (options: CreateStoreOptions): Promise<Redux.Store> => {
   return new Promise((resolve, _) => {
-    
     if (!options.key) throw new Error('Key is required, should be XXXX in length')
 
     // hypercore seems to be happy when I turn the key into a discoveryKey,
@@ -49,6 +48,7 @@ export const createStore = (options: CreateStoreOptions): Promise<Redux.Store> =
       valueEncoding: 'utf-8',
       crypto: mockCrypto,
     })
+    const stream = feed.createReadStream({ live: true })
 
     feed.on('error', (err: any) => console.log(err))
 
@@ -69,7 +69,6 @@ export const createStore = (options: CreateStoreOptions): Promise<Redux.Store> =
       resolve(reduxStore)
     })
 
-    const stream = feed.createReadStream({ live: true })
     // Read items from this and peer feeds, then dispatch them to our redux store
 
     stream.on('data', (value: string) => {
@@ -110,6 +109,8 @@ const getStoreName = () => `${databaseName}-${getKeyHex().substr(0, 12)}`
 
 const createReduxStore = ({ middlewares = [], preloadedState, proxyReducer }: CreateStoreOptions) => {
   middlewares.push(getMiddleware(feed))
+  const enhancer = Redux.applyMiddleware(...middlewares)
   const initialState = preloadedState ? automergify(preloadedState) : undefined
-  return Redux.createStore(adaptReducer(proxyReducer), initialState, Redux.applyMiddleware(...middlewares))
+  const reducer = adaptReducer(proxyReducer)
+  return Redux.createStore(reducer, initialState, enhancer)
 }
