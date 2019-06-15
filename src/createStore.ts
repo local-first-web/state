@@ -20,7 +20,7 @@ let key: Key
 let secretKey: Key
 let databaseName: string
 let peerHubs: Array<string>
-let reduxStore: Redux.Store
+let store: Redux.Store
 
 export const createStore = (options: CreateStoreOptions): Promise<Redux.Store> => {
   return new Promise((resolve, _) => {
@@ -39,8 +39,8 @@ export const createStore = (options: CreateStoreOptions): Promise<Redux.Store> =
     peerHubs = options.peerHubs || ['https://signalhub-jccqtwhdwc.now.sh/'] // default public signaling server
 
     // Init an indexedDB
-    const todos = rai(getStoreName())
-    const storage = (filename: any) => todos(filename)
+    const storeName = `${databaseName}-${getKeyHex().substr(0, 12)}`
+    const storage = rai(storeName)
 
     // Create a new hypercore feed
     feed = hypercore(storage, key, {
@@ -48,32 +48,44 @@ export const createStore = (options: CreateStoreOptions): Promise<Redux.Store> =
       valueEncoding: 'utf-8',
       crypto: mockCrypto,
     })
-    const stream = feed.createReadStream({ live: true })
 
-    feed.on('error', (err: any) => console.log(err))
+    const stream = feed.createReadStream({ live: true })
 
     feed.on('ready', () => {
       joinSwarm()
 
-      reduxStore = createReduxStore({
+      store = createReduxStore({
         ...options,
         preloadedState: feed.length === 0 ? options.preloadedState : null,
       })
 
       if (feed.length === 0) {
-        // Write the initial automerge state to the feed
-        const storeState = reduxStore.getState()
-        const history = automerge.getChanges(automerge.init(), storeState)
+        // If the feed is empty, we're in a first-run scenario;
+        // so we need to add the initial automerge state to the feed.
+        // (This check is why `createStore` has to return a promise:
+        // we don't know if there's anything in the feed until we're
+        // in this callback.)
+        // TODO handle remote first-run situations
+        // This doesn't take into account a scenario where the
+        // feed isn't empty, but we're not the author of the feed so
+        // we can't just set it to its initial state - we simply have to
+        // wait until we've heard from the author.
+        const state = store.getState()
+        const history = automerge.getChanges(automerge.init(), state)
         history.forEach(c => feed.append(JSON.stringify(c)))
       }
-      resolve(reduxStore)
+
+      resolve(store)
     })
 
-    // Read items from this and peer feeds, then dispatch them to our redux store
     stream.on('data', (value: string) => {
+      // read items from the feeds (our storage + changes from peers)
       const change = JSON.parse(value)
-      reduxStore.dispatch(actions.applyChange(change))
+      // then dispatch them to our redux store
+      store.dispatch(actions.applyChange(change))
     })
+
+    feed.on('error', (err: any) => console.log(err))
   })
 }
 
@@ -101,10 +113,6 @@ const onPeerConnect = (peer: any, id: any) => {
 }
 
 const getKeyHex = () => key.toString('hex')
-
-// I'm constructing a name here using the key because re-using the same name
-// with different keys throws an error "Another hypercore is stored here"
-const getStoreName = () => `${databaseName}-${getKeyHex().substr(0, 12)}`
 
 const createReduxStore = ({ middlewares = [], preloadedState, proxyReducer }: CreateStoreOptions) => {
   middlewares.push(getMiddleware(feed))
