@@ -1,9 +1,15 @@
 import { MiddlewareFactory } from './types'
 import automerge from 'automerge'
+import debug from 'debug'
+const log = debug('cevitxe:todo')
 
 export const getMiddleware: MiddlewareFactory = feed => store => next => action => {
+  // console.group('cevitxe: ' + action.type)
+
   // before changes
   const prevState = store.getState() || automerge.init()
+  log('action', action)
+  log('prevState', action)
 
   // changes
   const result = next(action)

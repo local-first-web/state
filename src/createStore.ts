@@ -1,123 +1,109 @@
 import automerge from 'automerge'
-import { Buffer } from 'buffer'
 import hypercore from 'hypercore'
-import crypto from 'hypercore-crypto'
 import pump from 'pump'
-import rai from 'random-access-idb'
+import db from 'random-access-idb'
 import Redux from 'redux'
 import signalhub from 'signalhub'
 import swarm from 'webrtc-swarm'
 
-import { adaptReducer } from './adaptReducer'
 import { actions } from './actions'
+import { adaptReducer } from './adaptReducer'
 import { automergify } from './automergify'
+import debug from './debug'
+import { getMiddleware } from './getMiddleware'
 import { mockCrypto } from './mockCrypto'
 import { CreateStoreOptions } from './types'
-import { getMiddleware } from './getMiddleware'
+import { validateKeys } from './validateKeys'
+import { MSG_INVALID_KEY } from './constants'
 
-let feed: Feed<any>
-let key: Key
-let secretKey: Key
-let databaseName: string
-let peerHubs: Array<string>
-let store: Redux.Store
+const log = debug('cevitxe:createStore')
 
-export const createStore = (options: CreateStoreOptions): Promise<Redux.Store> => {
-  return new Promise((resolve, _) => {
-    if (!options.key) throw new Error('Key is required, should be XXXX in length')
+const defaultPeerHubs = ['https://signalhub-jccqtwhdwc.now.sh/'] // default public signaling server
+const valueEncoding = 'utf-8'
+const crypto = mockCrypto
 
-    // hypercore seems to be happy when I turn the key into a discoveryKey,
-    // maybe we could get away with just using a Buffer (or just calling discoveryKey with a string?)
-    key = crypto.discoveryKey(Buffer.from(options.key))
-
-    if (!options.secretKey) throw new Error('Secret key is required, should be XXXX in length')
-
-    // hypercore doesn't seem to like the secret key being a discoveryKey, but rather just a Buffer
-    secretKey = Buffer.from(options.secretKey)
-
-    databaseName = options.databaseName || 'data'
-    peerHubs = options.peerHubs || ['https://signalhub-jccqtwhdwc.now.sh/'] // default public signaling server
-
+export const createStore = ({
+  key,
+  secretKey,
+  databaseName = 'data',
+  peerHubs = defaultPeerHubs,
+  proxyReducer,
+  preloadedState = {},
+  middlewares = [],
+}: CreateStoreOptions): Promise<Redux.Store> =>
+  new Promise((yay, nay) => {
+    if (!validateKeys(key, secretKey)) nay(MSG_INVALID_KEY)
     // Init an indexedDB
-    const storeName = `${databaseName}-${getKeyHex().substr(0, 12)}`
-    const storage = rai(storeName)
+    const storeName = `${databaseName}-${key.substr(0, 12)}`
+    const storage = db(storeName)
 
     // Create a new hypercore feed
-    feed = hypercore(storage, key, {
-      secretKey,
-      valueEncoding: 'utf-8',
-      crypto: mockCrypto,
-    })
+    const feed = hypercore(storage, key, { secretKey, valueEncoding, crypto })
 
-    const stream = feed.createReadStream({ live: true })
+    feed.on('ready', async () => {
+      log(`feed ready (length ${feed.length})`)
 
-    feed.on('ready', () => {
-      joinSwarm()
-
-      store = createReduxStore({
-        ...options,
-        preloadedState: feed.length === 0 ? options.preloadedState : null,
+      // Join swarm
+      const hub = signalhub(key, peerHubs)
+      const sw = swarm(hub)
+      sw.on('peer', (peer: any, id: any) => {
+        log('peer', id, peer)
+        pump(peer, feed.replicate({ encrypt: false, live: true, upload: true, download: true }), peer)
       })
 
-      if (feed.length === 0) {
-        // If the feed is empty, we're in a first-run scenario;
-        // so we need to add the initial automerge state to the feed.
-        // (This check is why `createStore` has to return a promise:
-        // we don't know if there's anything in the feed until we're
-        // in this callback.)
-        // TODO handle remote first-run situations
-        // This doesn't take into account a scenario where the
-        // feed isn't empty, but we're not the author of the feed so
-        // we can't just set it to its initial state - we simply have to
-        // wait until we've heard from the author.
-        const state = store.getState()
-        const history = automerge.getChanges(automerge.init(), state)
-        history.forEach(c => feed.append(JSON.stringify(c)))
+      const feedIsEmpty = feed.length === 0
+      let initialState: any
+
+      if (!feedIsEmpty) {
+        // const promiseRead = (path, options) =>
+        //   new Promise((resolve, reject) => {
+        //     fs.readFile(path, options, (error, data) => {
+        //       error ? reject(error) : resolve(data);
+        //     });
+
+        const data: string[] = await new Promise((yay, nay) =>
+          feed.getBatch(0, feed.length, (err: any, data: any) => (err ? nay(err) : yay(data)))
+        )
+
+        log('feed initial batch', data)
+        initialState = automerge.applyChanges(automerge.init(), data.map(d => JSON.parse(d)))
+        log('state rehydrated from stored feed', initialState)
+      } else {
+        //
+        initialState = automergify(preloadedState)
       }
 
-      resolve(store)
+      const reducer = adaptReducer(proxyReducer)
+      const enhancer = Redux.applyMiddleware(...middlewares, getMiddleware(feed))
+
+      const store = Redux.createStore(reducer, initialState, enhancer)
+
+      if (feedIsEmpty) {
+        log('feed empty')
+        // If the feed is empty, we're in a first-run scenario; so we need to add the initial automerge state to the
+        // feed. (This check is why `createStore` has to return a promise: we don't know if there's anything in the feed
+        // until we're in this callback.)
+        const history = automerge.getChanges(automerge.init(), store.getState())
+        history.forEach(c => feed.append(JSON.stringify(c)))
+
+        // TODO: handle remote first-run situations.
+        // This doesn't take into account a scenario where the feed isn't empty, but we're not the author of the feed so
+        // we can't just set it to its initial state - we simply have to wait until we've heard from the author.
+      }
+
+      const stream = feed.createReadStream({ start: feed.length, live: true })
+
+      stream.on('data', (value: string) => {
+        // Read items from the feeds (our storage + changes from peers)
+        const change = JSON.parse(value)
+        log('stream data', change.message)
+
+        // then dispatch them to our redux store
+        store.dispatch(actions.applyChange(change))
+      })
+
+      yay(store)
     })
 
-    stream.on('data', (value: string) => {
-      // read items from the feeds (our storage + changes from peers)
-      const change = JSON.parse(value)
-      // then dispatch them to our redux store
-      store.dispatch(actions.applyChange(change))
-    })
-
-    feed.on('error', (err: any) => console.log(err))
+    feed.on('error', (err: any) => console.error(err))
   })
-}
-
-// Join our feed to the swarm and accept peers
-const joinSwarm = () => {
-  // could add option to disallow peer connectivity here
-  const hub = signalhub(getKeyHex(), peerHubs)
-  const sw = swarm(hub)
-  sw.on('peer', onPeerConnect)
-}
-
-// When a feed peer connects, replicate our feed to them
-const onPeerConnect = (peer: any, id: any) => {
-  console.log('peer', id, peer)
-  pump(
-    peer,
-    feed.replicate({
-      encrypt: false,
-      live: true,
-      upload: true,
-      download: true,
-    }),
-    peer
-  )
-}
-
-const getKeyHex = () => key.toString('hex')
-
-const createReduxStore = ({ middlewares = [], preloadedState, proxyReducer }: CreateStoreOptions) => {
-  middlewares.push(getMiddleware(feed))
-  const enhancer = Redux.applyMiddleware(...middlewares)
-  const initialState = preloadedState ? automergify(preloadedState) : undefined
-  const reducer = adaptReducer(proxyReducer)
-  return Redux.createStore(reducer, initialState, enhancer)
-}

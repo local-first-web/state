@@ -23,5 +23,5 @@ export interface Change {}
 
 // TODO: sort out the type for feed
 // after building, can't get it to pick up the Feed type from the ambient hypercore types
-// export type MiddlewareFactory = (feed: any) => Middleware
-export type MiddlewareFactory = (feed: Feed<string>) => Middleware
+export type MiddlewareFactory = (feed: any) => Middleware
+// export type MiddlewareFactory = (feed: Feed<string>) => Middleware
