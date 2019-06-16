@@ -1,3 +1,4 @@
+// TODO: Move this to its own library
 import debug_original, { Debugger } from 'debug'
 
 // Extends the 'debug' module so that other console methods can be applied, using the same filters.
@@ -25,7 +26,7 @@ interface DebuggerPlus extends Debugger, ConsoleSubset {}
 const debug = (namespace: string): DebuggerPlus => {
   const enabled = debug_original.enabled(namespace)
 
-  // apply selected methods from `console`
+  // apply selected methods from Console
   const debugPlus = debug_original(namespace) as any
   for (const k in ConsoleMethods)
     debugPlus[k] = (...args: any[]) => {

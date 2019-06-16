@@ -20,6 +20,7 @@
     "trailingComma": "es5"
   },
   "dependencies": {
+    "@types/debug": "^4.1.4",
     "cevitxe": "^0.1.0",
     "classnames": "2.2.6",
     "debug": "^4.1.1",
@@ -35,8 +36,8 @@
     "uuid": "^3.3.2"
   },
   "devDependencies": {
-    "@types/classnames": "^2.2.8",
     "@testing-library/cypress": "^4.0.2",
+    "@types/classnames": "^2.2.8",
     "@types/hoist-non-react-statics": "^3.3.1",
     "@types/jest": "^24.0.13",
     "@types/react": "^16.8.19",
