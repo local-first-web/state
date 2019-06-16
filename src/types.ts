@@ -1,11 +1,11 @@
-import { Reducer, Middleware, AnyAction } from 'redux'
+import { Reducer, Middleware, AnyAction, DeepPartial } from 'redux'
 
 export type ProxyReducer<T> = (action: AnyAction) => ChangeFn<T> | null
 
-export interface CreateStoreOptions {
+export interface CreateStoreOptions<T> {
   // Redux store
   proxyReducer: ProxyReducer<any>
-  preloadedState?: any
+  defaultState: T
   middlewares?: Middleware[] // TODO: accept an `enhancer` object instead
 
   // hypercore feed options
