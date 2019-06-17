@@ -2,7 +2,7 @@ import automerge from 'automerge'
 import hypercore from 'hypercore'
 import pump from 'pump'
 import db from 'random-access-idb'
-import Redux from 'redux'
+import * as Redux from 'redux'
 import signalhub from 'signalhub'
 import webrtcSwarm from 'webrtc-swarm'
 
