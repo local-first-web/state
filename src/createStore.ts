@@ -15,6 +15,7 @@ import { mockCrypto } from './mockCrypto'
 import { CreateStoreOptions } from './types'
 import { validateKeys } from './validateKeys'
 import { MSG_INVALID_KEYS } from './constants'
+import { CevitxeConnection } from './connection'
 
 const log = debug('cevitxe:createStore')
 
@@ -46,6 +47,17 @@ export const createStore = async <T>({
 
   log.groupCollapsed(`feed ready; ${feed.length} stored changes`)
 
+  // if keys
+  // - join swarm
+  // - intialize store using peer snapshot?
+  // - what if we have a local store already with this key?
+
+  // if no keys
+  // - generate keys
+  // - iniialize store from default state
+  // - create store
+  // - join swarm
+
   // This check is why `createStore` is async: we don't know if the feed has changes until `feed.on('ready')`.
   const state: T = feed.length //       If there are already changes in the feed (e.g. from storage),
     ? await rehydrateFrom(feed) //      use those changes to reconstruct our state;
@@ -56,17 +68,41 @@ export const createStore = async <T>({
   const enhancer = Redux.applyMiddleware(...middlewares, getMiddleware(feed))
   const store = Redux.createStore(reducer, state, enhancer)
 
+  const connections: CevitxeConnection[] = []
+  const docSet = new automerge.DocSet()
+  docSet.setDoc(key, store.getState())
+
   // Now that we've initialized the store, it's safe to subscribe to the feed without worrying about race conditions
-  joinSwarm(key, peerHubs, feed)
+  const hub = signalhub(key, peerHubs)
+  const swarm = webrtcSwarm(hub)
+
+  log('joined swarm', key)
+  swarm.on('peer', (peer: any, id: any) => {
+    log('peer', id, peer)
+    const options = { encrypt: false, live: true, upload: true, download: true }
+    const connection = new CevitxeConnection(docSet, peer)
+    connections.push(connection)
+    //pump(peer, feed.replicate(options), peer)
+  })
 
   const start = feed.length // skip any items we already read when initializing
   const stream = feed.createReadStream({ start, live: true })
 
   // Listen for new items the feed and dispatch them to our redux store
-  stream.on('data', (value: string) => {
-    const change = JSON.parse(value)
-    log('dispatch from feed', change.message)
-    store.dispatch(actions.applyChange(change))
+  stream.on('data', (data: Buffer | string) => {
+    //const change = JSON.parse(data)
+    //log('dispatch from feed', change.message)
+    //store.dispatch(actions.applyChange(change))
+    
+    if (!(data instanceof Buffer)) {
+      data = Buffer.from(data, 'utf8')
+    }
+    connections.forEach(c => {
+      const newDocState = c.receiveData(data as Buffer)
+      // get changes
+
+    //store.dispatch(actions.applyChange(change))
+    })
   })
 
   log.groupEnd()
@@ -88,15 +124,4 @@ const initialize = <T>(feed: Feed<string>, defaultState: T): T => {
   const initializationChanges = automerge.getChanges(automerge.init(), state)
   initializationChanges.forEach(change => feed.append(JSON.stringify(change)))
   return state
-}
-
-const joinSwarm = (key: string, peerHubs: string[], feed: Feed<string>) => {
-  const hub = signalhub(key, peerHubs)
-  const swarm = webrtcSwarm(hub)
-  log('joined swarm', key)
-  swarm.on('peer', (peer: any, id: any) => {
-    log('peer', id, peer)
-    const options = { encrypt: false, live: true, upload: true, download: true }
-    pump(peer, feed.replicate(options), peer)
-  })
 }
