@@ -1,7 +1,7 @@
 export const APPLY_CHANGE_FROM_FEED = 'cevitxe/APPLY_CHANGE_FROM_FEED'
 export const INITIALIZE = 'cevitxe/INITIALIZE'
 
-export const MSG_INVALID_KEY =
+export const MSG_INVALID_KEYS =
   'A valid crypto pair, `key` and a `secretKey`, must be provided. ' +
   'The `key` should be a 32-byte hexadecimal value (64 characters). ' +
   'The `secretKey` should be a 64-byte hexadecimal value (128 characters). ' +

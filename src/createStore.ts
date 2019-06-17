@@ -14,7 +14,7 @@ import { getMiddleware } from './getMiddleware'
 import { mockCrypto } from './mockCrypto'
 import { CreateStoreOptions } from './types'
 import { validateKeys } from './validateKeys'
-import { MSG_INVALID_KEY } from './constants'
+import { MSG_INVALID_KEYS } from './constants'
 
 const log = debug('cevitxe:createStore')
 
@@ -31,7 +31,7 @@ export const createStore = async <T>({
   defaultState,
   middlewares = [],
 }: CreateStoreOptions<T>): Promise<Redux.Store> => {
-  if (!validateKeys(key, secretKey)) throw new Error(MSG_INVALID_KEY)
+  if (!validateKeys(key, secretKey)) throw new Error(MSG_INVALID_KEYS)
 
   // Init an indexedDB
   const storeName = `${databaseName}-${key.substr(0, 12)}`
