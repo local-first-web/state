@@ -25,7 +25,7 @@ const crypto = mockCrypto
 export const createStore = async <T>({
   key,
   secretKey,
-  databaseName = 'data',
+  databaseName = 'cevitxe-data',
   peerHubs = defaultPeerHubs,
   proxyReducer,
   defaultState,
