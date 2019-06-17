@@ -22,7 +22,7 @@ const defaultPeerHubs = ['https://signalhub-jccqtwhdwc.now.sh/'] // default publ
 const valueEncoding = 'utf-8'
 const crypto = mockCrypto
 
-export const createStore = <T>({
+export const createStore = async <T>({
   key,
   secretKey,
   databaseName = 'data',
@@ -30,67 +30,62 @@ export const createStore = <T>({
   proxyReducer,
   defaultState,
   middlewares = [],
-}: CreateStoreOptions<T>): Promise<Redux.Store> =>
-  new Promise((yay, nay) => {
-    if (!validateKeys(key, secretKey)) nay(MSG_INVALID_KEY)
-    // Init an indexedDB
-    const storeName = `${databaseName}-${key.substr(0, 12)}`
-    const storage = db(storeName)
+}: CreateStoreOptions<T>): Promise<Redux.Store> => {
+  if (!validateKeys(key, secretKey)) throw new Error(MSG_INVALID_KEY)
 
-    // Create a new hypercore feed
-    const feed: Feed<string> = hypercore(storage, key, { secretKey, valueEncoding, crypto })
+  // Init an indexedDB
+  const storeName = `${databaseName}-${key.substr(0, 12)}`
+  const storage = db(storeName)
 
-    feed.on('ready', async () => {
-      log(`feed ready (length ${feed.length})`)
+  // Create a new hypercore feed
+  const feed: Feed<string> = hypercore(storage, key, { secretKey, valueEncoding, crypto })
+  feed.on('error', (err: any) => console.error(err))
 
-      const state: T = feed.length // if are already changes in the feed (e.g. from storage)
-        ? await rehydrateFrom(feed) // use those changes to reconstruct our state
-        : initialize(feed, defaultState) // otherwise this is our first time, so we
+  const feedReady = new Promise(yes => feed.on('ready', () => yes()))
+  await feedReady
 
-      const reducer = adaptReducer(proxyReducer)
-      const enhancer = Redux.applyMiddleware(...middlewares, getMiddleware(feed))
-      const store = Redux.createStore(reducer, state, enhancer)
+  log.groupCollapsed(`feed ready; ${feed.length} stored changes`)
 
-      // Now that the store has been initialized, it's safe to join the swarm and start handling
-      // data from the feed without worrying about race conditions
-      joinSwarm(key, peerHubs, feed)
+  // This check is why `createStore` is async: we don't know if the feed has changes until `feed.on('ready')`.
+  const state: T = feed.length //       If there are already changes in the feed (e.g. from storage),
+    ? await rehydrateFrom(feed) //      use those changes to reconstruct our state;
+    : initialize(feed, defaultState) // otherwise this is our first time, so we start with default state.
 
-      const stream = feed.createReadStream({ start: feed.length, live: true })
+  // Create Redux store
+  const reducer = adaptReducer(proxyReducer)
+  const enhancer = Redux.applyMiddleware(...middlewares, getMiddleware(feed))
+  const store = Redux.createStore(reducer, state, enhancer)
 
-      // From now on, listen for new items the feed and dispatch them to our redux store
-      stream.on('data', (value: string) => {
-        const change = JSON.parse(value)
-        log('dispatch from feed data', change.message)
-        store.dispatch(actions.applyChange(change))
-      })
+  // Now that we've initialized the store, it's safe to subscribe to the feed without worrying about race conditions
+  joinSwarm(key, peerHubs, feed)
 
-      yay(store)
-    })
+  const start = feed.length // skip any items we already read when initializing
+  const stream = feed.createReadStream({ start, live: true })
 
-    feed.on('error', (err: any) => console.error(err))
+  // Listen for new items the feed and dispatch them to our redux store
+  stream.on('data', (value: string) => {
+    const change = JSON.parse(value)
+    log('dispatch from feed', change.message)
+    store.dispatch(actions.applyChange(change))
   })
 
+  log.groupEnd()
+  return store
+}
+
 const rehydrateFrom = async <T>(feed: Feed<string>): Promise<T> => {
-  const data: string[] = await new Promise((y, n) =>
-    feed.getBatch(0, feed.length, (err: any, data: string[]) => (err ? n(err) : y(data)))
-  )
-  log('rehydrating from stored changes', data)
+  const batch = new Promise(yes => feed.getBatch(0, feed.length, (_, data) => yes(data)))
+  const data = (await batch) as string[]
   const changes = data.map(d => JSON.parse(d))
+  log('rehydrating from stored changes', changes.map(change => change.message))
   return automerge.applyChanges(automerge.init(), changes)
 }
 
 const initialize = <T>(feed: Feed<string>, defaultState: T): T => {
-  log('feed empty; initializing')
-  // If the feed is empty, we're in a first-run scenario; so we need to add the initial automerge state to the
-  // feed. (This check is why `createStore` has to return a promise: we don't know if there's anything in the feed
-  // until we're in this callback.)
+  log('nothing in storage; initializing')
   const state = automergify(defaultState)
   const initializationChanges = automerge.getChanges(automerge.init(), state)
   initializationChanges.forEach(change => feed.append(JSON.stringify(change)))
-
-  // TODO: handle remote first-run situations.
-  // This doesn't take into account a scenario where the feed isn't empty, but we're not the author of the feed so
-  // we can't just set it to its initial state - we simply have to wait until we've heard from the author.
   return state
 }
 
