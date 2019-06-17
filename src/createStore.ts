@@ -78,7 +78,8 @@ const rehydrateFrom = async <T>(feed: Feed<string>): Promise<T> => {
   const data = (await batch) as string[]
   const changes = data.map(d => JSON.parse(d))
   log('rehydrating from stored changes', changes.map(change => change.message))
-  return automerge.applyChanges(automerge.init(), changes)
+  const state = automerge.applyChanges(automerge.init<T>(), changes)
+  return state
 }
 
 const initialize = <T>(feed: Feed<string>, defaultState: T): T => {
