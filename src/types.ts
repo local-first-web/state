@@ -17,6 +17,7 @@ export interface CreateStoreOptions<T> {
 
 export type ReducerConverter = <T>(proxy: ProxyReducer<T>) => Reducer
 
+// TODO: replace these with the real automerge types?
 // stand-ins for Automerge types
 export type ChangeFn<T> = (doc: T) => void
 export interface Change {}
