@@ -6,11 +6,18 @@ import * as defaultKeys from '../secrets'
 import { Store, AnyAction } from 'redux'
 
 const cevitxeContainer: CSSProperties = {
+  width: '100vw',
   position: 'absolute',
   top: -130,
   padding: 10,
   backgroundColor: 'white',
   borderBottom: 'solid 1px black',
+}
+
+const buttonStyle: CSSProperties = {
+  marginLeft: 20,
+  border: 'solid 1px #999',
+  padding: 3,
 }
 
 export const Shell = () => {
@@ -25,11 +32,17 @@ export const Shell = () => {
     setKeys({ key: defaultKeys.key, secret: defaultKeys.secretKey })
   }
 
-  const createStore = () => {
+  const reset = () => {
+    setAppStore(null)
+    setKeys({ key: '', secret: '' })
+  }
+
+  const createStore = async () => {
     console.log('key', keys.key, keys.secret)
-    buildStore(keys.key, keys.secret).then((store: Store<any, AnyAction>) =>
-      setAppStore(store)
-    )
+    const store = await buildStore(keys.key, keys.secret) //.then((store: CevitxeStore) => {
+    setAppStore(store.store)
+    setKeys({ key: store.key, secret: store.secretKey })
+    //})
   }
 
   return (
@@ -49,10 +62,13 @@ export const Shell = () => {
           onChange={keyChanged('secret')}
           placeholder="Secret key"
         />
-        <button role="button" onClick={createStore}>
+        <button role="button" onClick={createStore} style={buttonStyle}>
           Create Store
         </button>
-        <button role="button" onClick={useDefaultKeys}>
+        <button role="button" onClick={reset} style={buttonStyle}>
+          Reset
+        </button>
+        <button role="button" onClick={useDefaultKeys} style={buttonStyle}>
           Default Keys
         </button>
       </div>
