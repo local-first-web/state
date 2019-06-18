@@ -1,6 +1,7 @@
-import automerge from 'automerge'
+import automerge, { DocSet } from 'automerge'
 import { ReducerConverter } from './types'
 import { feedReducer } from './feedReducer'
+import { DOC_ID } from './createStore'
 
 // During initialization, we're given a "proxyReducer", which is like a Redux reducer,
 // except it's designed to work with automerge objects instead of plain javascript objects.
@@ -12,9 +13,12 @@ import { feedReducer } from './feedReducer'
 const convertToReduxReducer: ReducerConverter = proxyReducer => (state, { type, payload }) => {
   const msg = `${type}: ${JSON.stringify(payload)}`
   const fn = proxyReducer({ type, payload })
-  return fn && state
-    ? automerge.change(state, msg, fn) // return a modified Automerge object
-    : state // no matching function - return the unmodified state
+  if (!fn || !state) return state // no matching function - return the unmodified state
+  const doc = state.getDoc(DOC_ID)
+  const newDoc = automerge.change(doc, msg, fn) // return a modified Automerge object
+  const newState = new DocSet()
+  newState.setDoc(DOC_ID, newDoc)
+  return newState
 }
 
 // This function is used when wiring up the store. It takes a proxyReducer and turns it

@@ -1,10 +1,11 @@
 require('fake-indexeddb/auto')
 
 import * as Redux from 'redux'
-import automerge from 'automerge'
-import { createStore } from './createStore'
+import automerge, { Connection, Message } from 'automerge'
+import { createStore, DOC_ID } from './createStore'
 import { ProxyReducer } from './types'
 import { actions } from './actions'
+import { CevitxeConnection } from './connection'
 // import { automergify } from './automergify'
 
 const key = '922e233117982b2fddaed3ad6adf8fc7bde6b4d8d8802a67663fdedbfedf00ea'
@@ -45,27 +46,34 @@ describe('createStore', () => {
     expect(store).toHaveProperty('subscribe')
   })
 
-  it('should have added APPLY_CHANGE to our reducer', () => {
+  it('should have added APPLY_MESSAGE to our reducer', () => {
     // Make a change in order to capture the automerge `change` object
-    const state0 = store.getState()
+    const docSet = store.getState()
+    const doc0 = docSet.getDoc(DOC_ID)
+    expect(doc0.foo).toEqual('hello world')
 
-    expect(state0.foo).toEqual('hello world')
+    const connection = new CevitxeConnection(docSet)
 
-    const state1 = automerge.change(state0, 'testing', s => (s.foo = 'pizza'))
-    const change = automerge.getChanges(state0, state1)[0]
+    const doc1 = automerge.change(doc0, 'testing', s => (s.foo = 'pizza'))
+    const changes = automerge.getChanges(doc0, doc1)
+    const msg = {
+      docId: DOC_ID,
+      clock: {},
+      changes,
+    }
 
-    expect(change.message).toEqual('testing')
+    expect(msg.changes[0].message).toEqual('testing')
 
-    store.dispatch(actions.applyChange(change))
+    store.dispatch(actions.applyMessage(msg, connection))
 
-    const state = store.getState()
-    expect(state.foo).toEqual('pizza')
+    const doc = store.getState().getDoc(DOC_ID)
+    expect(doc.foo).toEqual('pizza')
   })
 
   it('should use the reducer we gave it', () => {
     store.dispatch({ type: 'SET_FOO', payload: { value: 'wahoo' } })
 
-    const state = store.getState()
-    expect(state.foo).toEqual('wahoo')
+    const doc = store.getState().getDoc(DOC_ID)
+    expect(doc.foo).toEqual('wahoo')
   })
 })

@@ -1,4 +1,6 @@
 export const APPLY_CHANGE_FROM_FEED = 'cevitxe/APPLY_CHANGE_FROM_FEED'
+export const APPLY_MESSAGE_FROM_FEED = 'cevitxe/APPLY_MESSAGE_FROM_FEED'
+
 export const INITIALIZE = 'cevitxe/INITIALIZE'
 
 export const MSG_INVALID_KEYS =
