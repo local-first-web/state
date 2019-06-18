@@ -33,6 +33,14 @@ export const createStore = async <T>({
   middlewares = [],
 }: CreateStoreOptions<T>): Promise<Redux.Store> => {
   if (!validateKeys(key, secretKey)) throw new Error(MSG_INVALID_KEYS)
+  const hasKeys = key && key !== '' && secretKey && secretKey !== ''
+  if (hasKeys) {
+    if (!validateKeys(key, secretKey)) throw new Error(MSG_INVALID_KEYS)
+  } else {
+    const keys = generateKeys()
+    key = keys.publicKey.toString('hex')
+    secretKey = keys.secretKey.toString('hex')
+  }
 
   // Init an indexedDB
   const storeName = `${databaseName}-${key.substr(0, 12)}`
