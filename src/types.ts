@@ -1,4 +1,4 @@
-import { Reducer, Middleware, AnyAction, DeepPartial } from 'redux'
+import { Reducer, Middleware, AnyAction, DeepPartial, Store } from 'redux'
 
 export type ProxyReducer<T> = (action: AnyAction) => ChangeFn<T> | null
 
@@ -13,6 +13,12 @@ export interface CreateStoreOptions<T> {
   secretKey: string
   databaseName?: string
   peerHubs?: string[]
+}
+
+export interface CevitxeStore {
+  store: Store
+  key: string
+  secretKey: string
 }
 
 export type ReducerConverter = <T>(proxy: ProxyReducer<T>) => Reducer

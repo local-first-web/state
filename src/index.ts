@@ -1,2 +1,2 @@
 export { createStore } from './createStore'
-export { ProxyReducer } from './types'
+export { CevitxeStore, ProxyReducer } from './types'

@@ -11,7 +11,7 @@ import { automergify } from './automergify'
 import debug from './debug'
 import { getMiddleware } from './getMiddleware'
 import { mockCrypto } from './mockCrypto'
-import { CreateStoreOptions } from './types'
+import { CreateStoreOptions, CevitxeStore } from './types'
 import { generateKeys, validateKeys } from './keyManager'
 import { DOC_ID, MSG_INVALID_KEYS } from './constants'
 import { CevitxeConnection } from './connection'
@@ -31,8 +31,7 @@ export const createStore = async <T>({
   proxyReducer,
   defaultState,
   middlewares = [],
-}: CreateStoreOptions<T>): Promise<Redux.Store> => {
-  if (!validateKeys(key, secretKey)) throw new Error(MSG_INVALID_KEYS)
+}: CreateStoreOptions<T>): Promise<CevitxeStore> => {
   const hasKeys = key && key !== '' && secretKey && secretKey !== ''
   if (hasKeys) {
     if (!validateKeys(key, secretKey)) throw new Error(MSG_INVALID_KEYS)
@@ -104,7 +103,7 @@ export const createStore = async <T>({
     connections.forEach(connection => store.dispatch(actions.applyMessage(message, connection)))
   })
   log.groupEnd()
-  return store
+  return { key, secretKey, store }
 }
 
 const rehydrateFrom = async <T>(feed: Feed<string>): Promise<DocSet<T>> => {
