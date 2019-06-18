@@ -1,7 +1,7 @@
 import { MiddlewareFactory } from './types'
 import automerge, { DocSet } from 'automerge'
 import debug from 'debug'
-import { DOC_ID } from './createStore'
+import { DOC_ID } from './constants'
 import { CevitxeConnection } from './connection'
 const log = debug('cevitxe:todo')
 

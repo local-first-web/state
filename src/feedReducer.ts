@@ -2,7 +2,6 @@ import automerge, { DocSet, Message } from 'automerge'
 import { Reducer } from 'redux'
 import { APPLY_MESSAGE_FROM_FEED, INITIALIZE } from './constants'
 
-import { DOC_ID } from './createStore'
 import { CevitxeConnection } from './connection'
 
 export const feedReducer: Reducer = (state: DocSet<any>, { type, payload }) => {

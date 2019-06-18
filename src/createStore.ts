@@ -13,13 +13,11 @@ import { getMiddleware } from './getMiddleware'
 import { mockCrypto } from './mockCrypto'
 import { CreateStoreOptions } from './types'
 import { validateKeys } from './validateKeys'
-import { MSG_INVALID_KEYS } from './constants'
+import { DOC_ID, MSG_INVALID_KEYS } from './constants'
 import { CevitxeConnection } from './connection'
 import { DeepPartial } from 'redux'
 
 const log = debug('cevitxe:createStore')
-
-export const DOC_ID = '1'
 
 const defaultPeerHubs = ['https://signalhub-jccqtwhdwc.now.sh/'] // default public signaling server
 const valueEncoding = 'utf-8'

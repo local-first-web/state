@@ -1,9 +1,8 @@
 import automerge, { DocSet } from 'automerge'
-import { automergify } from './automergify'
-import { APPLY_MESSAGE_FROM_FEED } from './constants'
 import { adaptReducer } from './adaptReducer'
+import { automergify } from './automergify'
+import { DOC_ID } from './constants'
 import { ProxyReducer } from './types'
-import { DOC_ID } from './createStore'
 
 interface FooState {
   foo?: string

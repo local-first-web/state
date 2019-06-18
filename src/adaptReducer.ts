@@ -1,7 +1,7 @@
 import automerge, { DocSet } from 'automerge'
 import { ReducerConverter } from './types'
 import { feedReducer } from './feedReducer'
-import { DOC_ID } from './createStore'
+import { DOC_ID } from './constants'
 
 // During initialization, we're given a "proxyReducer", which is like a Redux reducer,
 // except it's designed to work with automerge objects instead of plain javascript objects.
