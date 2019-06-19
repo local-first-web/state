@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { css, jsx } from '@emotion/core'
-import React from 'react'
+import React, { useState } from 'react'
 import Redux from 'redux'
 import { Stylesheet } from 'src/types'
 import createPersistedState from 'use-persisted-state'
@@ -11,35 +11,68 @@ import uuid from 'uuid'
 const useDiscoveryKey = createPersistedState('cevitxe/discoverykey')
 
 export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
-  let [discoveryKey, setDiscoveryKey] = useDiscoveryKey<string>(uuid())
+  const [discoveryKey, setDiscoveryKey] = useDiscoveryKey<string>('')
+  const [appStore, setAppStore] = useState<any>(null)
 
-  type RCEH = React.ChangeEventHandler<HTMLInputElement>
-  // const keyChanged = (e => setDiscoveryKey(e.currentTarget.value)) as RCEH
+  const keyChanged = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setDiscoveryKey(e.currentTarget.value)
 
-  // const createStore = async () => {
-  //   const store = await buildStore(discoveryKey)
-  //   onStoreReady(store.store)
-  // }
+  const createStore = async () => {
+    const newKey = uuid()
+    setDiscoveryKey(newKey)
+    setAppStore('foo')
+    console.log('created feed ', newKey)
+    //   const store = await buildStore(discoveryKey)
+    //   onStoreReady(store)
+  }
+
+  const joinStore = async () => {
+    setAppStore('foo')
+    console.log('joining ', discoveryKey)
+  }
+
+  const disconnect = () => {
+    setAppStore(null)
+  }
 
   return (
     <div css={styles.toolbar}>
       <span css={styles.toolbarGroup}>
+        {' '}
+        <button
+          role="button"
+          onClick={createStore}
+          css={styles.button}
+          disabled={appStore !== null}
+        >
+          Create Feed
+        </button>
+      </span>
+      or
+      <span css={styles.toolbarGroup}>
         <label>Key</label>
         <input
           type="text"
-          defaultValue={discoveryKey}
-          // onChange={keyChanged}
+          value={discoveryKey}
+          onChange={keyChanged}
           placeholder="Key"
           css={styles.input}
+          disabled={appStore !== null}
         />
+        <button
+          role="button"
+          onClick={joinStore}
+          css={styles.button}
+          disabled={appStore !== null}
+        >
+          Join
+        </button>
       </span>
-
-      {/* <button role="button" onClick={createStore} css={styles.button}>
-        Create store
-      </button> */}
-      {/* <button role="button" onClick={reset} css={styles.button}>
-        Reset
-      </button> */}
+      {appStore && (
+        <button role="button" onClick={disconnect} css={styles.button}>
+          Disconnect
+        </button>
+      )}
     </div>
   )
 }
