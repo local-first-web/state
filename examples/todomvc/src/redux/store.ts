@@ -1,7 +1,8 @@
-import { CevitxeStore, createStore } from 'cevitxe'
+import { createStore } from 'cevitxe'
 import { VisibilityFilter } from 'src/types'
 import { logger } from './logger'
 import { proxyReducer } from './reducers'
+import { Store } from 'redux'
 
 const defaultState = {
   visibilityFilter: VisibilityFilter.ALL,
@@ -15,7 +16,7 @@ const discoveryKey = 'foo'
 // TODO: Figure out how to combine enhancers
 const middlewares = [logger]
 
-export const buildStore = (discoveryKey: string = ''): Promise<CevitxeStore> =>
+export const buildStore = (discoveryKey: string = ''): Promise<Store> =>
   createStore({
     discoveryKey,
     proxyReducer,

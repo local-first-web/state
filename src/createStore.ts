@@ -11,7 +11,7 @@ import { automergify } from './automergify'
 import debug from './debug'
 import { getMiddleware } from './getMiddleware'
 import { mockCrypto } from './mockCrypto'
-import { CreateStoreOptions, CevitxeStore } from './types'
+import { CreateStoreOptions } from './types'
 import { DOC_ID } from './constants'
 import { CevitxeConnection } from './connection'
 import { DeepPartial } from 'redux'
@@ -31,7 +31,7 @@ export const createStore = async <T>({
   defaultState,
   middlewares = [],
   discoveryKey,
-}: CreateStoreOptions<T>): Promise<CevitxeStore> => {
+}: CreateStoreOptions<T>): Promise<Redux.Store> => {
   const { key, secretKey } = useKeychain(discoveryKey)
 
   // Init an indexedDB
@@ -96,7 +96,7 @@ export const createStore = async <T>({
     connections.forEach(connection => store.dispatch(actions.applyMessage(message, connection)))
   })
   log.groupEnd()
-  return { key, secretKey, store }
+  return store
 }
 
 const rehydrateFrom = async <T>(feed: Feed<string>): Promise<DocSet<T>> => {

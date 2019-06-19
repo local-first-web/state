@@ -15,12 +15,6 @@ export interface CreateStoreOptions<T> {
   peerHubs?: string[]
 }
 
-export interface CevitxeStore {
-  store: Store
-  key: string
-  secretKey: string
-}
-
 export type ReducerConverter = <T>(proxy: ProxyReducer<T>) => Reducer
 
 // TODO: replace these with the real automerge types?
