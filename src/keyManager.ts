@@ -3,12 +3,12 @@ import hypercoreCrypto from 'hypercore-crypto'
 import { MSG_INVALID_KEYS } from './constants'
 
 const KEYCHAIN_ID = 'cevitxe/keychain'
+// TODO: Should there just be a Keychain class that has these methods?
 
+// Retrieve the keys for a given discovery key
 export const getKeys = (discoveryKey: string) => {
-  // check first in local storage
-  const _storedKeychain = localStorage.getItem(KEYCHAIN_ID)
-  const keychain: Keychain = _storedKeychain ? JSON.parse(_storedKeychain) : {}
-  // if nothing there, generate new pair
+  const keychain = getKeychain()
+  // use existing keys or generate new pair
   const keys = keychain[discoveryKey] || keyPair()
 
   // make sure it's a good pair
@@ -16,11 +16,33 @@ export const getKeys = (discoveryKey: string) => {
 
   // put whatever we ended up with back in local storage
   keychain[discoveryKey] = keys
-  localStorage.setItem(KEYCHAIN_ID, JSON.stringify(keychain))
+  saveKeychain(keychain)
+
   return keys
 }
 
-export const validateKeys = ({ key, secretKey }: Partial<KeyPair>) => {
+// Remove all stored keys
+export const clearKeychain = () => {
+  localStorage.removeItem(KEYCHAIN_ID)
+}
+
+// Remove keys for given discovery key
+export const removeKeys = (discoveryKey: string) => {
+  const keychain = getKeychain()
+  delete keychain[discoveryKey]
+  saveKeychain(keychain)
+}
+
+const getKeychain = (): Keychain => {
+  const _storedKeychain = localStorage.getItem(KEYCHAIN_ID)
+  return _storedKeychain ? JSON.parse(_storedKeychain) : {}
+}
+
+const saveKeychain = (keychain: Keychain) => {
+  localStorage.setItem(KEYCHAIN_ID, JSON.stringify(keychain))
+}
+
+const validateKeys = ({ key, secretKey }: Partial<KeyPair>) => {
   if (!key || !secretKey || key.length !== 64 || secretKey.length !== 128) return false
   // TODO: Figure out why Jest is choking on BigInt
   // try {
@@ -33,7 +55,7 @@ export const validateKeys = ({ key, secretKey }: Partial<KeyPair>) => {
   return true
 }
 
-export const keyPair = (): KeyPair => {
+const keyPair = (): KeyPair => {
   const { publicKey, secretKey } = hypercoreCrypto.keyPair()
   return {
     key: publicKey.toString('hex'),
