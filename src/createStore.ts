@@ -38,7 +38,7 @@ export const createStore = async <T>({
   const { key, secretKey } = getKeys(discoveryKey)
 
   // Init an indexedDB
-  const storeName = `${databaseName}-${key.substr(0, 12)}`
+  const storeName = `${databaseName}-${discoveryKey.substr(0, 12)}`
   const storage = db(storeName)
 
   // Create a new hypercore feed
