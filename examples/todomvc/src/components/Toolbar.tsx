@@ -1,12 +1,16 @@
 import { css } from '@emotion/core'
 import React, { useState } from 'react'
 import Redux from 'redux'
-import { buildStore } from '../redux/store'
+import createPersistedState from 'use-persisted-state'
+
 import { Stylesheet } from 'src/types'
-import * as defaultKeys from '../secrets'
+import { buildStore } from '../redux/store'
+import { key, secretKey } from '../secrets'
+
+const useKeysState = createPersistedState('cevitxe/keys')
 
 export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
-  const [keys, setKeys] = useState({ key: '', secret: '' })
+  const [keys, setKeys] = useKeysState({ key, secretKey })
 
   const keyChanged = (whichKey: string) =>
     (e =>
@@ -16,18 +20,18 @@ export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
       })) as React.ChangeEventHandler<HTMLInputElement>
 
   const useDefaultKeys = () => {
-    setKeys({ key: defaultKeys.key, secret: defaultKeys.secretKey })
+    setKeys({ key: defaultKeys.key, secretKey: defaultKeys.secretKey })
   }
 
   const reset = () => {
     onStoreReady(null)
-    setKeys({ key: '', secret: '' })
+    setKeys(defaultKeys)
   }
 
   const createStore = async () => {
-    console.log('key', keys.key, keys.secret)
-    const store = await buildStore(keys.key, keys.secret)
-    setKeys({ key: store.key, secret: store.secretKey })
+    console.log('key', keys.key, keys.secretKey)
+    const store = await buildStore(keys.key, keys.secretKey)
+    setKeys({ key: store.key, secretKey: store.secretKey })
     onStoreReady(store.store)
   }
 
@@ -44,12 +48,12 @@ export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
         />
       </span>
       <span css={styles.toolbarGroup}>
-        <label>Secret</label>
+        <label>secretKey</label>
         <input
           type="text"
-          value={keys.secret}
-          onChange={keyChanged('secret')}
-          placeholder="Secret key"
+          value={keys.secretKey}
+          onChange={keyChanged('secretKey')}
+          placeholder="secretKey key"
           css={css(styles.input)}
         />
       </span>

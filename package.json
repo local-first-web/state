@@ -36,12 +36,14 @@
     "typescript": "^3.5.1"
   },
   "dependencies": {
+    "@types/use-persisted-state": "^0.3.0",
     "automerge": "^0.10.1",
     "debug": "^4.1.1",
     "hypercore": "^7.2.2",
     "hypercore-crypto": "^1.0.0",
     "random-access-idb": "^1.2.1",
     "signalhub": "^4.9.0",
+    "use-persisted-state": "^0.3.0",
     "webrtc-swarm": "^2.9.0"
   },
   "jest": {
