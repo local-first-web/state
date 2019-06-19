@@ -8,9 +8,9 @@ export interface CreateStoreOptions<T> {
   defaultState: T
   middlewares?: Middleware[] // TODO: accept an `enhancer` object instead
 
+  discoveryKey: string
+
   // hypercore feed options
-  key: string
-  secretKey: string
   databaseName?: string
   peerHubs?: string[]
 }
@@ -32,3 +32,14 @@ export interface Change {}
 // after building, can't get it to pick up the Feed type from the ambient hypercore types
 export type MiddlewareFactory = (feed: any) => Middleware
 // export type MiddlewareFactory = (feed: Feed<string>) => Middleware
+
+// A keychain maps a discovery key (the id we share to the signal server) with a public/private keypair (which we use
+// for storage etc). The discovery key can be any string that we think is going to be unique on our signal hub servers.
+export interface Keychain {
+  [discoveryKey: string]: KeyPair
+}
+
+export interface KeyPair {
+  key: string
+  secretKey: string
+}

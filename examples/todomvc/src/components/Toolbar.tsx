@@ -1,39 +1,25 @@
-import { css } from '@emotion/core'
-import React, { useState } from 'react'
+/** @jsx jsx */
+
+import { css, jsx } from '@emotion/core'
+import React from 'react'
 import Redux from 'redux'
-import createPersistedState from 'use-persisted-state'
-
 import { Stylesheet } from 'src/types'
+import createPersistedState from 'use-persisted-state'
 import { buildStore } from '../redux/store'
-import { key, secretKey } from '../secrets'
+import uuid from 'uuid'
 
-const useKeysState = createPersistedState('cevitxe/keys')
+const useDiscoveryKey = createPersistedState('cevitxe/discoverykey')
 
 export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
-  const [keys, setKeys] = useKeysState({ key, secretKey })
+  let [discoveryKey, setDiscoveryKey] = useDiscoveryKey<string>(uuid())
 
-  const keyChanged = (whichKey: string) =>
-    (e =>
-      setKeys({
-        ...keys,
-        [whichKey]: e.currentTarget.value,
-      })) as React.ChangeEventHandler<HTMLInputElement>
+  type RCEH = React.ChangeEventHandler<HTMLInputElement>
+  // const keyChanged = (e => setDiscoveryKey(e.currentTarget.value)) as RCEH
 
-  const useDefaultKeys = () => {
-    setKeys({ key: defaultKeys.key, secretKey: defaultKeys.secretKey })
-  }
-
-  const reset = () => {
-    onStoreReady(null)
-    setKeys(defaultKeys)
-  }
-
-  const createStore = async () => {
-    console.log('key', keys.key, keys.secretKey)
-    const store = await buildStore(keys.key, keys.secretKey)
-    setKeys({ key: store.key, secretKey: store.secretKey })
-    onStoreReady(store.store)
-  }
+  // const createStore = async () => {
+  //   const store = await buildStore(discoveryKey)
+  //   onStoreReady(store.store)
+  // }
 
   return (
     <div css={styles.toolbar}>
@@ -41,37 +27,27 @@ export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
         <label>Key</label>
         <input
           type="text"
-          value={keys.key}
-          onChange={keyChanged('key')}
+          defaultValue={discoveryKey}
+          // onChange={keyChanged}
           placeholder="Key"
           css={styles.input}
         />
       </span>
-      <span css={styles.toolbarGroup}>
-        <label>secretKey</label>
-        <input
-          type="text"
-          value={keys.secretKey}
-          onChange={keyChanged('secretKey')}
-          placeholder="secretKey key"
-          css={css(styles.input)}
-        />
-      </span>
-      <button role="button" onClick={createStore} css={styles.button}>
+
+      {/* <button role="button" onClick={createStore} css={styles.button}>
         Create store
-      </button>
-      <button role="button" onClick={reset} css={styles.button}>
+      </button> */}
+      {/* <button role="button" onClick={reset} css={styles.button}>
         Reset
-      </button>
-      <button role="button" onClick={useDefaultKeys} css={styles.button}>
-        Default keys
-      </button>
+      </button> */}
     </div>
   )
 }
+
 export interface ToolbarProps {
   onStoreReady: (store: Redux.Store | null) => void
 }
+
 const styles: Stylesheet = {
   toolbar: {
     position: 'fixed',
@@ -97,6 +73,7 @@ const styles: Stylesheet = {
     '::placeholder': {
       fontStyle: 'normal!important',
     },
+    width: '400px',
   },
   toolbarGroup: {
     margin: '0 10px',

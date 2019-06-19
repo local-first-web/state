@@ -12,8 +12,7 @@ import debug from './debug'
 import { getMiddleware } from './getMiddleware'
 import { mockCrypto } from './mockCrypto'
 import { CreateStoreOptions, CevitxeStore } from './types'
-import { generateKeys, validateKeys } from './keyManager'
-import { DOC_ID, MSG_INVALID_KEYS } from './constants'
+import { DOC_ID } from './constants'
 import { CevitxeConnection } from './connection'
 import { DeepPartial } from 'redux'
 
@@ -23,23 +22,17 @@ const defaultPeerHubs = ['https://signalhub-jccqtwhdwc.now.sh/'] // default publ
 const valueEncoding = 'utf-8'
 const crypto = mockCrypto
 
+import { useKeychain } from './useKeychain'
+
 export const createStore = async <T>({
-  key,
-  secretKey,
   databaseName = 'cevitxe-data',
   peerHubs = defaultPeerHubs,
   proxyReducer,
   defaultState,
   middlewares = [],
+  discoveryKey,
 }: CreateStoreOptions<T>): Promise<CevitxeStore> => {
-  const hasKeys = key && key !== '' && secretKey && secretKey !== ''
-  if (hasKeys) {
-    if (!validateKeys(key, secretKey)) throw new Error(MSG_INVALID_KEYS)
-  } else {
-    const keys = generateKeys()
-    key = keys.publicKey.toString('hex')
-    secretKey = keys.secretKey.toString('hex')
-  }
+  const { key, secretKey } = useKeychain(discoveryKey)
 
   // Init an indexedDB
   const storeName = `${databaseName}-${key.substr(0, 12)}`
@@ -78,7 +71,7 @@ export const createStore = async <T>({
   const connections: CevitxeConnection[] = []
 
   // Now that we've initialized the store, it's safe to subscribe to the feed without worrying about race conditions
-  const hub = signalhub(key, peerHubs)
+  const hub = signalhub(discoveryKey, peerHubs)
   const swarm = webrtcSwarm(hub)
 
   log('joined swarm', key)
