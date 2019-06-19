@@ -4,17 +4,18 @@ import db from 'random-access-idb'
 import * as Redux from 'redux'
 import signalhub from 'signalhub'
 import webrtcSwarm from 'webrtc-swarm'
+import { DeepPartial } from 'redux'
 
 import { actions } from './actions'
 import { adaptReducer } from './adaptReducer'
 import { automergify } from './automergify'
-import debug from './debug'
-import { getMiddleware } from './getMiddleware'
-import { mockCrypto } from './mockCrypto'
-import { CreateStoreOptions } from './types'
 import { DOC_ID } from './constants'
 import { CevitxeConnection } from './connection'
-import { DeepPartial } from 'redux'
+import debug from './debug'
+import { getMiddleware } from './getMiddleware'
+import { getKeys } from './keyManager'
+import { mockCrypto } from './mockCrypto'
+import { CreateStoreOptions, JoinStoreOptions } from './types'
 
 const log = debug('cevitxe:createStore')
 
@@ -22,7 +23,9 @@ const defaultPeerHubs = ['https://signalhub-jccqtwhdwc.now.sh/'] // default publ
 const valueEncoding = 'utf-8'
 const crypto = mockCrypto
 
-import { useKeychain } from './useKeychain'
+export const joinStore = async <T>(options: JoinStoreOptions): Promise<Redux.Store> => {
+  return createStore({ ...options, defaultState: null })
+}
 
 export const createStore = async <T>({
   databaseName = 'cevitxe-data',
@@ -32,7 +35,7 @@ export const createStore = async <T>({
   middlewares = [],
   discoveryKey,
 }: CreateStoreOptions<T>): Promise<Redux.Store> => {
-  const { key, secretKey } = useKeychain(discoveryKey)
+  const { key, secretKey } = getKeys(discoveryKey)
 
   // Init an indexedDB
   const storeName = `${databaseName}-${key.substr(0, 12)}`
@@ -58,10 +61,14 @@ export const createStore = async <T>({
   // - create store
   // - join swarm
 
+  // Note: Replace this with a method for getting the state that gets provided by the options?
+  // This is really the only difference between creating vs joining
+  // -------
   // This check is why `createStore` is async: we don't know if the feed has changes until `feed.on('ready')`.
-  const state: DocSet<T> = feed.length // If there are already changes in the feed (e.g. from storage),
-    ? await rehydrateFrom(feed) // use those changes to reconstruct our state;
-    : initialize(feed, defaultState) // otherwise this is our first time, so we start with default state.
+  const state: DocSet<T> =
+    defaultState === null // If we're not given a default state
+      ? await rehydrateFrom(feed) // get initial state from the feed
+      : initialize(feed, defaultState) // otherwise this is our first time, so we start with default state.
 
   // Create Redux store
   const reducer = adaptReducer(proxyReducer)

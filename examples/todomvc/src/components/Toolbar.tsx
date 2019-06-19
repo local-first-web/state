@@ -5,34 +5,37 @@ import React, { useState } from 'react'
 import Redux from 'redux'
 import { Stylesheet } from 'src/types'
 import createPersistedState from 'use-persisted-state'
-import { buildStore } from '../redux/store'
+import { createStore, joinStore } from '../redux/store'
 import uuid from 'uuid'
 
 const useDiscoveryKey = createPersistedState('cevitxe/discoverykey')
 
 export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
   const [discoveryKey, setDiscoveryKey] = useDiscoveryKey<string>('')
-  const [appStore, setAppStore] = useState<any>(null)
+  const [appStore, setAppStore] = useState<Redux.Store | null>(null)
 
   const keyChanged = (e: React.ChangeEvent<HTMLInputElement>) =>
     setDiscoveryKey(e.currentTarget.value)
 
-  const createStore = async () => {
+  const create = async () => {
     const newKey = uuid()
     setDiscoveryKey(newKey)
-    setAppStore('foo')
+    const store = await createStore(newKey)
     console.log('created feed ', newKey)
-    //   const store = await buildStore(discoveryKey)
-    //   onStoreReady(store)
+    setAppStore(store)
+    onStoreReady(store)
   }
 
-  const joinStore = async () => {
-    setAppStore('foo')
-    console.log('joining ', discoveryKey)
+  const join = async () => {
+    const store = await joinStore(discoveryKey)
+    console.log('joined feed ', discoveryKey)
+    setAppStore(store)
+    onStoreReady(store)
   }
 
   const disconnect = () => {
     setAppStore(null)
+    onStoreReady(null)
   }
 
   return (
@@ -41,7 +44,7 @@ export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
         {' '}
         <button
           role="button"
-          onClick={createStore}
+          onClick={create}
           css={styles.button}
           disabled={appStore !== null}
         >
@@ -61,7 +64,7 @@ export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
         />
         <button
           role="button"
-          onClick={joinStore}
+          onClick={join}
           css={styles.button}
           disabled={appStore !== null}
         >

@@ -2,10 +2,9 @@ import { Reducer, Middleware, AnyAction, DeepPartial, Store } from 'redux'
 
 export type ProxyReducer<T> = (action: AnyAction) => ChangeFn<T> | null
 
-export interface CreateStoreOptions<T> {
+export interface JoinStoreOptions {
   // Redux store
   proxyReducer: ProxyReducer<any>
-  defaultState: T
   middlewares?: Middleware[] // TODO: accept an `enhancer` object instead
 
   discoveryKey: string
@@ -13,6 +12,10 @@ export interface CreateStoreOptions<T> {
   // hypercore feed options
   databaseName?: string
   peerHubs?: string[]
+}
+
+export interface CreateStoreOptions<T> extends JoinStoreOptions {
+  defaultState: T | null
 }
 
 export type ReducerConverter = <T>(proxy: ProxyReducer<T>) => Reducer

@@ -4,7 +4,6 @@ import React from 'react'
 import Redux from 'redux'
 import App from './App'
 import { Toolbar, ToolbarProps } from './Toolbar'
-import * as defaultKeys from '../secrets'
 
 export const Shell = () => {
   const [appStore, setAppStore] = useState<Redux.Store | null>(null)
@@ -14,11 +13,11 @@ export const Shell = () => {
   return (
     <div>
       <Toolbar onStoreReady={onStoreReady} />
-      {/* {appStore && (
+      {appStore && (
         <Provider store={appStore}>
           <App />
         </Provider>
-      )} */}
+      )}
     </div>
   )
 }

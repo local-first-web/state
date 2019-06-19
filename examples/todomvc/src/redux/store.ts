@@ -1,4 +1,4 @@
-import { createStore } from 'cevitxe'
+import * as cevitxe from 'cevitxe'
 import { VisibilityFilter } from 'src/types'
 import { logger } from './logger'
 import { proxyReducer } from './reducers'
@@ -10,16 +10,21 @@ const defaultState = {
   todoMap: {},
 }
 
-const discoveryKey = 'foo'
-
 // Basic middlewares for now, no enhancers.
 // TODO: Figure out how to combine enhancers
 const middlewares = [logger]
 
-export const buildStore = (discoveryKey: string = ''): Promise<Store> =>
-  createStore({
+export const createStore = (discoveryKey: string): Promise<Store> =>
+  cevitxe.createStore({
     discoveryKey,
     proxyReducer,
     defaultState,
+    middlewares,
+  })
+
+export const joinStore = (discoveryKey: string): Promise<Store> =>
+  cevitxe.joinStore({
+    discoveryKey,
+    proxyReducer,
     middlewares,
   })

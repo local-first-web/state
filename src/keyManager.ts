@@ -1,14 +1,13 @@
 import { Keychain, KeyPair } from './types'
 import hypercoreCrypto from 'hypercore-crypto'
-import createPersistedState from 'use-persisted-state'
 import { MSG_INVALID_KEYS } from './constants'
 
-const useKeychainState = createPersistedState('cevitxe/keychain')
+const KEYCHAIN_ID = 'cevitxe/keychain'
 
-export const useKeychain = (discoveryKey: string) => {
+export const getKeys = (discoveryKey: string) => {
   // check first in local storage
-  const [keychain, setKeychain] = useKeychainState<Keychain>({})
-
+  const _storedKeychain = localStorage.getItem(KEYCHAIN_ID)
+  const keychain: Keychain = _storedKeychain ? JSON.parse(_storedKeychain) : {}
   // if nothing there, generate new pair
   const keys = keychain[discoveryKey] || keyPair()
 
@@ -16,8 +15,8 @@ export const useKeychain = (discoveryKey: string) => {
   if (!validateKeys(keys)) throw new Error(MSG_INVALID_KEYS)
 
   // put whatever we ended up with back in local storage
-  setKeychain({ ...keychain, [discoveryKey]: keys })
-
+  keychain[discoveryKey] = keys
+  localStorage.setItem(KEYCHAIN_ID, JSON.stringify(keychain))
   return keys
 }
 
