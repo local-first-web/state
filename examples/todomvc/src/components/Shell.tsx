@@ -6,7 +6,7 @@ import App from './App'
 import { Toolbar, ToolbarProps } from './Toolbar'
 
 export const Shell = () => {
-  const [appStore, setAppStore] = useState<Redux.Store | null>(null)
+  const [appStore, setAppStore] = useState<Redux.Store>()
 
   const onStoreReady: ToolbarProps['onStoreReady'] = store => setAppStore(store)
 
