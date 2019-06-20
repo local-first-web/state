@@ -1,6 +1,9 @@
 {
-  "extends": "../tsconfig.json",
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "baseUrl": "./",
+    "noEmit": true,
     "typeRoots": ["../node_modules/@types", "node_modules/@types", "@types"]
   },
   "include": ["src", "@types"]
