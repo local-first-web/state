@@ -1,54 +1,17 @@
 {
-  "name": "cevitxe",
-  "version": "0.1.4",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
+  "name": "@cevitxe/root",
+  "version": "0.1.1",
   "license": "MIT",
-  "private": false,
-  "files": [
-    "dist"
+  "private": true,
+  "workspaces": [
+    "core",
+    "examples/*"
   ],
   "scripts": {
-    "start:todo": "cd examples/todomvc && yarn start",
-    "start": "run-p watch start:todo",
-    "build": "tsdx build --format cjs",
-    "test": "tsdx test --watch",
-    "watch": "tsdx watch --format cjs",
-    "keys": "node scripts/generateKeys.js"
-  },
-  "peerDependencies": {},
-  "prettier": {
-    "printWidth": 120,
-    "semi": false,
-    "singleQuote": true,
-    "trailingComma": "es5"
+    "test": "cd core && yarn test"
   },
   "devDependencies": {
-    "@types/debug": "^4.1.4",
-    "@types/jest": "^24.0.14",
-    "fake-indexeddb": "^2.1.1",
-    "npm-run-all": "^4.1.5",
-    "npm-watch": "^0.6.0",
-    "prettier": "^1.18.2",
-    "redux": "^4.0.1",
-    "tsdx": "^0.6.1",
-    "tslib": "^1.10.0",
-    "typescript": "^3.5.1"
-  },
-  "dependencies": {
-    "@types/use-persisted-state": "^0.3.0",
-    "automerge": "^0.10.1",
-    "debug": "^4.1.1",
-    "hypercore": "^7.2.2",
-    "hypercore-crypto": "^1.0.0",
-    "random-access-idb": "^1.2.1",
-    "signalhub": "^4.9.0",
-    "use-persisted-state": "^0.3.0",
-    "webrtc-swarm": "^2.9.0"
-  },
-  "jest": {
-    "testMatch": [
-      "**/*test.ts"
-    ]
+    "typescript": "^3.5.2",
+    "ts-node-dev": "^1.0.0-pre.40"
   }
 }

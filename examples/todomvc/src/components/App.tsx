@@ -3,7 +3,7 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 
 import { getFilteredTodos } from '../redux/selectors'
-import { AddTodo, TodoList, VisibilityFilters, ClearCompletedButton } from '.'
+import { AddTodo, TodoList, VisibilityFilters, ClearCompletedButton } from '../components'
 import { pluralize } from '../lib/pluralize'
 import { VisibilityFilter } from '../types'
 

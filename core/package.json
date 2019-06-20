@@ -1,0 +1,45 @@
+{
+  "name": "@cevitxe/core",
+  "version": "0.1.4",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "license": "MIT",
+  "private": false,
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --watchAll"
+  },
+  "peerDependencies": {},
+  "prettier": {
+    "printWidth": 120,
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.4",
+    "@types/jest": "^24.0.14",
+    "@types/use-persisted-state": "^0.3.0",
+    "fake-indexeddb": "^2.1.1",
+    "jest": "^24.8.0",
+    "npm-watch": "^0.6.0",
+    "prettier": "^1.18.2",
+    "redux": "^4.0.1",
+    "ts-jest": "^24.0.2",
+    "tslib": "^1.10.0",
+    "typescript": "^3.5.1"
+  },
+  "dependencies": {
+    "automerge": "^0.10.1",
+    "debug": "^4.1.1",
+    "hypercore": "^7.2.2",
+    "hypercore-crypto": "^1.0.0",
+    "random-access-idb": "^1.2.1",
+    "signalhub": "^4.9.0",
+    "use-persisted-state": "^0.3.0",
+    "webrtc-swarm": "^2.9.0"
+  }
+}

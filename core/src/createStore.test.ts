@@ -2,11 +2,11 @@ require('fake-indexeddb/auto')
 
 import * as Redux from 'redux'
 import automerge, { Connection, Message } from 'automerge'
-import { createStore, DOC_ID } from './createStore'
+import { createStore } from './createStore'
 import { ProxyReducer } from './types'
 import { actions } from './actions'
 import { CevitxeConnection } from './connection'
-// import { automergify } from './automergify'
+import { DOC_ID } from './constants'
 
 const key = '922e233117982b2fddaed3ad6adf8fc7bde6b4d8d8802a67663fdedbfedf00ea'
 const secretKey =
