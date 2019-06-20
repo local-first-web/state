@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { css, jsx } from '@emotion/core'
+import debug from 'debug'
 import React, { useState } from 'react'
 import Redux from 'redux'
 import { Stylesheet } from 'src/types'
@@ -8,6 +8,7 @@ import createPersistedState from 'use-persisted-state'
 import { createStore, joinStore } from '../redux/store'
 import uuid from 'uuid'
 
+const log = debug('cevitxe:todo:toolbar')
 const useDiscoveryKey = createPersistedState('cevitxe/discoverykey')
 
 export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
@@ -21,14 +22,14 @@ export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
     const newKey = uuid()
     setDiscoveryKey(newKey)
     const store = await createStore(newKey)
-    console.log('created feed ', newKey)
+    log('created store ', newKey)
     setAppStore(store)
     onStoreReady(store)
   }
 
   const join = async () => {
     const store = await joinStore(discoveryKey)
-    console.log('joined feed ', discoveryKey)
+    log('joined store ', discoveryKey)
     setAppStore(store)
     onStoreReady(store)
   }
