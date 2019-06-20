@@ -1,6 +1,8 @@
 {
   "extends": "../../tsconfig.json",
-  "compilerOptions": {},
-  "include": ["src", "@types"],
-  "exclude": ["public", "cypress"]
+  "compilerOptions": {
+    "jsx": "react",
+    "lib": ["dom", "esnext"]
+  },
+  "include": ["src", "@types", "../../core/src", "../../core/@types"]
 }

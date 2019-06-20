@@ -8,7 +8,9 @@
     "examples/*"
   ],
   "scripts": {
-    "test": "cd core && yarn test"
+    "test": "cd core && yarn test",
+    "start": "cd examples/todomvc && yarn start",
+    "purge": "scripts/purge.bat"
   },
   "devDependencies": {
     "typescript": "^3.5.2",

@@ -3,9 +3,6 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "baseUrl": "./",
-    "noEmit": true,
-    "paths": {
-      "@cevitxe/*": ["/core/src", "/examples/*/src"]
-    }
+    "noEmit": true
   }
 }

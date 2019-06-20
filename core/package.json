@@ -1,13 +1,9 @@
 {
   "name": "@cevitxe/core",
   "version": "0.1.4",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
+  "main": "src/index.ts",
   "license": "MIT",
   "private": false,
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "build": "tsc",
     "test": "jest --watchAll"

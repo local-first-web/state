@@ -7,6 +7,7 @@
   "main": "src/index.tsx",
   "scripts": {
     "start": "react-scripts-ts start",
+    "build": "react-scripts-ts build",
     "cy:open": "cypress open",
     "dev": "run-p start cy:open"
   },
@@ -21,7 +22,7 @@
   },
   "dependencies": {
     "@emotion/core": "^10.0.10",
-    "cevitxe": "^0.1.0",
+    "@cevitxe/core": "*",
     "classnames": "2.2.6",
     "debug": "^4.1.1",
     "immutable": "3.8.2",
