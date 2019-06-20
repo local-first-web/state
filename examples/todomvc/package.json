@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@emotion/core": "^10.0.10",
-    "@cevitxe/core": "^0.1.4",
+    "@cevitxe/core": "*",
     "classnames": "2.2.6",
     "debug": "^4.1.1",
     "immutable": "3.8.2",
