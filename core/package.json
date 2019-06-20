@@ -8,6 +8,7 @@
   "typings": "dist/index.d.ts",
   "scripts": {
     "build": "tsc ",
+    "watch": "tsc --watch",
     "test": "jest --watchAll"
   },
   "peerDependencies": {},
