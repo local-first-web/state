@@ -1,19 +1,29 @@
 /** @jsx jsx */
 
+import { jsx } from '@emotion/core'
 import debug from 'debug'
 import React, { useState } from 'react'
 import Redux from 'redux'
 import { Stylesheet } from 'src/types'
 import createPersistedState from 'use-persisted-state'
-import { createStore, joinStore } from '../redux/store'
 import uuid from 'uuid'
+import { createStore, joinStore } from '../redux/store'
 
 const log = debug('cevitxe:todo:toolbar')
 const useDiscoveryKey = createPersistedState('cevitxe/discoverykey')
 
+const useAppStore = (cb: (store?: Redux.Store) => void) => {
+  const [appStore, _setAppStore] = useState()
+  const setAppStore = (store?: Redux.Store) => {
+    _setAppStore(store)
+    cb(store)
+  }
+  return [appStore, setAppStore]
+}
+
 export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
-  const [discoveryKey, setDiscoveryKey] = useDiscoveryKey<string>('')
-  const [appStore, setAppStore] = useState<Redux.Store | null>(null)
+  const [appStore, setAppStore] = useAppStore(onStoreReady)
+  const [discoveryKey, setDiscoveryKey] = useDiscoveryKey()
 
   const keyChanged = (e: React.ChangeEvent<HTMLInputElement>) =>
     setDiscoveryKey(e.currentTarget.value)
@@ -24,52 +34,47 @@ export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
     const store = await createStore(newKey)
     log('created store ', newKey)
     setAppStore(store)
-    onStoreReady(store)
   }
 
   const join = async () => {
     const store = await joinStore(discoveryKey)
     log('joined store ', discoveryKey)
     setAppStore(store)
-    onStoreReady(store)
   }
 
   const disconnect = () => {
-    setAppStore(null)
-    onStoreReady(null)
+    setAppStore(undefined)
   }
 
   return (
     <div css={styles.toolbar}>
       <span css={styles.toolbarGroup}>
-        {' '}
-        <button
-          role="button"
-          onClick={create}
-          css={styles.button}
-          disabled={appStore !== null}
-        >
-          Create Feed
-        </button>
-      </span>
-      or
-      <span css={styles.toolbarGroup}>
-        <label>Key</label>
         <input
           type="text"
           value={discoveryKey}
           onChange={keyChanged}
           placeholder="Key"
           css={styles.input}
-          disabled={appStore !== null}
+          disabled={appStore !== undefined}
         />
         <button
           role="button"
           onClick={join}
           css={styles.button}
-          disabled={appStore !== null}
+          disabled={appStore !== undefined}
         >
-          Join
+          Join list
+        </button>
+      </span>
+      or
+      <span css={styles.toolbarGroup}>
+        <button
+          role="button"
+          onClick={create}
+          css={styles.button}
+          disabled={appStore !== undefined}
+        >
+          New list
         </button>
       </span>
       {appStore && (
@@ -82,7 +87,7 @@ export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
 }
 
 export interface ToolbarProps {
-  onStoreReady: (store: Redux.Store | null) => void
+  onStoreReady: (store?: Redux.Store) => void
 }
 
 const styles: Stylesheet = {
@@ -103,6 +108,7 @@ const styles: Stylesheet = {
     borderRadius: 3,
   },
   input: {
+    fontFamily: 'inconsolata, monospace',
     margin: '0 5px',
     padding: '3px 10px',
     border: '1px solid #eee',
@@ -110,7 +116,7 @@ const styles: Stylesheet = {
     '::placeholder': {
       fontStyle: 'normal!important',
     },
-    width: '400px',
+    width: '275px',
   },
   toolbarGroup: {
     margin: '0 10px',
