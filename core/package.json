@@ -1,11 +1,13 @@
 {
   "name": "@cevitxe/core",
+  "description": "CRDT-based distributed state management for Redux",
   "version": "0.1.4",
-  "main": "src/index.ts",
-  "license": "MIT",
   "private": false,
+  "license": "MIT",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc ",
     "test": "jest --watchAll"
   },
   "peerDependencies": {},

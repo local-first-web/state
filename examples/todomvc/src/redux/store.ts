@@ -14,17 +14,18 @@ const defaultState = {
 // TODO: Figure out how to combine enhancers
 const middlewares = [logger]
 
-export const createStore = (discoveryKey: string): Promise<Store> =>
-  cevitxe.createStore({
+export const createStore = (discoveryKey: string): Promise<Store> => {
+  return cevitxe.createStore({
     discoveryKey,
     proxyReducer,
     defaultState,
     middlewares,
   })
-
-export const joinStore = (discoveryKey: string): Promise<Store> =>
-  cevitxe.joinStore({
+}
+export const joinStore = (discoveryKey: string): Promise<Store> => {
+  return cevitxe.joinStore({
     discoveryKey,
     proxyReducer,
     middlewares,
   })
+}

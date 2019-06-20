@@ -1,9 +1,17 @@
 {
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
     "baseUrl": "./",
-    "noEmit": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "lib": ["dom", "esnext"],
+    "moduleResolution": "node",
+    "noEmit": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "outDir": "dist",
+    "sourceMap": true,
+    "target": "es6",
     "typeRoots": ["../node_modules/@types", "node_modules/@types", "@types"]
   },
   "include": ["src", "@types"]
