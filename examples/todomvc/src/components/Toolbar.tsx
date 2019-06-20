@@ -31,15 +31,13 @@ export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
   const create = async () => {
     const newKey = uuid()
     setDiscoveryKey(newKey)
-    const store = await createStore(newKey)
+    setAppStore(await createStore(newKey))
     log('created store ', newKey)
-    setAppStore(store)
   }
 
   const join = async () => {
-    const store = await joinStore(discoveryKey)
+    setAppStore(await joinStore(discoveryKey))
     log('joined store ', discoveryKey)
-    setAppStore(store)
   }
 
   const disconnect = () => {
