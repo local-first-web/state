@@ -12,15 +12,6 @@ import { createStore, joinStore } from '../redux/store'
 const log = debug('cevitxe:todo:toolbar')
 const useDiscoveryKey = createPersistedState('cevitxe/discoverykey')
 
-const useAppStore = (cb: (store?: Redux.Store) => void) => {
-  const [appStore, _setAppStore] = useState()
-  const setAppStore = (store?: Redux.Store) => {
-    _setAppStore(store)
-    cb(store)
-  }
-  return [appStore, setAppStore]
-}
-
 export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
   const [appStore, setAppStore] = useAppStore(onStoreReady)
   const [discoveryKey, setDiscoveryKey] = useDiscoveryKey()
@@ -86,6 +77,15 @@ export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
 
 export interface ToolbarProps {
   onStoreReady: (store?: Redux.Store) => void
+}
+
+const useAppStore = (cb: (store?: Redux.Store) => void) => {
+  const [appStore, _setAppStore] = useState()
+  const setAppStore = (store?: Redux.Store) => {
+    _setAppStore(store)
+    cb(store)
+  }
+  return [appStore, setAppStore]
 }
 
 const styles: Stylesheet = {
