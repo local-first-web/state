@@ -1,4 +1,5 @@
-import automerge, { DocSet } from 'automerge'
+import * as automerge from 'automerge'
+import { DocSet } from 'automerge'
 import { adaptReducer } from './adaptReducer'
 import { automergify } from './automergify'
 import { DOC_ID } from './constants'
