@@ -31,9 +31,13 @@ export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
     log('joined store ', discoveryKey)
   }
 
-  const disconnect = () => {
-    setAppStore(undefined)
-  }
+  // const disconnect = () => {
+  //   setAppStore(undefined)
+  // }
+
+  if (appStore === undefined)
+    if (discoveryKey === undefined) create()
+    else join()
 
   return (
     <div css={styles.toolbar}>
@@ -44,13 +48,13 @@ export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
           onChange={keyChanged}
           placeholder="Key"
           css={styles.input}
-          disabled={appStore !== undefined}
+          // disabled={appStore !== undefined}
         />
         <button
           role="button"
           onClick={join}
           css={styles.button}
-          disabled={appStore !== undefined}
+          // disabled={appStore !== undefined}
         >
           Join list
         </button>
@@ -61,16 +65,16 @@ export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
           role="button"
           onClick={create}
           css={styles.button}
-          disabled={appStore !== undefined}
+          // disabled={appStore !== undefined}
         >
           New list
         </button>
       </span>
-      {appStore && (
+      {/* {appStore && (
         <button role="button" onClick={disconnect} css={styles.button}>
           Disconnect
         </button>
-      )}
+      )} */}
     </div>
   )
 }
