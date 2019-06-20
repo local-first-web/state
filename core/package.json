@@ -42,6 +42,7 @@
     "webrtc-swarm": "^2.9.0"
   },
   "jest": {
-    "preset": "ts-jest"
+    "preset": "ts-jest",
+    "testPathIgnorePatterns":["/node_modules/","/dist"]
   }
 }

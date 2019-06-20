@@ -3,16 +3,22 @@
   "version": "0.1.1",
   "license": "MIT",
   "private": true,
-  "workspaces": [
-    "core",
-    "examples/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "core",
+      "examples/*"
+    ],
+    "nohoist": [
+        "**/jest/**",
+        "**/jest"
+    ]
+  },
   "scripts": {
-    "test": "cd core && yarn test",
     "start": "run-p watch start:todomvc",
     "start:todomvc": "yarn workspace @cevitxe/todomvc start",
     "build": "yarn workspace @cevitxe/core build",
     "watch": "yarn workspace @cevitxe/core watch",
+    "test": "yarn workspace @cevitxe/core test",
     "purge": "scripts/purge.bat"
   },
   "devDependencies": {
