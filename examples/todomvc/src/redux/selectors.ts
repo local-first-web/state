@@ -1,4 +1,11 @@
 import { VisibilityFilter, State } from '../types'
+import { DocSet } from 'automerge'
+import { DOC_ID } from '@cevitxe/core'
+
+const getDoc = (state: DocSet<State>): State => {
+  // More interesting logic to get the doc ID here?
+  return state.getDoc(DOC_ID)
+}
 
 export const getVisibilityFilter = (state: State) => {
   if (!state || !state.visibilityFilter) return VisibilityFilter.ALL
@@ -16,9 +23,10 @@ export const getAllTodos = (state: State) => {
 }
 
 export const getFilteredTodos = (filter: VisibilityFilter) => (
-  state: State
+  state: DocSet<State>
 ) => {
-  const allTodos = getAllTodos(state)
+  const stateDoc = getDoc(state)
+  const allTodos = getAllTodos(stateDoc)
 
   switch (filter) {
     case VisibilityFilter.ALL:
@@ -32,7 +40,8 @@ export const getFilteredTodos = (filter: VisibilityFilter) => (
   }
 }
 
-export const getVisibleTodos = (state: State) => {
-  const visibilityFilter = getVisibilityFilter(state)
+export const getVisibleTodos = (state: DocSet<State>) => {
+  const stateDoc = getDoc(state)
+  const visibilityFilter = getVisibilityFilter(stateDoc)
   return getFilteredTodos(visibilityFilter)(state)
 }
