@@ -1,7 +1,8 @@
-import { MiddlewareFactory } from './types'
 import automerge, { DocSet } from 'automerge'
 import debug from 'debug'
 import { DOC_ID } from './constants'
+import { MiddlewareFactory } from './types'
+
 const log = debug('cevitxe:todo')
 
 export const getMiddleware: MiddlewareFactory = feed => store => next => action => {
@@ -21,13 +22,9 @@ export const getMiddleware: MiddlewareFactory = feed => store => next => action 
   // write actions to feed (if they're not already coming from the feed)
   if (!action.payload.cameFromFeed) {
     const changes = automerge.getChanges(prevDoc, nextDoc)
-    const message = {
-      docId: DOC_ID,
-      clock: nextDoc.map,
-      changes,
-    }
+    const message = { docId: DOC_ID, clock: nextDoc.map, changes }
 
-    feed.append(JSON.stringify(message)
+    feed.append(JSON.stringify(message))
   }
 
   return result
