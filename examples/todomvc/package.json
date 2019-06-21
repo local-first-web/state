@@ -14,12 +14,6 @@
   "peerDependencies": {
     "react": ">=16"
   },
-  "prettier": {
-    "printWidth": 80,
-    "semi": false,
-    "singleQuote": true,
-    "trailingComma": "es5"
-  },
   "dependencies": {
     "@emotion/core": "^10.0.10",
     "@cevitxe/core": "*",

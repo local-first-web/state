@@ -12,12 +12,6 @@
     "test": "jest --watchAll"
   },
   "peerDependencies": {},
-  "prettier": {
-    "printWidth": 120,
-    "semi": false,
-    "singleQuote": true,
-    "trailingComma": "es5"
-  },
   "devDependencies": {
     "@types/debug": "^4.1.4",
     "@types/jest": "^24.0.14",
