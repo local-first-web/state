@@ -1,13 +1,13 @@
 /** @jsx jsx */
 
-import { jsx } from '@emotion/core';
-import debug from 'debug';
-import React, { useState } from 'react';
-import Redux from 'redux';
-import createPersistedState from 'use-persisted-state';
-import uuid from 'uuid';
-import { createStore, joinStore } from '../redux/store';
-import { Stylesheet } from '../types';
+import { jsx } from '@emotion/core'
+import debug from 'debug'
+import React, { useState } from 'react'
+import Redux from 'redux'
+import createPersistedState from 'use-persisted-state'
+import uuid from 'uuid'
+import { createStore, joinStore } from '../redux/store'
+import { Stylesheet } from '../types'
 
 const log = debug('cevitxe:todo:toolbar')
 const useDiscoveryKey = createPersistedState('cevitxe/discoverykey')
@@ -20,6 +20,7 @@ export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
     setDiscoveryKey(e.currentTarget.value)
 
   const create = async () => {
+    // TODO: Call to disconnect to ensure we've closed all existing connections?
     const newKey = uuid()
     setDiscoveryKey(newKey)
     setAppStore(await createStore(newKey))
@@ -27,11 +28,13 @@ export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
   }
 
   const join = async () => {
+    // TODO: Call to disconnect to ensure we've closed all existing connections?
     setAppStore(await joinStore(discoveryKey))
     log('joined store ', discoveryKey)
   }
 
   // const disconnect = () => {
+  //   // TODO: Disconnect from signalhub and all peers
   //   setAppStore(undefined)
   // }
 
