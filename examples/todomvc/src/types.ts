@@ -1,4 +1,5 @@
 import { ActionType } from './redux/actions'
+import { CSSObject } from '@emotion/core'
 
 export interface Todo {
   id: string
@@ -24,3 +25,5 @@ export enum VisibilityFilter {
 }
 
 export type VisibilityFilterKey = keyof typeof VisibilityFilter
+
+export type Stylesheet = { [k: string]: CSSObject }

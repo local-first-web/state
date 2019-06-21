@@ -15,9 +15,7 @@ export const getAllTodos = (state: State) => {
   return state.todoList.map(id => getTodo(id)(state))
 }
 
-export const getFilteredTodos = (filter: VisibilityFilter) => (
-  state: State
-) => {
+export const getFilteredTodos = (filter: VisibilityFilter) => (state: State) => {
   const allTodos = getAllTodos(state)
 
   switch (filter) {

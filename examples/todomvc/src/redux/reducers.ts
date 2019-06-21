@@ -1,5 +1,5 @@
-import { ProxyReducer } from 'cevitxe'
-import { State } from 'src/types'
+import { ProxyReducer } from '@cevitxe/core'
+import { State } from '../types'
 import { ActionType } from './actions'
 
 const {

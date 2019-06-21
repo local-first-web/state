@@ -3,7 +3,5 @@
   "compilerOptions": {
     "noUnusedLocals": true,
     "noUnusedParameters": true
-  },
-  "include": ["src", "@types"],
-  "exclude": ["public", "cypress"]
+  }
 }
