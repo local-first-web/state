@@ -1,15 +1,10 @@
-import { Change, Message, Connection } from 'automerge'
-import { APPLY_CHANGE_FROM_FEED, APPLY_MESSAGE_FROM_FEED } from './constants'
-import { CevitxeConnection } from './connection'
+import { Connection } from './connection'
+import { Message } from './types'
+import { RECEIVE_MESSAGE_FROM_FEED } from './constants'
 
 export const actions = {
-  // applyChange: (change: Change<any>) => ({
-  //   type: APPLY_CHANGE_FROM_FEED,
-  //   payload: { change, cameFromFeed: true },
-  // }),
-
-  applyMessage: (message: Message<any>, connection: CevitxeConnection) => ({
-    type: APPLY_MESSAGE_FROM_FEED,
+  recieveMessage: (message: Message<any>, connection: Connection) => ({
+    type: RECEIVE_MESSAGE_FROM_FEED,
     payload: { message, connection, cameFromFeed: true },
   }),
 }

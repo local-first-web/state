@@ -1,20 +1,22 @@
-import automerge, { DocSet, Message } from 'automerge'
-import { Reducer } from 'redux'
-import { APPLY_MESSAGE_FROM_FEED, INITIALIZE } from './constants'
+import automerge from 'automerge'
+import { Reducer, AnyAction } from 'redux'
+import { RECEIVE_MESSAGE_FROM_FEED } from './constants'
 
-import { CevitxeConnection } from './connection'
+import { Connection } from './connection'
 
-export const feedReducer: Reducer = (state: DocSet<any>, { type, payload }) => {
-  if (state === undefined) return {}
+interface ReceiveMessagePayload {
+  message: automerge.Message<any>
+  connection: Connection
+}
+
+export const feedReducer: Reducer = <T>(state: T, { type, payload }: AnyAction): T => {
   switch (type) {
-    case APPLY_MESSAGE_FROM_FEED: {
-      // After setting up the feed in `createStore`, we listen to our connections and dispatch
-      // the incoming messages to our store. This is the reducer that handles those dispatches.
-
-      const { message, connection } = payload as { message: Message<any>; connection: CevitxeConnection }
-
+    case RECEIVE_MESSAGE_FROM_FEED: {
+      // After setting up the feed in `createStore`, we listen to our connections and dispatch the
+      // incoming messages to our store. This is the reducer that handles those dispatches.
+      const { message, connection } = payload as ReceiveMessagePayload
       connection.receive(message)
-      return connection.docSet
+      return connection.state
     }
     default:
       return state

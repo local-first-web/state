@@ -1,8 +1,8 @@
 import * as automerge from 'automerge'
-import { DocSet } from 'automerge'
 import { adaptReducer } from './adaptReducer'
 import { automergify } from './automergify'
-import { DOC_ID } from './constants'
+import { Connection } from './connection'
+import { RECEIVE_MESSAGE_FROM_FEED } from './constants'
 import { ProxyReducer } from './types'
 
 interface FooState {
@@ -19,36 +19,32 @@ describe('adaptReducer', () => {
 
   describe('should return a working reducer', () => {
     const reducer = adaptReducer(proxyReducer)
-    const state = new DocSet<FooState>()
-    const doc = automergify({})
-    state.setDoc(DOC_ID, doc)
+    const state = automergify({})
     const newState = reducer(state, { type: 'FOO' })
-    const newDoc = newState.getDoc(DOC_ID)
 
     it('should return a function', () => expect(typeof reducer).toBe('function'))
-    it('should not change the original state', () => expect(doc).not.toHaveProperty('foo'))
-    it('should return a modified state', () => expect(newDoc).toEqual({ foo: 'pizza' }))
+    it('should not change the original state', () => expect(state).not.toHaveProperty('foo'))
+    it('should return a modified state', () => expect(newState).toEqual({ foo: 'pizza' }))
     it('should return a DocSet containing one automerge object', () => {
-      expect(() => automerge.change(newDoc, s => (s!.foo = 'foozball'))).not.toThrow()
+      expect(() => automerge.change(newState, s => (s!.foo = 'foozball'))).not.toThrow()
     })
   })
 
-  // describe('should apply automerge changes from the feed', () => {
-  //   const reducer = adaptReducer(proxyReducer)
+  describe('should apply automerge changes from the feed', () => {
+    const reducer = adaptReducer(proxyReducer)
 
-  //   const doc1 = automergify({} as FooState)
-  //   const doc2 = automerge.change(doc1, s => (s.boo = 'foozball'))
+    const doc1 = automergify({} as FooState)
+    const doc2 = automerge.change(doc1, s => (s.boo = 'foozball'))
+    const changes = automerge.getChanges(doc1, doc2)
 
-  //   const [change] = automerge.getChanges(doc1, doc2)
+    const message = { clock: {}, changes }
+    const connection = new Connection(doc1)
+    const state2 = reducer(doc1, {
+      type: RECEIVE_MESSAGE_FROM_FEED,
+      payload: { message, connection },
+    })
 
-  //   const state1 = new DocSet()
-  //   state1.setDoc('DOC_ID', doc1)
-
-  //   const state2 = reducer(state1, { type: APPLY_MESSAGE_FROM_FEED, payload: { message, connection } })
-  //   const newDoc = state2.getDoc(DOC_ID)
-
-  //   it('should apply the changes and return the new state', () => expect(newDoc!.boo).toEqual('foozball'))
-
-  //   // TODO: test the INITIALIZE path in adaptReducer
-  // })
+    it('should apply the changes and return the new state', () =>
+      expect(state2!.boo).toEqual('foozball'))
+  })
 })

@@ -9,28 +9,24 @@ import { DeepPartial } from 'redux'
 import { actions } from './actions'
 import { adaptReducer } from './adaptReducer'
 import { automergify } from './automergify'
-import { DOC_ID, DEFAULT_PEER_HUBS } from './constants'
-import { CevitxeConnection } from './connection'
+import { DEFAULT_PEER_HUBS } from './constants'
+import { Connection } from './connection'
 import debug from './debug'
 import { getMiddleware } from './getMiddleware'
 import { getKeys } from './keyManager'
 import { mockCrypto } from './mockCrypto'
-import { CreateStoreOptions, JoinStoreOptions } from './types'
+import { CreateStoreOptions } from './types'
 
 const log = debug('cevitxe:createStore')
 
 const valueEncoding = 'utf-8'
 const crypto = mockCrypto
 
-export const joinStore = async <T>(options: JoinStoreOptions): Promise<Redux.Store> => {
-  return createStore({ ...options, defaultState: null })
-}
-
 export const createStore = async <T>({
   databaseName = 'cevitxe-data',
   peerHubs = DEFAULT_PEER_HUBS,
   proxyReducer,
-  defaultState,
+  defaultState = {},
   middlewares = [],
   discoveryKey,
 }: CreateStoreOptions<T>): Promise<Redux.Store> => {
@@ -46,25 +42,20 @@ export const createStore = async <T>({
 
   const feedReady = new Promise(yes => feed.on('ready', () => yes()))
   await feedReady
-
   log.groupCollapsed(`feed ready; ${feed.length} stored changes`)
 
   const creatingStore = defaultState !== null
-
   log(creatingStore ? 'creating store' : 'joining store')
-  const state: DocSet<Partial<T>> =
-    feed.length > 0
-      ? await rehydrateFrom(feed)
-      : creatingStore //
-      ? initialize(feed, defaultState)
-      : initialize(feed, {})
+
+  const state: Partial<T> =
+    feed.length > 0 ? await rehydrateFrom(feed) : initialize(feed, defaultState)
 
   // Create Redux store
   const reducer = adaptReducer(proxyReducer)
   const enhancer = Redux.applyMiddleware(...middlewares, getMiddleware(feed))
   const store = Redux.createStore(reducer, state as DeepPartial<DocSet<T>>, enhancer)
 
-  const connections: CevitxeConnection[] = []
+  const connections: Connection<Partial<T>>[] = []
 
   // Now that we've initialized the store, it's safe to subscribe to the feed without worrying about race conditions
   const hub = signalhub(discoveryKey, peerHubs)
@@ -73,7 +64,7 @@ export const createStore = async <T>({
   log('joined swarm', key)
   swarm.on('peer', (peer: any, id: any) => {
     log('peer', id, peer)
-    connections.push(new CevitxeConnection(state, peer))
+    connections.push(new Connection(store.getState(), peer))
   })
 
   const start = feed.length // skip any items we already read when initializing
@@ -88,41 +79,29 @@ export const createStore = async <T>({
     const changeMessages = (message.changes || []).map((c: Change<T>) => c.message)
     log('dispatch from feed', changeMessages)
 
-    connections.forEach(connection => store.dispatch(actions.applyMessage(message, connection)))
+    connections.forEach(connection => store.dispatch(actions.recieveMessage(message, connection)))
   })
   log.groupEnd()
   return store
 }
 
-const rehydrateFrom = async <T>(feed: Feed<string>): Promise<DocSet<T>> => {
+const rehydrateFrom = async <T>(feed: Feed<string>): Promise<T> => {
+  log('rehydrating from stored messages')
   const batch = new Promise(yes => feed.getBatch(0, feed.length, (_, data) => yes(data)))
   const data = (await batch) as string[]
-
   const messages = data.map(d => JSON.parse(d))
-  log('rehydrating from stored messages')
-  let doc = automerge.init<T>()
-  messages.forEach(m => (doc = automerge.applyChanges(doc, m.changes)))
-  const state = new DocSet<T>()
-  state.setDoc(DOC_ID, doc)
+  let state = automerge.init<T>()
+  messages.forEach(m => (state = automerge.applyChanges(state, m.changes)))
   return state
 }
 
-const initialize = <T>(feed: Feed<string>, defaultState: T): DocSet<T> => {
+const initialize = <T>(feed: Feed<string>, defaultState: T): T => {
   log('nothing in storage; initializing')
-  const doc = automergify(defaultState)
-  const changes = automerge.getChanges(automerge.init(), doc)
-  // const clock = Frontend.getBackendState(doc).getIn(['opSet', 'clock'])
-  // const clock = Frontend.getBackendState(doc).opSet.clock
-
-  const message = {
-    docId: DOC_ID,
-    clock: {},
-    changes,
-  }
-
+  const state = automergify(defaultState)
+  const changes = automerge.getChanges(automerge.init(), state)
+  const message = { clock: {}, changes }
   feed.append(JSON.stringify(message))
-  // changes.forEach(change => feed.append(JSON.stringify(change)))
-  const state = new DocSet<T>()
-  state.setDoc(DOC_ID, doc)
   return state
 }
+
+export const joinStore = createStore

@@ -1,24 +1,31 @@
 import automerge, { Message } from 'automerge'
-import { Buffer } from 'buffer'
 
-export class CevitxeConnection {
-  private automergeConnection: automerge.Connection<any>
+const DOC_ID = '1'
+
+export class Connection<T = any> {
+  private automergeConnection: automerge.Connection<T>
   private peer?: NodeJS.ReadWriteStream | null | undefined
+  private docSet: automerge.DocSet<T>
 
-  docSet: automerge.DocSet<any>
-
-  constructor(docSet: automerge.DocSet<any>, peer?: NodeJS.ReadWriteStream) {
-    this.docSet = docSet
-    this.automergeConnection = new automerge.Connection(docSet, this.send)
+  constructor(doc: T, peer?: NodeJS.ReadWriteStream) {
+    this.docSet = new automerge.DocSet()
+    this.docSet.setDoc(DOC_ID, doc)
+    this.automergeConnection = new automerge.Connection(this.docSet, this.send)
     this.peer = peer
     this.automergeConnection.open()
   }
 
-  receive(message: Message<any>) {
-    this.automergeConnection.receiveMsg(message)
+  public get state(): T {
+    return this.docSet.getDoc(DOC_ID)
   }
 
-  send(message: Message<any>) {
+  receive(message: Message<T>) {
+    message.docId = DOC_ID
+    this.automergeConnection.receiveMsg(message) // this updates the docSet
+  }
+
+  send(message: Message<T>) {
+    message.docId = DOC_ID
     if (!this.peer) return
     const data = JSON.stringify(message)
     this.peer.write(data)
