@@ -10,7 +10,8 @@
     "build": "tsc ",
     "lint": "tsc -p tsconfig.strict.json --noEmit",
     "watch": "tsc --watch",
-    "test": "jest --watchAll"
+    "test": "jest --watchAll",
+    "test:debug": "node --inspect-brk=11580 node_modules\\jest\\bin\\jest.js --runInBand"
   },
   "peerDependencies": {},
   "devDependencies": {
@@ -38,6 +39,9 @@
   },
   "jest": {
     "preset": "ts-jest",
-    "testPathIgnorePatterns":["/node_modules/","/dist"]
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist"
+    ]
   }
 }
