@@ -9,7 +9,7 @@ import { DeepPartial } from 'redux'
 import { actions } from './actions'
 import { adaptReducer } from './adaptReducer'
 import { automergify } from './automergify'
-import { DOC_ID } from './constants'
+import { DOC_ID, DEFAULT_PEER_HUBS } from './constants'
 import { CevitxeConnection } from './connection'
 import debug from './debug'
 import { getMiddleware } from './getMiddleware'
@@ -19,7 +19,6 @@ import { CreateStoreOptions, JoinStoreOptions } from './types'
 
 const log = debug('cevitxe:createStore')
 
-const defaultPeerHubs = ['https://signalhub-jccqtwhdwc.now.sh/'] // default public signaling server
 const valueEncoding = 'utf-8'
 const crypto = mockCrypto
 
@@ -29,7 +28,7 @@ export const joinStore = async <T>(options: JoinStoreOptions): Promise<Redux.Sto
 
 export const createStore = async <T>({
   databaseName = 'cevitxe-data',
-  peerHubs = defaultPeerHubs,
+  peerHubs = DEFAULT_PEER_HUBS,
   proxyReducer,
   defaultState,
   middlewares = [],
