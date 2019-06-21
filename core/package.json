@@ -8,6 +8,7 @@
   "typings": "dist/index.d.ts",
   "scripts": {
     "build": "tsc ",
+    "lint": "tsc -p tsconfig.strict.json --noEmit",
     "watch": "tsc --watch",
     "test": "jest --watchAll"
   },

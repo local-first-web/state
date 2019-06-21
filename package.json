@@ -9,14 +9,15 @@
       "examples/*"
     ],
     "nohoist": [
-        "**/jest/**",
-        "**/jest"
+      "**/jest/**",
+      "**/jest"
     ]
   },
   "scripts": {
     "start": "run-p watch start:todomvc",
     "start:todomvc": "yarn workspace @cevitxe/todomvc start",
     "build": "yarn workspace @cevitxe/core build",
+    "lint": "yarn workspaces run lint",
     "watch": "yarn workspace @cevitxe/core watch",
     "test": "yarn workspace @cevitxe/core test",
     "purge": "scripts/purge.bat"
