@@ -44,11 +44,10 @@ export const createStore = async <T>({
   await feedReady
   log.groupCollapsed(`feed ready; ${feed.length} stored changes`)
 
-  const creatingStore = defaultState !== null
-  log(creatingStore ? 'creating store' : 'joining store')
-
   const state: Partial<T> =
-    feed.length > 0 ? await rehydrateFrom(feed) : initialize(feed, defaultState)
+    feed.length > 0 // is there anything in the feed already? (e.g. coming from storage)
+      ? await rehydrateFrom(feed) // if so, rehydrate state from that
+      : initialize(feed, defaultState) // if not, initialize
 
   // Create Redux store
   const reducer = adaptReducer(proxyReducer)

@@ -1,13 +1,13 @@
 /** @jsx jsx */
 
-import { jsx } from '@emotion/core'
-import debug from 'debug'
-import React, { useState } from 'react'
-import Redux from 'redux'
-import { Stylesheet } from '../types'
-import createPersistedState from 'use-persisted-state'
-import uuid from 'uuid'
-import { createStore, joinStore } from '../redux/store'
+import { jsx } from '@emotion/core';
+import debug from 'debug';
+import React, { useState } from 'react';
+import Redux from 'redux';
+import createPersistedState from 'use-persisted-state';
+import uuid from 'uuid';
+import { createStore, joinStore } from '../redux/store';
+import { Stylesheet } from '../types';
 
 const log = debug('cevitxe:todo:toolbar')
 const useDiscoveryKey = createPersistedState('cevitxe/discoverykey')

@@ -6,12 +6,12 @@ import { createStore } from './createStore'
 import { ProxyReducer } from './types'
 import { actions } from './actions'
 import { Connection } from './connection'
+import { automergify } from './automergify'
 
 const discoveryKey = '922e233117982b2fddaed3ad6adf8fc7bde6b4d8d8802a67663fdedbfedf00ea'
 
 interface FooState {
-  foo: string
-  boo?: string
+  foo?: number
 }
 
 const proxyReducer: ProxyReducer<FooState> = ({ type, payload }) => {
@@ -27,7 +27,7 @@ describe('createStore', () => {
   let store: Redux.Store
 
   beforeEach(async () => {
-    const defaultState = { foo: 'hello world' }
+    const defaultState: FooState = { foo: 1 }
     store = await createStore({ discoveryKey, proxyReducer, defaultState })
   })
 
@@ -39,29 +39,28 @@ describe('createStore', () => {
 
   it('should have and use the RECEIVE_MESSAGE reducer', () => {
     // Modify the document in order to capture the automerge changes
-    const doc0 = store.getState()
-    const doc1 = automerge.change(doc0, 'testing', s => (s.foo = 'pizza'))
-    const changes = automerge.getChanges(doc0, doc1)
+    const state1 = store.getState()
+    const changes = automerge.getChanges(state1, automerge.change(state1, s => (s.foo = 2)))
 
     // Assert that neither the original document nor the store has been modified
-    expect(doc0.foo).toEqual('hello world')
-    expect(store.getState().foo).toEqual('hello world')
+    expect(state1.foo).toEqual(1)
+    expect(store.getState().foo).toEqual(1)
 
     // Create a message containing the changes and dispatch the message
-    const msg = { clock: {}, changes }
-    const connection = new Connection(doc0)
-    const action = actions.recieveMessage(msg, connection)
+    const message = { clock: {}, changes }
+    const connection = new Connection(state1)
+    const action = actions.recieveMessage(message, connection)
     store.dispatch(action)
 
     // Check that the store has now been updated
-    const doc = store.getState()
-    expect(doc.foo).toEqual('pizza')
+    const state2 = store.getState()
+    expect(state2.foo).toEqual(2)
   })
 
   it('should use the reducer we gave it', () => {
-    store.dispatch({ type: 'SET_FOO', payload: { value: 'wahoo' } })
+    store.dispatch({ type: 'SET_FOO', payload: { value: 3 } })
 
     const doc = store.getState()
-    expect(doc.foo).toEqual('wahoo')
+    expect(doc.foo).toEqual(3)
   })
 })
