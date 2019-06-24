@@ -1,4 +1,4 @@
-import automerge from 'automerge'
+import automerge, { DocSet } from 'automerge'
 import { AnyAction, Middleware, Reducer } from 'redux'
 import { Connection } from './connection'
 export type ProxyReducer<T> = (action: AnyAction) => ChangeFn<T> | null
@@ -25,10 +25,7 @@ export interface Change {}
 
 // TODO: sort out the type for feed after building, can't get it to pick up the Feed type from the
 // ambient hypercore types
-export type MiddlewareFactory = <T>(
-  feed: Feed<string>,
-  connections: Connection<T | {}>[]
-) => Middleware
+export type MiddlewareFactory = <T>(feed: Feed<string>, docSet: DocSet<T | {}>) => Middleware
 
 // A keychain maps a discovery key (the id we share to the signal server) with a public/private
 // keypair (which we use for storage etc). The discovery key can be any string that we think is

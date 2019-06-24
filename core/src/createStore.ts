@@ -50,14 +50,14 @@ export const createStore = async <T>({
       : initialize(feed, defaultState) // if not, initialize
 
   const connections: Connection<T | {}>[] = []
+  const docSet = new automerge.DocSet<T>()
+  log('creating initial docSet', state)
+  docSet.setDoc(DOC_ID, state as T)
 
   // Create Redux store
   const reducer = adaptReducer(proxyReducer)
-  const enhancer = Redux.applyMiddleware(...middlewares, getMiddleware<T>(feed, connections))
+  const enhancer = Redux.applyMiddleware(...middlewares, getMiddleware<T>(feed, docSet))
   const store = Redux.createStore(reducer, state as DeepPartial<DocSet<T>>, enhancer)
-
-  const docSet = new automerge.DocSet<T>()
-  docSet.setDoc(DOC_ID, store.getState())
 
   // Now that we've initialized the store, it's safe to subscribe to the feed without worrying about race conditions
   const hub = signalhub(discoveryKey, peerHubs)
@@ -66,7 +66,8 @@ export const createStore = async <T>({
   log('joined swarm', key)
   swarm.on('peer', (peer: any, id: any) => {
     log('peer', id, peer)
-    connections.push(new Connection<T>(docSet,peer))
+    connections.push(new Connection<T>(docSet, peer))
+    // TODO: Send peer our current state? or does this happen automatically from the constructor?
   })
 
   const start = feed.length // skip any items we already read when initializing
@@ -81,7 +82,8 @@ export const createStore = async <T>({
     const changeMessages = (message.changes || []).map((c: Change<T>) => c.message)
     log('dispatch from feed', changeMessages)
 
-    connections.forEach(connection => store.dispatch(actions.recieveMessage(message, connection)))
+    // I'm not sure we need this, the feed is just for local storage
+    //connections.forEach(connection => store.dispatch(actions.recieveMessage(message, connection)))
   })
   log.groupEnd()
   return store

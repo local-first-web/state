@@ -1,10 +1,11 @@
-import automerge from 'automerge'
+import automerge, { DocSet } from 'automerge'
 import debug from 'debug'
 import { MiddlewareFactory, Message } from './types'
+import { DOC_ID } from './constants'
 
 const log = debug('cevitxe:todo')
 
-export const getMiddleware: MiddlewareFactory = (feed, connections) => store => next => action => {
+export const getMiddleware: MiddlewareFactory = (feed, docSet) => store => next => action => {
   // before changes
   const prevState = store.getState() || automerge.init()
   log('action', action)
@@ -19,12 +20,12 @@ export const getMiddleware: MiddlewareFactory = (feed, connections) => store => 
   const changes = automerge.getChanges(prevState, nextState)
   const message = { clock: nextState.map, changes }
 
-  if (!action.payload.cameFromFeed) {
+  if (!action.payload.cameFromFeed && docSet) {
+    log('calling setDoc', nextState)
+    docSet.setDoc(DOC_ID, nextState)
+    log('calling feed.append')
     feed.append(JSON.stringify(message))
   }
-
-
-  
 
   return result
 }
