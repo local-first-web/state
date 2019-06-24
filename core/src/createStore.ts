@@ -9,7 +9,7 @@ import { DeepPartial } from 'redux'
 import { actions } from './actions'
 import { adaptReducer } from './adaptReducer'
 import { automergify } from './automergify'
-import { DEFAULT_PEER_HUBS } from './constants'
+import { DEFAULT_PEER_HUBS, DOC_ID } from './constants'
 import { Connection } from './connection'
 import debug from './debug'
 import { getMiddleware } from './getMiddleware'
@@ -26,7 +26,7 @@ export const createStore = async <T>({
   databaseName = 'cevitxe-data',
   peerHubs = DEFAULT_PEER_HUBS,
   proxyReducer,
-  defaultState = {},
+  defaultState = {}, // If defaultState is not provided, we're joining an existing store
   middlewares = [],
   discoveryKey,
 }: CreateStoreOptions<T>): Promise<Redux.Store> => {
@@ -44,17 +44,20 @@ export const createStore = async <T>({
   await feedReady
   log.groupCollapsed(`feed ready; ${feed.length} stored changes`)
 
-  const state: Partial<T> =
+  const state: T | {} =
     feed.length > 0 // is there anything in the feed already? (e.g. coming from storage)
       ? await rehydrateFrom(feed) // if so, rehydrate state from that
       : initialize(feed, defaultState) // if not, initialize
 
+  const connections: Connection<T | {}>[] = []
+
   // Create Redux store
   const reducer = adaptReducer(proxyReducer)
-  const enhancer = Redux.applyMiddleware(...middlewares, getMiddleware(feed))
+  const enhancer = Redux.applyMiddleware(...middlewares, getMiddleware<T>(feed, connections))
   const store = Redux.createStore(reducer, state as DeepPartial<DocSet<T>>, enhancer)
 
-  const connections: Connection<Partial<T>>[] = []
+  const docSet = new automerge.DocSet<T>()
+  docSet.setDoc(DOC_ID, store.getState())
 
   // Now that we've initialized the store, it's safe to subscribe to the feed without worrying about race conditions
   const hub = signalhub(discoveryKey, peerHubs)
@@ -63,7 +66,7 @@ export const createStore = async <T>({
   log('joined swarm', key)
   swarm.on('peer', (peer: any, id: any) => {
     log('peer', id, peer)
-    connections.push(new Connection(store.getState(), peer))
+    connections.push(new Connection<T>(docSet,peer))
   })
 
   const start = feed.length // skip any items we already read when initializing
