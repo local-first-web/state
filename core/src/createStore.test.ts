@@ -1,12 +1,15 @@
 require('fake-indexeddb/auto')
 
+const wrtc = require('wrtc')
+
 import * as Redux from 'redux'
-import automerge from 'automerge'
 import { createStore } from './createStore'
 import { ProxyReducer } from './types'
-import { actions } from './actions'
-import { Connection } from './connection'
-import { automergify } from './automergify'
+import webrtcSwarm from 'webrtc-swarm'
+import signalhub from 'signalhub'
+
+jest.mock('webrtc-swarm')
+jest.mock('signalhub')
 
 const discoveryKey = '922e233117982b2fddaed3ad6adf8fc7bde6b4d8d8802a67663fdedbfedf00ea'
 
@@ -37,26 +40,18 @@ describe('createStore', () => {
     expect(store).toHaveProperty('subscribe')
   })
 
-  // This test probably doesn't provide value, we should have a higher-level e2e test instead
-  // it('should have and use the RECEIVE_MESSAGE reducer', () => {
-  //   // Modify the document in order to capture the automerge changes
-  //   const state1 = store.getState()
-  //   const changes = automerge.getChanges(state1, automerge.change(state1, s => (s.foo = 2)))
+  describe('doin it live', () => {
+    it.only('should communicate changes from one store to another', async () => {
+      // instantiate remote store
+      const remoteStore = await createStore({ discoveryKey, proxyReducer })
 
-  //   // Assert that neither the original document nor the store has been modified
-  //   expect(state1.foo).toEqual(1)
-  //   expect(store.getState().foo).toEqual(1)
+      // change something in one
+      store.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
 
-  //   // Create a message containing the changes and dispatch the message
-  //   const message = { clock: {}, changes }
-  //   const connection = new Connection(state1)
-  //   const action = actions.recieveMessage(message, connection)
-  //   store.dispatch(action)
-
-  //   // Check that the store has now been updated
-  //   const state2 = store.getState()
-  //   expect(state2.foo).toEqual(2)
-  // })
+      // verify that change is reflected in the other
+      expect(remoteStore.getState().foo).toEqual(42)
+    })
+  })
 
   it('should use the reducer we gave it', () => {
     store.dispatch({ type: 'SET_FOO', payload: { value: 3 } })
@@ -65,3 +60,45 @@ describe('createStore', () => {
     expect(doc.foo).toEqual(3)
   })
 })
+
+// describe('connection (live)', () => {
+//   interface FooState {
+//     foo?: number
+//     boo?: number
+//   }
+
+//   const defaultState: FooState = automergify({ foo: 1 })
+
+//   let localDocSet: SingleDocSet<FooState>
+//   const makeDispatch = (docSet: SingleDocSet<FooState>): Dispatch<AnyAction> => ({
+//     type,
+//     payload,
+//   }) => {
+//     return {}
+//   }
+
+//   beforeEach(() => {
+//     localDocSet = new SingleDocSet<FooState>(defaultState)
+//   })
+
+//   it('communicates local changes to remote peer', done => {
+//     const remoteDocSet = new SingleDocSet<FooState>(automergify({}))
+
+//     localPeer.on('connect', () => new Connection<FooState>(localDocSet, localPeer, makeDispatch(localDocSet)))
+
+//     remotePeer.on(
+//       'connect',
+//       () => new Connection<FooState>(remoteDocSet, remotePeer, makeDispatch(localDocSet))
+//     )
+
+//     const localDoc = localDocSet.get()
+//     const updatedDoc = automerge.change(localDoc, 'update', doc => (doc.boo = 2))
+
+//     localDocSet.set(updatedDoc)
+
+//     remoteDocSet.base.registerHandler((_, remoteDoc) => {
+//       expect(remoteDoc.boo).toEqual(2)
+//       done()
+//     })
+//   })
+// })

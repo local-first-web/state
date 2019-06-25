@@ -2,8 +2,8 @@ import automerge, { Change, DocSet, Message } from 'automerge'
 import * as Redux from 'redux'
 import { DeepPartial } from 'redux'
 import signalhub from 'signalhub'
-import { Instance as Peer } from 'simple-peer'
 import webrtcSwarm from 'webrtc-swarm'
+import { Instance as Peer } from 'simple-peer'
 import { adaptReducer } from './adaptReducer'
 import { automergify } from './automergify'
 import { Connection } from './connection'
@@ -49,6 +49,7 @@ export const createStore = async <T>({
 
   log('joined swarm', key)
   swarm.on('peer', (peer: Peer, id: any) => {
+    console.log('peer', peer)
     log('peer', id, peer)
     connections.push(new Connection(docSet, peer, store.dispatch))
     // TODO: Send peer our current state? or does this happen automatically from the constructor?
