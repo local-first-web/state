@@ -10,7 +10,7 @@
     "build": "tsc ",
     "lint": "tsc -p tsconfig.strict.json --noEmit",
     "watch": "tsc --watch",
-    "test": "jest --watchAll",
+    "test": "jest --watch",
     "test:debug": "node --inspect-brk=11580 node_modules\\jest\\bin\\jest.js --runInBand"
   },
   "peerDependencies": {},
@@ -28,14 +28,17 @@
     "typescript": "^3.5.1"
   },
   "dependencies": {
+    "@types/simple-peer": "^6.1.5",
     "automerge": "^0.10.1",
     "debug": "^4.1.1",
     "hypercore": "^7.2.2",
     "hypercore-crypto": "^1.0.0",
     "random-access-idb": "^1.2.1",
     "signalhub": "^4.9.0",
+    "simple-peer": "^9.3.0",
     "use-persisted-state": "^0.3.0",
-    "webrtc-swarm": "^2.9.0"
+    "webrtc-swarm": "^2.9.0",
+    "wrtc": "^0.4.1"
   },
   "jest": {
     "preset": "ts-jest",
