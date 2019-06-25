@@ -1,8 +1,8 @@
 import automerge from 'automerge'
-import { Connection } from './connection'
 import Peer from 'simple-peer'
 import { automergify } from './automergify'
-import { DOC_ID } from './constants'
+import { Connection } from './connection'
+import { SingleDocSet } from './SingleDocSet'
 
 const wrtc = require('wrtc')
 let localPeer: Peer.Instance
@@ -43,27 +43,25 @@ describe('connection (live)', () => {
 
   const defaultState: FooState = automergify({ foo: 1 })
 
-  let localDocSet: automerge.DocSet<FooState>
+  let localDocSet: SingleDocSet<FooState>
 
   beforeEach(() => {
-    localDocSet = new automerge.DocSet<FooState>()
-    localDocSet.setDoc(DOC_ID, defaultState)
+    localDocSet = new SingleDocSet<FooState>(defaultState)
   })
 
   it('communicates local changes to remote peer', done => {
-    const remoteDocSet = new automerge.DocSet<FooState>()
-    remoteDocSet.setDoc(DOC_ID, automergify({}))
+    const remoteDocSet = new SingleDocSet<FooState>(automergify({}))
 
     localPeer.on('connect', () => new Connection<FooState>(localDocSet, localPeer))
 
     remotePeer.on('connect', () => new Connection<FooState>(remoteDocSet, remotePeer))
 
-    const localDoc = localDocSet.getDoc(DOC_ID)
+    const localDoc = localDocSet.get()
     const updatedDoc = automerge.change(localDoc, 'update', doc => (doc.boo = 2))
 
-    localDocSet.setDoc(DOC_ID, updatedDoc)
+    localDocSet.set(updatedDoc)
 
-    remoteDocSet.registerHandler((docId, remoteDoc) => {
+    remoteDocSet.base.registerHandler((_, remoteDoc) => {
       expect(remoteDoc.boo).toEqual(2)
       done()
     })

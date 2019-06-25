@@ -1,17 +1,17 @@
-import automerge, { DocSet, Message, Change } from 'automerge'
+import automerge, { Change, DocSet, Message } from 'automerge'
 import hypercore from 'hypercore'
 import db from 'random-access-idb'
 import * as Redux from 'redux'
-import signalhub from 'signalhub'
-import webrtcSwarm from 'webrtc-swarm'
 import { DeepPartial } from 'redux'
-
-import { actions } from './actions'
+import signalhub from 'signalhub'
+import { Instance as Peer } from 'simple-peer'
+import webrtcSwarm from 'webrtc-swarm'
 import { adaptReducer } from './adaptReducer'
 import { automergify } from './automergify'
-import { DEFAULT_PEER_HUBS, DOC_ID } from './constants'
 import { Connection } from './connection'
+import { DEFAULT_PEER_HUBS } from './constants'
 import debug from './debug'
+import { SingleDocSet } from './SingleDocSet'
 import { getMiddleware } from './getMiddleware'
 import { getKeys } from './keyManager'
 import { mockCrypto } from './mockCrypto'
@@ -50,9 +50,8 @@ export const createStore = async <T>({
       : initialize(feed, defaultState) // if not, initialize
 
   const connections: Connection<T | {}>[] = []
-  const docSet = new automerge.DocSet<T | {}>()
+  const docSet = new SingleDocSet<T | {}>(state)
   log('creating initial docSet', state)
-  docSet.setDoc(DOC_ID, state)
 
   // Create Redux store
   const reducer = adaptReducer(proxyReducer)
@@ -64,7 +63,7 @@ export const createStore = async <T>({
   const swarm = webrtcSwarm(hub)
 
   log('joined swarm', key)
-  swarm.on('peer', (peer: NodeJS.ReadWriteStream, id: any) => {
+  swarm.on('peer', (peer: Peer, id: any) => {
     log('peer', id, peer)
     connections.push(new Connection(docSet, peer))
     // TODO: Send peer our current state? or does this happen automatically from the constructor?

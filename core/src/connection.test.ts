@@ -1,8 +1,8 @@
 import automerge from 'automerge'
-import { Connection } from './connection'
-import { automergify } from './automergify'
-import { DOC_ID } from './constants'
 import Peer from 'simple-peer'
+import { automergify } from './automergify'
+import { Connection } from './connection'
+import { SingleDocSet } from './SingleDocSet'
 
 jest.mock('simple-peer')
 
@@ -14,11 +14,10 @@ interface FooState {
 describe('Connection', () => {
   const defaultState: FooState = automergify({ foo: 1 })
 
-  let docSet: automerge.DocSet<FooState>
+  let docSet: SingleDocSet<FooState>
 
   beforeEach(() => {
-    docSet = new automerge.DocSet<FooState>()
-    docSet.setDoc(DOC_ID, defaultState)
+    docSet = new SingleDocSet<FooState>(defaultState)
   })
 
   it('should expose its current state', () => {
@@ -31,9 +30,9 @@ describe('Connection', () => {
     const peer = new Peer()
     const connection = new Connection(docSet, peer)
 
-    const localDoc = docSet.getDoc(DOC_ID)
+    const localDoc = docSet.get()
     const updatedDoc = automerge.change(localDoc, 'update', doc => (doc.boo = 2))
-    docSet.setDoc(DOC_ID, updatedDoc)
+    docSet.set(updatedDoc)
 
     expect(connection.state.boo).toBe(2)
 

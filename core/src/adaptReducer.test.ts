@@ -1,8 +1,5 @@
-import * as automerge from 'automerge'
 import { adaptReducer } from './adaptReducer'
 import { automergify } from './automergify'
-import { Connection } from './connection'
-import { RECEIVE_MESSAGE_FROM_FEED, DOC_ID } from './constants'
 import { ProxyReducer } from './types'
 
 interface FooState {
@@ -30,8 +27,7 @@ describe('adaptReducer', () => {
   //   const reducer = adaptReducer(proxyReducer)
 
   //   const state1 = automergify({} as FooState)
-  //   const docSet = new automerge.DocSet<FooState>()
-  //   docSet.setDoc(DOC_ID, state1)
+  //   const docSet = new DocSetOfOne<FooState>(state1)
 
   //   const changes = automerge.getChanges(state1, automerge.change(state1, s => (s.foo = 2)))
 

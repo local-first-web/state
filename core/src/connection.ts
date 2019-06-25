@@ -1,10 +1,7 @@
 import automerge from 'automerge'
-import { automergify } from './automergify'
-import uuid from 'uuid'
-import { Message } from './types'
-import { DOC_ID } from './constants'
-import debug from './debug'
 import { Instance as Peer } from 'simple-peer'
+import debug from './debug'
+import { SingleDocSet } from './SingleDocSet'
 
 const log = debug('cevitxe:connection')
 
@@ -14,9 +11,9 @@ const log = debug('cevitxe:connection')
 export class Connection<T = any> {
   private automergeConnection: automerge.Connection<T>
   private peer?: Peer | null | undefined
-  private docSet: automerge.DocSet<T>
+  private docSet: SingleDocSet<T>
 
-  constructor(docSet: automerge.DocSet<T>, peer: Peer) {
+  constructor(docSet: SingleDocSet<T>, peer: Peer) {
     this.docSet = docSet
     this.peer = peer
 
@@ -25,16 +22,16 @@ export class Connection<T = any> {
       this.receive(message)
     })
 
-    this.automergeConnection = new automerge.Connection(this.docSet, this.send)
+    this.automergeConnection = new automerge.Connection(this.docSet.base, this.send)
     this.automergeConnection.open()
   }
 
   public get state(): T {
-    return this.docSet.getDoc(DOC_ID)
+    return this.docSet.get()
   }
 
   receive = (message: automerge.Message<T>) => {
-    const myDoc = this.docSet.getDoc(DOC_ID)
+    const myDoc = this.docSet.get()
     log('receive', message, myDoc)
     this.automergeConnection.receiveMsg(message as automerge.Message<T>) // this updates the doc
   }
