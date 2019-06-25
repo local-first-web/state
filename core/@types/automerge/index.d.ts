@@ -103,11 +103,7 @@ declare module 'automerge' {
     function applyPatch<T>(doc: T, patch: Patch): T
     function canRedo<T>(doc: T): boolean
     function canUndo<T>(doc: T): boolean
-    function change<T>(
-      doc: T,
-      message: string | undefined,
-      callback: ChangeFn<T>
-    ): [T, Change<T>]
+    function change<T>(doc: T, message: string | undefined, callback: ChangeFn<T>): [T, Change<T>]
     function change<T>(doc: T, callback: ChangeFn<T>): [T, Change<T>]
     function emptyChange<T>(doc: T, message?: string): [T, Change<T>]
     function getActorId<T>(doc: T): string
@@ -239,10 +235,7 @@ type Lookup<T, K> = K extends keyof T ? T[K] : never
 
 // Type utility function: KeyArray
 // Enforces that the array provided for key order only contains keys of T
-type KeyArray<
-  T,
-  KeyOrder extends Array<keyof T>
-> = keyof T extends KeyOrder[number]
+type KeyArray<T, KeyOrder extends Array<keyof T>> = keyof T extends KeyOrder[number]
   ? KeyOrder
   : Exclude<keyof T, KeyOrder[number]>[]
 

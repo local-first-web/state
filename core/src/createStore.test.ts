@@ -37,6 +37,7 @@ describe('createStore', () => {
     expect(store).toHaveProperty('subscribe')
   })
 
+  // This test probably doesn't provide value, we should have a higher-level e2e test instead
   // it('should have and use the RECEIVE_MESSAGE reducer', () => {
   //   // Modify the document in order to capture the automerge changes
   //   const state1 = store.getState()

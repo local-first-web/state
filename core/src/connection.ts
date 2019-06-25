@@ -2,6 +2,8 @@ import automerge from 'automerge'
 import { Instance as Peer } from 'simple-peer'
 import debug from './debug'
 import { SingleDocSet } from './SingleDocSet'
+import { Dispatch, AnyAction } from 'redux'
+import { RECEIVE_MESSAGE_FROM_FEED } from './constants'
 
 const log = debug('cevitxe:connection')
 
@@ -12,10 +14,12 @@ export class Connection<T = any> {
   private automergeConnection: automerge.Connection<T>
   private peer?: Peer | null | undefined
   private docSet: SingleDocSet<T>
+  private dispatch: Dispatch<AnyAction>
 
-  constructor(docSet: SingleDocSet<T>, peer: Peer) {
+  constructor(docSet: SingleDocSet<T>, peer: Peer, dispatch: Dispatch<AnyAction>) {
     this.docSet = docSet
     this.peer = peer
+    this.dispatch = dispatch
 
     this.peer.on('data', (data: any) => {
       const message = JSON.parse(data.toString())
@@ -33,7 +37,18 @@ export class Connection<T = any> {
   receive = (message: automerge.Message<T>) => {
     const myDoc = this.docSet.get()
     log('receive', message, myDoc)
-    this.automergeConnection.receiveMsg(message as automerge.Message<T>) // this updates the doc
+    if (message.changes) {
+      this.dispatch({
+        type: RECEIVE_MESSAGE_FROM_FEED,
+        payload: {
+          connection: this.automergeConnection,
+          message,
+        },
+      })
+      //dispatch the changes
+    } else {
+      this.automergeConnection.receiveMsg(message as automerge.Message<T>) // this updates the doc
+    }
   }
 
   send = (message: automerge.Message<T>) => {

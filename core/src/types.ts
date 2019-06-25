@@ -25,7 +25,7 @@ export interface Change {}
 
 // TODO: sort out the type for feed after building, can't get it to pick up the Feed type from the
 // ambient hypercore types
-export type MiddlewareFactory = <T>(feed: Feed<string>, docSet: SingleDocSet<T | {}>) => Middleware
+export type MiddlewareFactory = <T>(docSet: SingleDocSet<T | {}>) => Middleware
 
 // A keychain maps a discovery key (the id we share to the signal server) with a public/private
 // keypair (which we use for storage etc). The discovery key can be any string that we think is

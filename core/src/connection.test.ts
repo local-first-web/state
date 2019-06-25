@@ -11,6 +11,8 @@ interface FooState {
   boo?: number
 }
 
+const FAKE_DISPATCH = <T>(s: T) => s
+
 describe('Connection', () => {
   const defaultState: FooState = automergify({ foo: 1 })
 
@@ -22,13 +24,13 @@ describe('Connection', () => {
 
   it('should expose its current state', () => {
     const peer = new Peer({})
-    const connection = new Connection(docSet, peer)
+    const connection = new Connection(docSet, peer, FAKE_DISPATCH)
     expect(connection.state).toEqual(defaultState)
   })
 
   it('should send messages to the peer when local state changes', () => {
     const peer = new Peer()
-    const connection = new Connection(docSet, peer)
+    const connection = new Connection(docSet, peer, FAKE_DISPATCH)
 
     const localDoc = docSet.get()
     const updatedDoc = automerge.change(localDoc, 'update', doc => (doc.boo = 2))
@@ -41,7 +43,7 @@ describe('Connection', () => {
 
   it('should call end on peer when close is called', () => {
     const peer = new Peer()
-    const connection = new Connection(docSet, peer)
+    const connection = new Connection(docSet, peer, FAKE_DISPATCH)
     connection.close()
     expect(peer.destroy).toHaveBeenCalled()
   })
