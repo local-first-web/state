@@ -14,12 +14,12 @@ export class Connection<T = any> {
   private automergeConnection: automerge.Connection<T>
   private peer?: Peer | null | undefined
   private docSet: SingleDocSet<T>
-  private dispatch: Dispatch<AnyAction>
+  private dispatch?: Dispatch<AnyAction>
 
-  constructor(docSet: SingleDocSet<T>, peer: Peer, dispatch: Dispatch<AnyAction>) {
+  constructor(docSet: SingleDocSet<T>, peer: Peer, dispatch?: Dispatch<AnyAction>) {
     this.docSet = docSet
     this.peer = peer
-    this.dispatch = dispatch
+    if (dispatch) this.dispatch = dispatch
 
     this.peer.on('data', (data: any) => {
       const message = JSON.parse(data.toString())
@@ -38,14 +38,17 @@ export class Connection<T = any> {
     const myDoc = this.docSet.get()
     log('receive', message, myDoc)
     if (message.changes) {
-      this.dispatch({
-        type: RECEIVE_MESSAGE_FROM_FEED,
-        payload: {
-          connection: this.automergeConnection,
-          message,
-        },
-      })
-      //dispatch the changes
+      if (this.dispatch) {
+        this.dispatch({
+          type: RECEIVE_MESSAGE_FROM_FEED,
+          payload: {
+            connection: this.automergeConnection,
+            message,
+          },
+        })
+      } else {
+        this.automergeConnection.receiveMsg(message as automerge.Message<T>) // this updates the doc
+      }
     } else {
       this.automergeConnection.receiveMsg(message as automerge.Message<T>) // this updates the doc
     }

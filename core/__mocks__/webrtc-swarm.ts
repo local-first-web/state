@@ -6,7 +6,8 @@ export default (hub: any) => ({
   on: (event: string, cb: Function) => {
     switch (event) {
       case 'peer':
-        const peer = new Peer({ wrtc })
+        const initiator = hub.peers.length === 0
+        const peer = new Peer({ wrtc, initiator })
         const id = uuid()
 
         hub.peers.forEach((remotePeer: Peer.Instance) => {

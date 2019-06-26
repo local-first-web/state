@@ -6,7 +6,7 @@ import * as Redux from 'redux'
 import { createStore } from './createStore'
 import { ProxyReducer } from './types'
 import webrtcSwarm from 'webrtc-swarm'
-import signalhub from 'signalhub'
+import { cleanup } from 'signalhub'
 
 jest.mock('webrtc-swarm')
 jest.mock('signalhub')
@@ -34,6 +34,8 @@ describe('createStore', () => {
     store = await createStore({ discoveryKey, proxyReducer, defaultState })
   })
 
+  afterEach(() => cleanup())
+
   it('should return something that looks like a store', () => {
     expect(store).toHaveProperty('getState')
     expect(store).toHaveProperty('dispatch')
@@ -41,15 +43,19 @@ describe('createStore', () => {
   })
 
   describe('doin it live', () => {
-    it.only('should communicate changes from one store to another', async () => {
+    it('should communicate changes from one store to another', async done => {
       // instantiate remote store
       const remoteStore = await createStore({ discoveryKey, proxyReducer })
 
       // change something in one
       store.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
 
-      // verify that change is reflected in the other
-      expect(remoteStore.getState().foo).toEqual(42)
+      // TODO: Find a better way to wait for the remote store to sync changes
+      setTimeout(() => {
+        // verify that change is reflected in the other
+        expect(remoteStore.getState().foo).toEqual(42)
+        done()
+      }, 1000)
     })
   })
 

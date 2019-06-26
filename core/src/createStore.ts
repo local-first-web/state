@@ -49,9 +49,11 @@ export const createStore = async <T>({
 
   log('joined swarm', key)
   swarm.on('peer', (peer: Peer, id: any) => {
-    console.log('peer', peer)
-    log('peer', id, peer)
-    connections.push(new Connection(docSet, peer, store.dispatch))
+    //@ts-ignore
+    log('peer', peer._id)
+    peer.on('connect', () => {
+      connections.push(new Connection(docSet, peer, store.dispatch))
+    })
     // TODO: Send peer our current state? or does this happen automatically from the constructor?
   })
 

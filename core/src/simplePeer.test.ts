@@ -1,4 +1,8 @@
 import Peer from 'simple-peer'
+import automerge from 'automerge'
+import { automergify } from './automergify'
+import { SingleDocSet } from './SingleDocSet'
+import { Connection } from './connection'
 
 const wrtc = require('wrtc')
 let localPeer: Peer.Instance
@@ -33,44 +37,35 @@ describe('simple-peer', () => {
 
 // Don't need this once we have e2e tests on createStore
 
-// describe('connection (live)', () => {
-//   interface FooState {
-//     foo?: number
-//     boo?: number
-//   }
+describe('connection (live)', () => {
+  interface FooState {
+    foo?: number
+    boo?: number
+  }
 
-//   const defaultState: FooState = automergify({ foo: 1 })
+  const defaultState: FooState = automergify({ foo: 1 })
 
-//   let localDocSet: SingleDocSet<FooState>
-//   const makeDispatch = (docSet: SingleDocSet<FooState>): Dispatch<AnyAction> => ({
-//     type,
-//     payload,
-//   }) => {
-//     return {}
-//   }
+  let localDocSet: SingleDocSet<FooState>
 
-//   beforeEach(() => {
-//     localDocSet = new SingleDocSet<FooState>(defaultState)
-//   })
+  beforeEach(() => {
+    localDocSet = new SingleDocSet<FooState>(defaultState)
+  })
 
-//   it('communicates local changes to remote peer', done => {
-//     const remoteDocSet = new SingleDocSet<FooState>(automergify({}))
+  it('communicates local changes to remote peer', done => {
+    const remoteDocSet = new SingleDocSet<FooState>(automergify({}))
 
-//     localPeer.on('connect', () => new Connection<FooState>(localDocSet, localPeer, makeDispatch(localDocSet)))
+    localPeer.on('connect', () => new Connection<FooState>(localDocSet, localPeer))
 
-//     remotePeer.on(
-//       'connect',
-//       () => new Connection<FooState>(remoteDocSet, remotePeer, makeDispatch(localDocSet))
-//     )
+    remotePeer.on('connect', () => new Connection<FooState>(remoteDocSet, remotePeer))
 
-//     const localDoc = localDocSet.get()
-//     const updatedDoc = automerge.change(localDoc, 'update', doc => (doc.boo = 2))
+    const localDoc = localDocSet.get()
+    const updatedDoc = automerge.change(localDoc, 'update', doc => (doc.boo = 2))
 
-//     localDocSet.set(updatedDoc)
+    localDocSet.set(updatedDoc)
 
-//     remoteDocSet.base.registerHandler((_, remoteDoc) => {
-//       expect(remoteDoc.boo).toEqual(2)
-//       done()
-//     })
-//   })
-// })
+    remoteDocSet.base.registerHandler((_, remoteDoc) => {
+      expect(remoteDoc.boo).toEqual(2)
+      done()
+    })
+  })
+})
