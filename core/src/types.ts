@@ -10,7 +10,8 @@ export interface CreateStoreOptions<T> {
   defaultState?: Partial<T>
 
   discoveryKey: string
-
+  onConnect?: Function
+  onReceive?: Function
   // hypercore feed options
   databaseName?: string
   peerHubs?: string[]

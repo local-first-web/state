@@ -55,7 +55,6 @@ describe('connection (live)', () => {
     const remoteDocSet = new SingleDocSet<FooState>(automergify({}))
 
     localPeer.on('connect', () => new Connection<FooState>(localDocSet, localPeer))
-
     remotePeer.on('connect', () => new Connection<FooState>(remoteDocSet, remotePeer))
 
     const localDoc = localDocSet.get()

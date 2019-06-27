@@ -42,20 +42,18 @@ describe('createStore', () => {
     expect(store).toHaveProperty('subscribe')
   })
 
-  describe('doin it live', () => {
+  describe.only('doin it live', () => {
     it('should communicate changes from one store to another', async done => {
       // instantiate remote store
-      const remoteStore = await createStore({ discoveryKey, proxyReducer })
-
-      // change something in one
-      store.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
-
-      // TODO: Find a better way to wait for the remote store to sync changes
-      setTimeout(() => {
-        // verify that change is reflected in the other
+      const onReceive = (message: any) => {
         expect(remoteStore.getState().foo).toEqual(42)
         done()
-      }, 1000)
+      }
+
+      const remoteStore = await createStore({ discoveryKey, proxyReducer, onReceive })
+
+      // change something in the local store
+      store.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
     })
   })
 
@@ -66,45 +64,3 @@ describe('createStore', () => {
     expect(doc.foo).toEqual(3)
   })
 })
-
-// describe('connection (live)', () => {
-//   interface FooState {
-//     foo?: number
-//     boo?: number
-//   }
-
-//   const defaultState: FooState = automergify({ foo: 1 })
-
-//   let localDocSet: SingleDocSet<FooState>
-//   const makeDispatch = (docSet: SingleDocSet<FooState>): Dispatch<AnyAction> => ({
-//     type,
-//     payload,
-//   }) => {
-//     return {}
-//   }
-
-//   beforeEach(() => {
-//     localDocSet = new SingleDocSet<FooState>(defaultState)
-//   })
-
-//   it('communicates local changes to remote peer', done => {
-//     const remoteDocSet = new SingleDocSet<FooState>(automergify({}))
-
-//     localPeer.on('connect', () => new Connection<FooState>(localDocSet, localPeer, makeDispatch(localDocSet)))
-
-//     remotePeer.on(
-//       'connect',
-//       () => new Connection<FooState>(remoteDocSet, remotePeer, makeDispatch(localDocSet))
-//     )
-
-//     const localDoc = localDocSet.get()
-//     const updatedDoc = automerge.change(localDoc, 'update', doc => (doc.boo = 2))
-
-//     localDocSet.set(updatedDoc)
-
-//     remoteDocSet.base.registerHandler((_, remoteDoc) => {
-//       expect(remoteDoc.boo).toEqual(2)
-//       done()
-//     })
-//   })
-// })
