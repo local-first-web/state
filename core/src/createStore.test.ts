@@ -42,25 +42,25 @@ describe('createStore', () => {
     expect(store).toHaveProperty('subscribe')
   })
 
-  describe.only('doin it live', () => {
-    it('should communicate changes from one store to another', async done => {
-      // instantiate remote store
-      const onReceive = (message: any) => {
-        expect(remoteStore.getState().foo).toEqual(42)
-        done()
-      }
-
-      const remoteStore = await createStore({ discoveryKey, proxyReducer, onReceive })
-
-      // change something in the local store
-      store.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
-    })
-  })
-
   it('should use the reducer we gave it', () => {
     store.dispatch({ type: 'SET_FOO', payload: { value: 3 } })
 
     const doc = store.getState()
     expect(doc.foo).toEqual(3)
   })
+
+  it('should communicate changes from one store to another', async done => {
+    // instantiate remote store
+    const onReceive = (message: any) => {
+      expect(remoteStore.getState().foo).toEqual(42)
+      done()
+    }
+
+    const remoteStore = await createStore({ discoveryKey, proxyReducer, onReceive })
+
+    // change something in the local store
+    store.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
+  })
+
+
 })

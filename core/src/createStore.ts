@@ -25,7 +25,6 @@ export const createStore = async <T>({
   defaultState = {}, // If defaultState is not provided, we're joining an existing store
   middlewares = [],
   discoveryKey,
-  onConnect,
   onReceive,
 }: CreateStoreOptions<T>): Promise<Redux.Store> => {
   const { key, secretKey } = getKeys(discoveryKey)
@@ -54,16 +53,12 @@ export const createStore = async <T>({
   swarm.on('peer', (peer: Peer, id: any) => {
     log('peer', peer)
     connections.push(new Connection(docSet, peer, store.dispatch, onReceive))
-    peer.on('connect', () => {
-      log('peer connect', peer)
-      if (onConnect) onConnect(peer)
-    })
-    // TODO: Send peer our current state? or does this happen automatically from the constructor?
   })
 
   return store
 }
 
+// TODO: Get persistence back
 const rehydrateFrom = async <T>(): Promise<T> => {
   return {} as T
   // log('rehydrating from stored messages')

@@ -16,7 +16,7 @@ export default (hub: any) => ({
         })
 
         hub.peers.push(peer)
-        cb(peer, id)
+        peer.on('connect', () => cb(peer, id))
         break
 
       default:
