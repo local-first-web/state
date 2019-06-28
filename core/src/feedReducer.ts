@@ -1,6 +1,6 @@
 import automerge from 'automerge'
 import { Reducer, AnyAction } from 'redux'
-import { RECEIVE_MESSAGE_FROM_FEED } from './constants'
+import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
 
 interface ReceiveMessagePayload<T> {
   message: automerge.Message<any>
@@ -9,7 +9,7 @@ interface ReceiveMessagePayload<T> {
 
 export const feedReducer: Reducer = <T>(state: T, { type, payload }: AnyAction): T => {
   switch (type) {
-    case RECEIVE_MESSAGE_FROM_FEED: {
+    case RECEIVE_MESSAGE_FROM_PEER: {
       // After setting up the feed in `createStore`, we listen to our connections and dispatch the
       // incoming messages to our store. This is the reducer that handles those dispatches.
       const { message, connection } = payload as ReceiveMessagePayload<T>

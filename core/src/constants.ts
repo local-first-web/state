@@ -1,4 +1,4 @@
-export const RECEIVE_MESSAGE_FROM_FEED = 'cevitxe/RECEIVE_MESSAGE_FROM_FEED'
+export const RECEIVE_MESSAGE_FROM_PEER = 'cevitxe/RECEIVE_MESSAGE_FROM_PEER'
 
 export const INITIALIZE = 'cevitxe/INITIALIZE'
 

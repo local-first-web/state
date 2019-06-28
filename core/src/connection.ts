@@ -3,7 +3,7 @@ import { Instance as Peer } from 'simple-peer'
 import debug from './debug'
 import { SingleDocSet } from './SingleDocSet'
 import { Dispatch, AnyAction } from 'redux'
-import { RECEIVE_MESSAGE_FROM_FEED } from './constants'
+import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
 
 const log = debug('cevitxe:connection')
 
@@ -44,7 +44,7 @@ export class Connection<T = any> {
       log('changes received', message.changes)
       if (this.dispatch) {
         this.dispatch({
-          type: RECEIVE_MESSAGE_FROM_FEED,
+          type: RECEIVE_MESSAGE_FROM_PEER,
           payload: {
             connection: this.automergeConnection,
             message,
