@@ -12,7 +12,7 @@ import debug from './debug'
 import { SingleDocSet } from './SingleDocSet'
 import { getMiddleware } from './getMiddleware'
 import { getKeys } from './keyManager'
-import { CreateStoreOptions, CevitxeStore } from './types'
+import { CreateStoreOptions } from './types'
 import hypercore from 'hypercore'
 import db from 'random-access-idb'
 import { mockCrypto } from './mockCrypto'
@@ -23,28 +23,32 @@ const valueEncoding = 'utf-8'
 const crypto = mockCrypto
 
 export const createStore = async <T>({
+  databaseName = 'cevitxe-data',
   peerHubs = DEFAULT_PEER_HUBS,
   proxyReducer,
   defaultState = {}, // If defaultState is not provided, we're joining an existing store
   middlewares = [],
   discoveryKey,
   onReceive,
-}: CreateStoreOptions<T>): Promise<CevitxeStore> => {
+}: CreateStoreOptions<T>): Promise<Redux.Store> => {
   const { key, secretKey } = getKeys(discoveryKey)
-
-  const dbName = getDbName(discoveryKey)
+  log('given onReceive', onReceive)
+  //const dbName = getDbName(discoveryKey)
+  const dbName = `${databaseName}-${discoveryKey.substr(0, 12)}`
   const storage = db(dbName)
-  
+
   const feed: Feed<string> = hypercore(storage, key, { secretKey, valueEncoding, crypto })
   feed.on('error', (err: any) => console.error(err))
-  
+
+  log('creating feedReady')
   const feedReady = new Promise(yes => feed.on('ready', () => yes()))
   await feedReady
-  
-  const hasPersistedData = feed.length > 0
-  console.log('feed ready', feed)
+  log('feedReady awaited')
 
-  const state: T | {} = hasPersistedData // is there anything in storag?)
+  const hasPersistedData = feed.length > 0
+  //console.log('feed ready', feed)
+
+  const state: T | {} = hasPersistedData // is there anything in storage?)
     ? await rehydrateFrom(feed) // if so, rehydrate state from that
     : initialize(feed, defaultState) // if not, initialize
 
@@ -63,7 +67,8 @@ export const createStore = async <T>({
 
   log('joined swarm', key)
   swarm.on('peer', (peer: Peer, id: any) => {
-    log('peer', peer)
+    //@ts-ignore
+    log('peer', peer._id)
     connections.push(new Connection(docSet, peer, store.dispatch, onReceive))
   })
 
@@ -77,25 +82,24 @@ export const createStore = async <T>({
   //   const changeMessages = (message.changes || []).map((c: Change<T>) => c.message)
   //   log('dispatch from feed', changeMessages)
   // })
-  return { feed, store }
+  return store
 }
 
-// TODO: Get persistence back
 const rehydrateFrom = async <T>(feed: Feed<string>): Promise<T> => {
   const batch = new Promise(yes => feed.getBatch(0, feed.length, (_, data) => yes(data)))
   const data = (await batch) as string[]
-  const changes = data.map(d => JSON.parse(d))
-  log('rehydrating from stored messages', changes)
+  const changeSets = data.map(d => JSON.parse(d))
+  log('rehydrating from stored change sets', changeSets)
   let state = automerge.init<T>()
-  state = automerge.applyChanges(state, changes)
+  changeSets.forEach(changes => (state = automerge.applyChanges(state, changes)))
   return state
 }
 
 const initialize = <T>(feed: Feed<string>, initialState: T): T => {
   log('nothing in storage; initializing')
   const state = automergify(initialState)
-  const changes = automerge.getChanges(automerge.init(), state)
-  feed.append(JSON.stringify(changes))
+  const changeSet = automerge.getChanges(automerge.init(), state)
+  feed.append(JSON.stringify(changeSet))
   return state
 }
 

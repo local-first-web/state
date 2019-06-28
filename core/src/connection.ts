@@ -17,7 +17,12 @@ export class Connection<T = any> {
   private dispatch?: Dispatch<AnyAction>
   private onReceive?: Function
 
-  constructor(docSet: SingleDocSet<T>, peer: Peer, dispatch?: Dispatch<AnyAction>, onReceive?: Function) {
+  constructor(
+    docSet: SingleDocSet<T>,
+    peer: Peer,
+    dispatch?: Dispatch<AnyAction>,
+    onReceive?: Function
+  ) {
     this.docSet = docSet
     this.peer = peer
     if (dispatch) this.dispatch = dispatch
