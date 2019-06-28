@@ -22,6 +22,8 @@ const log = debug('cevitxe:createStore')
 const valueEncoding = 'utf-8'
 const crypto = mockCrypto
 
+const needlessPromise = () => new Promise(resolve => setTimeout(() => resolve(), 100))
+
 export const createStore = async <T>({
   databaseName = 'cevitxe-data',
   peerHubs = DEFAULT_PEER_HUBS,
@@ -32,18 +34,18 @@ export const createStore = async <T>({
   onReceive,
 }: CreateStoreOptions<T>): Promise<Redux.Store> => {
   const { key, secretKey } = getKeys(discoveryKey)
-  log('given onReceive', onReceive)
-  //const dbName = getDbName(discoveryKey)
-  const dbName = `${databaseName}-${discoveryKey.substr(0, 12)}`
+  const dbName = getDbName(databaseName, discoveryKey)
   const storage = db(dbName)
 
   const feed: Feed<string> = hypercore(storage, key, { secretKey, valueEncoding, crypto })
   feed.on('error', (err: any) => console.error(err))
 
-  log('creating feedReady')
+  // log('creating feedReady')
   const feedReady = new Promise(yes => feed.on('ready', () => yes()))
   await feedReady
-  log('feedReady awaited')
+  // log('feedReady awaited')
+
+  //await needlessPromise()
 
   const hasPersistedData = feed.length > 0
   //console.log('feed ready', feed)
@@ -105,4 +107,5 @@ const initialize = <T>(feed: Feed<string>, initialState: T): T => {
 
 export const joinStore = createStore
 
-export const getDbName = (discoveryKey: string) => `cevitxe-data-${discoveryKey.substr(0, 12)}`
+export const getDbName = (databaseName: string, discoveryKey: string) =>
+  `${databaseName}-${discoveryKey.substr(0, 12)}`
