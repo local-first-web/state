@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@types/simple-peer": "^6.1.5",
-    "automerge": "herbcaudill/automerge#refactor-connection",
+    "automerge": "*",
     "debug": "^4.1.1",
     "hypercore": "^7.2.2",
     "hypercore-crypto": "^1.0.0",
