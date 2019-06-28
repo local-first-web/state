@@ -1,5 +1,5 @@
 import automerge from 'automerge'
-import { AnyAction, Middleware, Reducer } from 'redux'
+import { AnyAction, Middleware, Reducer, Store } from 'redux'
 import { SingleDocSet } from './SingleDocSet'
 export type ProxyReducer<T> = (action: AnyAction) => ChangeFn<T> | null
 
@@ -17,6 +17,11 @@ export interface CreateStoreOptions<T> {
   peerHubs?: string[]
 }
 
+export interface CevitxeStore {
+  feed: Feed<string>
+  store: Store,
+}
+
 export type ReducerConverter = <T>(proxy: ProxyReducer<T>) => Reducer
 
 // TODO: replace these with the real automerge types?
@@ -26,7 +31,7 @@ export interface Change {}
 
 // TODO: sort out the type for feed after building, can't get it to pick up the Feed type from the
 // ambient hypercore types
-export type MiddlewareFactory = <T>(docSet: SingleDocSet<T | {}>) => Middleware
+export type MiddlewareFactory = <T>(feed: Feed<string>, docSet: SingleDocSet<T | {}>) => Middleware
 
 // A keychain maps a discovery key (the id we share to the signal server) with a public/private
 // keypair (which we use for storage etc). The discovery key can be any string that we think is

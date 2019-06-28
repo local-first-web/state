@@ -29,7 +29,7 @@ export const createStore = async <T>({
   middlewares = [],
   discoveryKey,
   onReceive,
-}: CreateStoreOptions<T>): Promise<Redux.Store> => {
+}: CreateStoreOptions<T>): Promise<CevitxeStore> => {
   const { key, secretKey } = getKeys(discoveryKey)
 
   const dbName = getDbName(discoveryKey)
@@ -67,7 +67,6 @@ export const createStore = async <T>({
     connections.push(new Connection(docSet, peer, store.dispatch, onReceive))
   })
 
-  return store
   // const start = feed.length // skip any items we already read when initializing
   // const stream = feed.createReadStream({ start, live: true })
   // // Listen for new items the feed and dispatch them to our redux store
@@ -78,6 +77,7 @@ export const createStore = async <T>({
   //   const changeMessages = (message.changes || []).map((c: Change<T>) => c.message)
   //   log('dispatch from feed', changeMessages)
   // })
+  return { feed, store }
 }
 
 // TODO: Get persistence back
