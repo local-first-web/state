@@ -21,7 +21,7 @@ afterEach(() => {
 })
 
 describe('simple-peer', () => {
-  test('single-page example from readme', done => {
+  test('simple-peer example from readme', done => {
     localPeer.on('connect', () => {
       // wait for 'connect' event before using the data channel
       localPeer.send('hey peer2, how is it going?')
