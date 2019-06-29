@@ -15,9 +15,7 @@ const log = debug('cevitxe:createStoreTests')
 jest.mock('webrtc-swarm')
 jest.mock('signalhub')
 
-let discoveryKey = '922e233117982b2fddaed3ad6adf8fc7bde6b4d8d8802a67663fdedbfedf00ea'
-
-const needlessPromise = () => new Promise(resolve => setTimeout(() => resolve(), 100))
+const pause = (t = 100) => new Promise(ok => setTimeout(ok, t))
 
 interface FooState {
   foo?: number
@@ -34,6 +32,7 @@ const proxyReducer: ProxyReducer<FooState> = ({ type, payload }) => {
 
 describe('createStore', () => {
   let store: Redux.Store
+  let discoveryKey: string
 
   beforeEach(async () => {
     log('beforeEach')
@@ -59,12 +58,29 @@ describe('createStore', () => {
     expect(store).toHaveProperty('subscribe')
   })
 
-  /*
-Notes:
+  it('should communicate changes from one store to another', async done => {
+    // instantiate remote store
+    const remoteStore = await createStore({
+      defaultState: { foo: -1 },
+      discoveryKey,
+      proxyReducer,
+      onReceive,
+      databaseName: 'remote-store',
+    })
 
-I can get parallel tests to pass by creating a new discovery key in beforeEach. 
-This still falls down when creating multiple stores in the same test because 
-they share a feed DB (due to how we name them)
+    function onReceive(message: any) {
+      expect(remoteStore.getState().foo).toEqual(42)
+      done()
+    }
+
+    // This is commented out so we get a failing test even if the peers are talking. No false positives here!
+    // change something in the local store
+    store.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
+  })
+})
+
+/*
+Notes:
 
 To combat the shared feed DB in the same test I'm passing a different databaseName for the remote store, 
 which gets them properly created with expected initial states but the peers aren't sending data, investigating now.
@@ -105,22 +121,3 @@ TODO after we get this sorted out:
 
 
 */
-  it.skip('should communicate changes from one store to another', async done => {
-    // instantiate remote store
-    const onReceive = (message: any) => {
-      expect(remoteStore.getState().foo).toEqual(42)
-      done()
-    }
-
-    const remoteStore = await createStore({
-      discoveryKey,
-      proxyReducer,
-      onReceive,
-      databaseName: 'remote-store',
-    })
-
-    // This is commented out so we get a failing test even if the peers are talking. No false positives here!
-    // change something in the local store
-    //store.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
-  })
-})
