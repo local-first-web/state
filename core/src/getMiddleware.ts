@@ -15,7 +15,6 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet) => store => next 
 
   // after changes
   const nextState = store.getState()
-
   if (!action.payload.cameFromFeed && docSet) {
     log('calling setDoc', nextState)
     docSet.set(nextState)
