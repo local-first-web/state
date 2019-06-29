@@ -51,7 +51,7 @@ describe('connection (live)', () => {
     localDocSet = new SingleDocSet<FooState>(defaultState)
   })
 
-  it.skip('communicates local changes to remote peer', done => {
+  it('communicates local changes to remote peer', done => {
     const remoteDocSet = new SingleDocSet<FooState>(A.from({}))
 
     localPeer.on('connect', () => new Connection<FooState>(localDocSet, localPeer))
