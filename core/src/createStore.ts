@@ -5,7 +5,7 @@ import signalhub from 'signalhub'
 import webrtcSwarm from 'webrtc-swarm'
 import { Instance as Peer } from 'simple-peer'
 import { adaptReducer } from './adaptReducer'
-import { automergify } from './automergify'
+
 import { Connection } from './connection'
 import { DEFAULT_PEER_HUBS } from './constants'
 import debug from './debug'
@@ -99,8 +99,7 @@ const rehydrateFrom = async <T>(feed: Feed<string>) => {
 
 const initialize = <T>(feed: Feed<string>, initialState: T) => {
   log('nothing in storage; initializing')
-  const state = automergify(initialState)
-  const changeSet = automerge.getChanges(automerge.init(), state)
+  const state = A.from(initialState)
   feed.append(JSON.stringify(changeSet))
   return state
 }

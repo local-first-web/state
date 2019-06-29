@@ -1,6 +1,6 @@
 import automerge from 'automerge'
 import Peer from 'simple-peer'
-import { automergify } from './automergify'
+
 import { Connection } from './connection'
 import { SingleDocSet } from './SingleDocSet'
 
@@ -14,7 +14,7 @@ interface FooState {
 const FAKE_DISPATCH = <T>(s: T) => s
 
 describe('Connection', () => {
-  const defaultState: FooState = automergify({ foo: 1 })
+  const defaultState: FooState = A.from({ foo: 1 })
 
   let docSet: SingleDocSet<FooState>
 

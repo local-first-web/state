@@ -1,5 +1,5 @@
+import A from 'automerge'
 import { adaptReducer } from './adaptReducer'
-import { automergify } from './automergify'
 import { ProxyReducer } from './types'
 
 interface FooState {
@@ -15,7 +15,7 @@ describe('adaptReducer', () => {
 
   describe('should return a working reducer', () => {
     const reducer = adaptReducer(proxyReducer)
-    const state = automergify({})
+    const state = A.from({})
     const newState = reducer(state, { type: 'FOO' })
 
     it('should return a function', () => expect(typeof reducer).toBe('function'))
@@ -26,7 +26,7 @@ describe('adaptReducer', () => {
   // describe('should apply automerge changes from the feed', () => {
   //   const reducer = adaptReducer(proxyReducer)
 
-  //   const state1 = automergify({} as FooState)
+  //   const state1 = A.from({} as FooState)
   //   const docSet = new DocSetOfOne<FooState>(state1)
 
   //   const changes = automerge.getChanges(state1, automerge.change(state1, s => (s.foo = 2)))
