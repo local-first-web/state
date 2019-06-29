@@ -1,4 +1,4 @@
-import automerge from 'automerge'
+import A from 'automerge'
 
 // The `automerge.Connection` class takes an `automerge.DocSet`, which is designed to manage
 // multiple documents. At this point we're only using a single document, so rather than have to keep
@@ -11,16 +11,16 @@ export class SingleDocSet<T> {
   private DOC_ID = '1'
 
   // The underlying DocSet is available as `base`, for properties that we're not otherwise exposing
-  public base: automerge.DocSet<T>
+  public base: A.DocSet<T>
 
   // example: `const docSet = new SingleDocSet(state)`
-  constructor(doc: T) {
-    this.base = new automerge.DocSet()
+  constructor(doc: A.Doc<T>) {
+    this.base = new A.DocSet()
     this.set(doc)
   }
 
   // example: `docSet.set(state)`
-  public set(doc: T) {
+  public set(doc: A.Doc<T>) {
     this.base.setDoc(this.DOC_ID, doc)
   }
 

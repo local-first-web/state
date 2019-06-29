@@ -1,21 +1,21 @@
-import automerge, { Change, DocSet, Message } from 'automerge'
+import A from 'automerge'
+import hypercore from 'hypercore'
+import db from 'random-access-idb'
 import * as Redux from 'redux'
 import { DeepPartial } from 'redux'
 import signalhub from 'signalhub'
-import webrtcSwarm from 'webrtc-swarm'
 import { Instance as Peer } from 'simple-peer'
+import webrtcSwarm from 'webrtc-swarm'
 import { adaptReducer } from './adaptReducer'
 
 import { Connection } from './connection'
 import { DEFAULT_PEER_HUBS } from './constants'
 import debug from './debug'
-import { SingleDocSet } from './SingleDocSet'
 import { getMiddleware } from './getMiddleware'
 import { getKeys } from './keyManager'
-import { CreateStoreOptions } from './types'
-import hypercore from 'hypercore'
-import db from 'random-access-idb'
 import { mockCrypto } from './mockCrypto'
+import { SingleDocSet } from './SingleDocSet'
+import { CreateStoreOptions } from './types'
 
 const log = debug('cevitxe:createStore')
 
@@ -61,7 +61,7 @@ export const createStore = async <T>({
   // Create Redux store
   const reducer = adaptReducer(proxyReducer)
   const enhancer = Redux.applyMiddleware(...middlewares, getMiddleware(feed, docSet))
-  const store = Redux.createStore(reducer, state as DeepPartial<DocSet<T>>, enhancer)
+  const store = Redux.createStore(reducer, state as DeepPartial<A.DocSet<T>>, enhancer)
 
   // Now that we've initialized the store, it's safe to subscribe to the feed without worrying about race conditions
   const hub = signalhub(discoveryKey, peerHubs)
@@ -92,14 +92,15 @@ const rehydrateFrom = async <T>(feed: Feed<string>) => {
   const data = (await batch) as string[]
   const changeSets = data.map(d => JSON.parse(d))
   log('rehydrating from stored change sets', changeSets)
-  let state = automerge.init<T>()
-  changeSets.forEach(changes => (state = automerge.applyChanges(state, changes)))
+  let state = A.init<T>()
+  changeSets.forEach(changes => (state = A.applyChanges(state, changes)))
   return state
 }
 
 const initialize = <T>(feed: Feed<string>, initialState: T) => {
   log('nothing in storage; initializing')
   const state = A.from(initialState)
+  const changeSet = A.getChanges(A.init(), state)
   feed.append(JSON.stringify(changeSet))
   return state
 }

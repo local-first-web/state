@@ -1,4 +1,4 @@
-import automerge from 'automerge'
+import A from 'automerge'
 import { Instance as Peer } from 'simple-peer'
 import debug from './debug'
 import { SingleDocSet } from './SingleDocSet'
@@ -11,7 +11,7 @@ const log = debug('cevitxe:connection')
 // and one peer. `automerge.Connection` takes a DocSet.
 
 export class Connection<T = any> {
-  private automergeConnection: automerge.Connection<T>
+  private automergeConnection: A.Connection<T>
   private peer?: Peer | null | undefined
   private docSet: SingleDocSet<T>
   private dispatch?: Dispatch<AnyAction>
@@ -34,7 +34,7 @@ export class Connection<T = any> {
       this.receive(message)
     })
 
-    this.automergeConnection = new automerge.Connection(this.docSet.base, this.send)
+    this.automergeConnection = new A.Connection(this.docSet.base, this.send)
     this.automergeConnection.open()
   }
 
@@ -42,7 +42,7 @@ export class Connection<T = any> {
     return this.docSet.get()
   }
 
-  receive = (message: automerge.Message<T>) => {
+  receive = (message: A.Message<T>) => {
     const myDoc = this.docSet.get()
     log('receive', message, myDoc)
     if (message.changes) {
@@ -57,7 +57,7 @@ export class Connection<T = any> {
         })
       } else {
         log(`this probably shouldn't happen in production`)
-        this.automergeConnection.receiveMsg(message as automerge.Message<T>) // this updates the doc
+        this.automergeConnection.receiveMsg(message as A.Message<T>) // this updates the doc
       }
       if (this.onReceive) {
         log('changes, calling onReceive')
@@ -65,11 +65,11 @@ export class Connection<T = any> {
       }
     } else {
       log(`no changes, catch up with peer`)
-      this.automergeConnection.receiveMsg(message as automerge.Message<T>) // this updates the doc
+      this.automergeConnection.receiveMsg(message as A.Message<T>) // this updates the doc
     }
   }
 
-  send = (message: automerge.Message<T>) => {
+  send = (message: A.Message<T>) => {
     log('send', message)
     if (!this.peer) return
     this.peer.send(JSON.stringify(message))

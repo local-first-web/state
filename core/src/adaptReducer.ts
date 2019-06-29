@@ -1,4 +1,4 @@
-import automerge from 'automerge'
+import A from 'automerge'
 import { feedReducer } from './feedReducer'
 import { ReducerConverter } from './types'
 
@@ -14,7 +14,7 @@ const convertToReduxReducer: ReducerConverter = proxyReducer => (state, { type, 
   const msg = `${type}: ${JSON.stringify(payload)}`
   const fn = proxyReducer({ type, payload })
   if (!fn || !state) return state // no matching function - return the unmodified state
-  const newState = automerge.change(state, msg, fn) // return a modified Automerge object
+  const newState = A.change(state, msg, fn) // return a modified Automerge object
   // TODO: do we need a reference to the Connection here?
   return newState
 }

@@ -105,7 +105,7 @@ TODO after we get this sorted out:
 
 
 */
-  it.only('should communicate changes from one store to another', async done => {
+  it.skip('should communicate changes from one store to another', async done => {
     // instantiate remote store
     const onReceive = (message: any) => {
       expect(remoteStore.getState().foo).toEqual(42)

@@ -1,10 +1,10 @@
-import automerge from 'automerge'
+import A from 'automerge'
 import { Reducer, AnyAction } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
 
 interface ReceiveMessagePayload<T> {
-  message: automerge.Message<any>
-  connection: automerge.Connection<T>
+  message: A.Message<any>
+  connection: A.Connection<T>
 }
 
 export const feedReducer: Reducer = <T>(state: T, { type, payload }: AnyAction) => {

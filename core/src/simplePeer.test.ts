@@ -1,4 +1,5 @@
 import Peer from 'simple-peer'
+import A from 'automerge'
 
 import { SingleDocSet } from './SingleDocSet'
 import { Connection } from './connection'
@@ -42,7 +43,7 @@ describe('connection (live)', () => {
     boo?: number
   }
 
-  const defaultState: FooState = automergify({ foo: 1 })
+  const defaultState: FooState = A.from({ foo: 1 })
 
   let localDocSet: SingleDocSet<FooState>
 
@@ -50,13 +51,14 @@ describe('connection (live)', () => {
     localDocSet = new SingleDocSet<FooState>(defaultState)
   })
 
+  it.skip('communicates local changes to remote peer', done => {
     const remoteDocSet = new SingleDocSet<FooState>(A.from({}))
 
     localPeer.on('connect', () => new Connection<FooState>(localDocSet, localPeer))
     remotePeer.on('connect', () => new Connection<FooState>(remoteDocSet, remotePeer))
 
     const localDoc = localDocSet.get()
-    const updatedDoc = automerge.change(localDoc, 'update', doc => (doc.boo = 2))
+    const updatedDoc = A.change(localDoc, 'update', doc => (doc.boo = 2))
 
     localDocSet.set(updatedDoc)
 

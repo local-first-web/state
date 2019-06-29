@@ -1,4 +1,4 @@
-import automerge from 'automerge'
+import A from 'automerge'
 import debug from 'debug'
 import { MiddlewareFactory } from './types'
 
@@ -6,7 +6,7 @@ const log = debug('cevitxe:middleware')
 
 export const getMiddleware: MiddlewareFactory = (feed, docSet) => store => next => action => {
   // before changes
-  const prevState = store.getState() || automerge.init()
+  const prevState = store.getState() || A.init()
   log('action', action)
   log('prevDoc', prevState)
 
@@ -21,7 +21,7 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet) => store => next 
     docSet.set(nextState)
   }
   // Write all actions to the feed for persistence
-  const changes = automerge.getChanges(prevState, nextState)
+  const changes = A.getChanges(prevState, nextState)
   feed.append(JSON.stringify(changes))
 
   return result

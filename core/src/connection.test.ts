@@ -1,4 +1,4 @@
-import automerge from 'automerge'
+import A from 'automerge'
 import Peer from 'simple-peer'
 
 import { Connection } from './connection'
@@ -33,7 +33,7 @@ describe('Connection', () => {
     const connection = new Connection(docSet, peer, FAKE_DISPATCH)
 
     const localDoc = docSet.get()
-    const updatedDoc = automerge.change(localDoc, 'update', doc => (doc.boo = 2))
+    const updatedDoc = A.change(localDoc, 'update', doc => (doc.boo = 2))
     docSet.set(updatedDoc)
 
     expect(connection.state.boo).toBe(2)
