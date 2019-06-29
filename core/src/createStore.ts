@@ -41,13 +41,13 @@ export const createStore = async <T>({
   feed.on('error', (err: any) => console.error(err))
 
   // log('creating feedReady')
-  const feedReady = new Promise(yes => feed.on('ready', () => yes()))
-  await feedReady
+  // const feedReady = new Promise(ok => feed.on('ready', ok))
+  // await feedReady
   // log('feedReady awaited')
 
   //await needlessPromise()
 
-  const hasPersistedData = feed.length > 0
+  const hasPersistedData = false // feed.length > 0
   //console.log('feed ready', feed)
 
   const state: T | {} = hasPersistedData // is there anything in storage?)
@@ -67,7 +67,7 @@ export const createStore = async <T>({
   const hub = signalhub(discoveryKey, peerHubs)
   const swarm = webrtcSwarm(hub)
 
-  log('joined swarm', key)
+  log('joining swarm', key)
   swarm.on('peer', (peer: Peer, id: any) => {
     //@ts-ignore
     log('peer', peer._id)
@@ -101,7 +101,7 @@ const initialize = <T>(feed: Feed<string>, initialState: T) => {
   log('nothing in storage; initializing')
   const state = A.from(initialState)
   const changeSet = A.getChanges(A.init(), state)
-  feed.append(JSON.stringify(changeSet))
+  // feed.append(JSON.stringify(changeSet))
   return state
 }
 
