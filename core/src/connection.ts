@@ -11,7 +11,7 @@ const log = debug('cevitxe:connection')
 // and one peer. `automerge.Connection` takes a DocSet.
 
 export class Connection<T = any> {
-  private automergeConnection: A.Connection<T>
+  private AConnection: A.Connection<T>
   private peer?: Peer | null | undefined
   private docSet: SingleDocSet<T>
   private dispatch?: Dispatch<AnyAction>
@@ -34,8 +34,8 @@ export class Connection<T = any> {
       this.receive(message)
     })
 
-    this.automergeConnection = new A.Connection(this.docSet.base, this.send)
-    this.automergeConnection.open()
+    this.AConnection = new A.Connection(this.docSet.base, this.send)
+    this.AConnection.open()
   }
 
   public get state(): T {
@@ -51,13 +51,14 @@ export class Connection<T = any> {
         this.dispatch({
           type: RECEIVE_MESSAGE_FROM_PEER,
           payload: {
-            connection: this.automergeConnection,
+            connection: this.AConnection,
             message,
           },
         })
       } else {
-        log(`this probably shouldn't happen in production`)
-        this.automergeConnection.receiveMsg(message as A.Message<T>) // this updates the doc
+        // TODO: figure out a way to pass a fake dispatcher or something
+        log(`temp - only for use by testing without passing a dispatcher`)
+        this.AConnection.receiveMsg(message as A.Message<T>) // this updates the doc
       }
       if (this.onReceive) {
         log('changes, calling onReceive')
@@ -65,7 +66,7 @@ export class Connection<T = any> {
       }
     } else {
       log(`no changes, catch up with peer`)
-      this.automergeConnection.receiveMsg(message as A.Message<T>) // this updates the doc
+      this.AConnection.receiveMsg(message as A.Message<T>) // this updates the doc
     }
   }
 
