@@ -87,7 +87,7 @@ export const createStore = async <T>({
   return store
 }
 
-const rehydrateFrom = async <T>(feed: Feed<string>): Promise<T> => {
+const rehydrateFrom = async <T>(feed: Feed<string>) => {
   const batch = new Promise(yes => feed.getBatch(0, feed.length, (_, data) => yes(data)))
   const data = (await batch) as string[]
   const changeSets = data.map(d => JSON.parse(d))
@@ -97,7 +97,7 @@ const rehydrateFrom = async <T>(feed: Feed<string>): Promise<T> => {
   return state
 }
 
-const initialize = <T>(feed: Feed<string>, initialState: T): T => {
+const initialize = <T>(feed: Feed<string>, initialState: T) => {
   log('nothing in storage; initializing')
   const state = automergify(initialState)
   const changeSet = automerge.getChanges(automerge.init(), state)

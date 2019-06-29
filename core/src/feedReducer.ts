@@ -7,7 +7,7 @@ interface ReceiveMessagePayload<T> {
   connection: automerge.Connection<T>
 }
 
-export const feedReducer: Reducer = <T>(state: T, { type, payload }: AnyAction): T => {
+export const feedReducer: Reducer = <T>(state: T, { type, payload }: AnyAction) => {
   switch (type) {
     case RECEIVE_MESSAGE_FROM_PEER: {
       // After setting up the feed in `createStore`, we listen to our connections and dispatch the
