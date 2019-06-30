@@ -7,6 +7,7 @@ import signalhub from 'signalhub'
 import { Instance as Peer } from 'simple-peer'
 import webrtcSwarm from 'webrtc-swarm'
 import { adaptReducer } from './adaptReducer'
+const wrtc = require('wrtc')
 
 import { Connection } from './connection'
 import { DEFAULT_PEER_HUBS } from './constants'
@@ -39,7 +40,7 @@ export const createStore = async <T>({
   feed.on('error', (err: any) => console.error(err))
 
   const feedReady = new Promise(ok => feed.on('ready', ok))
-  await feedReady
+  // await feedReady
   log('feed ready')
 
   const hasPersistedData = false // feed.length > 0
@@ -59,13 +60,14 @@ export const createStore = async <T>({
 
   // Now that we've initialized the store, it's safe to subscribe to the feed without worrying about race conditions
   const hub = signalhub(discoveryKey, peerHubs)
-  const swarm = webrtcSwarm(hub)
+  const swarm = webrtcSwarm(hub, { wrtc })
 
   log('joining swarm', key)
   swarm.on('peer', (peer: Peer, id: any) => {
-    //@ts-ignore
-    log('peer', peer._id)
-    connections.push(new Connection(docSet, peer, store.dispatch, onReceive))
+    log('peer', id)
+    peer.on('connect', () => {
+      connections.push(new Connection(docSet, peer, store.dispatch, onReceive))
+    })
   })
 
   // const start = feed.length // skip any items we already read when initializing

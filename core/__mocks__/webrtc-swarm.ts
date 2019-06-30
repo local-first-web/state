@@ -28,11 +28,13 @@ export default (hub: any) => ({
         })
 
         hub.peers.push(peer)
-        peer.on('connect', () => {
-          //@ts-ignore
-          log('swarm peer connect', peer._id)
-          cb(peer, id)
-        })
+        cb(peer, id)
+
+        // peer.on('connect', () => {
+        //   //@ts-ignore
+        //   log('swarm peer connect', peer._id)
+        //   cb(peer, id)
+        // })
         break
 
       default:

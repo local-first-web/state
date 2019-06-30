@@ -58,7 +58,7 @@ describe('createStore', () => {
     expect(store).toHaveProperty('subscribe')
   })
 
-  it.only('should communicate changes from one store to another', async done => {
+  it('should communicate changes from one store to another', async done => {
     // instantiate remote store
     const remoteStore = await createStore({
       defaultState: { foo: -1 },
