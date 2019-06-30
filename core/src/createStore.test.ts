@@ -58,7 +58,7 @@ describe('createStore', () => {
     expect(store).toHaveProperty('subscribe')
   })
 
-  it('should communicate changes from one store to another', async done => {
+  it.only('should communicate changes from one store to another', async done => {
     // instantiate remote store
     const remoteStore = await createStore({
       defaultState: { foo: -1 },
@@ -73,7 +73,6 @@ describe('createStore', () => {
       done()
     }
 
-    // This is commented out so we get a failing test even if the peers are talking. No false positives here!
     // change something in the local store
     store.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
   })
