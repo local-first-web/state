@@ -1,8 +1,7 @@
-import * as cevitxe from '@cevitxe/core'
+import { Cevitxe } from '@cevitxe/core'
 import { VisibilityFilter } from '../types'
 import { logger } from './logger'
 import { proxyReducer } from './reducers'
-import { Store } from 'redux'
 
 const defaultState = {
   visibilityFilter: VisibilityFilter.ALL,
@@ -14,18 +13,18 @@ const defaultState = {
 // TODO: Figure out how to combine enhancers
 const middlewares = [logger]
 
-export const createStore = (discoveryKey: string): Promise<Store> => {
-  return cevitxe.createStore({
-    discoveryKey,
-    proxyReducer,
-    defaultState,
-    middlewares,
-  })
+const cevitxe = new Cevitxe({
+  proxyReducer,
+  defaultState,
+  middlewares,
+})
+
+export const createStore = async (discoveryKey: string) => {
+  cevitxe.discoveryKey = discoveryKey
+  return await cevitxe.createStore()
 }
-export const joinStore = (discoveryKey: string): Promise<Store> => {
-  return cevitxe.joinStore({
-    discoveryKey,
-    proxyReducer,
-    middlewares,
-  })
+
+export const joinStore = async (discoveryKey: string) => {
+  cevitxe.discoveryKey = discoveryKey
+  return await cevitxe.joinStore()
 }

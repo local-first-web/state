@@ -16,7 +16,7 @@ import { getMiddleware } from './getMiddleware'
 import { getKeys } from './keyManager'
 import { mockCrypto } from './mockCrypto'
 import { SingleDocSet } from './SingleDocSet'
-import { CreateStoreOptions } from './types'
+import { CevitxeOtions, CreateStoreResult } from './types'
 
 const log = debug('cevitxe:createStore')
 
@@ -31,7 +31,8 @@ export const createStore = async <T>({
   middlewares = [],
   discoveryKey,
   onReceive,
-}: CreateStoreOptions<T>): Promise<Redux.Store> => {
+}: CevitxeOtions<T>) => {
+  if (!discoveryKey) throw 'discoveryKey is required'
   const { key, secretKey } = getKeys(discoveryKey)
   const dbName = getDbName(databaseName, discoveryKey)
   const storage = db(dbName)
@@ -68,7 +69,7 @@ export const createStore = async <T>({
     // In unit tests we never get here, because only one peer is signalling
     connections.push(new Connection(docSet, peer, store.dispatch, onReceive))
   })
-  return store
+  return { feed, store }
 }
 
 const rehydrateFrom = async <T>(feed: Feed<string>) => {
@@ -88,8 +89,6 @@ const initialize = <T>(feed: Feed<string>, initialState: T) => {
   feed.append(JSON.stringify(changeSet))
   return state
 }
-
-export const joinStore = createStore
 
 export const getDbName = (databaseName: string, discoveryKey: string) =>
   `${databaseName}-${discoveryKey.substr(0, 12)}`

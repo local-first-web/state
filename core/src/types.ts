@@ -3,18 +3,22 @@ import { AnyAction, Middleware, Reducer, Store } from 'redux'
 import { SingleDocSet } from './SingleDocSet'
 export type ProxyReducer<T> = (action: AnyAction) => ChangeFn<T> | null
 
-export interface CreateStoreOptions<T> {
+export interface CevitxeOtions<T> {
   // Redux store
   proxyReducer: ProxyReducer<any>
   middlewares?: Middleware[] // TODO: accept an `enhancer` object instead
   defaultState?: Partial<T>
 
-  discoveryKey: string
-  onConnect?: Function
+  discoveryKey?: string
   onReceive?: Function
   // hypercore feed options
   databaseName?: string
   peerHubs?: string[]
+}
+
+export interface CreateStoreResult {
+  feed: Feed<string>
+  store: Store
 }
 
 export type ReducerConverter = <T>(proxy: ProxyReducer<T>) => Reducer
