@@ -4,11 +4,16 @@ import debug from 'debug'
 const wrtc = require('wrtc')
 
 const log = debug('cevitxe:mock:webrtc-swarm')
+let enablePeerConnections = true
 
-export default (hub: any) => ({
+const mockedSwarm = (hub: any) => ({
   on: (event: string, cb: Function) => {
     switch (event) {
       case 'peer':
+        // Only create a peer if connections are enabled
+        console.log('mockSwarm peers enabled?', enablePeerConnections)
+        if (!enablePeerConnections) break
+
         const initiator = hub.peers.length > 0
         const peer = new Peer({ wrtc, initiator })
         const id = uuid()
@@ -27,12 +32,13 @@ export default (hub: any) => ({
           })
         })
 
-        hub.peers.push(peer)
         peer.on('connect', () => {
           //@ts-ignore
           log('swarm peer connect', peer._id)
           cb(peer, id)
         })
+
+        hub.peers.push(peer)
         break
 
       default:
@@ -40,3 +46,10 @@ export default (hub: any) => ({
     }
   },
 })
+
+mockedSwarm._setEnablePeerConnections = (value: boolean) => {
+  enablePeerConnections = value
+  console.log('_setEnablePeerConnections', enablePeerConnections)
+}
+
+export default mockedSwarm

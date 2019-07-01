@@ -67,9 +67,9 @@ export class Cevitxe<T> {
   getStore = () => this.store
 
   close = () => {
-    this.store = undefined
-    this.feed = undefined
     // TODO: Close and destroy feed?
+    if (this.feed) this.feed.close(_err => {})
     // TODO: Destroy store?
+    this.store = undefined
   }
 }
