@@ -65,6 +65,7 @@ export const createStore = async <T>({
   log('joining swarm', key)
   swarm.on('peer', (peer: Peer, id: any) => {
     log('peer', id)
+    // In unit tests we never get here, because only one peer is signalling
     connections.push(new Connection(docSet, peer, store.dispatch, onReceive))
   })
   return store

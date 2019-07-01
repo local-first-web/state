@@ -12,9 +12,6 @@ import hypercoreCrypto from 'hypercore-crypto'
 
 const log = debug('cevitxe:createStoreTests')
 
-jest.mock('webrtc-swarm')
-jest.mock('signalhub')
-
 const pause = (t = 100) => new Promise(ok => setTimeout(ok, t))
 
 interface FooState {
@@ -58,7 +55,7 @@ describe('createStore', () => {
     expect(store).toHaveProperty('subscribe')
   })
 
-  it.only('should communicate changes from one store to another', async done => {
+  it.skip('should communicate changes from one store to another', async done => {
     // instantiate remote store
     const remoteStore = await createStore({
       defaultState: { foo: -1 },
