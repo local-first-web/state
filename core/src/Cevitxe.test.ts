@@ -5,6 +5,7 @@ import { Cevitxe } from './Cevitxe'
 import { ProxyReducer } from './types'
 import debug from 'debug'
 import hypercoreCrypto from 'hypercore-crypto'
+import { pause } from './helpers/pause'
 const log = debug('cevitxe:CevitxeTests')
 
 interface FooState {
@@ -30,6 +31,11 @@ describe('Cevitxe', () => {
     cevitxe = new Cevitxe({ discoveryKey, proxyReducer, defaultState })
   })
 
+  // TODO: Close cevitxe after each test?
+  // afterEach(async () => {
+  //   if (cevitxe) await cevitxe.close()
+  // })
+
   it('createStore should return a connected redux store', async () => {
     expect.assertions(2)
     const store = await cevitxe.createStore()
@@ -53,15 +59,22 @@ describe('Cevitxe', () => {
     expect(cevitxe.getStore()).toBeUndefined()
   })
 
-  it('close should close all connections', async () => {
+  it.skip('close should close all connections', async () => {
     // expect.assertions(2)
     await cevitxe.createStore()
     // @ts-ignore
     expect(cevitxe.connections).not.toBeUndefined()
     // @ts-ignore
     expect(cevitxe.swarm).not.toBeUndefined()
+    // @ts-ignore
+    expect(cevitxe.hub).not.toBeUndefined()
+    await pause(100)
     cevitxe.close()
     // @ts-ignore
     expect(cevitxe.connections).toBeUndefined()
+    // @ts-ignore
+    expect(cevitxe.swarm).toBeUndefined()
+    // @ts-ignore
+    expect(cevitxe.hub).toBeUndefined()
   })
 })
