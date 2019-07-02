@@ -11,7 +11,7 @@ const mockedSwarm = (hub: any) => ({
     switch (event) {
       case 'peer':
         // Only create a peer if connections are enabled
-        console.log('mockSwarm peers enabled?', enablePeerConnections)
+        log('mockSwarm peers enabled?', enablePeerConnections)
         if (!enablePeerConnections) break
 
         const initiator = hub.peers.length > 0
@@ -49,7 +49,6 @@ const mockedSwarm = (hub: any) => ({
 
 mockedSwarm._setEnablePeerConnections = (value: boolean) => {
   enablePeerConnections = value
-  console.log('_setEnablePeerConnections', enablePeerConnections)
 }
 
 export default mockedSwarm
