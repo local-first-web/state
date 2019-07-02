@@ -15,6 +15,7 @@
   },
   "scripts": {
     "start": "run-p watch start:todomvc",
+    "start:grid": "yarn workspace @cevitxe/grid start",
     "start:todomvc": "yarn workspace @cevitxe/todomvc start",
     "build": "yarn workspace @cevitxe/core build",
     "lint": "yarn workspaces run lint",

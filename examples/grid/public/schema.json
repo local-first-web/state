@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://factbook.app/45191b42-9c7e-443c-89f5-7d72ed7283c5.json",
+  "type": "object",
+  "properties": {
+    "name": {},
+    "email": {
+      "format": "email"
+    },
+    "age": {
+      "type": "number"
+    },
+    "street": {},
+    "city": {},
+    "state": {},
+    "zip": {},
+    "gender": {},
+    "latitude": {},
+    "longitude": {},
+    "paragraph": {}
+  }
+}
