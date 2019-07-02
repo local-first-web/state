@@ -7,7 +7,7 @@ import { cleanup } from 'signalhub'
 import webrtcSwarm from 'webrtc-swarm'
 import debug from 'debug'
 import hypercoreCrypto from 'hypercore-crypto'
-import { pause } from './helpers/pause';
+import { pause } from './helpers/pause'
 const log = debug('cevitxe:createStoreTests')
 
 interface FooState {
@@ -77,7 +77,7 @@ describe('createStore', () => {
         }
         receiveCount++
       }
-      // Delay new change to the local store
+      // Delay new change to the local store so remote gets 2 separate messages
       await pause(100)
       // change something in the local store
       localStoreResult.store.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
@@ -89,20 +89,24 @@ describe('createStore', () => {
       await createKeyAndLocalStore(false)
     })
 
-    it.only('should rehydrate from persisted state when available', async done => {
+    // To simulate rehydrating from persisted state we create an initial store and
+    // add some changes. This state gets written to our fake-indexeddb.
+    // Then we close the current feed and create a new store, which should see the
+    // state in the fake db and load it
+    it('should rehydrate from persisted state when available', async done => {
       // make changes to local state
-      //localStoreResult.store.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
-      // disconnect current store
-      // localStoreResult.feed.close(feedClosed)
-  
-      const feedClosed = (_: any) => {
-        console.log('feed closed')
-        expect(localStoreResult.store.getState().foo).toBe(42)
+      localStoreResult.store.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
+      expect(localStoreResult.store.getState().foo).toBe(42)
+      const feedClosed = async (_: any) => {
+        // create a new store and verify it has previous state from storage
+        const newStore = await createStore({ discoveryKey, proxyReducer, defaultState: {} })
+        expect(newStore.store.getState().foo).toBe(42)
         done()
-        //   // create a new store
-        //   const newStore = await createStore({ discoveryKey, proxyReducer, defaultState: {} })
-        //   expect(newStore.store.getState().foo).toBe(43)
       }
+      // Short wait to let storage finish writing
+      await pause(100)
+      // disconnect current store
+      localStoreResult.feed.close(feedClosed)
     })
   })
 })
