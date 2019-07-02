@@ -7,9 +7,8 @@ import { cleanup } from 'signalhub'
 import webrtcSwarm from 'webrtc-swarm'
 import debug from 'debug'
 import hypercoreCrypto from 'hypercore-crypto'
+import { pause } from './helpers/pause';
 const log = debug('cevitxe:createStoreTests')
-
-const pause = (t = 100) => new Promise(ok => setTimeout(ok, t))
 
 interface FooState {
   foo?: number
@@ -94,7 +93,9 @@ describe('createStore', () => {
       // make changes to local state
       //localStoreResult.store.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
       // disconnect current store
-      const feedClosed = async (_: any) => {
+      // localStoreResult.feed.close(feedClosed)
+  
+      const feedClosed = (_: any) => {
         console.log('feed closed')
         expect(localStoreResult.store.getState().foo).toBe(42)
         done()
@@ -102,7 +103,6 @@ describe('createStore', () => {
         //   const newStore = await createStore({ discoveryKey, proxyReducer, defaultState: {} })
         //   expect(newStore.store.getState().foo).toBe(43)
       }
-      localStoreResult.feed.close(feedClosed)
     })
   })
 })

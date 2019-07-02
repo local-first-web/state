@@ -52,4 +52,16 @@ describe('Cevitxe', () => {
     cevitxe.close()
     expect(cevitxe.getStore()).toBeUndefined()
   })
+
+  it('close should close all connections', async () => {
+    // expect.assertions(2)
+    await cevitxe.createStore()
+    // @ts-ignore
+    expect(cevitxe.connections).not.toBeUndefined()
+    // @ts-ignore
+    expect(cevitxe.swarm).not.toBeUndefined()
+    cevitxe.close()
+    // @ts-ignore
+    expect(cevitxe.connections).toBeUndefined()
+  })
 })

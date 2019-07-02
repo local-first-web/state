@@ -69,7 +69,7 @@ export const createStore = async <T>({
     // In unit tests we never get here, because only one peer is signalling
     connections.push(new Connection(docSet, peer, store.dispatch, onReceive))
   })
-  return { feed, store }
+  return { feed, store, swarm, hub, connections }
 }
 
 const rehydrateFrom = async <T>(feed: Feed<string>) => {
