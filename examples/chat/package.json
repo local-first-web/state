@@ -1,0 +1,49 @@
+{
+  "name": "@cevitxe/chat",
+  "description": "Chat sample implemented with React-Redux & Cevitxe.",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.tsx",
+  "scripts": {
+    "start": "react-scripts-ts start",
+    "build": "react-scripts-ts build",
+    "test": "react-scripts-ts test",
+    "eject": "react-scripts-ts eject"
+  },
+  "dependencies": {
+    "@cevitxe/core": "*",
+    "@emotion/core": "^10.0.14",
+    "debug": "^4.1.1",
+    "react": "16.8.6",
+    "react-dom": "16.8.6",
+    "react-redux": "7.1.0-alpha.4",
+    "react-scripts-ts": "^3.1.0",
+    "redux": "4.0.1",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.4",
+    "@types/jest": "^24.0.13",
+    "@types/node": "^12.0.8",
+    "@types/react": "^16.8.19",
+    "@types/react-dom": "^16.8.4",
+    "@types/react-redux": "^7.1.0",
+    "prettier": "^1.17.1",
+    "typescript": "^3.5.2"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
