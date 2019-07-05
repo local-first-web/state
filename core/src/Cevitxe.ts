@@ -51,10 +51,11 @@ export class Cevitxe<T> extends EventEmitter {
     this.databaseName = databaseName
     this.peerHubs = peerHubs
   }
+  
+  joinStore = (documentId: string) => this.newStore(documentId)
 
   createStore = (documentId: string) => this.newStore(documentId, this.initialState)
 
-  joinStore = (documentId: string) => this.newStore(documentId)
 
   newStore = async (documentId: string, initialState = {}) => {
     const rehydrateFrom = async (feed: Feed<string>) => {
