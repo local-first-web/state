@@ -1,4 +1,4 @@
-![cevitxe logo](logo.svg)
+<img src='logo.svg' width=500 alt=''>
 
 ## In progress
 
@@ -231,6 +231,8 @@ But there are three important differences between a proxy reducer and an ordinar
 Internally, Cevitxe turns the proxy into a straight-up Redux reducer.
 
 ## Running the examples
+
+
 
 ## Known limitations
 
