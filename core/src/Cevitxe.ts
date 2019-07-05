@@ -9,22 +9,20 @@ export class Cevitxe<T> {
   private middlewares?: Middleware[] // TODO: accept an `enhancer` object instead
   private defaultState?: Partial<T>
 
-  public discoveryKey?: string
   private onReceive?: Function
   private databaseName?: string
   private peerHubs?: string[]
 
   private feed?: Feed<string>
-  private store?: Store
   private hub?: any
   private swarm?: any
   private connections?: Connection[]
+  private stores: { [k: string]: Store }
 
   constructor({
     proxyReducer,
     middlewares,
     defaultState,
-    discoveryKey,
     onReceive,
     databaseName,
     peerHubs,
@@ -32,53 +30,53 @@ export class Cevitxe<T> {
     this.proxyReducer = proxyReducer
     this.middlewares = middlewares
     this.defaultState = defaultState
-    this.discoveryKey = discoveryKey
     this.onReceive = onReceive
     this.databaseName = databaseName
     this.peerHubs = peerHubs
+    this.stores = {}
   }
 
-  createStore = async () => {
+  createStore = async (discoveryKey: string) => {
     // call createStore with the defaultState
     const { feed, store, hub, swarm, connections } = await createStore({
+      discoveryKey,
       databaseName: this.databaseName,
       peerHubs: this.peerHubs,
       proxyReducer: this.proxyReducer,
       defaultState: this.defaultState,
       middlewares: this.middlewares,
-      discoveryKey: this.discoveryKey,
       onReceive: this.onReceive,
     })
     this.feed = feed
-    this.store = store
+    this.stores[discoveryKey] = store
     this.hub = hub
     this.swarm = swarm
     this.connections = connections
     return store
   }
 
-  joinStore = async () => {
+  joinStore = async (discoveryKey: string) => {
     // call createStore without the defaultState
     const { feed, store, hub, swarm, connections } = await createStore({
+      discoveryKey,
       databaseName: this.databaseName,
       peerHubs: this.peerHubs,
       proxyReducer: this.proxyReducer,
       middlewares: this.middlewares,
-      discoveryKey: this.discoveryKey,
       onReceive: this.onReceive,
     })
     this.feed = feed
-    this.store = store
+    this.stores[discoveryKey] = store
     this.hub = hub
     this.swarm = swarm
     this.connections = connections
     return store
   }
 
-  getStore = () => this.store
+  getStore = (discoveryKey: string) => this.stores[discoveryKey]
 
-  close = async () => {
-    this.store = undefined
+  close = async (discoveryKey: string) => {
+    delete this.stores[discoveryKey]
     if (this.feed) await promisify(this.feed, 'close')
     if (this.hub) await promisify(this.hub.close)
     if (this.swarm) await promisify(this.swarm.close)
@@ -94,8 +92,9 @@ interface Emitter {
   on: (event: any, cb: () => void) => void
 }
 
-function promisify(emitter: Emitter, event: string): Promise<void>
-function promisify(cb: (...args: any[]) => void): Promise<void>
+function promisify(emitter: Emitter, event: string): Promise<void> // overload for emmiter event
+function promisify(cb: (...args: any[]) => void): Promise<void> // overload for node callback
+
 function promisify(obj: Emitter | Function, event?: string): Promise<void> | void {
   if (typeof obj !== 'function' && obj.on && event) {
     return new Promise(ok => obj.on(event!, ok))
