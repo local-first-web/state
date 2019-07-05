@@ -1,3 +1,20 @@
+![cevitxe logo](logo.svg)
+
+## In progress
+
+> ⚠ This package isn't ready for production use!
+
+Still to do:
+
+- [x] Add grid example
+- [x] Add chat example
+- [ ] Add instructions for running examples
+- [ ] Add known limitations
+- [ ] Fix initial key workflow
+- [ ] Straighten out initial state
+- [ ] Don't mock webrtc-swarm
+- [ ] Add fallback for webrtc
+
 ## What is this?
 
 Cevitxe is a wrapper for a Redux store that uses
@@ -5,20 +22,37 @@ Cevitxe is a wrapper for a Redux store that uses
 and secure peer-to-peer synchronization superpowers. If you are thinking about building a
 local-first, distributed application, you might want to give this a try!
 
-This project is inspired in part by these articles and videos:
+## How does it work?
 
-- [CRDTs and the Quest for Distributed
-  Consistency](https://www.youtube.com/watch?v=B5NULPSiOGw)
-- [Local-first software: You own your data, in spite of the cloud](https://www.inkandswitch.com/local-first.html)
-- [A web application with no web server?](https://medium.com/all-the-things/a-web-application-with-no-web-server-61000a6aed8f)
+Let's assume you have an application that works with one or more JSON documents. For example, a
+single "document" might represent a to-do list, a spreadsheet table, or a chat conversation.
+
+Cevitxe exposes a document to your application as a Redux store. Internally, the document state is
+managed by Automerge, which translates the user's changes into an append-only log of changes.
+
+- **Persistence** This history is stored locally, along with a snapshot of a recent state. By
+  default IndexedDB is used, but you can use any storage provider that implements the
+  [`random-access-storage`](https://github.com/random-access-storage) interface.
+
+- **Networking** In the background, whenever you are online, Cevitxe keeps your state synchronized
+  with any other peer instances of your application that are using the same document. To discover
+  peers outside your network, you'll need a [signal hub](https://github.com/mafintosh/signalhub),
+  which you can easily deploy yourself. (There are also [publicly available signal
+  hubs](https://github.com/mafintosh/signalhub#publicly-available-signalhubs) that you can use while
+  experimenting; in production, of course, you should use hubs that you control.)
 
 ## Getting started
+
+#### Add Cevitxe as a dependency
 
 ```bash
 yarn add @cevitxe/core
 ```
 
 #### Instantiate Cevitxe
+
+A typical app just needs one instance of Cevitxe, which can be used to manage any number of
+documents.
 
 ```js
 import { Cevitxe } from '@cevitxe/core'
@@ -31,13 +65,21 @@ const cevitxe = new Cevitxe({
 
   // Pass an initial state, just like you would for Redux
   defaultState: {
-    todos: [],
+    todoList: [],
+    todoMap: {},
     filter: ALL,
   },
+
+  // Point it to known signal hub instances
+  // see https://github.com/mafintosh/signalhub
+  peerHubs: [
+    'https://signalhub.myapplication.com/',
+    'https://signalhub-jccqtwhdwc.now.sh/', //..
+  ],
 })
 ```
 
-See here [TODO] for all the options that you can pass the Cevitxe constructor.
+[TODO] example with all the options that you can pass the Cevitxe constructor
 
 #### Use Cevitxe to create your store
 
@@ -47,7 +89,9 @@ app the way you always have.
 There are two ways to get a store: You can **create** one, or you can **join** one.
 
 Either way you need a **document ID**. This key can be any string that uniquely identifies a
-document. Typically you'll use a UUID.
+document. Typically this is a UUID, but it doesn't have to be as long as you're confident it's
+unique. It's your app's responsibility to give the user the option of creating a new document or
+joining an existing one, and managing the keys associated with documents.
 
 ```js
 export const App = () => {
@@ -119,10 +163,10 @@ newState = A.change(prevState, s => {
 })
 ```
 
-> For more details on how you would use Automerge directly, see [here](https://github.com/automerge/automerge#manipulating-and-inspecting-state).
+(For more details on how you would use Automerge directly, see [here](https://github.com/automerge/automerge#manipulating-and-inspecting-state).)
 
 With Cevitxe, you collect these change functions into something that looks a lot like a Redux
-reducer, but has some key differences.
+reducer.
 
 ```js
 const proxyReducer = ({ type, payload }) => {
@@ -146,7 +190,7 @@ const proxyReducer = ({ type, payload }) => {
 }
 ```
 
-Specifically:
+But there are three important differences between a proxy reducer and an ordinary Redux reducer:
 
 - A Redux reducer's signature is `(state, action) => state`: You take the old state and an action,
   and you return the new state. The proxy reducer's signature is `action => state => void`: You take
@@ -183,8 +227,50 @@ Specifically:
     }
   ```
 
+Internally, Cevitxe turns the proxy into a straight-up Redux reducer.
+
 ## Running the examples
 
 ## Known limitations
 
-## Why is it called Cevitxe?
+## Frequently asked questions
+
+### Where can I learn more about this whole CRDT/distributed/local-first thing?
+
+Here are some articles and videos:
+
+- [CRDTs and the Quest for Distributed
+  Consistency](https://www.youtube.com/watch?v=B5NULPSiOGw), a great talk by [Martin Kleppman](@ept), the
+  author of Automerge.
+- [Local-first software: You own your data, in spite of the
+  cloud](https://www.inkandswitch.com/local-first.html), a manifesto published by Ink & Switch, the
+  industrial research lab created by Heroku alumni that is behind Automerge.
+- [A web application with no web server?](https://medium.com/all-the-things/a-web-application-with-no-web-server-61000a6aed8f)
+
+### Why is this package called Cevitxe?
+
+[CVI.CHE 105](https://www.google.com/search?q=cvi.che+105&tbm=isch) is a restaurant in Miami, where
+the authors of this package ate the night before starting it.
+
+[Ceviche](https://en.wikipedia.org/wiki/Ceviche) is the Peruvian style of preparing raw fish
+marinated in citrus along with _ají_, onions, and cilantro.
+
+[Cevitxe](https://www.facebook.com/bentrobats/videos/1492898280822955/) is the Catalan spelling of
+the same word, and is pronounced the same way.
+
+Why the Catalan spelling?
+
+- @herbcaudill lives in Barcelona
+- The name was free on NPM
+- It's easier to Google
+- It has an **x** like Redu**x**.
+
+```
+        C R D T
+        E
+        V
+        I
+        T
+R E D U X
+        E
+```
