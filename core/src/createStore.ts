@@ -27,7 +27,7 @@ export const createStore = async <T>({
   databaseName = 'cevitxe-data',
   peerHubs = DEFAULT_PEER_HUBS,
   proxyReducer,
-  defaultState = {}, // If defaultState is not provided, we're joining an existing store
+  defaultState = {},
   middlewares = [],
   documentId,
   onReceive,
