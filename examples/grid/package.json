@@ -19,12 +19,12 @@
     "ag-grid-react": "^21.0.1",
     "debug": "^4.1.1",
     "muibox": "^1.0.1",
-    "react": "16.8.6",
     "react-dom": "16.8.6",
     "react-redux": "7.1.0-alpha.4",
     "react-scripts-ts": "^3.1.0",
-    "redux": "4.0.1",
+    "react": "16.8.6",
     "redux-logger": "^3.0.6",
+    "redux": "4.0.1",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
@@ -40,20 +40,5 @@
     "@types/uuid": "^3.4.4",
     "prettier": "^1.17.1",
     "typescript": "^3.5.2"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
   }
 }
