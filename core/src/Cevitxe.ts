@@ -94,7 +94,7 @@ interface Emitter {
 
 function promisify(emitter: Emitter, event: string): Promise<void> // overload for emmiter event
 function promisify(cb: (...args: any[]) => void): Promise<void> // overload for node callback
-
+// implementation
 function promisify(obj: Emitter | Function, event?: string): Promise<void> | void {
   if (typeof obj !== 'function' && obj.on && event) {
     return new Promise(ok => obj.on(event!, ok))
