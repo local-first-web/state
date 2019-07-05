@@ -125,13 +125,13 @@ export class Cevitxe<T> extends EventEmitter {
   close = async () => {
     this.store = undefined
     if (this.connections) await this.connections.forEach(async c => await c.close())
-    // if (this.feed) await promisify(this.feed.close)
-    if (this.swarm) await promisify(this.swarm.close)
-    if (this.hub) await promisify(this.hub.close)
-    // this.feed = undefined
-    // this.hub = undefined
-    // this.swarm = undefined
-    // this.connections = undefined
+    if (this.feed) await promisify(this.feed.close)
+    // if (this.swarm) await promisify(this.swarm.close)
+    // if (this.hub) await promisify(this.hub.close)
+    this.feed = undefined
+    this.hub = undefined
+    this.swarm = undefined
+    this.connections = undefined
   }
 }
 
