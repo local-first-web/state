@@ -7,7 +7,7 @@ export interface CevitxeOptions<T> {
   // Redux store
   proxyReducer: ProxyReducer<any>
   middlewares?: Middleware[] // TODO: accept an `enhancer` object instead
-  defaultState?: Partial<T>
+  initialState: T
 
   documentId?: string
   onReceive?: Function

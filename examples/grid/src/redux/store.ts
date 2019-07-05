@@ -14,7 +14,7 @@ export interface State {
 
 const firstElementId = uuid()
 const firstFieldId = uuid()
-const defaultState: State = {
+const initialState: State = {
   list: [firstElementId],
   map: { [firstElementId]: { id: firstElementId } },
   schema: { properties: { [firstFieldId]: { description: NEW_FIELD } } },
@@ -27,6 +27,6 @@ const logger = createLogger()
 
 export const cevitxe = new Cevitxe({
   proxyReducer,
-  defaultState,
+  initialState,
   middlewares: [logger],
 })

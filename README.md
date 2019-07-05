@@ -65,7 +65,7 @@ const cevitxe = new Cevitxe({
   proxyReducer,
 
   // Pass an initial state, just like you would for Redux
-  defaultState: {
+  initialState: {
     todoList: [],
     todoMap: {},
     filter: ALL,

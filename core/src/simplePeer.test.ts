@@ -43,12 +43,12 @@ describe('connection (live)', () => {
     boo?: number
   }
 
-  const defaultState: FooState = A.from({ foo: 1 })
+  const initialState: FooState = A.from({ foo: 1 })
 
   let localDocSet: SingleDocSet<FooState>
 
   beforeEach(() => {
-    localDocSet = new SingleDocSet<FooState>(defaultState)
+    localDocSet = new SingleDocSet<FooState>(initialState)
   })
 
   it('communicates local changes to remote peer', done => {

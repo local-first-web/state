@@ -14,18 +14,18 @@ interface FooState {
 const FAKE_DISPATCH = <T>(s: T) => s
 
 describe('Connection', () => {
-  const defaultState: FooState = A.from({ foo: 1 })
+  const initialState: FooState = A.from({ foo: 1 })
 
   let docSet: SingleDocSet<FooState>
 
   beforeEach(() => {
-    docSet = new SingleDocSet<FooState>(defaultState)
+    docSet = new SingleDocSet<FooState>(initialState)
   })
 
   it('should expose its current state', () => {
     const peer = new Peer({})
     const connection = new Connection(docSet, peer, FAKE_DISPATCH)
-    expect(connection.state).toEqual(defaultState)
+    expect(connection.state).toEqual(initialState)
   })
 
   it('should send messages to the peer when local state changes', () => {

@@ -3,7 +3,7 @@ import { VisibilityFilter } from '../types'
 import { logger } from './logger'
 import { proxyReducer } from './reducers'
 
-const defaultState = {
+const initialState = {
   visibilityFilter: VisibilityFilter.ALL,
   todoList: [],
   todoMap: {},
@@ -15,6 +15,6 @@ const middlewares = [logger]
 
 export const cevitxe = new Cevitxe({
   proxyReducer,
-  defaultState,
+  initialState,
   middlewares,
 })

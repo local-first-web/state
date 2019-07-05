@@ -3,7 +3,7 @@ import { proxyReducer } from './reducer'
 
 const cevitxe = new Cevitxe({
   proxyReducer,
-  defaultState: { messages: [] },
+  initialState: { messages: [] },
 })
 
 export const createStore = async (discoveryKey: string) => {
