@@ -10,6 +10,7 @@ Still to do:
 - [x] Add chat example
 - [ ] Add instructions for running examples
 - [ ] Add known limitations
+- [ ] Snapshot recent state
 - [ ] Fix initial key workflow
 - [ ] Straighten out initial state
 - [ ] Don't mock webrtc-swarm
@@ -30,7 +31,7 @@ Cevitxe exposes a document to your application as a Redux store. Internally, it'
 [Automerge](https://github.com/automerge/automerge) document. Automerge translates the user's changes into an
 append-only log of changes, and reconciles changes coming from other instances of your app.
 
-- **Persistence** This history is stored locally, along with a snapshot of a recent state. By
+- **Persistence** The change history is stored locally, along with a snapshot of a recent state. By
   default IndexedDB is used, but you can use any storage provider that implements the
   [`random-access-storage`](https://github.com/random-access-storage) interface.
 
@@ -113,7 +114,7 @@ export const App = () => {
 
 Automerge and Redux both treat state as immutable, but use different mechanisms for modifying state.
 
-Redux reducers take a previous state object and an action, and return a new state object.
+Redux reducers take a previous state object and an action, and construct a new state object to return.
 
 ```js
 const reducer = (state, {type, payload}) =>
