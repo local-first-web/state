@@ -6,16 +6,16 @@ const KEYCHAIN_ID = 'cevitxe/keychain'
 // TODO: Should there just be a Keychain class that has these methods?
 
 // Retrieve the keys for a given discovery key
-export const getKeys = (discoveryKey: string) => {
+export const getKeys = (documentId: string) => {
   const keychain = getKeychain()
   // use existing keys or generate new pair
-  const keys = keychain[discoveryKey] || keyPair()
+  const keys = keychain[documentId] || keyPair()
 
   // make sure it's a good pair
   if (!validateKeys(keys)) throw new Error(MSG_INVALID_KEYS)
 
   // put whatever we ended up with back in local storage
-  keychain[discoveryKey] = keys
+  keychain[documentId] = keys
   saveKeychain(keychain)
 
   return keys
@@ -27,9 +27,9 @@ export const clearKeychain = () => {
 }
 
 // Remove keys for given discovery key
-export const removeKeys = (discoveryKey: string) => {
+export const removeKeys = (documentId: string) => {
   const keychain = getKeychain()
-  delete keychain[discoveryKey]
+  delete keychain[documentId]
   saveKeychain(keychain)
 }
 

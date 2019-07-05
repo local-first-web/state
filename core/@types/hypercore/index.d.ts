@@ -22,7 +22,7 @@ interface ReadOpts {
   valueEncoding?: string
 }
 
-declare function discoveryKey(buf: Buffer): Buffer
+declare function documentId(buf: Buffer): Buffer
 
 type DuplexStream = NodeJS.ReadableStream | NodeJS.WritableStream
 
@@ -46,7 +46,7 @@ declare interface Feed<T> {
   replicate: Function
   writable: boolean
   ready: Function
-  discoveryKey: Buffer
+  documentId: Buffer
   id: Buffer
   length: number
 
@@ -79,7 +79,12 @@ declare interface Feed<T> {
   getBatch(start: number, end: number, config: any, cb: (Err: any, data: T[]) => void): void
 }
 
-declare function readFeedN<T>(id: string, feed: Feed<T>, index: number, cb: (data: T[]) => void): void
+declare function readFeedN<T>(
+  id: string,
+  feed: Feed<T>,
+  index: number,
+  cb: (data: T[]) => void
+): void
 
 declare function readFeed<T>(id: string, feed: Feed<T>, cb: (data: T[]) => void): void
 

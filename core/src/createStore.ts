@@ -16,7 +16,7 @@ import { getMiddleware } from './getMiddleware'
 import { getKeys } from './keyManager'
 import { mockCrypto } from './mockCrypto'
 import { SingleDocSet } from './SingleDocSet'
-import { CevitxeOtions, CreateStoreResult } from './types'
+import { CevitxeOptions, CreateStoreResult } from './types'
 
 const log = debug('cevitxe:createStore')
 
@@ -29,12 +29,12 @@ export const createStore = async <T>({
   proxyReducer,
   defaultState = {}, // If defaultState is not provided, we're joining an existing store
   middlewares = [],
-  discoveryKey,
+  documentId,
   onReceive,
-}: CevitxeOtions<T>) => {
-  if (!discoveryKey) throw 'discoveryKey is required'
-  const { key, secretKey } = getKeys(discoveryKey)
-  const dbName = getDbName(databaseName, discoveryKey)
+}: CevitxeOptions<T>) => {
+  if (!documentId) throw 'documentId is required'
+  const { key, secretKey } = getKeys(documentId)
+  const dbName = getDbName(databaseName, documentId)
   const storage = db(dbName)
 
   const feed: Feed<string> = hypercore(storage, key, { secretKey, valueEncoding, crypto })
@@ -60,7 +60,7 @@ export const createStore = async <T>({
   const store = Redux.createStore(reducer, state as DeepPartial<A.DocSet<T>>, enhancer)
 
   // Now that we've initialized the store, it's safe to subscribe to the feed without worrying about race conditions
-  const hub = signalhub(discoveryKey, peerHubs)
+  const hub = signalhub(documentId, peerHubs)
   const swarm = webrtcSwarm(hub, { wrtc })
 
   log('joining swarm', key)
@@ -90,5 +90,5 @@ const initialize = <T>(feed: Feed<string>, initialState: T) => {
   return state
 }
 
-export const getDbName = (databaseName: string, discoveryKey: string) =>
-  `${databaseName}-${discoveryKey.substr(0, 12)}`
+export const getDbName = (databaseName: string, documentId: string) =>
+  `${databaseName}-${documentId.substr(0, 12)}`

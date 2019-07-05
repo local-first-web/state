@@ -24,12 +24,12 @@ const proxyReducer: ProxyReducer<FooState> = ({ type, payload }) => {
 
 describe('Cevitxe', () => {
   let cevitxe: Cevitxe<FooState>
-  let discoveryKey: string
+  let documentId: string
   const defaultState: FooState = { foo: 1 }
 
   beforeEach(() => {
-    discoveryKey = uuid()
-    cevitxe = new Cevitxe({ discoveryKey, proxyReducer, defaultState })
+    documentId = uuid()
+    cevitxe = new Cevitxe({ documentId, proxyReducer, defaultState })
   })
 
   // TODO: Close cevitxe after each test?
@@ -39,29 +39,29 @@ describe('Cevitxe', () => {
 
   it('createStore should return a connected redux store', async () => {
     expect.assertions(2)
-    const store = await cevitxe.createStore(discoveryKey)
+    const store = await cevitxe.createStore(documentId)
     expect(store).not.toBeUndefined()
     expect(store.getState()).toEqual(A.from(defaultState))
   })
 
   it('joinStore should return a connected redux store', async () => {
     expect.assertions(2)
-    const store = await cevitxe.joinStore(discoveryKey)
+    const store = await cevitxe.joinStore(documentId)
     expect(store).not.toBeUndefined()
     expect(store.getState()).toEqual({})
   })
 
   it('close should destroy any current store', async () => {
     expect.assertions(2)
-    await cevitxe.createStore(discoveryKey)
-    expect(cevitxe.getStore(discoveryKey)).not.toBeUndefined()
-    cevitxe.close(discoveryKey)
-    expect(cevitxe.getStore(discoveryKey)).toBeUndefined()
+    await cevitxe.createStore(documentId)
+    expect(cevitxe.getStore(documentId)).not.toBeUndefined()
+    cevitxe.close(documentId)
+    expect(cevitxe.getStore(documentId)).toBeUndefined()
   })
 
   it.skip('close should close all connections', async () => {
     // expect.assertions(2)
-    await cevitxe.createStore(discoveryKey)
+    await cevitxe.createStore(documentId)
     // @ts-ignore
     expect(cevitxe.connections).not.toBeUndefined()
     // @ts-ignore
@@ -69,7 +69,7 @@ describe('Cevitxe', () => {
     // @ts-ignore
     expect(cevitxe.hub).not.toBeUndefined()
     await pause(100)
-    cevitxe.close(discoveryKey)
+    cevitxe.close(documentId)
     // @ts-ignore
     expect(cevitxe.connections).toBeUndefined()
     // @ts-ignore

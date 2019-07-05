@@ -25,18 +25,8 @@ const logger = createLogger()
 //const composeEnhancers =
 //  (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
-const cevitxe = new Cevitxe({
+export const cevitxe = new Cevitxe({
   proxyReducer,
   defaultState,
   middlewares: [logger],
 })
-
-export const createStore = async (discoveryKey: string) => {
-  cevitxe.discoveryKey = discoveryKey
-  return await cevitxe.createStore()
-}
-
-export const joinStore = async (discoveryKey: string) => {
-  cevitxe.discoveryKey = discoveryKey
-  return await cevitxe.joinStore()
-}

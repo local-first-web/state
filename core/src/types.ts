@@ -3,14 +3,15 @@ import { AnyAction, Middleware, Reducer, Store } from 'redux'
 import { SingleDocSet } from './SingleDocSet'
 export type ProxyReducer<T> = (action: AnyAction) => ChangeFn<T> | null
 
-export interface CevitxeOtions<T> {
+export interface CevitxeOptions<T> {
   // Redux store
   proxyReducer: ProxyReducer<any>
   middlewares?: Middleware[] // TODO: accept an `enhancer` object instead
   defaultState?: Partial<T>
 
-  discoveryKey?: string
+  documentId?: string
   onReceive?: Function
+
   // hypercore feed options
   databaseName?: string
   peerHubs?: string[]
@@ -36,7 +37,7 @@ export type MiddlewareFactory = <T>(feed: Feed<string>, docSet: SingleDocSet<T |
 // keypair (which we use for storage etc). The discovery key can be any string that we think is
 // going to be unique on our signal hub servers.
 export interface Keychain {
-  [discoveryKey: string]: KeyPair
+  [documentId: string]: KeyPair
 }
 
 export interface KeyPair {

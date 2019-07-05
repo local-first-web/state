@@ -6,15 +6,15 @@ import React, { useState } from 'react'
 import Redux from 'redux'
 import createPersistedState from 'use-persisted-state'
 import uuid from 'uuid'
-import { createStore, joinStore } from '../redux/store'
+import { cevitxe } from '../redux/store'
 import { Stylesheet } from '../types'
 
 const log = debug('cevitxe:todo:toolbar')
-const useDiscoveryKey = createPersistedState('cevitxe/discoverykey')
+const useDiscoveryKey = createPersistedState('cevitxe/documentId')
 
 export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
   const [appStore, setAppStore] = useAppStore(onStoreReady)
-  const [discoveryKey, setDiscoveryKey] = useDiscoveryKey()
+  const [documentId, setDiscoveryKey] = useDiscoveryKey()
 
   const keyChanged = (e: React.ChangeEvent<HTMLInputElement>) =>
     setDiscoveryKey(e.currentTarget.value)
@@ -23,14 +23,14 @@ export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
     // TODO: Call to disconnect to ensure we've closed all existing connections?
     const newKey = uuid()
     setDiscoveryKey(newKey)
-    setAppStore(await createStore(newKey))
+    setAppStore(await cevitxe.createStore(newKey))
     log('created store ', newKey)
   }
 
   const join = async () => {
     // TODO: Call to disconnect to ensure we've closed all existing connections?
-    setAppStore(await joinStore(discoveryKey))
-    log('joined store ', discoveryKey)
+    setAppStore(await cevitxe.joinStore(documentId))
+    log('joined store ', documentId)
   }
 
   // const disconnect = () => {
@@ -39,7 +39,7 @@ export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
   // }
 
   if (appStore === undefined)
-    if (discoveryKey === undefined) create()
+    if (documentId === undefined) create()
     else join()
 
   return (
@@ -47,7 +47,7 @@ export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
       <span css={styles.toolbarGroup}>
         <input
           type="text"
-          value={discoveryKey}
+          value={documentId}
           onChange={keyChanged}
           placeholder="Key"
           css={styles.input}

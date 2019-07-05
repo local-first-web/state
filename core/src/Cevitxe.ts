@@ -1,8 +1,7 @@
-import { CevitxeOtions, ProxyReducer } from './types'
+import { CevitxeOptions, ProxyReducer } from './types'
 import { Middleware, Store } from 'redux'
 import { createStore } from './createStore'
 import { Connection } from './connection'
-import { EventEmitter } from 'events'
 
 export class Cevitxe<T> {
   private proxyReducer: ProxyReducer<any>
@@ -26,7 +25,7 @@ export class Cevitxe<T> {
     onReceive,
     databaseName,
     peerHubs,
-  }: CevitxeOtions<T>) {
+  }: CevitxeOptions<T>) {
     this.proxyReducer = proxyReducer
     this.middlewares = middlewares
     this.defaultState = defaultState
@@ -36,10 +35,10 @@ export class Cevitxe<T> {
     this.stores = {}
   }
 
-  createStore = async (discoveryKey: string) => {
+  createStore = async (documentId: string) => {
     // call createStore with the defaultState
     const { feed, store, hub, swarm, connections } = await createStore({
-      discoveryKey,
+      documentId,
       databaseName: this.databaseName,
       peerHubs: this.peerHubs,
       proxyReducer: this.proxyReducer,
@@ -48,17 +47,17 @@ export class Cevitxe<T> {
       onReceive: this.onReceive,
     })
     this.feed = feed
-    this.stores[discoveryKey] = store
+    this.stores[documentId] = store
     this.hub = hub
     this.swarm = swarm
     this.connections = connections
     return store
   }
 
-  joinStore = async (discoveryKey: string) => {
+  joinStore = async (documentId: string) => {
     // call createStore without the defaultState
     const { feed, store, hub, swarm, connections } = await createStore({
-      discoveryKey,
+      documentId,
       databaseName: this.databaseName,
       peerHubs: this.peerHubs,
       proxyReducer: this.proxyReducer,
@@ -66,17 +65,17 @@ export class Cevitxe<T> {
       onReceive: this.onReceive,
     })
     this.feed = feed
-    this.stores[discoveryKey] = store
+    this.stores[documentId] = store
     this.hub = hub
     this.swarm = swarm
     this.connections = connections
     return store
   }
 
-  getStore = (discoveryKey: string) => this.stores[discoveryKey]
+  getStore = (documentId: string) => this.stores[documentId]
 
-  close = async (discoveryKey: string) => {
-    delete this.stores[discoveryKey]
+  close = async (documentId: string) => {
+    delete this.stores[documentId]
     if (this.feed) await promisify(this.feed, 'close')
     if (this.hub) await promisify(this.hub.close)
     if (this.swarm) await promisify(this.swarm.close)

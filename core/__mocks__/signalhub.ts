@@ -4,7 +4,7 @@ import debug from 'debug'
 const log = debug('cevitxe:mock:signalhub')
 
 let peers: Peer[] = []
-export default (discoveryKey: string, peerHubs: any[]) => {
+export default (documentId: string, peerHubs: any[]) => {
   return {
     peers,
   }

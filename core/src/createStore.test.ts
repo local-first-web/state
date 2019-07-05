@@ -27,12 +27,12 @@ const proxyReducer: ProxyReducer<FooState> = ({ type, payload }) => {
 
 describe('createStore', () => {
   let localStoreResult: CreateStoreResult
-  let discoveryKey: string
+  let documentId: string
 
   const createKeyAndLocalStore = async (enableConnections: boolean) => {
     webrtcSwarm._setEnablePeerConnections(enableConnections)
-    discoveryKey = hypercoreCrypto.keyPair().publicKey.toString('hex')
-    localStoreResult = await createStore({ discoveryKey, proxyReducer, defaultState })
+    documentId = hypercoreCrypto.keyPair().publicKey.toString('hex')
+    localStoreResult = await createStore({ documentId, proxyReducer, defaultState })
   }
 
   describe('connections enabled', () => {
@@ -60,7 +60,7 @@ describe('createStore', () => {
     it('should communicate changes from one store to another', async done => {
       // instantiate remote store
       const remoteStore = await createStore({
-        discoveryKey,
+        documentId,
         proxyReducer,
         onReceive,
         databaseName: 'remote-store',
@@ -99,7 +99,7 @@ describe('createStore', () => {
       expect(localStoreResult.store.getState().foo).toBe(42)
       const feedClosed = async (_: any) => {
         // create a new store and verify it has previous state from storage
-        const newStore = await createStore({ discoveryKey, proxyReducer, defaultState: {} })
+        const newStore = await createStore({ documentId, proxyReducer, defaultState: {} })
         expect(newStore.store.getState().foo).toBe(42)
         done()
       }
