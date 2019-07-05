@@ -2,6 +2,7 @@ export const RECEIVE_MESSAGE_FROM_PEER = 'cevitxe/RECEIVE_MESSAGE_FROM_PEER'
 
 export const INITIALIZE = 'cevitxe/INITIALIZE'
 
+// TODO: Update this invalid keys message. We don't have a 'yarn keys' script anymore
 export const MSG_INVALID_KEYS =
   'A valid crypto pair, `key` and a `secretKey`, must be provided. ' +
   'The `key` should be a 32-byte hexadecimal value (64 characters). ' +

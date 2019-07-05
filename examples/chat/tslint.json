@@ -1,0 +1,6 @@
+{
+  "extends": ["tslint-react", "tslint-config-prettier"],
+  "rules": {
+    "jsx-no-lambda": false
+  }
+}

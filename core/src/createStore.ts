@@ -14,14 +14,12 @@ import { DEFAULT_PEER_HUBS } from './constants'
 import debug from './debug'
 import { getMiddleware } from './getMiddleware'
 import { getKeys } from './keyManager'
-import { mockCrypto } from './mockCrypto'
 import { SingleDocSet } from './SingleDocSet'
 import { CevitxeOptions, CreateStoreResult } from './types'
 
 const log = debug('cevitxe:createStore')
 
 const valueEncoding = 'utf-8'
-const crypto = mockCrypto
 
 export const createStore = async <T>({
   databaseName = 'cevitxe-data',
@@ -37,7 +35,7 @@ export const createStore = async <T>({
   const dbName = getDbName(databaseName, documentId)
   const storage = db(dbName)
 
-  const feed: Feed<string> = hypercore(storage, key, { secretKey, valueEncoding, crypto })
+  const feed: Feed<string> = hypercore(storage, key, { secretKey, valueEncoding })
   feed.on('error', (err: any) => console.error(err))
 
   const feedReady = new Promise(ok => feed.on('ready', ok))
