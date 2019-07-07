@@ -72,8 +72,12 @@ export class Connection<T = any> {
 
   send = (message: A.Message<T>) => {
     log('send', message)
-    if (!this.peer) return
-    this.peer.send(JSON.stringify(message))
+    if (this.peer)
+      try {
+        this.peer.send(JSON.stringify(message))
+      } catch {
+        log('tried to send but peer is no longer connected', this.peer)
+      }
   }
 
   close = () => {
