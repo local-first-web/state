@@ -23,6 +23,7 @@ describe('adaptReducer', () => {
     it('should return a modified state', () => expect(newState).toEqual({ foo: 2 }))
   })
 
+  // TODO: Get test working again
   // describe('should apply automerge changes from the feed', () => {
   //   const reducer = adaptReducer(proxyReducer)
 
