@@ -11,8 +11,8 @@ Still to do:
 - [ ] Add instructions for running examples
 - [ ] Add known limitations
 - [ ] Snapshot recent state
-- [ ] Fix initial key workflow
-- [ ] Straighten out initial state
+- [x] Fix initial key workflow
+- [x] Straighten out initial state
 - [ ] Don't mock webrtc-swarm
 - [ ] Add fallback for webrtc
 
@@ -231,8 +231,6 @@ But there are three important differences between a proxy reducer and an ordinar
 Internally, Cevitxe turns the proxy into a straight-up Redux reducer.
 
 ## Running the examples
-
-
 
 ## Known limitations
 
