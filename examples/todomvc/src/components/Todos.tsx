@@ -1,10 +1,11 @@
-import React from 'react'
 import cx from 'classnames'
-import { pluralize } from '../lib/pluralize'
+import React from 'react'
 import { useSelector } from 'react-redux'
 import { getFilteredTodos } from 'src/redux/selectors'
 import { VisibilityFilter } from 'src/types'
-import { AddTodo, TodoList, VisibilityFilters, ClearCompletedButton } from '.'
+
+import { AddTodo, ClearCompletedButton, TodoList, VisibilityFilters } from '.'
+import { pluralize } from '../lib/pluralize'
 
 export function Todos() {
   const activeTodos = useSelector(getFilteredTodos(VisibilityFilter.INCOMPLETE))

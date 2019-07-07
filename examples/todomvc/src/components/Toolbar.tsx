@@ -12,29 +12,28 @@ import { Stylesheet } from '../types'
 const log = debug('cevitxe:todo:toolbar')
 
 export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
-  // const useDocumentId = createPersistedState('cevitxe/documentId')
+  const useDocumentId = createPersistedState('cevitxe/documentId')
   const [appStore, setAppStore] = useAppStore(onStoreReady)
-  const [documentId, setDocumentId] = useState()
-  // const [documentId, setDocumentId] = useDocumentId()
+  const [documentId, setDocumentId] = useDocumentId()
 
   log('render')
 
   useEffect(() => {
     log('setup')
-    // if (appStore === undefined)
-    if (documentId === undefined) create()
-    else join()
+    if (appStore === undefined)
+      if (documentId === undefined) create()
+      else join()
   }, []) // only runs on first render
 
-  const create = () => {
+  const create = async () => {
     const newKey = uuid()
     setDocumentId(newKey)
-    setAppStore(cevitxe.createStore(newKey))
+    setAppStore(await cevitxe.createStore(newKey))
     log('created store ', newKey)
   }
 
-  const join = () => {
-    setAppStore(cevitxe.joinStore(documentId))
+  const join = async () => {
+    setAppStore(await cevitxe.joinStore(documentId))
     log('joined store ', documentId)
   }
 
