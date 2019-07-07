@@ -1,9 +1,9 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { Shell } from './components/Shell'
+import { App } from './components'
 
 const start = async () => {
-  const rootElement = document.getElementById('root')
-  ReactDOM.render(<Shell />, rootElement)
+  ReactDOM.render(<App />, document.getElementById('root'))
 }
+
 start()

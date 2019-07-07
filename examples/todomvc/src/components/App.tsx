@@ -1,34 +1,20 @@
-import cn from 'classnames'
-import React from 'react'
-import { useSelector } from 'react-redux'
+import React, { useState } from 'react'
+import { Provider } from 'react-redux'
+import Redux from 'redux'
 
-import { getFilteredTodos } from '../redux/selectors'
-import { AddTodo, TodoList, VisibilityFilters, ClearCompletedButton } from '../components'
-import { pluralize } from '../lib/pluralize'
-import { VisibilityFilter } from '../types'
+import { Todos, Toolbar } from '.'
 
-export default function App() {
-  const activeTodos = useSelector(getFilteredTodos(VisibilityFilter.INCOMPLETE))
-  const allTodos = useSelector(getFilteredTodos(VisibilityFilter.ALL))
-  const activeCount = activeTodos.length
-  const hidden = allTodos.length === 0
-
+export function App() {
+  const [appStore, setAppStore] = useState<Redux.Store>()
+  const onStoreReady = (store: Redux.Store) => setAppStore(store)
   return (
-    <div>
-      <header className="header">
-        <h1>todos</h1>
-        <AddTodo />
-      </header>
-      <section className={cn({ main: true, hidden })}>
-        <TodoList />
-      </section>
-      <footer className={cn({ footer: true, hidden })}>
-        <span className="todo-count">
-          <strong>{activeCount}</strong> {pluralize(activeCount, 'item')} left
-        </span>
-        <VisibilityFilters />
-        <ClearCompletedButton />
-      </footer>
-    </div>
+    <>
+      <Toolbar onStoreReady={onStoreReady} />
+      {appStore && (
+        <Provider store={appStore}>
+          <Todos />
+        </Provider>
+      )}
+    </>
   )
 }

@@ -97,7 +97,7 @@ export class Cevitxe<T> extends EventEmitter {
       ? await rehydrateFrom(feed) // if so, rehydrate state from that
       : initialize(feed) // if not, initialize
 
-    log('creating initial docSet', state)
+    log('creating initial docSet', JSON.stringify(state))
     const connections: Connection<T | {}>[] = []
     const docSet = new SingleDocSet<T | {}>(state)
 

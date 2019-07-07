@@ -2,7 +2,7 @@
 
 import { jsx } from '@emotion/core'
 import debug from 'debug'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Redux from 'redux'
 import createPersistedState from 'use-persisted-state'
 import uuid from 'uuid'
@@ -10,85 +10,72 @@ import { cevitxe } from '../redux/store'
 import { Stylesheet } from '../types'
 
 const log = debug('cevitxe:todo:toolbar')
-const useDiscoveryKey = createPersistedState('cevitxe/documentId')
 
 export const Toolbar = ({ onStoreReady }: ToolbarProps) => {
+  // const useDocumentId = createPersistedState('cevitxe/documentId')
   const [appStore, setAppStore] = useAppStore(onStoreReady)
-  const [documentId, setDiscoveryKey] = useDiscoveryKey()
+  const [documentId, setDocumentId] = useState()
+  // const [documentId, setDocumentId] = useDocumentId()
 
-  const keyChanged = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setDiscoveryKey(e.currentTarget.value)
+  log('render')
 
-  const create = async () => {
-    // TODO: Call to disconnect to ensure we've closed all existing connections?
+  useEffect(() => {
+    log('setup')
+    // if (appStore === undefined)
+    if (documentId === undefined) create()
+    else join()
+  }, []) // only runs on first render
+
+  const create = () => {
     const newKey = uuid()
-    setDiscoveryKey(newKey)
-    setAppStore(await cevitxe.createStore(newKey))
+    setDocumentId(newKey)
+    setAppStore(cevitxe.createStore(newKey))
     log('created store ', newKey)
   }
 
-  const join = async () => {
-    // TODO: Call to disconnect to ensure we've closed all existing connections?
-    setAppStore(await cevitxe.joinStore(documentId))
+  const join = () => {
+    setAppStore(cevitxe.joinStore(documentId))
     log('joined store ', documentId)
   }
 
-  // const disconnect = () => {
-  //   // TODO: Disconnect from signalhub and all peers
-  //   setAppStore(undefined)
-  // }
-
-  if (appStore === undefined)
-    if (documentId === undefined) create()
-    else join()
+  const keyChanged = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setDocumentId(e.currentTarget.value)
 
   return (
-    <div css={styles.toolbar}>
-      <span css={styles.toolbarGroup}>
-        <input
-          type="text"
-          value={documentId}
-          onChange={keyChanged}
-          placeholder="Key"
-          css={styles.input}
-          // disabled={appStore !== undefined}
-        />
-        <button
-          role="button"
-          onClick={join}
-          css={styles.button}
-          // disabled={appStore !== undefined}
-        >
-          Join list
-        </button>
-      </span>
-      or
-      <span css={styles.toolbarGroup}>
-        <button
-          role="button"
-          onClick={create}
-          css={styles.button}
-          // disabled={appStore !== undefined}
-        >
-          New list
-        </button>
-      </span>
-      {/* {appStore && (
-        <button role="button" onClick={disconnect} css={styles.button}>
-          Disconnect
-        </button>
-      )} */}
+    <div>
+      {appStore && (
+        <div css={styles.toolbar}>
+          <span css={styles.toolbarGroup}>
+            <input
+              type="text"
+              value={documentId}
+              onChange={keyChanged}
+              placeholder="Key"
+              css={styles.input}
+            />
+            <button role="button" onClick={join} css={styles.button}>
+              Join list
+            </button>
+          </span>
+          or
+          <span css={styles.toolbarGroup}>
+            <button role="button" onClick={create} css={styles.button}>
+              New list
+            </button>
+          </span>
+        </div>
+      )}
     </div>
   )
 }
 
 export interface ToolbarProps {
-  onStoreReady: (store?: Redux.Store) => void
+  onStoreReady: (store: Redux.Store) => void
 }
 
-const useAppStore = (cb: (store?: Redux.Store) => void) => {
+const useAppStore = (cb: (store: Redux.Store) => void) => {
   const [appStore, _setAppStore] = useState()
-  const setAppStore = (store?: Redux.Store) => {
+  const setAppStore = (store: Redux.Store) => {
     _setAppStore(store)
     cb(store)
   }

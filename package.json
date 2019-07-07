@@ -14,10 +14,13 @@
     ]
   },
   "scripts": {
-    "start": "run-p watch start:todomvc",
+    "start": "run-p watch start:todo",
     "start:chat": "yarn workspace @cevitxe/chat start",
     "start:grid": "yarn workspace @cevitxe/grid start",
-    "start:todomvc": "yarn workspace @cevitxe/todomvc start",
+    "start:todo": "yarn workspace @cevitxe/todo start",
+    "dev:chat": "run-p watch start:chat",
+    "dev:grid": "run-p watch start:grid",
+    "dev:todo": "run-p watch start:todo",
     "build": "yarn workspace @cevitxe/core build",
     "lint": "yarn workspaces run lint",
     "watch": "yarn workspace @cevitxe/core watch",
