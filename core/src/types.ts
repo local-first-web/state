@@ -50,3 +50,9 @@ export interface KeyPair {
 export type Message<T> = PartialBy<automerge.Message<T>, 'docId'>
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
+
+export interface ReceiveMessagePayload<T> {
+  message: A.Message<any>;
+  connection: A.Connection<T>;
+}
+  

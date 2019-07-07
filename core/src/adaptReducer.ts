@@ -1,6 +1,19 @@
 import A from 'automerge'
-import { feedReducer } from './feedReducer'
-import { ReducerConverter } from './types'
+import debug from 'debug'
+import { AnyAction, Reducer } from 'redux'
+
+import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
+import { ReceiveMessagePayload, ReducerConverter } from './types'
+
+const log = debug('cevitxe:adaptReducer')
+
+// This function is used when wiring up the store. It takes a proxyReducer and turns it
+// into a real reducer, plus adds our feedReducer to the pipeline.
+export const adaptReducer: ReducerConverter = proxyReducer => (state, action) => {
+  state = feedReducer(state, action)
+  state = convertToReduxReducer(proxyReducer)(state, action)
+  return state
+}
 
 // During initialization, we're given a `proxyReducer`, which is like a Redux reducer,
 // except it's designed to work with automerge objects instead of plain javascript objects.
@@ -14,15 +27,21 @@ const convertToReduxReducer: ReducerConverter = proxyReducer => (state, { type, 
   const msg = `${type}: ${JSON.stringify(payload)}`
   const fn = proxyReducer({ type, payload })
   if (!fn || !state) return state // no matching function - return the unmodified state
-  const newState = A.change(state, msg, fn) // return a modified Automerge object
-  // TODO: do we need a reference to the Connection here?
-  return newState
+  return A.change(state, msg, fn) // return a modified Automerge object
 }
 
-// This function is used when wiring up the store. It takes a proxyReducer and turns it
-// into a real reducer, plus adds our feedReducer to the pipeline.
-export const adaptReducer: ReducerConverter = proxyReducer => (state, action) => {
-  state = feedReducer(state, action)
-  state = convertToReduxReducer(proxyReducer)(state, action)
-  return state
+// After setting up the feed in `createStore`, we listen to our connections and dispatch the
+// incoming messages to our store. This is the reducer that handles those dispatches.
+const feedReducer: Reducer = <T>(state: T, { type, payload }: AnyAction) => {
+  switch (type) {
+    case RECEIVE_MESSAGE_FROM_PEER: {
+      const { message, connection } = payload as ReceiveMessagePayload<T>
+      log('received', message)
+
+      const doc = connection.receiveMsg(message)
+      return doc
+    }
+    default:
+      return state
+  }
 }
