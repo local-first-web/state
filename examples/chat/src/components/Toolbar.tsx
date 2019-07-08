@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@emotion/core'
-import debug from 'debug'
+import debug from 'debug-deluxe'
 import React, { useState } from 'react'
 import Redux from 'redux'
 import createPersistedState from 'use-persisted-state'

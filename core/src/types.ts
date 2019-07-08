@@ -1,4 +1,4 @@
-import automerge from 'automerge'
+import A from 'automerge'
 import { AnyAction, Middleware, Reducer, Store } from 'redux'
 import { SingleDocSet } from './SingleDocSet'
 export type ProxyReducer<T> = (action: AnyAction) => ChangeFn<T> | null
@@ -26,8 +26,8 @@ export type ReducerConverter = <T>(proxy: ProxyReducer<T>) => Reducer
 
 // TODO: replace these with the real automerge types?
 // stand-ins for Automerge types
-export type ChangeFn<T> = (doc: T) => void
-export interface Change {}
+export type ChangeFn<T> = A.ChangeFn<T>
+export interface Change<T> extends A.Change<T> {}
 
 // TODO: sort out the type for feed after building, can't get it to pick up the Feed type from the
 // ambient hypercore types
@@ -47,12 +47,11 @@ export interface KeyPair {
 
 // Our connection class has a single document with a fixed `docId`, so the messages we pass to it
 // don't need to have
-export type Message<T> = PartialBy<automerge.Message<T>, 'docId'>
+export type Message<T> = PartialBy<A.Message<T>, 'docId'>
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
 
 export interface ReceiveMessagePayload<T> {
-  message: A.Message<any>;
-  connection: A.Connection<T>;
+  message: A.Message<any>
+  connection: A.Connection<T>
 }
-  

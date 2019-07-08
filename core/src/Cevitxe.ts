@@ -9,7 +9,7 @@ import { Instance as Peer } from 'simple-peer'
 import webrtcSwarm from 'webrtc-swarm'
 const wrtc = require('wrtc')
 
-import debug from './helpers/debug'
+import debug from 'debug-deluxe'
 
 import { adaptReducer } from './adaptReducer'
 import { Connection } from './connection'

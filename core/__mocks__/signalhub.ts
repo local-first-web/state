@@ -1,5 +1,5 @@
 import { Instance as Peer } from 'simple-peer'
-import debug from 'debug'
+import debug from 'debug-deluxe'
 
 const log = debug('cevitxe:mock:signalhub')
 

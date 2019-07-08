@@ -1,6 +1,6 @@
 import Peer from 'simple-peer'
 import uuid = require('uuid')
-import debug from 'debug'
+import debug from 'debug-deluxe'
 const wrtc = require('wrtc')
 
 const log = debug('cevitxe:mock:webrtc-swarm')
