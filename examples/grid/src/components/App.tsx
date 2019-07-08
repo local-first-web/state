@@ -2,13 +2,14 @@ import React from 'react'
 import './App.css'
 import List from './List'
 import { useSelector } from 'react-redux'
+import { Loading } from './Loading'
 
 const App: React.FC = () => {
   const ready = useSelector(state => !!state)
-  if (!ready) return <>Loading</>
   return (
     <div className="App">
-      <List />
+      {/**/}
+      {ready ? <List /> : <Loading />}
     </div>
   )
 }

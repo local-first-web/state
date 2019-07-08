@@ -23,6 +23,7 @@
     "dev:todo": "run-p watch start:todo",
     "build": "lerna run build",
     "lint": "lerna run lint",
+    "publish": "lerna publish --yes",
     "watch": "run-p watch:*",
     "watch:core": "yarn workspace cevitxe watch",
     "watch:toolbar": "yarn workspace cevitxe-toolbar watch",
