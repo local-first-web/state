@@ -1,7 +1,7 @@
 {
   "name": "@cevitxe/grid",
   "description": "Grid implemented with React-Redux & Cevitxe.",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "private": true,
   "main": "src/index.tsx",
   "scripts": {
@@ -11,12 +11,12 @@
     "eject": "react-scripts-ts eject"
   },
   "dependencies": {
-    "cevitxe": "^0.1.7",
     "@emotion/core": "^10.0.14",
     "@material-ui/core": "^4.1.1",
     "ag-grid-community": "^21.0.1",
     "ag-grid-enterprise": "^21.0.1",
     "ag-grid-react": "^21.0.1",
+    "cevitxe": "^0.1.8",
     "debug": "^4.1.1",
     "muibox": "^1.0.1",
     "react": "16.8.6",

@@ -1,7 +1,7 @@
 {
   "name": "@cevitxe/chat",
   "description": "Chat sample implemented with React-Redux & Cevitxe.",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "private": true,
   "main": "src/index.tsx",
   "scripts": {
@@ -9,8 +9,8 @@
     "test": "react-scripts-ts test"
   },
   "dependencies": {
-    "cevitxe": "^0.1.7",
     "@emotion/core": "^10.0.14",
+    "cevitxe": "^0.1.8",
     "debug": "^4.1.1",
     "react": "16.8.6",
     "react-dom": "16.8.6",

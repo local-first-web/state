@@ -2,7 +2,7 @@
   "name": "@cevitxe/todo",
   "description": "TodoMVC implemented with React-Redux & Cevitxe.",
   "private": true,
-  "version": "0.1.7",
+  "version": "0.1.8",
   "license": "MIT",
   "main": "src/index.tsx",
   "scripts": {
@@ -16,9 +16,9 @@
     "react": ">=16"
   },
   "dependencies": {
-    "cevitxe": "^0.1.7",
-    "cevitxe-toolbar": "^0.1.7",
     "@emotion/core": "^10.0.10",
+    "cevitxe": "^0.1.8",
+    "cevitxe-toolbar": "^0.1.8",
     "classnames": "2.2.6",
     "debug-deluxe": "^1.0.2",
     "immutable": "3.8.2",
