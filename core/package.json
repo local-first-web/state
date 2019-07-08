@@ -1,7 +1,7 @@
 {
   "name": "@cevitxe/core",
   "description": "CRDT-based distributed state management for Redux",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": false,
   "license": "MIT",
   "main": "dist/index.js",
@@ -13,7 +13,6 @@
     "test": "jest --watch",
     "test:debug": "node --inspect-brk=11580 node_modules\\jest\\bin\\jest.js --runInBand"
   },
-  "peerDependencies": {},
   "devDependencies": {
     "@types/debug": "^4.1.4",
     "@types/jest": "^24.0.14",
@@ -48,5 +47,6 @@
       "/node_modules/",
       "/dist"
     ]
-  }
+  },
+  "gitHead": "5e3155755f9dc3eb1de874572f6646b057800dda"
 }

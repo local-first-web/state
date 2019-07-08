@@ -1,6 +1,10 @@
 {
-  "version": "0.1.5",
+  "version": "0.1.6",
   "npmClient": "yarn",
-  "packages": ["core", "examples/*", "components/*"],
+  "packages": [
+    "core",
+    "examples/*",
+    "components/*"
+  ],
   "useWorkspaces": true
 }
