@@ -2,7 +2,7 @@
   "name": "@cevitxe/toolbar",
   "description": "Toolbar component for managing document IDs in Cevitxe examples.",
   "private": false,
-  "version": "0.1.5",
+  "version": "0.1.6",
   "license": "MIT",
   "main": "dist/Toolbar.js",
   "typings": "dist/Toolbar.d.ts",
@@ -12,7 +12,6 @@
     "watch": "tsc --watch",
     "test": "jest --watch"
   },
-  "peerDependencies": {},
   "devDependencies": {
     "@types/jest": "^24.0.14",
     "jest": "^24.8.0",
