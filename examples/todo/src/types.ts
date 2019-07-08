@@ -1,5 +1,4 @@
 import { ActionType } from './redux/actions'
-import { CSSObject } from '@emotion/core'
 
 export interface Todo {
   id: string
