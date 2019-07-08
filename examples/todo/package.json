@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@cevitxe/core": "*",
+    "@cevitxe/toolbar": "*",
     "@emotion/core": "^10.0.10",
     "classnames": "2.2.6",
     "debug-deluxe": "^1.0.2",

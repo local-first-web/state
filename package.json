@@ -22,9 +22,9 @@
     "dev:chat": "run-p watch start:chat",
     "dev:grid": "run-p watch start:grid",
     "dev:todo": "run-p watch start:todo",
-    "build": "yarn workspace @cevitxe/core build",
+    "build": "yarn workspaces run build",
     "lint": "yarn workspaces run lint",
-    "watch": "yarn workspace @cevitxe/core watch",
+    "watch": "yarn workspaces run watch",
     "test": "yarn workspace @cevitxe/core test",
     "purge": "scripts/purge.bat"
   },

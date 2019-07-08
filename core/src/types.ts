@@ -1,7 +1,10 @@
 import A from 'automerge'
 import { AnyAction, Middleware, Reducer, Store } from 'redux'
 import { SingleDocSet } from './SingleDocSet'
-export type ProxyReducer<T> = (action: AnyAction) => ChangeFn<T> | null
+// import { Feed } from 'hypercore'
+
+export type ProxyReducer<T> = (action: AnyAction) => A.ChangeFn<T> | null
+export type ReducerConverter = <T>(proxy: ProxyReducer<T>) => Reducer
 
 export interface CevitxeOptions<T> {
   // Redux store
@@ -18,20 +21,12 @@ export interface CevitxeOptions<T> {
 }
 
 export interface CreateStoreResult {
-  feed: Feed<string>
+  feed: any //Feed<string>
   store: Store
 }
 
-export type ReducerConverter = <T>(proxy: ProxyReducer<T>) => Reducer
-
-// TODO: replace these with the real automerge types?
-// stand-ins for Automerge types
-export type ChangeFn<T> = A.ChangeFn<T>
-export interface Change<T> extends A.Change<T> {}
-
-// TODO: sort out the type for feed after building, can't get it to pick up the Feed type from the
-// ambient hypercore types
-export type MiddlewareFactory = <T>(feed: Feed<string>, docSet: SingleDocSet<T | {}>) => Middleware
+// TODO: sort out the type for feed after building, can't get it to pick up the Feed type from the ambient hypercore types
+export type MiddlewareFactory = <T>(feed: any, docSet: SingleDocSet<T | {}>) => Middleware // feed: Feed<string>
 
 // A keychain maps a discovery key (the id we share to the signal server) with a public/private
 // keypair (which we use for storage etc). The discovery key can be any string that we think is
@@ -45,8 +40,7 @@ export interface KeyPair {
   secretKey: string
 }
 
-// Our connection class has a single document with a fixed `docId`, so the messages we pass to it
-// don't need to have
+// Our connection class has a single document with a fixed `docId`, so the messages we pass to it don't need to have that field
 export type Message<T> = PartialBy<A.Message<T>, 'docId'>
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>

@@ -14,8 +14,6 @@ interface FooState {
   foo?: number
 }
 
-const initialState: FooState = { foo: 1 }
-
 const proxyReducer: ProxyReducer<FooState> = ({ type, payload }) => {
   switch (type) {
     case 'SET_FOO':
@@ -81,18 +79,17 @@ describe('Cevitxe', () => {
     it('should communicate changes from one store to another', async done => {
       // instantiate remote store
 
-      const remoteCevitxe = new Cevitxe({
+      new Cevitxe({
         proxyReducer,
         initialState: {},
         onReceive,
         databaseName: 'remote-store',
       })
 
-      const remoteStore = remoteCevitxe.joinStore(documentId)
       // We're going to intentionally delay changes to the local store,
       // this allows us to test receiving of the initial state and additional changes
       let receiveCount = 0
-      function onReceive(message: any) {
+      function onReceive() {
         if (receiveCount === 0) expect(store.getState().foo).toEqual(1)
         if (receiveCount === 1) {
           expect(store.getState().foo).toEqual(42)
