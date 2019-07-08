@@ -1,6 +1,6 @@
 import { Middleware } from 'redux'
 
-import debug from '../debug'
+import debug from 'debug-deluxe'
 const log = debug('cevitxe:todo')
 
 export const logger: Middleware = store => next => action => {

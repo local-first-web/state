@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { getFilteredTodos } from 'src/redux/selectors'
 import { VisibilityFilter } from 'src/types'
 
-import { AddTodo, ClearCompletedButton, TodoList, VisibilityFilters } from '.'
+import { AddTodo, ClearCompletedButton, TodoList, VisibilityFilters } from '../components'
 import { pluralize } from '../lib/pluralize'
 
 export function Todos() {
