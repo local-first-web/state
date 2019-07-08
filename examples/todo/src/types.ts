@@ -25,5 +25,3 @@ export enum VisibilityFilter {
 }
 
 export type VisibilityFilterKey = keyof typeof VisibilityFilter
-
-export type Stylesheet = { [k: string]: CSSObject }

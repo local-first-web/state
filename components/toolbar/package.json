@@ -1,0 +1,39 @@
+{
+  "name": "@cevitxe/toolbar",
+  "description": "Toolbar component for managing document IDs in Cevitxe examples.",
+  "version": "0.1.0",
+  "private": false,
+  "license": "MIT",
+  "main": "dist/index.tsx",
+  "typings": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc ",
+    "lint": "tsc -p tsconfig.strict.json --noEmit",
+    "watch": "tsc --watch",
+    "test": "jest --watch"
+  },
+  "peerDependencies": {},
+  "devDependencies": {
+    "@types/jest": "^24.0.14",
+    "jest": "^24.8.0",
+    "prettier": "^1.18.2",
+    "ts-jest": "^24.0.2",
+    "tslib": "^1.10.0",
+    "typescript": "^3.5.1"
+  },
+  "dependencies": {
+    "@emotion/core": "^10.0.10",
+    "react": "16.8.6",
+    "react-dom": "16.8.6",
+    "redux": "^4.0.1",
+    "use-persisted-state": "^0.3.0"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "jsdom",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist"
+    ]
+  }
+}

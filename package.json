@@ -6,7 +6,8 @@
   "workspaces": {
     "packages": [
       "core",
-      "examples/*"
+      "examples/*",
+      "components/*"
     ],
     "nohoist": [
       "**/jest/**",
