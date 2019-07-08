@@ -1,5 +1,5 @@
 {
-  "name": "@cevitxe/toolbar",
+  "name": "cevitxe-toolbar",
   "description": "Toolbar component for managing document IDs in Cevitxe examples.",
   "private": false,
   "version": "0.1.7",
@@ -35,5 +35,5 @@
       "/dist"
     ]
   },
-  "gitHead": "5e3155755f9dc3eb1de874572f6646b057800dda"
+  "gitHead": "061c22c8e2481fac0ae5bbb70880b11e80c6f31e"
 }

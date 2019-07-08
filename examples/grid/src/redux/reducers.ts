@@ -1,5 +1,5 @@
 import * as actions from "./actions";
-import { ProxyReducer } from "@cevitxe/core";
+import { ProxyReducer } from "cevitxe";
 import { State } from "./store";
 import { JSONSchema7 } from "json-schema";
 

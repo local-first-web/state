@@ -1,8 +1,7 @@
 {
   "name": "@cevitxe/root",
-  "version": "0.1.5",
   "license": "MIT",
-  "private": false,
+  "private": true,
   "workspaces": {
     "packages": [
       "core",
@@ -25,9 +24,9 @@
     "build": "lerna run build",
     "lint": "lerna run lint",
     "watch": "run-p watch:*",
-    "watch:core": "yarn workspace @cevitxe/core watch",
-    "watch:toolbar": "yarn workspace @cevitxe/toolbar watch",
-    "test": "yarn workspace @cevitxe/core test",
+    "watch:core": "yarn workspace cevitxe watch",
+    "watch:toolbar": "yarn workspace cevitxe-toolbar watch",
+    "test": "yarn workspace cevitxe test",
     "purge": "scripts/purge.bat"
   },
   "devDependencies": {

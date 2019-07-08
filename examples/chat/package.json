@@ -9,7 +9,7 @@
     "test": "react-scripts-ts test"
   },
   "dependencies": {
-    "@cevitxe/core": "^0.1.7",
+    "cevitxe": "^0.1.7",
     "@emotion/core": "^10.0.14",
     "debug": "^4.1.1",
     "react": "16.8.6",

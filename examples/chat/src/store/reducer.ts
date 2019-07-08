@@ -1,4 +1,4 @@
-import { ProxyReducer } from '@cevitxe/core'
+import { ProxyReducer } from 'cevitxe'
 import { State } from '../types'
 
 // Constants

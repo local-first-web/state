@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react'
 import Redux from 'redux'
 import createPersistedState from 'use-persisted-state'
 import uuid from 'uuid'
-import { Cevitxe } from '@cevitxe/core'
+import { Cevitxe } from 'cevitxe'
 
 const log = debug('cevitxe:toolbar')
 

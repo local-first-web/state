@@ -1,6 +1,6 @@
 import { createLogger } from 'redux-logger'
 import { proxyReducer } from './reducers'
-import { Cevitxe } from '@cevitxe/core'
+import { Cevitxe } from 'cevitxe'
 import uuid from 'uuid'
 import { JSONSchema7 } from 'json-schema'
 

@@ -1,4 +1,4 @@
-import { Cevitxe } from '@cevitxe/core'
+import { Cevitxe } from 'cevitxe'
 import { proxyReducer } from './reducer'
 
 const cevitxe = new Cevitxe({

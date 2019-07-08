@@ -1,4 +1,4 @@
-import { Cevitxe } from '@cevitxe/core'
+import { Cevitxe } from 'cevitxe'
 import { VisibilityFilter } from '../types'
 import { logger } from './logger'
 import { proxyReducer } from './reducers'
