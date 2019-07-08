@@ -1,11 +1,11 @@
 {
   "name": "@cevitxe/toolbar",
   "description": "Toolbar component for managing document IDs in Cevitxe examples.",
-  "version": "0.1.0",
   "private": false,
+  "version": "0.1.5",
   "license": "MIT",
-  "main": "dist/index.tsx",
-  "typings": "dist/index.d.ts",
+  "main": "dist/Toolbar.js",
+  "typings": "dist/Toolbar.d.ts",
   "scripts": {
     "build": "tsc ",
     "lint": "tsc -p tsconfig.strict.json --noEmit",
