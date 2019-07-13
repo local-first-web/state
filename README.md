@@ -4,18 +4,6 @@
 
 > ⚠ This package isn't ready for production use!
 
-Still to do:
-
-- [ ] Snapshot recent state
-- [ ] Don't mock webrtc-swarm
-- [ ] Add fallback for webrtc
-- [ ] Add known limitations to readme
-- [x] Add grid example
-- [x] Add chat example
-- [x] Add instructions for running examples to readme
-- [x] Fix initial key workflow
-- [x] Straighten out initial state
-
 ## What is this?
 
 Cevitxe is a wrapper for a Redux store that gives your app offline capabilities
@@ -262,6 +250,8 @@ one should be replicated to the other.
 
 ## Known limitations
 
+- Performance starts to degrade with datasets over 100K rows (TODO: narrow this down)
+
 ## Frequently asked questions
 
 ### Where can I learn more about this whole CRDT/distributed/local-first thing?
@@ -278,21 +268,19 @@ Here are some articles and videos:
 
 ### Why is this package called Cevitxe?
 
-[CVI.CHE 105](https://www.google.com/search?q=cvi.che+105&tbm=isch) is a restaurant in Miami, where
-the authors of this package ate the night before starting it.
-
-[Ceviche](https://en.wikipedia.org/wiki/Ceviche) is the Peruvian style of preparing raw fish
-marinated in citrus along with _ají_, onions, and cilantro.
-
-[Cevitxe](https://www.facebook.com/bentrobats/videos/1492898280822955/) is the Catalan spelling of
-the same word, and is pronounced the same way.
+- [CVI.CHE 105](https://www.google.com/search?q=cvi.che+105&tbm=isch) is a restaurant in Miami, where
+  the authors of this package ate the night before starting it.
+- [Ceviche](https://en.wikipedia.org/wiki/Ceviche) is the Peruvian style of preparing raw fish
+  marinated in citrus along with _ají_, onions, and cilantro.
+- [Cevitxe](https://www.facebook.com/bentrobats/videos/1492898280822955/) is the Catalan spelling of
+  the same word, and is pronounced the same way.
 
 Why the Catalan spelling?
 
 - @herbcaudill lives in Barcelona
 - The name was free on NPM
 - It's easier to Google
-- It has an **x** like Redu**x**.
+- It has an **x** like Redu**x**:
 
 ```
         C R D T
