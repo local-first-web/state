@@ -1,10 +1,12 @@
 /** @jsx jsx */
 
+import { CSSObject, jsx } from '@emotion/core'
+import { Cevitxe } from 'cevitxe'
 import { debug } from 'debug-deluxe'
+import React, { useEffect, useState } from 'react'
 import Redux from 'redux'
 import createPersistedState from 'use-persisted-state'
-import uuid from 'uuid'
-import { Cevitxe } from 'cevitxe'
+import { wordPair } from './wordPair'
 
 const log = debug('cevitxe:toolbar')
 
@@ -25,19 +27,21 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
   }, []) // only runs on first render
 
   const create = async () => {
-    const newKey = uuid()
+    const newKey = wordPair() //uuid()
     setDocumentId(newKey)
     setAppStore(await cevitxe.createStore(newKey))
     log('created store ', newKey)
   }
-
+  qq
   const join = async () => {
     setAppStore(await cevitxe.joinStore(documentId))
     log('joined store ', documentId)
   }
 
-  const keyChanged = (e: React.ChangeEvent<HTMLInputElement>) =>
+  const keyChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDocumentId(e.currentTarget.value)
+    join()
+  }
 
   return (
     <div>
