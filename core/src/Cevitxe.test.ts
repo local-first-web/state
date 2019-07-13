@@ -1,7 +1,7 @@
 require('fake-indexeddb/auto')
 import { cleanup } from 'signalhub'
 import A from 'automerge'
-import debug from 'debug-deluxe'
+import { debug } from 'debug-deluxe'
 import uuid from 'uuid'
 import { Cevitxe } from './Cevitxe'
 import { pause } from './helpers/pause'

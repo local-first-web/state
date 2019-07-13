@@ -1,6 +1,6 @@
 import A from 'automerge'
 import { Instance as Peer } from 'simple-peer'
-import debug from 'debug-deluxe'
+import { debug } from 'debug-deluxe'
 import { SingleDocSet } from './SingleDocSet'
 import { Dispatch, AnyAction } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'

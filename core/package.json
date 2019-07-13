@@ -30,7 +30,8 @@
   "dependencies": {
     "@types/simple-peer": "^6.1.5",
     "automerge": "*",
-    "debug-deluxe": "^1.0.2",
+    "debug-deluxe": "^2.0.0",
+    "friendly-words": "^1.1.7",
     "hypercore": "^7.2.2",
     "hypercore-crypto": "^1.0.0",
     "random-access-idb": "^1.2.1",

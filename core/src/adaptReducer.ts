@@ -1,5 +1,5 @@
 import A from 'automerge'
-import debug from 'debug-deluxe'
+import { debug } from 'debug-deluxe'
 import { AnyAction, Reducer } from 'redux'
 
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'

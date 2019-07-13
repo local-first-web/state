@@ -4403,10 +4403,10 @@ debounce@^1.0.0:
   resolved "https://registry.yarnpkg.com/debounce/-/debounce-1.2.0.tgz#44a540abc0ea9943018dc0eaa95cce87f65cd131"
   integrity sha512-mYtLl1xfZLi1m4RtQYlZgJUNQjl4ZxVnHzIR8nLLgi4q1YT8o/WM+MK/f8yfcc9s5Ir5zRaPZyZU6xs1Syoocg==
 
-debug-deluxe@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/debug-deluxe/-/debug-deluxe-1.0.2.tgz#6ffb2c49befa99ce51040feaa2d33cc0e02e926f"
-  integrity sha512-JaapfP8tI5a/JUN9RVz32nJjsEkm0uwpCmJUw8vEhHQfLm5lu2Ly69mpLzMU2W3jHcJBlTSyzJqZwXWR7JNNvQ==
+debug-deluxe@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/debug-deluxe/-/debug-deluxe-2.0.0.tgz#73293f8e79e3e76a7bae70b0a172f5778db4ab6e"
+  integrity sha512-MVRXOqM0FrB8Yoey4hZICP/S6jxH/leNDXEfiJ1pTl+8cxt1sP/Prq58IGWkq4fdlSXa3u+L8BIXjNjirMinzQ==
   dependencies:
     debug "^4.1.1"
 
@@ -5729,6 +5729,11 @@ fresh@0.5.2:
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/fresh/-/fresh-0.5.2.tgz#3d8cadd90d976569fa835ab1f8e4b23a105605a7"
   integrity sha1-PYyt2Q2XZWn6g1qx+OSyOhBWBac=
+
+friendly-words@^1.1.7:
+  version "1.1.7"
+  resolved "https://registry.yarnpkg.com/friendly-words/-/friendly-words-1.1.7.tgz#736ce55d89134d5aaf1d6ae5aea4cbef601a4546"
+  integrity sha512-bO28tlWEiMVytetZA0VZCFlqSS1GS/BdhMriKJb2YUWopZOobHRCHKCCJZVUewAgO6CJhth+Q+wKb+Tt5QXE6Q==
 
 from2@^2.1.0, from2@^2.3.0:
   version "2.3.0"

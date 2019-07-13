@@ -1,5 +1,5 @@
 import A from 'automerge'
-import debug from 'debug-deluxe'
+import { debug } from 'debug-deluxe'
 import { MiddlewareFactory } from './types'
 
 const log = debug('cevitxe:middleware')

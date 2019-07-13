@@ -1,8 +1,6 @@
 /** @jsx jsx */
 
-import { jsx, CSSObject } from '@emotion/core'
-import debug from 'debug-deluxe'
-import React, { useState, useEffect } from 'react'
+import { debug } from 'debug-deluxe'
 import Redux from 'redux'
 import createPersistedState from 'use-persisted-state'
 import uuid from 'uuid'
