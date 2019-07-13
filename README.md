@@ -6,15 +6,15 @@
 
 Still to do:
 
-- [x] Add grid example
-- [x] Add chat example
-- [ ] Add instructions for running examples
-- [ ] Add known limitations
 - [ ] Snapshot recent state
-- [x] Fix initial key workflow
-- [x] Straighten out initial state
 - [ ] Don't mock webrtc-swarm
 - [ ] Add fallback for webrtc
+- [ ] Add known limitations to readme
+- [x] Add grid example
+- [x] Add chat example
+- [x] Add instructions for running examples to readme
+- [x] Fix initial key workflow
+- [x] Straighten out initial state
 
 ## What is this?
 
@@ -231,6 +231,34 @@ But there are three important differences between a proxy reducer and an ordinar
 Internally, Cevitxe turns the proxy into a straight-up Redux reducer.
 
 ## Running the examples
+
+Three demo React applications are included. Source code is in the `examples` directory. You can run
+each one with the appropriate `yarn start` command:
+
+| `yarn start:grid`                             | `yarn start:todo`                              | `yarn start:chat`                             |
+| --------------------------------------------- | ---------------------------------------------- | --------------------------------------------- |
+| <img src='images/screen.grid.png' width=600/> | <img src='images/screen.todo.png'  width=600/> | <img src='images/screen.grid.png' width=600/> |
+| A simple table editor                         | An implementation of TodoMVC                   | A chat channel                                |
+
+If you are working on the Cevitxe code and/or the code for one of the demo apps, you can start in
+watch mode by running `yarn dev` instead:
+
+- `yarn dev:grid`
+- `yarn dev:todo`
+- `yarn dev:chat`
+
+In each case the app will run on `localhost:3000`. (You can only run one example app at a time).
+
+To test the peer-to-peer functionality on a single computer, visit the demo in two different
+browsers (e.g. Chrome and Firefox), or with a normal window and an incognito window of the same
+browser.
+
+(You can of course run in two normal tabs of the same browser, but they'll share local
+state so you're not really testing their ability to communicate.)
+
+Copy the `Document ID` from one browser window and paste it into the other, then press **Join**.
+After a brief delay, you should have the same state visible in both instances, and changes made in
+one should be replicated to the other.
 
 ## Known limitations
 
