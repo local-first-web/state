@@ -32,7 +32,6 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
     setAppStore(await cevitxe.createStore(newKey))
     log('created store ', newKey)
   }
-  qq
   const join = async () => {
     setAppStore(await cevitxe.joinStore(documentId))
     log('joined store ', documentId)

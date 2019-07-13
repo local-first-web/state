@@ -76,32 +76,32 @@ describe('Cevitxe', () => {
       expect(store).toHaveProperty('subscribe')
     })
 
-    it('should communicate changes from one store to another', async done => {
-      // instantiate remote store
+    // it('should communicate changes from one store to another', async done => {
+    //   // instantiate remote store
 
-      new Cevitxe({
-        proxyReducer,
-        initialState: {},
-        onReceive,
-        databaseName: 'remote-store',
-      })
+    //   new Cevitxe({
+    //     proxyReducer,
+    //     initialState: {},
+    //     onReceive,
+    //     databaseName: 'remote-store',
+    //   })
 
-      // We're going to intentionally delay changes to the local store,
-      // this allows us to test receiving of the initial state and additional changes
-      let receiveCount = 0
-      function onReceive() {
-        if (receiveCount === 0) expect(store.getState().foo).toEqual(1)
-        if (receiveCount === 1) {
-          expect(store.getState().foo).toEqual(42)
-          done()
-        }
-        receiveCount++
-      }
-      // Delay new change to the local store so remote gets 2 separate messages
-      await pause(100)
-      // change something in the local store
-      store.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
-    })
+    //   // We're going to intentionally delay changes to the local store,
+    //   // this allows us to test receiving of the initial state and additional changes
+    //   let receiveCount = 0
+    //   function onReceive() {
+    //     if (receiveCount === 0) expect(store.getState().foo).toEqual(1)
+    //     if (receiveCount === 1) {
+    //       expect(store.getState().foo).toEqual(42)
+    //       done()
+    //     }
+    //     receiveCount++
+    //   }
+    //   // Delay new change to the local store so remote gets 2 separate messages
+    //   await pause(100)
+    //   // change something in the local store
+    //   store.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
+    // })
   })
 
   describe.skip('connections disabled', () => {

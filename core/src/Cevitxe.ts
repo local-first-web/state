@@ -15,7 +15,7 @@ import { adaptReducer } from './adaptReducer'
 import { Connection } from './connection'
 import { DEFAULT_PEER_HUBS } from './constants'
 import { getMiddleware } from './getMiddleware'
-import { getKeys } from './keyManager'
+import { getKeys } from './keys'
 import { SingleDocSet } from './SingleDocSet'
 import { CevitxeOptions, ProxyReducer } from './types'
 import { promisify } from './helpers/promisify'
@@ -36,7 +36,7 @@ export class Cevitxe<T> extends EventEmitter {
   private feed?: Feed<string>
   private hub?: any
   private swarm?: any
-  private connections?: Connection[]
+  private connections: Connection[]
   private store?: Store
 
   constructor({
@@ -54,6 +54,7 @@ export class Cevitxe<T> extends EventEmitter {
     this.onReceive = onReceive
     this.databaseName = databaseName
     this.peerHubs = peerHubs
+    this.connections = []
   }
 
   joinStore = (documentId: string) => this.newStore(documentId)
@@ -98,7 +99,6 @@ export class Cevitxe<T> extends EventEmitter {
       : initialize(feed) // if not, initialize
 
     log('creating initial docSet', JSON.stringify(state))
-    const connections: Connection<T | {}>[] = []
     const docSet = new SingleDocSet<T | {}>(state)
 
     // Create Redux store
@@ -114,10 +114,14 @@ export class Cevitxe<T> extends EventEmitter {
     // For each peer that wants to connect, create a Connection object
     this.swarm.on('peer', (peer: Peer, id: any) => {
       log('peer', id)
-      connections.push(new Connection(docSet, peer, this.store!.dispatch, this.onReceive))
+      this.connections.push(new Connection(docSet, peer, this.store!.dispatch, this.onReceive))
     })
 
     return this.store
+  }
+
+  get connectionCount() {
+    return this.connections.length
   }
 
   getStore = () => this.store
@@ -131,7 +135,7 @@ export class Cevitxe<T> extends EventEmitter {
     this.feed = undefined
     this.hub = undefined
     this.swarm = undefined
-    this.connections = undefined
+    this.connections = []
   }
 }
 

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@emotion/core": "^10.0.14",
+    "cevitxe-toolbar": "^0.1.8",
     "cevitxe": "^0.1.8",
     "debug": "^4.1.1",
     "react": "16.8.6",
