@@ -1,7 +1,7 @@
 <img src='logo.svg' width=500 alt=''>
 
-## ⚠ Under construction
-
+> ### ⚠ Under construction
+>
 > This package isn't ready for production use!
 
 ## What is this?
@@ -225,8 +225,8 @@ each one with the appropriate `yarn start` command:
 
 | `yarn start:grid`                             | `yarn start:todo`                              | `yarn start:chat`                             |
 | --------------------------------------------- | ---------------------------------------------- | --------------------------------------------- |
-| <img src='images/screen.grid.png' width=600/> | <img src='images/screen.todo.png'  width=600/> | <img src='images/screen.grid.png' width=600/> |
 | A simple table editor                         | An implementation of TodoMVC                   | A chat channel                                |
+| <img src='images/screen.grid.png' width=600/> | <img src='images/screen.todo.png'  width=600/> | <img src='images/screen.grid.png' width=600/> |
 
 If you are working on the Cevitxe code and/or the code for one of the demo apps, you can start in
 watch mode by running `yarn dev` instead:
@@ -244,9 +244,11 @@ browser.
 (You can of course run in two normal tabs of the same browser, but they'll share local
 state so you're not really testing their ability to communicate.)
 
-Copy the `Document ID` from one browser window and paste it into the other, then press **Join**.
+Copy the ID from one browser window and paste it into the other, then press **Join**.
 After a brief delay, you should have the same state visible in both instances, and changes made in
 one should be replicated to the other.
+
+![](images/demo.gif)
 
 ## Known limitations
 
@@ -254,7 +256,7 @@ one should be replicated to the other.
 
 ## Frequently asked questions
 
-### Where can I learn more about this whole CRDT/distributed/local-first thing?
+#### Where can I learn more about this whole CRDT/distributed/local-first thing?
 
 Here are some articles and videos:
 
@@ -266,7 +268,7 @@ Here are some articles and videos:
   industrial research lab created by Heroku alumni that is behind Automerge.
 - [A web application with no web server?](https://medium.com/all-the-things/a-web-application-with-no-web-server-61000a6aed8f)
 
-### Why is this package called Cevitxe?
+#### Why is this package called Cevitxe?
 
 - [CVI.CHE 105](https://www.google.com/search?q=cvi.che+105&tbm=isch) is a restaurant in Miami, where
   the authors of this package ate the night before starting it.
@@ -275,7 +277,7 @@ Here are some articles and videos:
 - [Cevitxe](https://www.facebook.com/bentrobats/videos/1492898280822955/) is the Catalan spelling of
   the same word, and is pronounced the same way.
 
-### Why the Catalan spelling?
+#### Why the Catalan spelling?
 
 - @herbcaudill lives in Barcelona
 - The name was free on NPM
