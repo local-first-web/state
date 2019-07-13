@@ -1,8 +1,8 @@
 <img src='logo.svg' width=500 alt=''>
 
-## In progress
+## ⚠ Under construction
 
-> ⚠ This package isn't ready for production use!
+> This package isn't ready for production use!
 
 ## What is this?
 
@@ -275,7 +275,7 @@ Here are some articles and videos:
 - [Cevitxe](https://www.facebook.com/bentrobats/videos/1492898280822955/) is the Catalan spelling of
   the same word, and is pronounced the same way.
 
-Why the Catalan spelling?
+### Why the Catalan spelling?
 
 - @herbcaudill lives in Barcelona
 - The name was free on NPM
