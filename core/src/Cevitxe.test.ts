@@ -1,7 +1,7 @@
 require('fake-indexeddb/auto')
 import { cleanup } from 'signalhub'
 import A from 'automerge'
-import { debug } from 'debug-deluxe'
+import debug from 'debug'
 import uuid from 'uuid'
 import { Cevitxe } from './Cevitxe'
 import { pause } from './helpers/pause'
@@ -13,6 +13,8 @@ const log = debug('cevitxe:tests')
 interface FooState {
   foo?: number
 }
+
+const initialState: FooState = { foo: 1 }
 
 const proxyReducer: ProxyReducer<FooState> = ({ type, payload }) => {
   switch (type) {
@@ -38,16 +40,14 @@ describe('Cevitxe', () => {
   //   if (cevitxe) await cevitxe.close()
   // })
 
-  describe('joinStore', () => {
-    it('joinStore should return a connected redux store', async () => {
-      expect.assertions(2)
-      const store = await cevitxe.joinStore(documentId)
-      expect(store).not.toBeUndefined()
-      expect(store.getState()).toEqual({})
-    })
+  it('joinStore should return a connected redux store', async () => {
+    expect.assertions(2)
+    const store = await cevitxe.joinStore(documentId)
+    expect(store).not.toBeUndefined()
+    expect(store.getState()).toEqual({})
   })
 
-  describe('createStore', () => {
+  describe('connections enabled', () => {
     beforeEach(async () => {
       webrtcSwarm._setEnablePeerConnections(true)
       store = await cevitxe.createStore(documentId)
@@ -76,35 +76,36 @@ describe('Cevitxe', () => {
       expect(store).toHaveProperty('subscribe')
     })
 
-    // it('should communicate changes from one store to another', async done => {
-    //   // instantiate remote store
+    it('{FLAKY TEST} should communicate changes from one store to another', async done => {
+      // instantiate remote store
 
-    //   new Cevitxe({
-    //     proxyReducer,
-    //     initialState: {},
-    //     onReceive,
-    //     databaseName: 'remote-store',
-    //   })
+      const remoteCevitxe = new Cevitxe({
+        proxyReducer,
+        initialState: {},
+        onReceive,
+        databaseName: 'remote-store',
+      })
 
-    //   // We're going to intentionally delay changes to the local store,
-    //   // this allows us to test receiving of the initial state and additional changes
-    //   let receiveCount = 0
-    //   function onReceive() {
-    //     if (receiveCount === 0) expect(store.getState().foo).toEqual(1)
-    //     if (receiveCount === 1) {
-    //       expect(store.getState().foo).toEqual(42)
-    //       done()
-    //     }
-    //     receiveCount++
-    //   }
-    //   // Delay new change to the local store so remote gets 2 separate messages
-    //   await pause(100)
-    //   // change something in the local store
-    //   store.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
-    // })
+      remoteCevitxe.joinStore(documentId)
+      // We're going to intentionally delay changes to the local store,
+      // this allows us to test receiving of the initial state and additional changes
+      let receiveCount = 0
+      function onReceive(message: any) {
+        if (receiveCount === 0) expect(store.getState().foo).toEqual(1)
+        if (receiveCount === 1) {
+          expect(store.getState().foo).toEqual(42)
+          done()
+        }
+        receiveCount++
+      }
+      // Delay new change to the local store so remote gets 2 separate messages
+      await pause(1000)
+      // change something in the local store
+      store.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
+    })
   })
 
-  describe.skip('connections disabled', () => {
+  describe('connections disabled', () => {
     beforeEach(async () => {
       webrtcSwarm._setEnablePeerConnections(false)
       store = await cevitxe.createStore(documentId)
@@ -135,11 +136,12 @@ describe('Cevitxe', () => {
     })
   })
 
-  it('close should destroy any current store', async () => {
-    expect.assertions(1)
+  it.skip('close should destroy any current store', async () => {
+    expect.assertions(2)
     await cevitxe.createStore(documentId)
     expect(cevitxe.getStore()).not.toBeUndefined()
-    // expect(cevitxe.getStore()).toBeUndefined()
+    await cevitxe.close()
+    expect(cevitxe.getStore()).toBeUndefined()
   })
 
   it.skip('close should close all connections', async () => {

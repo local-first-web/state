@@ -3,12 +3,11 @@
 import { CSSObject, jsx } from '@emotion/core'
 import { Cevitxe } from 'cevitxe'
 import { debug } from 'debug-deluxe'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef, FormEventHandler } from 'react'
 import Redux from 'redux'
 import createPersistedState from 'use-persisted-state'
 import { wordPair } from './wordPair'
-
-const log = debug('cevitxe:toolbar')
+import { Formik, Field, Form, ErrorMessage } from 'formik'
 
 //TODO ToolbarProps<T>
 
@@ -17,54 +16,68 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
   const [appStore, setAppStore] = useAppStore(onStoreReady)
   const [documentId, setDocumentId] = useDocumentId()
 
-  log('render')
+  const [creating, setCreating] = useState(false)
+  const [joining, setJoining] = useState(false)
 
   useEffect(() => {
     log('setup')
     if (appStore === undefined)
       if (documentId === undefined) create()
-      else join()
+      else join(documentId)
   }, []) // only runs on first render
 
-  const create = async () => {
-    const newKey = wordPair() //uuid()
-    setDocumentId(newKey)
-    setAppStore(await cevitxe.createStore(newKey))
-    log('created store ', newKey)
-  }
-  const join = async () => {
-    setAppStore(await cevitxe.joinStore(documentId))
-    log('joined store ', documentId)
-  }
+  const log = debug(`cevitxe:toolbar:${documentId}`)
+  log('render')
 
-  const keyChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDocumentId(e.currentTarget.value)
-    join()
+  const create = async () => {
+    if (creating || joining) return
+    const newKey = wordPair()
+    setDocumentId(newKey)
+    setCreating(true)
+    setAppStore(await cevitxe.createStore(newKey))
+    setCreating(false)
+    log('created store ', newKey)
+    return newKey
+  }
+  const join = async (_documentId: string) => {
+    if (creating || joining) return
+    setJoining(true)
+    setDocumentId(_documentId)
+    setAppStore(await cevitxe.joinStore(_documentId))
+    setJoining(false)
+    log('joined store ', _documentId)
   }
 
   return (
-    <div>
+    <div css={styles.toolbar}>
       {appStore && (
-        <div css={styles.toolbar}>
-          <span css={styles.toolbarGroup}>
-            <input
-              type="text"
-              value={documentId}
-              onChange={keyChanged}
-              placeholder="Key"
-              css={styles.input}
-            />
-            <button role="button" onClick={join} css={styles.button}>
-              Join list
-            </button>
-          </span>
-          or
-          <span css={styles.toolbarGroup}>
-            <button role="button" onClick={create} css={styles.button}>
-              New list
-            </button>
-          </span>
-        </div>
+        <Formik
+          initialValues={{ documentId }}
+          onSubmit={(values, actions) => {
+            actions.setSubmitting(false)
+            join(values.documentId)
+          }}
+        >
+          {({ isSubmitting, setFieldValue }) => (
+            <Form>
+              <span css={styles.toolbarGroup}>
+                <Field type="text" name="documentId" css={styles.input} />
+                <button role="submit" type="submit" disabled={isSubmitting} css={styles.button}>
+                  Join
+                </button>
+              </span>
+              <span css={styles.toolbarGroup}>
+                <button
+                  role="button"
+                  onClick={async () => setFieldValue('documentId', await create())}
+                  css={styles.button}
+                >
+                  New
+                </button>
+              </span>
+            </Form>
+          )}
+        </Formik>
       )}
     </div>
   )

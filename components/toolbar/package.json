@@ -22,6 +22,8 @@
   },
   "dependencies": {
     "@emotion/core": "^10.0.10",
+    "friendly-words": "^1.1.7",
+    "formik": "^2.0.1-rc.12",
     "react": "16.8.6",
     "react-dom": "16.8.6",
     "redux": "^4.0.1",

@@ -1,11 +1,5 @@
 import cn from 'classnames'
-import React, {
-  FormEventHandler,
-  KeyboardEventHandler,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import React, { FormEventHandler, KeyboardEventHandler, useEffect, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { actions } from '../redux/actions'
 import { Todo as TodoType } from '../types'
@@ -31,9 +25,7 @@ export const Todo = ({ id, completed, content }: TodoType) => {
   useEffect(selectAllOnEdit, [editing])
 
   // we save when the user has either tabbed or clicked away, or hit Enter
-  const save: FormEventHandler<HTMLInputElement> = (
-    e: React.FormEvent<HTMLInputElement>
-  ) => {
+  const save: FormEventHandler<HTMLInputElement> = (e: React.FormEvent<HTMLInputElement>) => {
     const saveContent = (e.target as HTMLInputElement).value.trim()
     if (saveContent.length > 0) {
       // todo was changed - keep the edited content
