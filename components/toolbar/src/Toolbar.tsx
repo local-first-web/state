@@ -51,7 +51,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
     actions.setSubmitting(false)
     join(values.documentId)
   }
-  
+
   return (
     <div css={styles.toolbar}>
       {appStore && (
@@ -67,6 +67,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
               <span css={styles.toolbarGroup}>
                 <button
                   role="button"
+                  type="button"
                   onClick={async () => setFieldValue('documentId', await create())}
                   css={styles.button}
                 >
