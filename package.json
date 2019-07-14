@@ -27,7 +27,7 @@
     "watch": "run-p watch:*",
     "watch:core": "yarn workspace cevitxe watch",
     "watch:toolbar": "yarn workspace cevitxe-toolbar watch",
-    "test": "yarn workspace cevitxe test",
+    "test": "jest --watch",
     "purge": "scripts/purge.bat"
   },
   "devDependencies": {
@@ -42,5 +42,17 @@
     "semi": false,
     "singleQuote": true,
     "trailingComma": "es5"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "projects": [
+      "<rootDir>/core",
+      "<rootDir>/examples/grid"
+    ],
+    "testEnvironment": "jsdom",
+    "testPathIgnorePatterns": [
+      "node_modules",
+      "dist"
+    ]
   }
 }

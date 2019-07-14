@@ -43,5 +43,13 @@
     "@types/uuid": "^3.4.4",
     "prettier": "^1.17.1",
     "typescript": "^3.5.2"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "jsdom",
+    "testPathIgnorePatterns": [
+      "node_modules",
+      "dist"
+    ]
   }
 }
