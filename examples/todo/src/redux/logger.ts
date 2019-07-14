@@ -1,7 +1,7 @@
 import { Middleware } from 'redux'
 
 import { debug } from 'debug-deluxe'
-const log = debug('cevitxe:todo')
+const log = debug('cevitxe:todo:middleware')
 
 export const logger: Middleware = store => next => action => {
   log.groupCollapsed(action.type)
