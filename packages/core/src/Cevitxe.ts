@@ -10,7 +10,7 @@ import { Instance as Peer } from 'simple-peer'
 import webrtcSwarm from 'webrtc-swarm'
 
 import { adaptReducer } from './adaptReducer'
-import { Connection } from './connection'
+import { Connection } from './Connection'
 import { DEFAULT_PEER_HUBS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { promisify } from './helpers/promisify'
@@ -89,7 +89,7 @@ export class Cevitxe<T> extends EventEmitter {
     this.swarm = webrtcSwarm(this.hub, { wrtc })
 
     // For each peer that wants to connect, create a Connection object
-    this.swarm.on('peer', (peer: Peer, id: any) => {
+    this.swarm.on('peer', (peer: Peer, id: string) => {
       log('connecting to peer', id)
       const connection = new Connection(docSet, peer, this.store!.dispatch, this.onReceive)
       this.connections.push(connection)

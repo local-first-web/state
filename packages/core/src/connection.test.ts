@@ -1,7 +1,7 @@
 import A from 'automerge'
 import Peer from 'simple-peer'
 
-import { Connection } from './connection'
+import { Connection } from './Connection'
 import { SingleDocSet } from './SingleDocSet'
 
 jest.mock('simple-peer')

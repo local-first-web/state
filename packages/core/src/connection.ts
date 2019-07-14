@@ -1,5 +1,5 @@
 import A from 'automerge'
-import { Instance as Peer } from 'simple-peer'
+import { Peer } from 'cevitxe-signal-client'
 import { debug } from 'debug-deluxe'
 import { SingleDocSet } from './SingleDocSet'
 import { Dispatch, AnyAction } from 'redux'
@@ -27,7 +27,7 @@ export class Connection<T = any> {
     this.peer = peer
     if (dispatch) this.dispatch = dispatch
     if (onReceive) this.onReceive = onReceive
-    log('connection constr: onReceive', this.onReceive)
+    log('constructor: onReceive', this.onReceive)
 
     this.peer.on('data', (data: any) => {
       const message = JSON.parse(data.toString())

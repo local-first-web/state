@@ -4,8 +4,8 @@
   "version": "0.1.8",
   "private": false,
   "license": "MIT",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "typings": "dist/src/index.d.ts",
   "scripts": {
     "build": "tsc ",
     "lint": "tsc -p tsconfig.strict.json --noEmit",
@@ -30,6 +30,7 @@
   "dependencies": {
     "@types/simple-peer": "^6.1.5",
     "automerge": "*",
+    "cevitxe-signal-client": "*",
     "debug-deluxe": "^2.0.0",
     "hypercore": "^7.2.2",
     "hypercore-crypto": "^1.0.0",

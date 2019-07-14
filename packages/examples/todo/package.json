@@ -7,7 +7,6 @@
   "main": "src/index.tsx",
   "scripts": {
     "start": "react-scripts-ts start",
-    "build": "react-scripts-ts build",
     "lint": "tsc -p tsconfig.strict.json --noEmit",
     "cy:open": "cypress open",
     "dev": "run-p start cy:open"

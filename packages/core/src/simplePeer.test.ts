@@ -2,7 +2,7 @@ import Peer from 'simple-peer'
 import A from 'automerge'
 
 import { SingleDocSet } from './SingleDocSet'
-import { Connection } from './connection'
+import { Connection } from './Connection'
 
 const wrtc = require('wrtc')
 let localPeer: Peer.Instance
