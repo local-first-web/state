@@ -22,7 +22,7 @@ import { promisify } from './helpers/promisify'
 
 const valueEncoding = 'utf-8'
 
-const log = debug('cevitxe')
+let log = debug('cevitxe')
 
 export class Cevitxe<T> extends EventEmitter {
   private proxyReducer: ProxyReducer<any>
@@ -57,64 +57,39 @@ export class Cevitxe<T> extends EventEmitter {
     this.connections = []
   }
 
-  joinStore = (documentId: string) => this.newStore(documentId)
+  joinStore = (documentId: string) => this.makeStore(documentId, false)
 
-  createStore = (documentId: string) => this.newStore(documentId, this.initialState)
+  createStore = (documentId: string) => this.makeStore(documentId, true)
 
-  newStore = async (documentId: string, initialState = {}) => {
-    const rehydrateFrom = async (feed: Feed<string>) => {
-      const batch = new Promise(yes => feed.getBatch(0, feed.length, (_, data) => yes(data)))
-      const data = (await batch) as string[]
-      const changeSets = data.map(d => JSON.parse(d))
-      log('rehydrating from stored change sets', changeSets)
-      let state = A.init<T>()
-      changeSets.forEach(changes => (state = A.applyChanges(state, changes)))
-      return state
-    }
+  makeStore = async (documentId: string, creating: boolean = false) => {
+    log = debug(`cevitxe:${creating ? 'createStore' : 'joinStore'}:${documentId}`)
 
-    const initialize = (feed: Feed<string>) => {
-      log('nothing in storage; initializing')
-      const state = A.from(initialState)
-      const changeSet = A.getChanges(A.init(), state)
-      feed.append(JSON.stringify(changeSet))
-      return state
-    }
+    this.feed = await createStorageFeed(documentId, this.databaseName)
 
-    if (!documentId) throw 'documentId is required'
-    const { key, secretKey } = getKeys(documentId)
-    const dbName = getDbName(this.databaseName, documentId)
-    const storage = db(dbName)
-
-    const feed = hypercore(storage, key, { secretKey, valueEncoding })
-    feed.on('error', (err: any) => console.error(err))
-    const feedReady = new Promise(ok => feed.on('ready', ok))
-    await feedReady
-    this.feed = feed
-    log('feed ready')
-
-    const hasPersistedData = feed.length > 0
-
-    const state: T | {} = hasPersistedData // is there anything in storage?)
-      ? await rehydrateFrom(feed) // if so, rehydrate state from that
-      : initialize(feed) // if not, initialize
+    const state = creating
+      ? setInitialState(this.feed, this.initialState)
+      : this.feed.length > 0
+      ? await getStateFromStorage(this.feed)
+      : setInitialState(this.feed, {})
 
     log('creating initial docSet', JSON.stringify(state))
-    const docSet = new SingleDocSet<T | {}>(state)
+    const docSet = new SingleDocSet(state)
 
     // Create Redux store
     const reducer = adaptReducer(this.proxyReducer)
-    const enhancer = Redux.applyMiddleware(...this.middlewares, getMiddleware(feed, docSet))
-    this.store = Redux.createStore(reducer, state as DeepPartial<A.DocSet<T>>, enhancer)
+    const cevitxeMiddleware = getMiddleware(this.feed, docSet)
+    const enhancer = Redux.applyMiddleware(...this.middlewares, cevitxeMiddleware)
+    this.store = Redux.createStore(reducer, state, enhancer)
 
-    // Now that we've initialized the store, it's safe to subscribe to the feed without worrying about race conditions
-    log('joining swarm', key)
+    log('joining swarm')
     this.hub = signalhub(documentId, this.peerHubs)
     this.swarm = webrtcSwarm(this.hub, { wrtc })
 
     // For each peer that wants to connect, create a Connection object
     this.swarm.on('peer', (peer: Peer, id: any) => {
-      log('peer', id)
-      this.connections.push(new Connection(docSet, peer, this.store!.dispatch, this.onReceive))
+      log('connecting to peer', id)
+      const connection = new Connection(docSet, peer, this.store!.dispatch, this.onReceive)
+      this.connections.push(connection)
     })
 
     return this.store
@@ -137,6 +112,38 @@ export class Cevitxe<T> extends EventEmitter {
     this.swarm = undefined
     this.connections = []
   }
+}
+
+const getStateFromStorage = async (feed: Feed<string>) => {
+  const batch = new Promise(yes => feed.getBatch(0, feed.length, (_, data) => yes(data)))
+  const data = (await batch) as string[]
+  const changeSets = data.map(d => JSON.parse(d))
+  log('rehydrating from stored change sets', changeSets)
+  let state = A.init()
+  changeSets.forEach(changes => (state = A.applyChanges(state, changes)))
+  return state
+}
+
+const setInitialState = <T>(feed: Feed<string>, initialState: T) => {
+  log('nothing in storage; initializing', JSON.stringify(initialState))
+  const state = A.from(initialState)
+  const changeSet = A.getChanges(A.init(), state)
+  feed.append(JSON.stringify(changeSet))
+  return state
+}
+
+const createStorageFeed = async (documentId: string, databaseName: string) => {
+  log('creating storage feed')
+  const { key, secretKey } = getKeys(documentId)
+  const dbName = getDbName(databaseName, documentId)
+  const storage = db(dbName)
+
+  const feed: Feed<string> = hypercore(storage, key, { secretKey, valueEncoding })
+  feed.on('error', (err: any) => console.error(err))
+  const feedReady = new Promise(ok => feed.on('ready', ok))
+  await feedReady
+  log('feed ready')
+  return feed
 }
 
 export const getDbName = (databaseName: string, documentId: string) =>
