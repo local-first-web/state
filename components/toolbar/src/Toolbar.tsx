@@ -7,7 +7,7 @@ import React, { useEffect, useState, useRef, FormEventHandler } from 'react'
 import Redux from 'redux'
 import createPersistedState from 'use-persisted-state'
 import { wordPair } from './wordPair'
-import { Formik, Field, Form, ErrorMessage } from 'formik'
+import { Formik, Field, Form, FormikHandlers, FormikValues, FormikHelpers } from 'formik'
 
 //TODO ToolbarProps<T>
 
@@ -16,8 +16,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
   const [appStore, setAppStore] = useAppStore(onStoreReady)
   const [documentId, setDocumentId] = useDocumentId()
 
-  const [creating, setCreating] = useState(false)
-  const [joining, setJoining] = useState(false)
+  const [busy, setBusy] = useState(false)
 
   useEffect(() => {
     log('setup')
@@ -30,34 +29,33 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
   log('render')
 
   const create = async () => {
-    if (creating || joining) return
+    setBusy(true)
     const newKey = wordPair()
     setDocumentId(newKey)
-    setCreating(true)
     setAppStore(await cevitxe.createStore(newKey))
-    setCreating(false)
+    setBusy(false)
     log('created store ', newKey)
     return newKey
   }
+
   const join = async (_documentId: string) => {
-    if (creating || joining) return
-    setJoining(true)
+    if (busy) return
+    setBusy(true)
     setDocumentId(_documentId)
     setAppStore(await cevitxe.joinStore(_documentId))
-    setJoining(false)
+    setBusy(false)
     log('joined store ', _documentId)
   }
 
+  const onSubmit = (values: FormikValues, actions: FormikHelpers<any>) => {
+    actions.setSubmitting(false)
+    join(values.documentId)
+  }
+  
   return (
     <div css={styles.toolbar}>
       {appStore && (
-        <Formik
-          initialValues={{ documentId }}
-          onSubmit={(values, actions) => {
-            actions.setSubmitting(false)
-            join(values.documentId)
-          }}
-        >
+        <Formik initialValues={{ documentId }} onSubmit={onSubmit}>
           {({ isSubmitting, setFieldValue }) => (
             <Form>
               <span css={styles.toolbarGroup}>
@@ -75,6 +73,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
                   New
                 </button>
               </span>
+              <span css={styles.toolbarGroup}>{busy ? 'busy' : 'idle'}</span>
             </Form>
           )}
         </Formik>
