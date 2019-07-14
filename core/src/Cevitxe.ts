@@ -1,24 +1,24 @@
 import A from 'automerge'
+import { debug } from 'debug-deluxe'
 import { EventEmitter } from 'events'
 import hypercore from 'hypercore'
 import db from 'random-access-idb'
 import * as Redux from 'redux'
-import { DeepPartial, Middleware, Store } from 'redux'
+import { Middleware, Store } from 'redux'
 import signalhub from 'signalhub'
 import { Instance as Peer } from 'simple-peer'
 import webrtcSwarm from 'webrtc-swarm'
-const wrtc = require('wrtc')
-
-import { debug } from 'debug-deluxe'
 
 import { adaptReducer } from './adaptReducer'
 import { Connection } from './connection'
 import { DEFAULT_PEER_HUBS } from './constants'
 import { getMiddleware } from './getMiddleware'
+import { promisify } from './helpers/promisify'
 import { getKeys } from './keys'
 import { SingleDocSet } from './SingleDocSet'
 import { CevitxeOptions, ProxyReducer } from './types'
-import { promisify } from './helpers/promisify'
+
+const wrtc = require('wrtc')
 
 const valueEncoding = 'utf-8'
 
@@ -40,7 +40,7 @@ export class Cevitxe<T> extends EventEmitter {
   private store?: Store
 
   constructor({
-    databaseName = 'cevitxe-data',
+    databaseName,
     proxyReducer,
     initialState,
     peerHubs = DEFAULT_PEER_HUBS,
@@ -147,4 +147,4 @@ const createStorageFeed = async (documentId: string, databaseName: string) => {
 }
 
 export const getDbName = (databaseName: string, documentId: string) =>
-  `${databaseName}-${documentId.substr(0, 12)}`
+  `cevitxe-${databaseName}-${documentId.substr(0, 12)}`
