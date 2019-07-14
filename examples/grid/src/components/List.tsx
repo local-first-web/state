@@ -1,3 +1,6 @@
+/** @jsx jsx */
+
+import { CSSObject, jsx } from '@emotion/core'
 import { useSelector, useDispatch } from 'react-redux'
 import React, { useState } from 'react'
 import {
@@ -162,14 +165,7 @@ const List = () => {
   }
 
   return (
-    <div
-      className="ag-theme-balham"
-      style={{
-        marginTop: 40,
-        height: '90vh',
-        width: '100%',
-      }}
-    >
+    <div className="ag-theme-balham" css={styles.grid}>
       <AgGridReact
         columnDefs={columns}
         defaultColDef={{
@@ -189,6 +185,12 @@ const List = () => {
       />
     </div>
   )
+}
+type Stylesheet = { [k: string]: CSSObject }
+const styles: Stylesheet = {
+  grid: {
+    flexGrow: 5,
+  },
 }
 
 export default List
