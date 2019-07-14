@@ -33,7 +33,8 @@ describe('Cevitxe', () => {
 
   beforeEach(() => {
     documentId = uuid()
-    cevitxe = new Cevitxe({ proxyReducer, initialState })
+    const databaseName = 'test'
+    cevitxe = new Cevitxe({ databaseName, proxyReducer, initialState })
   })
 
   // afterEach(async () => {
@@ -139,9 +140,9 @@ describe('Cevitxe', () => {
   it.skip('close should destroy any current store', async () => {
     expect.assertions(2)
     await cevitxe.createStore(documentId)
-    expect(cevitxe.getStore()).not.toBeUndefined()
+    expect(cevitxe.store).not.toBeUndefined()
     await cevitxe.close()
-    expect(cevitxe.getStore()).toBeUndefined()
+    expect(cevitxe.store).toBeUndefined()
   })
 
   it.skip('close should close all connections', async () => {

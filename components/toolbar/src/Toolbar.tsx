@@ -3,26 +3,33 @@
 import { CSSObject, jsx } from '@emotion/core'
 import { Cevitxe } from 'cevitxe'
 import { debug } from 'debug-deluxe'
-import React, { useEffect, useState, useRef, FormEventHandler } from 'react'
+import { Field, Formik, FormikHelpers, FormikValues } from 'formik'
+import { useEffect, useState, useRef } from 'react'
 import Redux from 'redux'
 import createPersistedState from 'use-persisted-state'
 import { wordPair } from './wordPair'
-import { Formik, Field, Form, FormikHandlers, FormikValues, FormikHelpers } from 'formik'
+import React from 'react'
 
 //TODO ToolbarProps<T>
 
 export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
-  const useDocumentId = createPersistedState('cevitxe/documentId')
-  const [appStore, setAppStore] = useAppStore(onStoreReady)
+  const useDocumentId = createPersistedState(`cevitxe/${cevitxe.databaseName}/documentId`)
   const [documentId, setDocumentId] = useDocumentId()
+  const input = useRef<HTMLInputElement>() as React.RefObject<HTMLInputElement>
 
+  const [appStore, setAppStore] = useAppStore(onStoreReady)
+
+  const [documentIdHasFocus, setDocumentIdHasFocus] = useState(false)
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
+    if (documentIdHasFocus && input.current) input.current.select()
+  }, [documentIdHasFocus])
+
+  useEffect(() => {
     log('setup')
-    if (appStore === undefined)
-      if (documentId === undefined) create()
-      else join(documentId)
+    if (documentId) join(documentId)
+    else create()
   }, []) // only runs on first render
 
   const log = debug(`cevitxe:toolbar:${documentId}`)
@@ -30,12 +37,13 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
 
   const create = async () => {
     setBusy(true)
-    const newKey = wordPair()
-    setDocumentId(newKey)
-    setAppStore(await cevitxe.createStore(newKey))
+    const newDocumentId = wordPair()
+    setDocumentId(newDocumentId)
+    setAppStore(await cevitxe.createStore(newDocumentId))
     setBusy(false)
-    log('created store ', newKey)
-    return newKey
+    log('created store ', newDocumentId)
+    join(newDocumentId)
+    return newDocumentId
   }
 
   const join = async (_documentId: string) => {
@@ -48,35 +56,75 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
   }
 
   const onSubmit = (values: FormikValues, actions: FormikHelpers<any>) => {
-    actions.setSubmitting(false)
     join(values.documentId)
+    actions.setSubmitting(false)
   }
+
+  const documentIds = cevitxe.knownDocumentIds
 
   return (
     <div css={styles.toolbar}>
       {appStore && (
         <Formik initialValues={{ documentId }} onSubmit={onSubmit}>
-          {({ isSubmitting, setFieldValue }) => (
-            <Form>
-              <span css={styles.toolbarGroup}>
-                <Field type="text" name="documentId" css={styles.input} />
-                <button role="submit" type="submit" disabled={isSubmitting} css={styles.button}>
-                  Join
-                </button>
-              </span>
-              <span css={styles.toolbarGroup}>
-                <button
-                  role="button"
-                  type="button"
-                  onClick={async () => setFieldValue('documentId', await create())}
-                  css={styles.button}
-                >
-                  New
-                </button>
-              </span>
-              <span css={styles.toolbarGroup}>{busy ? 'busy' : 'idle'}</span>
-            </Form>
-          )}
+          {({ setFieldValue, values }) => {
+            const onClickNew = async () => setFieldValue('documentId', await create())
+            const onClickJoin = async () => {
+              setDocumentIdHasFocus(false)
+              join(values.documentId)
+            }
+            const onFocus = (e: Event) => {
+              if (e && e.target) {
+                const input = e.target as HTMLInputElement
+                input.select()
+              }
+              setDocumentIdHasFocus(true)
+            }
+            return (
+              <React.Fragment>
+                <div css={styles.toolbarGroup}>
+                  <div css={styles.dropdownWrapper}>
+                    <Field
+                      type="text"
+                      name="documentId"
+                      css={styles.input}
+                      onFocus={onFocus}
+                      // onBlur={onClickJoin}
+                    />
+                    <div
+                      css={{ ...styles.dropdown, display: documentIdHasFocus ? 'block' : 'none' }}
+                    >
+                      {documentIds.map(documentId => (
+                        <button
+                          key={documentId}
+                          role="button"
+                          type="button"
+                          onClick={() => {
+                            setFieldValue('documentId', documentId)
+                            setDocumentId(documentId)
+                            join(documentId)
+                            setDocumentIdHasFocus(false)
+                          }}
+                          css={styles.dropdownElement}
+                        >
+                          {documentId}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <button role="button" type="button" onClick={onClickJoin} css={styles.button}>
+                    Join
+                  </button>
+                </div>
+                <div css={styles.toolbarGroup}>
+                  <button role="button" type="button" onClick={onClickNew} css={styles.button}>
+                    New
+                  </button>
+                </div>
+                <div css={styles.toolbarGroup}>{busy ? 'busy' : 'idle'}</div>
+                <div css={styles.toolbarGroup}>{cevitxe.connectionCount}</div>
+              </React.Fragment>
+            )
+          }}
         </Formik>
       )}
     </div>
@@ -100,33 +148,57 @@ const useAppStore = (cb: (store: Redux.Store) => void) => {
 type Stylesheet = { [k: string]: CSSObject }
 const styles: Stylesheet = {
   toolbar: {
-    position: 'fixed',
-    left: 0,
-    right: 0,
-    top: 0,
-    padding: 10,
-    fontSize: 12,
     background: 'rgba(250, 250, 250, .5)',
     borderBottom: '1px solid #ddd',
+    display: 'flex',
+    flexGrow: 0,
+    alignItems: 'center',
+    fontFamily: 'inconsolata, monospace',
+    fontSize: 14,
   },
   button: {
     margin: '0 5px',
-    border: '1px solid #aaa',
-    padding: '3px 10px',
+    border: '1px solid #ddd',
+    padding: '.3em 1em',
     borderRadius: 3,
+    textTransform: 'uppercase',
+    cursor: 'pointer',
+    fontSize: 14,
   },
   input: {
-    fontFamily: 'inconsolata, monospace',
-    margin: '0 5px',
-    padding: '3px 10px',
+    marginRight: 5,
+    padding: '.3em 1em',
     border: '1px solid #eee',
     borderRadius: '3px',
-    '::placeholder': {
+    ['::placeholder']: {
       fontStyle: 'normal!important',
     },
-    width: '275px',
+    height: 16,
+    width: 150,
+    fontFamily: 'inconsolata, monospace',
+    fontSize: 14,
   },
   toolbarGroup: {
-    margin: '0 10px',
+    borderRight: '1px solid #eee',
+    padding: 10,
+  },
+  dropdownWrapper: {
+    position: 'relative',
+    display: 'inline-block',
+  },
+  dropdown: {
+    position: 'absolute',
+    background: 'white',
+    top: 30,
+  },
+  dropdownElement: {
+    display: 'block',
+    border: '1px solid #ddd',
+    marginTop: -2,
+    width: 200,
+    height: 30,
+    padding: '.3em 1em',
+    textAlign: 'left',
+    cursor: 'pointer',
   },
 }

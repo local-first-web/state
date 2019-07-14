@@ -14,6 +14,7 @@ const initialState = {
 const middlewares = [logger]
 
 export const cevitxe = new Cevitxe({
+  databaseName: 'todo',
   proxyReducer,
   initialState,
   middlewares,

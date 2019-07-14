@@ -14,7 +14,7 @@ import { Connection } from './connection'
 import { DEFAULT_PEER_HUBS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { promisify } from './helpers/promisify'
-import { getKeys } from './keys'
+import { getKeys, getKnownDocumentIds } from './keys'
 import { SingleDocSet } from './SingleDocSet'
 import { CevitxeOptions, ProxyReducer } from './types'
 
@@ -30,14 +30,16 @@ export class Cevitxe<T> extends EventEmitter {
   private initialState: T
 
   private onReceive?: Function
-  private databaseName: string
+
+  databaseName: string
+  store?: Store
+
   private peerHubs: string[]
 
   private feed?: Feed<string>
   private hub?: any
   private swarm?: any
   private connections: Connection[]
-  private store?: Store
 
   constructor({
     databaseName,
@@ -81,6 +83,7 @@ export class Cevitxe<T> extends EventEmitter {
     const enhancer = Redux.applyMiddleware(...this.middlewares, cevitxeMiddleware)
     this.store = Redux.createStore(reducer, state, enhancer)
 
+    // Join swarm
     log('joining swarm')
     this.hub = signalhub(documentId, this.peerHubs)
     this.swarm = webrtcSwarm(this.hub, { wrtc })
@@ -99,7 +102,9 @@ export class Cevitxe<T> extends EventEmitter {
     return this.connections.length
   }
 
-  getStore = () => this.store
+  get knownDocumentIds() {
+    return getKnownDocumentIds(this.databaseName)
+  }
 
   close = async () => {
     this.store = undefined
@@ -134,7 +139,7 @@ const setInitialState = <T>(feed: Feed<string>, initialState: T) => {
 
 const createStorageFeed = async (documentId: string, databaseName: string) => {
   log('creating storage feed')
-  const { key, secretKey } = getKeys(documentId)
+  const { key, secretKey } = getKeys(databaseName, documentId)
   const dbName = getDbName(databaseName, documentId)
   const storage = db(dbName)
 
@@ -148,3 +153,4 @@ const createStorageFeed = async (documentId: string, databaseName: string) => {
 
 export const getDbName = (databaseName: string, documentId: string) =>
   `cevitxe-${databaseName}-${documentId.substr(0, 12)}`
+//
