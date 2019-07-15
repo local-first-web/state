@@ -9,52 +9,55 @@ const url = `ws://localhost:${port}`
 const localPeerId = 'local'
 const remotePeerId = 'remote'
 
-let server: Server | undefined
+let server: Server
 
-beforeEach(async () => {
+beforeEach(() => {
   server = new Server({ port })
-  await server.listen()
+  server.listen()
 })
 
 afterEach(() => {
-  if (server) {
-    server.close()
-    server = undefined
-  }
+  server.close()
 })
 
 describe('Server', () => {
   describe('Discovery', () => {
+    const discoveryUrl = `${url}/discovery`
+
     it('should make a connection', done => {
-      const server = new Server()
+      server.on('discoveryConnection', onDiscoveryConnection)
 
-      server.on('discoveryConnection', () => {
-        expect(server.peers).toHaveProperty(DOC1)
+      const localPeer = new WebSocket(`${discoveryUrl}/${localPeerId}`)
+      localPeer.on('open', onLocalPeerOpen)
+
+      function onDiscoveryConnection(peerId: string) {
+        expect(peerId).toEqual(localPeerId)
+      }
+
+      function onLocalPeerOpen() {
+        expect(server.peers).toHaveProperty(localPeerId)
+        expect(server.peerKeys).toEqual({})
         done()
-      })
-
-      const localPeer = new WebSocket(`${url}/discovery/${localPeerId}`)
+      }
     })
 
-    // it('should join peers to document channels', () => {
-    //   const server = new Server()
-    //   const localPeer = new WebSocket(url)
-    //   const remotePeer = new WebSocket(url)
+    it('should join peers to document channels', done => {
+      const localPeer = new WebSocket(`${discoveryUrl}/${localPeerId}`)
+      const remotePeer = new WebSocket(`${discoveryUrl}/${remotePeerId}`)
 
-    //   localPeer.on('message', msg => {
-    //     console.log(msg)
-    //   })
+      server.openDiscoveryConnection(localPeer, DOC1)
+      server.openDiscoveryConnection(remotePeer, DOC1)
 
-    //   server.openDiscoveryConnection(localPeer, DOC1)
-    //   server.openDiscoveryConnection(remotePeer, DOC1)
+      const localJoinMessage = { type: 'Join', id: localPeerId, join: [DOC1] }
+      const remoteJoinMessage = { type: 'Join', id: remotePeerId, join: [DOC1] }
 
-    //   const localJoinMessage = { type: 'Join', id: localPeerId, join: [DOC1] }
-    //   server.receiveDiscoveryMessage(DOC1)(JSON.stringify(localJoinMessage))
-    //   expect(server.peerKeys).toEqual({ [localPeerId]: [DOC1] })
+      localPeer.on('open', () => localPeer.send(JSON.stringify(localJoinMessage)))
+      remotePeer.on('open', () => remotePeer.send(JSON.stringify(remoteJoinMessage)))
 
-    //   const remoteJoinMessage = { type: 'Join', id: remotePeerId, join: [DOC1] }
-    //   server.receiveDiscoveryMessage(DOC1)(JSON.stringify(remoteJoinMessage))
-    //   expect(server.peerKeys).toEqual({ [localPeerId]: [DOC1], [remotePeerId]: [DOC1] })
-    // })
+      localPeer.once('message', msg => {
+        expect(JSON.parse(msg.toString()).peerId).toEqual(remotePeerId)
+        done()
+      })
+    })
   })
 })

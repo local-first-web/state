@@ -38,11 +38,24 @@ export class Server extends EventEmitter {
 
     ws.on('message', this.receiveDiscoveryMessage(peerId))
     ws.on('close', this.closeDiscoveryConnection(peerId))
-    console.log('discovvery connection')
+
     this.emit('discoveryConnection', peerId)
   }
 
   receiveDiscoveryMessage(peerId: string) {
+    const applyPeers = (peerId: string, join?: string[], leave?: string[]) => {
+      this.peerKeys[peerId] = mergeUnique(this.peerKeys[peerId], join, leave)
+      log('applyPeers', peerId, this.peerKeys[peerId])
+    }
+
+    const getIntersection = (peerId1: string, peerId2: string) => {
+      if (peerId1 === peerId2) return
+      const peerIds1: string[] = this.peerKeys[peerId1] || []
+      const peerIds2: string[] = this.peerKeys[peerId2] || []
+      const intersection = peerIds1.filter(val => peerIds2.includes(val))
+      if (intersection.length > 0) return intersection
+    }
+
     const send = (peerId: string, message: Message) => {
       if (this.peers[peerId]) {
         this.peers[peerId].send(JSON.stringify(message))
@@ -51,23 +64,11 @@ export class Server extends EventEmitter {
       }
     }
 
-    const applyPeers = (peerId: string, join?: string[], leave?: string[]) => {
-      this.peerKeys[peerId] = mergeUnique(this.peerKeys[peerId], join, leave)
-    }
-
     const notifyIntersections = (peerId1: string) => {
-      const getIntersection = (peerId1: string, peerId2: string) => {
-        if (peerId1 === peerId2) return
-        const peerIds1: string[] = this.peerKeys[peerId1] || []
-        const peerIds2: string[] = this.peerKeys[peerId2] || []
-        const intersection = peerIds1.filter(val => peerIds2.includes(val))
-        if (intersection.length > 0) return intersection
-      }
-
       for (const peerId2 in this.peers) {
         const intersection = getIntersection(peerId1, peerId2)
         if (intersection) {
-          console.log(peerId1, peerId2, intersection)
+          log('notifying', peerId1, peerId2, intersection)
           send(peerId1, { type: 'Connect', peerId: peerId2, peerChannels: intersection })
           send(peerId2, { type: 'Connect', peerId: peerId1, peerChannels: intersection })
         }
@@ -77,7 +78,7 @@ export class Server extends EventEmitter {
     return (data: Data) => {
       const msg = JSON.parse(data.toString())
       log('message', msg)
-      applyPeers(msg.id, msg.join, msg.leave)
+      applyPeers(peerId, msg.join, msg.leave)
       notifyIntersections(peerId)
     }
   }
@@ -173,12 +174,15 @@ export class Server extends EventEmitter {
 
       this.httpServer = app.listen(this.port, '0.0.0.0', () => {
         console.log(`Listening at http://localhost:${this.port}`)
+        this.emit('ready')
         ready()
       })
     })
   }
 
   close() {
-    if (this.httpServer) this.httpServer.close()
+    return new Promise(closed => {
+      if (this.httpServer) this.httpServer.close(() => closed())
+    })
   }
 }
