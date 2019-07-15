@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "alwaysStrict": true,
+    "baseUrl": "./",
+    "declaration": true,
+    "esModuleInterop": true,
+    "lib": ["dom", "esnext"],
+    "moduleResolution": "node",
+    "noEmit": false,
+    "outDir": "dist",
+    "sourceMap": true,
+    "target": "es6"
+  },
+  "include": ["src", "@types"]
+}
