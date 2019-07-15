@@ -1,10 +1,12 @@
 import { Server } from './Server'
 import WebSocket from 'ws'
 
-const DOC1 = 'test-123'
+const docKey = 'test-123'
 
 const port = 1234
 const url = `ws://localhost:${port}`
+const discoveryUrl = `${url}/discovery`
+const connectUrl = `${url}/connect`
 
 const localPeerId = 'local'
 const remotePeerId = 'remote'
@@ -20,43 +22,63 @@ afterEach(() => {
   server.close()
 })
 
+const join = (peerId: string, key: string) => {
+  const peer = new WebSocket(`${discoveryUrl}/${peerId}`)
+  const joinMessage = { type: 'Join', id: peerId, join: [key] }
+  peer.on('open', () => peer.send(JSON.stringify(joinMessage)))
+  return peer
+}
+
 describe('Server', () => {
   describe('Discovery', () => {
-    const discoveryUrl = `${url}/discovery`
-
     it('should make a connection', done => {
-      server.on('discoveryConnection', onDiscoveryConnection)
+      server.on('discoveryConnection', peerId => {
+        expect(peerId).toEqual(localPeerId)
+      })
 
       const localPeer = new WebSocket(`${discoveryUrl}/${localPeerId}`)
-      localPeer.on('open', onLocalPeerOpen)
-
-      function onDiscoveryConnection(peerId: string) {
-        expect(peerId).toEqual(localPeerId)
-      }
-
-      function onLocalPeerOpen() {
+      localPeer.on('open', () => {
         expect(server.peers).toHaveProperty(localPeerId)
         expect(server.peerKeys).toEqual({})
         done()
-      }
+      })
     })
 
     it('should join peers to document channels', done => {
-      const localPeer = new WebSocket(`${discoveryUrl}/${localPeerId}`)
-      const remotePeer = new WebSocket(`${discoveryUrl}/${remotePeerId}`)
+      const localPeer = join(localPeerId, docKey)
+      const remotePeer = join(remotePeerId, docKey)
 
-      server.openDiscoveryConnection(localPeer, DOC1)
-      server.openDiscoveryConnection(remotePeer, DOC1)
-
-      const localJoinMessage = { type: 'Join', id: localPeerId, join: [DOC1] }
-      const remoteJoinMessage = { type: 'Join', id: remotePeerId, join: [DOC1] }
-
-      localPeer.on('open', () => localPeer.send(JSON.stringify(localJoinMessage)))
-      remotePeer.on('open', () => remotePeer.send(JSON.stringify(remoteJoinMessage)))
-
-      localPeer.once('message', msg => {
-        expect(JSON.parse(msg.toString()).peerId).toEqual(remotePeerId)
+      localPeer.on('message', d => {
+        const message = JSON.parse(d.toString())
+        expect(message.peerId).toEqual(remotePeerId)
+        expect(message.peerId).toEqual(remotePeerId)
         done()
+      })
+    })
+  })
+
+  describe('Peer connections', () => {
+    it('should pipe connections between two peers', done => {
+      const localDiscoveryPeer = join(localPeerId, docKey)
+      const remoteDiscoveryPeer = join(remotePeerId, docKey)
+
+      localDiscoveryPeer.on('message', d => {
+        const localPeer = new WebSocket(`${connectUrl}/${localPeerId}/${remotePeerId}/${docKey}`)
+        const remotePeer = new WebSocket(`${connectUrl}/${remotePeerId}/${localPeerId}/${docKey}`)
+        remotePeer.on('open', () => {
+          remotePeer.send('hello')
+        })
+        localPeer.on('message', d => {
+          expect(d).toEqual('hello')
+        })
+
+        localPeer.on('open', () => {
+          localPeer.send('DUDE!!')
+        })
+        remotePeer.on('message', d => {
+          expect(d).toEqual('DUDE!!')
+          done()
+        })
       })
     })
   })
