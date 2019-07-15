@@ -1382,7 +1382,7 @@
     "@types/node" "*"
     "@types/range-parser" "*"
 
-"@types/express-ws@^3.0.0":
+"@types/express-ws@^4.0.0":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@types/express-ws/-/express-ws-3.0.0.tgz#89674edba2e9141916fc4d4d30fbd4f810e6b80b"
   integrity sha512-GxsWec7Vp6h7sJuK0PwnZHeXNZnOwQn8kHAbCfvii66it5jXHTWzSg5cgHVtESwJfBLOe9SJ5wmM7C6gsDoyQw==
@@ -8188,11 +8188,6 @@ jest-watcher@^24.8.0:
     chalk "^2.0.1"
     jest-util "^24.8.0"
     string-length "^2.0.0"
-
-jest-websocket-mock@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/jest-websocket-mock/-/jest-websocket-mock-1.5.0.tgz#1563ab16cb304575a954ecacdc0a2a66cf740ece"
-  integrity sha512-fg1l9l3fnCnK7dpaw1KxD9wwQiD7yMX9R5sA85qMHzLk2ez/8Apl08s3A8yk7xt3P3XrudOlCUg/WkxH2UVO0Q==
 
 jest-worker@^24.6.0:
   version "24.6.0"
