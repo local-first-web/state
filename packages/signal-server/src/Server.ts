@@ -129,7 +129,7 @@ export class Server extends EventEmitter {
 
   // PEER CONNECTIONS
 
-  receiveConnectRequest({ peerA, A, B, key }: ConnectRequestParams) {
+  openConnection({ peerA, A, B, key }: ConnectRequestParams) {
     // A and B always refer to peer ids.
 
     // These are string keys for identifying this request and the reciprocal request
@@ -179,20 +179,22 @@ export class Server extends EventEmitter {
       // It's nice to be able to hit this server from a browser as a sanity check
       app.get('/', (req, res, next) => {
         log('get /')
-        res.send('@cevitxe/signal-server')
+        res.send('🐟')
         res.end()
       })
 
+      // Introduction request
       app.ws('/introduction/:id', (ws, { params: { id } }) => {
         this.openIntroductionConnection(ws as WebSocket, id)
       })
 
+      // Connection request
       app.ws('/connect/:A/:B/:key', (ws, { params: { A, B, key } }) => {
-        this.receiveConnectRequest({ peerA: ws as WebSocket, A, B, key })
+        this.openConnection({ peerA: ws as WebSocket, A, B, key })
       })
 
       this.httpServer = app.listen(this.port, '0.0.0.0', () => {
-        console.log(`Listening at http://localhost:${this.port}`)
+        console.log(`🐟 Listening at http://localhost:${this.port}`)
         this.emit('ready')
         ready()
       })
