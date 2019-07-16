@@ -179,7 +179,7 @@ export class Server extends EventEmitter {
       // It's nice to be able to hit this server from a browser as a sanity check
       app.get('/', (req, res, next) => {
         log('get /')
-        res.send('🐟')
+        res.send('<body style="font-size:10em;padding:30%;text-align:center">🐟</body>')
         res.end()
       })
 

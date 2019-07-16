@@ -1,11 +1,14 @@
-import { Server } from './Server'
+import { debug } from 'debug-deluxe'
 import WebSocket from 'ws'
+import { Server } from './Server'
 
+const kill = require('kill-port')
 const port = 1234
 const url = `ws://localhost:${port}`
 const introductionUrl = `${url}/introduction`
 const connectUrl = `${url}/connect`
 
+const log = debug('cevitxe:signal-server:tests')
 const _log = console.log
 
 describe('Server', () => {
@@ -15,9 +18,10 @@ describe('Server', () => {
   let key: string
   let testId: number = 0
 
-  beforeAll(() => {
+  beforeAll(async () => {
     // prevent server from logging 'listening on port...' during tests
     console.log = () => {}
+    await kill(port, 'tcp') // kill anything that's still listening on our port (e.g. previous test run didn't end cleanly)
     server = new Server({ port })
     server.listen()
   })
@@ -27,6 +31,7 @@ describe('Server', () => {
     localId = `local-${testId}`
     remoteId = `remote-${testId}`
     key = `test-key-${testId}`
+    log(`TEST ${testId}`)
   })
 
   afterEach(() => {})
@@ -36,28 +41,24 @@ describe('Server', () => {
     console.log = _log
   })
 
-  describe('Introduction', () => {
-    it('should count assertions correctly', done => {
-      const peer = new WebSocket(`${introductionUrl}/${localId}`)
-      expect.assertions(3)
-      expect(1 + 1).toEqual(2)
-      expect(1 + 1).not.toEqual(3)
-      peer.on('open', () => {
-        expect(2 ** 3).toEqual(8)
-        done()
-      })
-    })
+  const makeIntroductionRequest = (id: string, key: string) => {
+    const peer = new WebSocket(`${introductionUrl}/${id}`)
+    const joinMessage = { type: 'Join', id: id, join: [key] }
+    peer.once('open', () => peer.send(JSON.stringify(joinMessage)))
+    return peer
+  }
 
+  describe('Introduction', () => {
     it('should make a connection', done => {
       expect.assertions(3)
 
-      server.on('introductionConnection', id => {
+      server.once('introductionConnection', id => {
         expect(id).toEqual(localId)
       })
 
       const localPeer = new WebSocket(`${introductionUrl}/${localId}`)
 
-      localPeer.on('open', () => {
+      localPeer.once('open', () => {
         expect(server.peers).toHaveProperty(localId)
         expect(server.keys).toEqual({})
         done()
@@ -65,17 +66,12 @@ describe('Server', () => {
     })
 
     it('should invite peers to connect', done => {
-      const makeIntroductionRequest = (id: string, key: string) => {
-        const peer = new WebSocket(`${introductionUrl}/${id}`)
-        const joinMessage = { type: 'Join', id: id, join: [key] }
-        peer.on('open', () => peer.send(JSON.stringify(joinMessage)))
-        return peer
-      }
+      expect.assertions(2)
 
       const localPeer = makeIntroductionRequest(localId, key)
       const remotePeer = makeIntroductionRequest(remoteId, key) // need to make request even if we don't use the result
 
-      localPeer.on('message', d => {
+      localPeer.once('message', d => {
         const invitation = JSON.parse(d.toString())
         expect(invitation.id).toEqual(remoteId)
         expect(invitation.keys).toEqual([key])
@@ -86,37 +82,34 @@ describe('Server', () => {
 
   describe('Peer connections', () => {
     it('should pipe connections between two peers', done => {
-      const makeIntroductionRequest = (id: string, key: string) => {
-        const peer = new WebSocket(`${introductionUrl}/${id}`)
-        const joinMessage = { type: 'Join', id: id, join: [key] }
-        peer.on('open', () => peer.send(JSON.stringify(joinMessage)))
-        return peer
-      }
+      expect.assertions(4)
 
-      // expect.assertions(4)
       const localIntroductionPeer = makeIntroductionRequest(localId, key)
       const remoteIntroductionPeer = makeIntroductionRequest(remoteId, key) // need to make request even if we don't use the result
 
-      localIntroductionPeer.on('message', d => {
+      localIntroductionPeer.once('message', d => {
         // recap of previous test: we'll get an invitation to connect to the remote peer
         const invitation = JSON.parse(d.toString())
+
         expect(invitation.id).toEqual(remoteId)
         expect(invitation.keys).toEqual([key])
 
         const localPeer = new WebSocket(`${connectUrl}/${localId}/${remoteId}/${key}`)
         const remotePeer = new WebSocket(`${connectUrl}/${remoteId}/${localId}/${key}`)
 
-        // send message from remote to local
-        remotePeer.on('open', () => remotePeer.send('hello'))
-        localPeer.on('message', d => {
-          expect(d).toEqual('hello')
-          done()
+        // send message from local to remote
+        localPeer.once('open', () => localPeer.send('DUDE!!'))
+        remotePeer.once('message', d => {
+          console.log('remotePeer_message')
+          expect(d).toEqual('DUDE!!')
         })
 
-        // send message from local to remote
-        localPeer.on('open', () => localPeer.send('DUDE!!'))
-        remotePeer.on('message', d => {
-          expect(d).toEqual('DUDE!!')
+        // send message from remote to local
+        remotePeer.once('open', () => remotePeer.send('hello'))
+        localPeer.once('message', d => {
+          console.log('localPeer_message')
+          expect(d).toEqual('hello')
+          done()
         })
       })
     })
