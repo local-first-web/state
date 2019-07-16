@@ -13,7 +13,7 @@ debug.formatters.b = Base58.encode
 
 const log = debug('discovery-cloud:Client')
 
-export class DiscoveryCloudClient extends EventEmitter {
+export class Client extends EventEmitter {
   connect: (info: Info) => Duplex
   id: string
   selfKey: Buffer

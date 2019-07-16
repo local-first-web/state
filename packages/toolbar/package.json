@@ -13,21 +13,21 @@
     "test": "jest --watch"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.14",
-    "jest": "^24.8.0",
-    "prettier": "^1.18.2",
-    "ts-jest": "^24.0.2",
-    "tslib": "^1.10.0",
-    "typescript": "^3.5.1"
+    "@types/jest": "^24",
+    "jest": "^24",
+    "prettier": "^1",
+    "ts-jest": "^24",
+    "tslib": "^1",
+    "typescript": "^3"
   },
   "dependencies": {
-    "@emotion/core": "^10.0.10",
-    "friendly-words": "^1.1.7",
+    "@emotion/core": "^10",
+    "friendly-words": "^1",
     "formik": "^2.0.1-rc.12",
-    "react": "16.8.6",
-    "react-dom": "16.8.6",
-    "redux": "^4.0.1",
-    "use-persisted-state": "^0.3.0"
+    "react": "^16",
+    "react-dom": "^16",
+    "redux": "^4",
+    "use-persisted-state": "^0"
   },
   "jest": {
     "preset": "ts-jest",

@@ -1,6 +1,6 @@
 {
   "name": "cevitxe-signal-client",
-  "version": "0.0.3",
+  "version": "0.1.8",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,18 +11,20 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bs58": "^4.0.1",
+    "bs58": "^4",
     "debug-deluxe": "*",
-    "hypercore": "^6.20.2",
-    "ts-node": "^7.0.1",
-    "ws": "^6.1.0"
+    "hypercore": "^6",
+    "ts-node": "^7",
+    "ws": "^6"
   },
   "devDependencies": {
-    "@types/debug": "^0.0.31",
-    "@types/node": "^10.12.2",
-    "@types/ws": "^6.0.1",
-    "cevitxe-signal-server": "*",
-    "typescript": "^3.1.6"
+    "@types/jest": "^24",
+    "@types/node": "^10",
+    "@types/ws": "^6",
+    "cevitxe-signal-server": "^0",
+    "jest": "^24",
+    "ts-jest": "^24",
+    "typescript": "^3"
   },
   "jest": {
     "preset": "ts-jest",
