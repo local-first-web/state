@@ -1,152 +1,174 @@
 import { debug } from 'debug-deluxe'
+import { EventEmitter } from 'events'
 import express from 'express'
 import expressWs from 'express-ws'
 import { Server as HttpServer } from 'net'
 import WebSocket, { Data } from 'ws'
-
-import { Message } from '../@types/Message'
-import { mergeUnique } from './mergeUnique'
-import { EventEmitter } from 'events'
+import { ConnectRequestParams } from '../@types/ConnectRequestParams'
+import { KeySet } from '../@types/KeySet'
+import { deduplicate } from './lib/deduplicate'
+import { intersection } from './lib/intersection'
+import { pipeSockets } from './lib/pipeSockets'
 
 const { app } = expressWs(express())
 
 const log = debug('cevitxe:signal-server')
 
+/**
+ * This server provides two services:
+ *
+ * - **Introduction** (aka introduction): A client can provide one or more document keys that they're interested in. If *
+ *   any other client is interested in the same key or keys, each will receive a `Connect` message with
+ *   the other's id. They can then use that information to connect:
+ *
+ * - **Connection**: Client A can request to connect with Client B on a given document key (can think of
+ *   it as a 'channel'). If we get matching connection requests from A and B, we just pipe their
+ *   sockets together.
+ */
 export class Server extends EventEmitter {
   port: number
-  peers: { [id: string]: WebSocket }
-  peerKeys: { [id: string]: string[] }
-  looking: { [id: string]: WebSocket }
-  buffers: { [id: string]: Data[] }
 
+  /**
+   * In this context:
+   * - `id` is always a peer id.
+   * - `peer` is always a reference to a client's socket connection.
+   * - `key` is always a document id (elsewhere referred to as a 'channel' or a 'discovery key'.
+   */
+  peers: { [id: string]: WebSocket }
+  keys: { [id: string]: KeySet }
+
+  /**
+   * For two peers to connect, they both need to send a connection request, specifying both the
+   * remote peer id and the document key. When we've gotten the request from peer A but not yet from
+   * peer B, we temporarily store a reference to peer A's request in `holding`, and store any
+   * messages from A in `buffers`.
+   */
+  private holding: { [id: string]: WebSocket }
+  private messages: { [id: string]: Data[] }
+
+  /**
+   * When we start listening, we keep a reference to the `httpServer` so we can close it if asked to.
+   */
   private httpServer?: HttpServer
 
   constructor({ port = 8080 } = {}) {
     super()
     this.port = port
     this.peers = {}
-    this.peerKeys = {}
-    this.looking = {}
-    this.buffers = {}
+    this.keys = {}
+    this.holding = {}
+    this.messages = {}
   }
 
   // DISCOVERY
 
-  openDiscoveryConnection(ws: WebSocket, peerId: string) {
-    log('discovery connection')
-    this.peers[peerId] = ws
+  openIntroductionConnection(peer: WebSocket, id: string) {
+    log('introduction connection', id)
+    this.peers[id] = peer
 
-    ws.on('message', this.receiveDiscoveryMessage(peerId))
-    ws.on('close', this.closeDiscoveryConnection(peerId))
+    peer.on('message', this.receiveIntroductionRequest(id))
+    peer.on('close', this.closeIntroductionConnection(id))
 
-    this.emit('discoveryConnection', peerId)
+    this.emit('introductionConnection', id)
   }
 
-  receiveDiscoveryMessage(peerId: string) {
-    const applyPeers = (peerId: string, join?: string[], leave?: string[]) => {
-      this.peerKeys[peerId] = mergeUnique(this.peerKeys[peerId], join, leave)
-      log('applyPeers', peerId, this.peerKeys[peerId])
+  receiveIntroductionRequest(id: string) {
+    const A = id // A and B always refer to peer ids
+
+    // A introduction request from the client will include a list of keys to join and/or leave.
+    // We combine those keys with any we already have.
+    const applyJoinAndLeave = (current: KeySet = [], join: KeySet = [], leave: KeySet = []) => {
+      return current
+        .concat(join) // add `join` keys
+        .filter(key => !leave.includes(key)) // remove `leave` keys
+        .reduce(deduplicate, []) // filter out duplicates
     }
 
-    const getIntersection = (peerId1: string, peerId2: string) => {
-      if (peerId1 === peerId2) return
-      const peerIds1: string[] = this.peerKeys[peerId1] || []
-      const peerIds2: string[] = this.peerKeys[peerId2] || []
-      const intersection = peerIds1.filter(val => peerIds2.includes(val))
-      if (intersection.length > 0) return intersection
-    }
-
-    const send = (peerId: string, message: Message) => {
-      if (this.peers[peerId]) {
-        this.peers[peerId].send(JSON.stringify(message))
-      } else {
-        log('error - trying to send to bad peer', peerId)
-      }
-    }
-
-    const notifyIntersections = (peerId1: string) => {
-      for (const peerId2 in this.peers) {
-        const intersection = getIntersection(peerId1, peerId2)
-        if (intersection) {
-          log('notifying', peerId1, peerId2, intersection)
-          send(peerId1, { type: 'Connect', peerId: peerId2, peerChannels: intersection })
-          send(peerId2, { type: 'Connect', peerId: peerId1, peerChannels: intersection })
-        }
-      }
+    // If we find another peer interested in the same key(s), we send both peers an invitation to connect.
+    const sendConnectSuggestion = (A: string, B: string, keys: KeySet) => {
+      const message = JSON.stringify({
+        type: 'Connect',
+        id: B, // the id of the other peer
+        keys, // the key(s) both are interested in
+      })
+      if (this.peers[A]) this.peers[A].send(message)
+      else log(`can't send connect message to unknown peer`, A)
     }
 
     return (data: Data) => {
-      const msg = JSON.parse(data.toString())
-      log('message', msg)
-      applyPeers(peerId, msg.join, msg.leave)
-      notifyIntersections(peerId)
+      const message = JSON.parse(data.toString())
+      log('received introduction request', message)
+
+      // honor join/leave requests
+      const current = this.keys[A]
+      const { join, leave } = message
+      this.keys[A] = applyJoinAndLeave(current, join, leave)
+
+      // if this peer (A) has interests in common with any existing peer (B), introduce them to each other
+      for (const B in this.peers) {
+        // don't introduce peer to themselves
+        if (A !== B) {
+          // find keys that both peers are interested in
+          const commonKeys = intersection(this.keys[A], this.keys[B])
+          if (commonKeys.length > 0) {
+            log('notifying', A, B, commonKeys)
+            sendConnectSuggestion(A, B, commonKeys)
+            sendConnectSuggestion(B, A, commonKeys)
+          }
+        }
+      }
     }
   }
 
-  closeDiscoveryConnection(id: string) {
+  closeIntroductionConnection(id: string) {
     return () => {
       delete this.peers[id]
-      delete this.peerKeys[id]
+      delete this.keys[id]
     }
   }
 
   // PEER CONNECTIONS
 
-  connectPeers(socket1: WebSocket, peerId1: string, peerId2: string, key: string) {
-    const key1 = `${peerId1}:${peerId2}:${key}`
-    const key2 = `${peerId2}:${peerId1}:${key}`
+  receiveConnectRequest({ peerA, A, B, key }: ConnectRequestParams) {
+    // A and B always refer to peer ids.
 
-    const join = (socket1: WebSocket, socket2: WebSocket) => {
-      socket1.on('message', data => {
-        if (socket2.readyState === WebSocket.OPEN) {
-          socket2.send(data)
-        } else {
-          socket1.close()
-        }
+    // These are string keys for identifying this request and the reciprocal request
+    // (which may or may not have already come in)
+    const AseeksB = `${A}:${B}:${key}`
+    const BseeksA = `${B}:${A}:${key}`
+
+    if (!this.holding[BseeksA]) {
+      // We haven't heard from B yet; hold this connection
+      log('holding connection for peer', AseeksB)
+
+      this.holding[AseeksB] = peerA // hold A's socket ready
+      this.messages[AseeksB] = [] // hold any messages A sends to B in the meantime
+
+      peerA.on('message', (message: Data) => {
+        // hold on to incoming message from A for B
+        if (this.messages[AseeksB]) this.messages[AseeksB].push(message)
       })
-    }
 
-    if (this.looking[key2]) {
-      log('connecting peers', key1, key2)
-      const socket2 = this.looking[key2]
-
-      this.buffers[key2].forEach(data => socket1.send(data))
-
-      delete this.looking[key2]
-      delete this.buffers[key2]
-
-      log('piping', key1)
-      join(socket1, socket2)
-      join(socket2, socket1)
-      const cleanup = () => {
-        socket1.close()
-        socket2.close()
-      }
-
-      socket1.on('error', cleanup)
-      socket2.on('error', cleanup)
-      socket1.on('close', cleanup)
-      socket2.on('close', cleanup)
+      peerA.on('close', () => {
+        // clean up
+        delete this.holding[AseeksB]
+        delete this.messages[AseeksB]
+      })
     } else {
-      log('holding connection - waiting for peer', key1, key2)
-      this.looking[key1] = socket1
-      this.buffers[key1] = []
+      // We already have a connection request from B; hook them up
+      log('found peer, connecting', AseeksB)
 
-      socket1.on('message', this.receivePeerData(key1))
-      socket1.on('close', this.closePeerConnection(key1))
-    }
-  }
+      const peerB = this.holding[BseeksA]
 
-  receivePeerData(key: string) {
-    return (data: Data) => {
-      if (this.buffers[key]) this.buffers[key].push(data)
-    }
-  }
+      // Send any stored messages
+      this.messages[BseeksA].forEach(message => peerA.send(message))
 
-  closePeerConnection(key: string) {
-    return () => {
-      delete this.looking[key]
-      delete this.buffers[key]
+      // Pipe the two sockets together
+      pipeSockets(peerA, peerB)
+
+      // Don't need to hold the connection or messages any more
+      delete this.holding[BseeksA]
+      delete this.messages[BseeksA]
     }
   }
 
@@ -154,22 +176,19 @@ export class Server extends EventEmitter {
 
   listen() {
     return new Promise(ready => {
+      // It's nice to be able to hit this server from a browser as a sanity check
       app.get('/', (req, res, next) => {
         log('get /')
         res.send('@cevitxe/signal-server')
         res.end()
       })
 
-      app.ws('/discovery/:peerId', (_ws, { params: { peerId } }) => {
-        // TODO: fix types ( @types/express-ws references an older version)
-        const ws = (_ws as any) as WebSocket
-        this.openDiscoveryConnection(ws, peerId)
+      app.ws('/introduction/:id', (ws, { params: { id } }) => {
+        this.openIntroductionConnection(ws as WebSocket, id)
       })
 
-      app.ws('/connect/:peerId1/:peerId2/:key', (_ws, { params: { peerId1, peerId2, key } }) => {
-        // TODO: fix types ( @types/express-ws references an older version) asdf
-        const ws = _ws as WebSocket
-        this.connectPeers(ws, peerId1, peerId2, key)
+      app.ws('/connect/:A/:B/:key', (ws, { params: { A, B, key } }) => {
+        this.receiveConnectRequest({ peerA: ws as WebSocket, A, B, key })
       })
 
       this.httpServer = app.listen(this.port, '0.0.0.0', () => {
@@ -182,7 +201,11 @@ export class Server extends EventEmitter {
 
   close() {
     return new Promise(closed => {
-      if (this.httpServer) this.httpServer.close(() => closed())
+      if (this.httpServer)
+        this.httpServer.close(() => {
+          this.emit('closed')
+          closed()
+        })
     })
   }
 }
