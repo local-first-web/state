@@ -21,6 +21,15 @@
     "@types/debug": "^0.0.31",
     "@types/node": "^10.12.2",
     "@types/ws": "^6.0.1",
+    "cevitxe-signal-server": "*",
     "typescript": "^3.1.6"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "jsdom",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist"
+    ]
   }
 }
