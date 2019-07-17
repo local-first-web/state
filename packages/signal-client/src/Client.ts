@@ -4,65 +4,61 @@ import { EventEmitter } from 'events'
 import { Duplex } from 'stream'
 
 import Peer from './Peer'
-import { Info } from '../@types/Info'
+import { HypercoreOptions } from '../@types/Info'
 import { Message } from '../@types/Message'
 import WebSocket from './WebSocket'
 import { ClientOptions } from '../@types/ClientOptions'
 
 debug.formatters.b = Base58.encode
 
-const log = debug('discovery-cloud:Client')
+const log = debug('cevitxe:signal-client')
 
 export class Client extends EventEmitter {
-  connect: (info: Info) => Duplex
+  // connect: (info: HypercoreOptions) => Duplex
   id: string
-  selfKey: Buffer
   url: string
-  channels: Set<string> = new Set()
+  keys: Set<string> = new Set()
   peers: Map<string, Peer> = new Map()
-  discoveryConnection: WebSocket
+  serverConnection: WebSocket
 
   constructor(opts: ClientOptions) {
     super()
 
-    this.selfKey = opts.id
-    this.id = Base58.encode(opts.id)
+    this.id = opts.id
     this.url = opts.url
-    this.connect = opts.stream
-    this.discoveryConnection = this.connectDiscovery()
+    // this.connect = opts.stream
+    this.serverConnection = this.connect()
 
     log('Initialized %o', opts)
   }
 
-  join(channelBuffer: Buffer) {
-    log('join %b', channelBuffer)
+  join(key: string) {
+    log('join', key)
 
-    const channel = Base58.encode(channelBuffer)
-    this.channels.add(channel)
+    this.keys.add(key)
 
-    if (this.discoveryConnection.readyState === WebSocket.OPEN) {
+    if (this.serverConnection.readyState === WebSocket.OPEN) {
       this.send({
         type: 'Join',
         id: this.id,
-        join: [channel],
+        join: [key],
       })
     }
   }
 
-  leave(channelBuffer: Buffer) {
-    log('leave %b', channelBuffer)
+  leave(key: string) {
+    log('leave', key)
 
-    const channel = Base58.encode(channelBuffer)
-    this.channels.delete(channel)
+    this.keys.delete(key)
     this.peers.forEach(peer => {
-      if (peer.has(channel)) peer.close(channel)
+      if (peer.has(key)) peer.close(key)
     })
 
-    if (this.discoveryConnection.readyState === WebSocket.OPEN) {
+    if (this.serverConnection.readyState === WebSocket.OPEN) {
       this.send({
         type: 'Leave',
         id: this.id,
-        leave: [channel],
+        leave: [key],
       })
     }
   }
@@ -71,80 +67,67 @@ export class Client extends EventEmitter {
     // NOOP
   }
 
-  private connectDiscovery(): WebSocket {
-    const url = `${this.url}/discovery/${this.id}`
+  private connect(): WebSocket {
+    const url = `${this.url}/introduction/${this.id}`
 
-    log('connectDiscovery', url)
+    log('connectIntroduction', url)
 
-    this.discoveryConnection = new WebSocket(url)
+    this.serverConnection = new WebSocket(url)
 
-    this.discoveryConnection.addEventListener('open', () => {
-      this.sendHello()
+    this.serverConnection.addEventListener('open', () => {
+      this.send({
+        type: 'Hello',
+        id: this.id,
+        join: [...this.keys],
+      })
     })
 
-    this.discoveryConnection.addEventListener('close', () => {
-      log('discovery.onclose... reconnecting in 5s')
+    this.serverConnection.addEventListener('close', () => {
+      log('server connection closed... reconnecting in 5s')
       setTimeout(() => {
-        this.connectDiscovery()
+        this.connect()
       }, 5000)
     })
 
-    this.discoveryConnection.addEventListener('message', event => {
-      const data = Buffer.from(event.data)
-      log('discovery.ondata', data)
-      this.receive(JSON.parse(data.toString()))
+    this.serverConnection.addEventListener('message', ({ data }) => {
+      log('message from server', data)
+      const message = JSON.parse(data) as Message.ServerToClient
+      this.receive(message)
     })
 
-    this.discoveryConnection.addEventListener('error', (event: any) => {
-      console.error('discovery.onerror', event.error)
+    this.serverConnection.addEventListener('error', (event: any) => {
+      console.error('introduction.onerror', event.error)
     })
 
-    return this.discoveryConnection
-  }
-
-  private sendHello() {
-    const msg: Message.Hello = {
-      type: 'Hello',
-      id: this.id,
-      join: [...this.channels],
-    }
-    this.send(msg)
+    return this.serverConnection
   }
 
   private send(msg: Message.ClientToServer) {
-    log('discovery.send %o', msg)
-    this.discoveryConnection.send(JSON.stringify(msg))
+    log('introduction.send %o', msg)
+    this.serverConnection.send(JSON.stringify(msg))
   }
 
   private receive(msg: Message.ServerToClient) {
-    log('discovery.receive %o', msg)
+    log('introduction.receive %o', msg)
     switch (msg.type) {
       case 'Connect':
-        this.onConnect(msg.peerId, msg.peerChannels)
+        {
+          const { id, keys = [] } = msg
+          const peer = this.peers.get(id) || this.newPeer(id)
+          const newKeys = keys.filter(key => !peer.keys.has(key))
+          newKeys.forEach(key => peer.add(key))
+        }
         break
     }
   }
 
-  private onConnect(id: string, channels: string[]) {
-    const peer = this.newPeer(id)
-
-    const newChannels = channels.filter(ch => !peer.connections.has(ch))
-
-    newChannels.forEach(channel => {
-      peer.add(channel)
-    })
-  }
-
   newPeer(id: string): Peer {
-    const existing = this.peers.get(id)
-    if (existing) return existing
-
     log('creating peer %s', id)
     const url = `${this.url}/connect/${this.id}`
-    const peer = new Peer({ url, id, stream: this.connect })
+    const peer = new Peer({ url, id })
     this.peers.set(id, peer)
 
-    this.emit('peer', peer, id)
+    this.emit('peer', peer)
     return peer
   }
 }

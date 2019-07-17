@@ -3,51 +3,43 @@ import Debug from 'debug'
 import { Duplex } from 'stream'
 
 import WebSocketStream from './WebSocketStream'
-import { Info } from '../@types/Info'
+import { HypercoreOptions } from '../@types/Info'
 import { PeerOptions } from '../@types/PeerOptions'
+import { EventEmitter } from 'events'
 
 const log = Debug('discovery-cloud:ClientPeer')
 
-export default class Peer {
+export default class Peer extends Duplex {
   id: string
   url: string
-  stream: (info: Info) => Duplex
-  connections: Map<string, WebSocketStream> = new Map() // channel -> socket
+  keys: Map<string, WebSocketStream> = new Map() // key -> socket
 
-  constructor({ url, id, stream }: PeerOptions) {
+  constructor({ url, id }: PeerOptions) {
+    super()
     this.url = url
     this.id = id
-    this.stream = stream
+    // this.stream = stream
   }
 
-  has(channel: string): boolean {
-    return this.connections.has(channel)
+  has(key: string): boolean {
+    return this.keys.has(key)
   }
 
-  add(channel: string) {
-    if (this.connections.has(channel)) return
+  add(key: string) {
+    if (this.keys.has(key)) return
 
-    const url = [this.url, this.id, channel].join('/')
-    const tag = [this.id.slice(0, 2), channel.slice(0, 2)].join('-')
+    const url = `${this.url}/${this.id}/${key}`
+    const tag = `${this.id.slice(0, 2)}-${key.slice(0, 2)}`
+
     const socket = new WebSocketStream(url, tag)
 
-    this.connections.set(channel, socket)
+    this.keys.set(key, socket)
 
-    const protocol = this.stream({
-      channel: Base58.decode(channel),
-      discoveryKey: Base58.decode(channel),
-      live: true,
-      download: true,
-      upload: true,
-      encrypt: false,
-      hash: false,
-    })
+    // socket.ready.then(socket => protocol.pipe(socket).pipe(protocol))
 
-    socket.ready.then(socket => protocol.pipe(socket).pipe(protocol))
-
-    protocol.on('error', err => {
-      log('protocol.onerror %s', tag, err)
-    })
+    // protocol.on('error', err => {
+    //   log('protocol.onerror %s', tag, err)
+    // })
 
     socket.on('error', err => {
       log('socket.onerror %s', tag, err)
@@ -55,26 +47,26 @@ export default class Peer {
 
     socket.once('end', () => {
       log('socket.onend')
-      this.remove(channel)
+      this.remove(key)
     })
 
     socket.once('close', () => {
       log('socket.onclose')
-      this.remove(channel)
+      this.remove(key)
     })
   }
 
-  close(channel: string) {
-    const socket = this.connections.get(channel)
+  close(key: string) {
+    const socket = this.keys.get(key)
     if (socket) {
-      log('%s closing socket: %s', this.id, channel)
+      log('%s closing socket: %s', this.id, key)
       socket._destroy(null, () => {})
-      this.connections.delete(channel)
+      this.keys.delete(key)
     }
   }
 
-  remove(channel: string) {
-    log('%s removing connection: %s', this.id, channel)
-    this.connections.delete(channel)
+  remove(key: string) {
+    log('%s removing connection: %s', this.id, key)
+    this.keys.delete(key)
   }
 }

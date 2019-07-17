@@ -19,8 +19,8 @@ export namespace Message {
 
   export interface Connect {
     type: 'Connect'
-    peerId: string
-    peerChannels: string[]
+    id: string
+    keys: string[]
   }
 
   export type ClientToServer = Hello | Join | Leave

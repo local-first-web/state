@@ -1,4 +1,3 @@
-import WebSocket from 'ws'
 import { debug } from 'debug-deluxe'
 import { Client } from './Client'
 import { Duplex } from 'stream'
@@ -15,6 +14,8 @@ describe('Client', () => {
   let server: Server
   let key: string
   let testId: number = 0
+  let localId: string
+  let remoteId: string
 
   beforeAll(async () => {
     // prevent server from logging 'listening on port...' during tests
@@ -27,8 +28,8 @@ describe('Client', () => {
 
   beforeEach(() => {
     testId += 1
-    // localId = `local-${testId}`
-    // remoteId = `remote-${testId}`
+    localId = `local-${testId}`
+    remoteId = `remote-${testId}`
     key = `test-key-${testId}`
     log(`TEST ${testId}`)
   })
@@ -40,10 +41,41 @@ describe('Client', () => {
     console.log = _log
   })
 
-  it('should base58 encode the id', () => {
-    const id = Buffer.from('12345')
-    const stream = () => new Duplex()
-    const client = new Client({ id, url, stream })
-    expect(client.id).toEqual('6YvUFcg')
+  describe('Initialization', () => {
+    let client: Client
+
+    beforeEach(() => {
+      const stream = () => new Duplex()
+      client = new Client({ id: localId, url, stream })
+    })
+
+    it('have the right id', () => {
+      expect(client.id).toEqual(localId)
+    })
+
+    it('should connect to the discovery server', () => {
+      expect(client.serverConnection.url).toEqual(`ws://localhost:1234/introduction/local-2`)
+    })
+  })
+
+  describe('Join', () => {
+    let localClient: Client
+    let remoteClient: Client
+
+    beforeEach(() => {
+      const stream = () => new Duplex()
+      localClient = new Client({ id: localId, url, stream })
+      remoteClient = new Client({ id: remoteId, url, stream })
+    })
+
+    it('should connect to a peer', done => {
+      localClient.join(key)
+      remoteClient.join(key)
+
+      localClient.on('peer', peer => {
+        expect(peer.id).toEqual(remoteId)
+        done()
+      })
+    })
   })
 })

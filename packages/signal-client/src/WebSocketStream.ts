@@ -8,29 +8,24 @@ export default class WebSocketStream extends Duplex {
   tag: string
   log: DebuggerDeluxe
 
-  constructor(url: string, tag?: string) {
+  constructor(url: string, tag: string) {
     super()
 
-    this.tag =
-      tag ||
-      Math.random()
-        .toString()
-        .slice(2, 4)
-    
     this.log = debug(`cevitxe:signal-client:wsstream:${this.tag}`)
+
     this.socket = new WebSocket(url)
 
-    this.ready = new Promise(resolve => {
+    this.ready = new Promise(ready => {
       this.socket.addEventListener('open', () => {
-        this.log('socket.onopen')
+        this.log('socket open')
         this.emit('open', this)
-        resolve(this)
+        ready(this)
       })
     })
 
     this.socket.addEventListener('close', () => {
       this.log('socket.onclose')
-      this.destroy() // TODO is this right?
+      this.destroy()
     })
 
     this.socket.addEventListener('error', err => {

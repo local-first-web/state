@@ -1,7 +1,8 @@
 import { Duplex } from 'stream'
-import { Info } from './Info'
+import { HypercoreOptions } from './Info'
+
 export interface PeerOptions {
   id: string
   url: string
-  stream: (info: Info) => Duplex
+  // stream: (info: HypercoreOptions) => Duplex
 }

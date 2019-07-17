@@ -1,4 +1,4 @@
-export interface Info {
+export interface HypercoreOptions {
   channel: Buffer
   discoveryKey: Buffer
   live?: boolean
