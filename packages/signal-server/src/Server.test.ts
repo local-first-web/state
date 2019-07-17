@@ -125,4 +125,22 @@ describe('Server', () => {
       })
     })
   })
+  describe('Three-way', () => {
+    it('should pipe connections between three peers', done => {
+      expect.assertions(6)
+      const instances = [1, 2, 3]
+      const ids = instances.map(d => `peer1-${testId}`)
+      const introductionPeers = instances.map(d => makeIntroductionRequest(ids[d], key))
+      introductionPeers.forEach((introductionPeer, index) =>
+        introductionPeer.once('message', introductionMessage => {
+          const invitation = JSON.parse(introductionMessage.toString())
+          const peer = new WebSocket(`${connectUrl}/${ids[index]}/${invitation.id}/${key}`)
+          peer.once('open', () => peer.send(`Message from peer ${index}`))
+          peer.on('message', message => {
+            expect(message).toBeTruthy()
+          })
+        })
+      )
+    })
+  })
 })
