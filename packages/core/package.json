@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@types/simple-peer": "^6",
-    "automerge": "^0",
+    "automerge": "herbcaudill/automerge#with-dist",
     "cevitxe-signal-client": "^0",
     "debug-deluxe": "^2",
     "hypercore": "^7",

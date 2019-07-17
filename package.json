@@ -4,7 +4,6 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "preinstall": "yarn uselinks",
     "start": "run-p watch start:todo",
     "start:chat": "yarn workspace @cevitxe/chat start",
     "start:grid": "yarn workspace @cevitxe/grid start",
@@ -19,9 +18,7 @@
     "watch:core": "yarn workspace cevitxe watch",
     "watch:toolbar": "yarn workspace cevitxe-toolbar watch",
     "test": "jest --watch",
-    "purge": "scripts/purge.bat",
-    "postpurge": "yarn uselinks",
-    "uselinks": "yarn link debug-deluxe automerge"
+    "purge": "scripts/purge.bat"
   },
   "devDependencies": {
     "@types/jest": "^24",

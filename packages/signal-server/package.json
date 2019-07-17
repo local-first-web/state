@@ -21,7 +21,7 @@
     "@types/node": "^10",
     "@types/ws": "^5",
     "cevitxe-signal-client": "^0",
-    "debug-deluxe": "^2",
+    "debug-deluxe": "^2.0.2",
     "jest": "^24",
     "kill-port": "^1",
     "mock-socket": "^8",
