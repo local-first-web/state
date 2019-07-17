@@ -41,7 +41,7 @@ export class Server extends EventEmitter {
    * For two peers to connect, they both need to send a connection request, specifying both the
    * remote peer id and the document key. When we've gotten the request from peer A but not yet from
    * peer B, we temporarily store a reference to peer A's request in `holding`, and store any
-   * messages from A in `buffers`.
+   * messages from A in `messages`.
    */
   private holding: { [id: string]: WebSocket }
   private messages: { [id: string]: Data[] }
@@ -75,7 +75,7 @@ export class Server extends EventEmitter {
   receiveIntroductionRequest(id: string) {
     const A = id // A and B always refer to peer ids
 
-    // A introduction request from the client will include a list of keys to join and/or leave.
+    // An introduction request from the client will include a list of keys to join and/or leave.
     // We combine those keys with any we already have.
     const applyJoinAndLeave = (current: KeySet = [], join: KeySet = [], leave: KeySet = []) => {
       return current
