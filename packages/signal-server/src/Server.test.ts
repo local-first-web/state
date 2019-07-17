@@ -65,18 +65,29 @@ describe('Server', () => {
       })
     })
 
-    it('should invite peers to connect', done => {
-      expect.assertions(2)
+    it('should invite peers to connect', async () => {
+      expect.assertions(4)
 
       const localPeer = makeIntroductionRequest(localId, key)
       const remotePeer = makeIntroductionRequest(remoteId, key) // need to make request even if we don't use the result
 
-      localPeer.once('message', d => {
-        const invitation = JSON.parse(d.toString())
-        expect(invitation.id).toEqual(remoteId)
-        expect(invitation.keys).toEqual([key])
-        done()
+      const localDone = new Promise(resolve => {
+        localPeer.once('message', d => {
+          const invitation = JSON.parse(d.toString())
+          expect(invitation.id).toEqual(remoteId)
+          expect(invitation.keys).toEqual([key])
+          resolve()
+        })
       })
+      const remoteDone = new Promise(resolve => {
+        remotePeer.once('message', d => {
+          const invitation = JSON.parse(d.toString())
+          expect(invitation.id).toEqual(localId)
+          expect(invitation.keys).toEqual([key])
+          resolve()
+        })
+      })
+      await Promise.all([localDone, remoteDone])
     })
   })
 
