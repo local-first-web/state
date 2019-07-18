@@ -24,7 +24,8 @@
     "@types/jest": "^24",
     "jest": "^24",
     "lerna": "^3",
-    "npm-run-all": "^4"
+    "npm-run-all": "^4",
+    "ts-jest": "^24"
   },
   "workspaces": {
     "packages": [
@@ -43,15 +44,11 @@
     "trailingComma": "es5"
   },
   "jest": {
-    "preset": "ts-jest",
     "projects": [
       "<rootDir>/packages/core",
+      "<rootDir>/packages/signal-client",
+      "<rootDir>/packages/signal-server",
       "<rootDir>/packages/examples/grid"
-    ],
-    "testEnvironment": "jsdom",
-    "testPathIgnorePatterns": [
-      "node_modules",
-      "dist"
     ]
   }
 }

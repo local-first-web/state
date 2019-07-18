@@ -123,23 +123,24 @@ describe('Server', () => {
       })
     })
   })
-
-  describe('Three-way', () => {
-    it('should pipe connections between three peers', done => {
-      expect.assertions(6)
-      const instances = [1, 2, 3]
-      const ids = instances.map(d => `peer1-${testId}`)
-      const introductionPeers = instances.map(d => makeIntroductionRequest(ids[d], key))
-      introductionPeers.forEach((introductionPeer, index) =>
-        introductionPeer.once('message', introductionMessage => {
-          const invitation = JSON.parse(introductionMessage.toString())
-          const peer = new WebSocket(`${connectUrl}/${ids[index]}/${invitation.id}/${key}`)
-          peer.once('open', () => peer.send(`Message from peer ${index}`))
-          peer.on('message', message => {
-            expect(message).toBeTruthy()
-          })
+  describe('N-way', () => {
+    it('Should make introductions between all the peers', done => {
+      const instances = ['a', 'b', 'c', 'd', 'e']
+      const expectedInvitations = factorial(instances.length) / factorial(instances.length - 2) // Permutations of 2
+      expect.assertions(expectedInvitations)
+      const ids = instances.map(id => `peer-${id}-${testId}`)
+      const introductionPeers = ids.map(d => makeIntroductionRequest(d, key))
+      let invitations = 0
+      introductionPeers.forEach(introductionPeer => {
+        introductionPeer.on('message', invitationMessage => {
+          const invitation = JSON.parse(invitationMessage.toString())
+          expect(invitation.type).toBe('Connect')
+          invitations++
+          if (invitations === expectedInvitations) done()
         })
-      )
+      })
     })
   })
 })
+
+const factorial = (n: number): number => (n === 1 ? 1 : n * factorial(n - 1))
