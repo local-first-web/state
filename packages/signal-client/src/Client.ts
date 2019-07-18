@@ -139,7 +139,7 @@ export class Client extends EventEmitter {
         {
           const { id, keys = [] } = msg
           const peer = this.peers.get(id) || this.newPeer(id)
-          const newKeys = keys.filter(key => !peer.keys.has(key))
+          const newKeys = keys.filter(key => !peer.has(key))
           newKeys.forEach(key => {
             peer.on('open', peerKey => {
               this.log('peer open', id, peerKey)
