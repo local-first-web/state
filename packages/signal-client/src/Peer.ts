@@ -7,25 +7,26 @@ import { HypercoreOptions } from '../@types/Info'
 import { PeerOptions } from '../@types/PeerOptions'
 import { EventEmitter } from 'events'
 
-const log = Debug('discovery-cloud:ClientPeer')
+const log = Debug('cevitxe:signal-client:peer')
 
-export default class Peer extends Duplex {
+export class Peer extends Duplex {
   id: string
   url: string
   keys: Map<string, WebSocketStream> = new Map() // key -> socket
+  stream: () => Duplex
 
-  constructor({ url, id }: PeerOptions) {
+  constructor({ url, id, stream }: PeerOptions) {
     super()
     this.url = url
     this.id = id
-    // this.stream = stream
+    this.stream = stream
   }
 
   has(key: string): boolean {
     return this.keys.has(key)
   }
 
-  add(key: string) {
+  async add(key: string) {
     if (this.keys.has(key)) return
 
     const url = `${this.url}/${this.id}/${key}`
@@ -35,11 +36,18 @@ export default class Peer extends Duplex {
 
     this.keys.set(key, socket)
 
-    // socket.ready.then(socket => protocol.pipe(socket).pipe(protocol))
+    const protocol = this.stream()
 
-    // protocol.on('error', err => {
-    //   log('protocol.onerror %s', tag, err)
-    // })
+    await socket.ready
+    // protocol.pipe(socket)
+    // socket.pipe(protocol)
+
+    log('ready', key)
+    this.emit('ready', key)
+
+    protocol.on('error', err => {
+      log('protocol.onerror %s', tag, err)
+    })
 
     socket.on('error', err => {
       log('socket.onerror %s', tag, err)

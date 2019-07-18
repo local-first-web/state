@@ -111,20 +111,19 @@ describe('Server', () => {
         // send message from local to remote
         localPeer.once('open', () => localPeer.send('DUDE!!'))
         remotePeer.once('message', d => {
-          console.log('remotePeer_message')
           expect(d).toEqual('DUDE!!')
         })
 
         // send message from remote to local
         remotePeer.once('open', () => remotePeer.send('hello'))
         localPeer.once('message', d => {
-          console.log('localPeer_message')
           expect(d).toEqual('hello')
           done()
         })
       })
     })
   })
+
   describe('Three-way', () => {
     it('should pipe connections between three peers', done => {
       expect.assertions(6)

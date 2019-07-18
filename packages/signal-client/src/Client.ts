@@ -3,8 +3,7 @@ import { debug } from 'debug-deluxe'
 import { EventEmitter } from 'events'
 import { Duplex } from 'stream'
 
-import Peer from './Peer'
-import { HypercoreOptions } from '../@types/Info'
+import { Peer } from './Peer'
 import { Message } from '../@types/Message'
 import WebSocket from './WebSocket'
 import { ClientOptions } from '../@types/ClientOptions'
@@ -14,7 +13,7 @@ debug.formatters.b = Base58.encode
 const log = debug('cevitxe:signal-client')
 
 export class Client extends EventEmitter {
-  // connect: (info: HypercoreOptions) => Duplex
+  stream: () => Duplex
   id: string
   url: string
   keys: Set<string> = new Set()
@@ -26,9 +25,9 @@ export class Client extends EventEmitter {
 
     this.id = opts.id
     this.url = opts.url
-    // this.connect = opts.stream
-    this.serverConnection = this.connect()
+    this.stream = opts.stream
 
+    this.serverConnection = this.connectToServer()
     log('Initialized %o', opts)
   }
 
@@ -38,7 +37,7 @@ export class Client extends EventEmitter {
     this.keys.add(key)
 
     if (this.serverConnection.readyState === WebSocket.OPEN) {
-      this.send({
+      this.sendToServer({
         type: 'Join',
         id: this.id,
         join: [key],
@@ -55,7 +54,7 @@ export class Client extends EventEmitter {
     })
 
     if (this.serverConnection.readyState === WebSocket.OPEN) {
-      this.send({
+      this.sendToServer({
         type: 'Leave',
         id: this.id,
         leave: [key],
@@ -67,7 +66,7 @@ export class Client extends EventEmitter {
     // NOOP
   }
 
-  private connect(): WebSocket {
+  private connectToServer(): WebSocket {
     const url = `${this.url}/introduction/${this.id}`
 
     log('connectIntroduction', url)
@@ -75,7 +74,7 @@ export class Client extends EventEmitter {
     this.serverConnection = new WebSocket(url)
 
     this.serverConnection.addEventListener('open', () => {
-      this.send({
+      this.sendToServer({
         type: 'Hello',
         id: this.id,
         join: [...this.keys],
@@ -85,14 +84,14 @@ export class Client extends EventEmitter {
     this.serverConnection.addEventListener('close', () => {
       log('server connection closed... reconnecting in 5s')
       setTimeout(() => {
-        this.connect()
+        this.connectToServer()
       }, 5000)
     })
 
     this.serverConnection.addEventListener('message', ({ data }) => {
       log('message from server', data)
       const message = JSON.parse(data) as Message.ServerToClient
-      this.receive(message)
+      this.receiveFromServer(message)
     })
 
     this.serverConnection.addEventListener('error', (event: any) => {
@@ -102,12 +101,12 @@ export class Client extends EventEmitter {
     return this.serverConnection
   }
 
-  private send(msg: Message.ClientToServer) {
+  private sendToServer(msg: Message.ClientToServer) {
     log('introduction.send %o', msg)
     this.serverConnection.send(JSON.stringify(msg))
   }
 
-  private receive(msg: Message.ServerToClient) {
+  private receiveFromServer(msg: Message.ServerToClient) {
     log('introduction.receive %o', msg)
     switch (msg.type) {
       case 'Connect':
@@ -115,19 +114,23 @@ export class Client extends EventEmitter {
           const { id, keys = [] } = msg
           const peer = this.peers.get(id) || this.newPeer(id)
           const newKeys = keys.filter(key => !peer.keys.has(key))
-          newKeys.forEach(key => peer.add(key))
+          newKeys.forEach(key => {
+            peer.on('ready', peerKey => {
+              log('peer ready', id, peerKey)
+              this.emit('peer', peer, key)
+            })
+            peer.add(key)
+          })
         }
         break
     }
   }
 
-  newPeer(id: string): Peer {
-    log('creating peer %s', id)
+  private newPeer(_id: string): Peer {
+    log('creating peer %s', _id)
     const url = `${this.url}/connect/${this.id}`
-    const peer = new Peer({ url, id })
-    this.peers.set(id, peer)
-
-    this.emit('peer', peer)
+    const peer = new Peer({ url, id: _id, stream: this.stream })
+    this.peers.set(_id, peer)
     return peer
   }
 }

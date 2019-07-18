@@ -36,7 +36,7 @@ export default class WebSocketStream extends Duplex {
     this.socket.addEventListener('message', event => {
       const data = Buffer.from(event.data)
       this.log('socket.onmessage', data)
-
+      this.emit('message', data.toString())
       if (!this.push(data)) {
         this.log('closed, cannot write')
         this.socket.close()

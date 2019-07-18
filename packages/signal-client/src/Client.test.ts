@@ -1,7 +1,8 @@
 import { debug } from 'debug-deluxe'
 import { Client } from './Client'
-import { Duplex } from 'stream'
+import { Duplex, Writable, Transform } from 'stream'
 import { Server } from 'cevitxe-signal-server'
+import { Peer } from './Peer'
 
 const kill = require('kill-port')
 const port = 1234
@@ -75,6 +76,48 @@ describe('Client', () => {
       localClient.on('peer', peer => {
         expect(peer.id).toEqual(remoteId)
         done()
+      })
+    })
+  })
+
+  describe('Send/Receive', () => {
+    let localClient: Client
+    let remoteClient: Client
+
+    beforeEach(() => {})
+
+    it('should send a message peer', done => {
+      const stream = () =>
+        new Transform({
+          objectMode: true,
+          transform(chunk, encoding, callback) {
+            // Transform the chunk into something else.
+            const data = chunk.toString()
+
+            // Push the data onto the readable queue.
+            callback(null, data)
+          },
+        })
+
+      localClient = new Client({ id: localId, url, stream })
+      remoteClient = new Client({ id: remoteId, url, stream })
+
+      localClient.join(key)
+      remoteClient.join(key)
+
+      localClient.on('peer', (peer: Peer) => {
+        console.log(peer.keys)
+        const connection = peer.keys.get(key)
+        connection.write('hello')
+      })
+
+      remoteClient.on('peer', (peer: Peer) => {
+        const connection = peer.keys.get(key)
+
+        connection.on('message', message => {
+          expect(message).toEqual('hello')
+          done()
+        })
       })
     })
   })
