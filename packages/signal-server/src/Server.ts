@@ -18,7 +18,7 @@ const log = debug('cevitxe:signal-server')
  * This server provides two services:
  *
  * - **Introduction** (aka introduction): A client can provide one or more document keys that they're interested in. If *
- *   any other client is interested in the same key or keys, each will receive a `Connect` message with
+ *   any other client is interested in the same key or keys, each will receive an `Introduction` message with
  *   the other's id. They can then use that information to connect:
  *
  * - **Connection**: Client A can request to connect with Client B on a given document key (can think of
@@ -84,10 +84,11 @@ export class Server extends EventEmitter {
         .reduce(deduplicate, []) // filter out duplicates
     }
 
-    // If we find another peer interested in the same key(s), we send both peers an invitation to connect.
-    const sendConnectSuggestion = (A: string, B: string, keys: KeySet) => {
+    // If we find another peer interested in the same key(s), we send both peers an introduction,
+    // which they can use to connect
+    const sendIntroduction = (A: string, B: string, keys: KeySet) => {
       const message = JSON.stringify({
-        type: 'Connect',
+        type: 'Introduction',
         id: B, // the id of the other peer
         keys, // the key(s) both are interested in
       })
@@ -112,8 +113,8 @@ export class Server extends EventEmitter {
           const commonKeys = intersection(this.keys[A], this.keys[B])
           if (commonKeys.length > 0) {
             log('notifying', A, B, commonKeys)
-            sendConnectSuggestion(A, B, commonKeys)
-            sendConnectSuggestion(B, A, commonKeys)
+            sendIntroduction(A, B, commonKeys)
+            sendIntroduction(B, A, commonKeys)
           }
         }
       }

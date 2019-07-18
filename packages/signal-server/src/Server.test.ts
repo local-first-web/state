@@ -126,17 +126,17 @@ describe('Server', () => {
   describe('N-way', () => {
     it('Should make introductions between all the peers', done => {
       const instances = ['a', 'b', 'c', 'd', 'e']
-      const expectedInvitations = factorial(instances.length) / factorial(instances.length - 2) // Permutations of 2
-      expect.assertions(expectedInvitations)
+      const expectedIntroductions = factorial(instances.length) / factorial(instances.length - 2) // Permutations of 2
+      expect.assertions(expectedIntroductions)
       const ids = instances.map(id => `peer-${id}-${testId}`)
       const introductionPeers = ids.map(d => makeIntroductionRequest(d, key))
       let invitations = 0
       introductionPeers.forEach(introductionPeer => {
-        introductionPeer.on('message', invitationMessage => {
-          const invitation = JSON.parse(invitationMessage.toString())
-          expect(invitation.type).toBe('Connect')
+        introductionPeer.on('message', data => {
+          const introduction = JSON.parse(data.toString())
+          expect(introduction.type).toBe('Introduction')
           invitations++
-          if (invitations === expectedInvitations) done()
+          if (invitations === expectedIntroductions) done()
         })
       })
     })
