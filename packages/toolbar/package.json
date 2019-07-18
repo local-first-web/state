@@ -10,7 +10,7 @@
     "build": "tsc ",
     "lint": "tsc -p tsconfig.strict.json --noEmit",
     "watch": "tsc --watch",
-    "test": "jest --watch"
+    "test": "jest"
   },
   "devDependencies": {
     "@types/jest": "^24",

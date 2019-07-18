@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "ts-node src/start.ts",
-    "test": "jest --watch"
+    "test": "jest"
   },
   "dependencies": {
     "bs58": "^4",
