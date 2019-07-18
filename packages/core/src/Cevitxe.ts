@@ -83,6 +83,7 @@ export class Cevitxe<T> extends EventEmitter {
     const enhancer = Redux.applyMiddleware(...this.middlewares, cevitxeMiddleware)
     this.store = Redux.createStore(reducer, state, enhancer)
 
+    // TODO: replace signalhub and webrtcSwarm with signal-client
     // Join swarm
     log('joining swarm')
     this.hub = signalhub(documentId, this.peerHubs)
@@ -91,6 +92,8 @@ export class Cevitxe<T> extends EventEmitter {
     // For each peer that wants to connect, create a Connection object
     this.swarm.on('peer', (peer: Peer, id: string) => {
       log('connecting to peer', id)
+      // TODO: we'll receive a peer and a key, need to give the connection the socket instead of the
+      // whole peer
       const connection = new Connection(docSet, peer, this.store!.dispatch, this.onReceive)
       this.connections.push(connection)
     })
