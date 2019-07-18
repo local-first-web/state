@@ -1,6 +1,5 @@
 import { debug } from 'debug-deluxe'
 import { Client } from './Client'
-import { Duplex, Writable, Transform } from 'stream'
 import { Server } from 'cevitxe-signal-server'
 import { Peer } from './Peer'
 
@@ -45,17 +44,9 @@ describe('Client', () => {
   describe('Initialization', () => {
     let client: Client
 
-    beforeEach(() => {
-      const stream = () => new Duplex()
-      client = new Client({ id: localId, url, stream })
-    })
-
-    it('have the right id', () => {
-      expect(client.id).toEqual(localId)
-    })
-
     it('should connect to the discovery server', () => {
-      expect(client.serverConnection.url).toEqual(`ws://localhost:1234/introduction/local-2`)
+      client = new Client({ id: localId, url })
+      expect(client.serverConnection.url).toContain('ws://localhost:1234/introduction/local')
     })
   })
 
@@ -63,20 +54,27 @@ describe('Client', () => {
     let localClient: Client
     let remoteClient: Client
 
-    beforeEach(() => {
-      const stream = () => new Duplex()
-      localClient = new Client({ id: localId, url, stream })
-      remoteClient = new Client({ id: remoteId, url, stream })
-    })
+    it('should connect to a peer', async () => {
+      localClient = new Client({ id: localId, url })
+      remoteClient = new Client({ id: remoteId, url })
 
-    it('should connect to a peer', done => {
       localClient.join(key)
       remoteClient.join(key)
 
-      localClient.on('peer', peer => {
-        expect(peer.id).toEqual(remoteId)
-        done()
-      })
+      await Promise.all([
+        new Promise(resolve => {
+          localClient.on('peer', peer => {
+            expect(peer.id).toEqual(remoteId)
+            resolve()
+          })
+        }),
+        new Promise(resolve => {
+          remoteClient.on('peer', peer => {
+            expect(peer.id).toEqual(localId)
+            resolve()
+          })
+        }),
+      ])
     })
   })
 
@@ -84,37 +82,22 @@ describe('Client', () => {
     let localClient: Client
     let remoteClient: Client
 
-    beforeEach(() => {})
-
-    it('should send a message peer', done => {
-      const stream = () =>
-        new Transform({
-          objectMode: true,
-          transform(chunk, encoding, callback) {
-            // Transform the chunk into something else.
-            const data = chunk.toString()
-
-            // Push the data onto the readable queue.
-            callback(null, data)
-          },
-        })
-
-      localClient = new Client({ id: localId, url, stream })
-      remoteClient = new Client({ id: remoteId, url, stream })
+    it('should send a message to a remote peer', done => {
+      localClient = new Client({ id: localId, url })
+      remoteClient = new Client({ id: remoteId, url })
 
       localClient.join(key)
       remoteClient.join(key)
 
       localClient.on('peer', (peer: Peer) => {
-        console.log(peer.keys)
-        const connection = peer.keys.get(key)
-        connection.write('hello')
+        const connection = peer.get(key)
+        connection.send('hello')
       })
 
       remoteClient.on('peer', (peer: Peer) => {
-        const connection = peer.keys.get(key)
+        const socket = peer.get(key)
 
-        connection.on('message', message => {
+        socket.on('message', message => {
           expect(message).toEqual('hello')
           done()
         })

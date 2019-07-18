@@ -1,56 +1,45 @@
-import * as Base58 from 'bs58'
 import Debug from 'debug'
-import { Duplex } from 'stream'
-
-import WebSocketStream from './WebSocketStream'
-import { HypercoreOptions } from '../@types/Info'
+import WebSocket from 'ws'
 import { PeerOptions } from '../@types/PeerOptions'
 import { EventEmitter } from 'events'
 
 const log = Debug('cevitxe:signal-client:peer')
 
-export class Peer extends Duplex {
+/**
+ * The Peer class holds one or more sockets, one per key (aka documentId aka channel).
+ * To get the socket corresponding to a given key:
+ * ```ts
+ * const socket = peer.get(key)
+ * ```
+ *
+ * You interact with that socket just like you would any socket:
+ * ```ts
+ * socket.send('hello!')
+ * socket.on('message', message => {...})
+ * ```
+ */
+export class Peer extends EventEmitter {
   id: string
   url: string
-  keys: Map<string, WebSocketStream> = new Map() // key -> socket
-  stream: () => Duplex
+  private keys: Map<string, WebSocket> = new Map() // key -> socket
 
-  constructor({ url, id, stream }: PeerOptions) {
+  constructor({ url, id }: PeerOptions) {
     super()
     this.url = url
     this.id = id
-    this.stream = stream
   }
 
-  has(key: string): boolean {
-    return this.keys.has(key)
-  }
-
-  async add(key: string) {
+  add(key: string) {
     if (this.keys.has(key)) return
 
-    const url = `${this.url}/${this.id}/${key}`
-    const tag = `${this.id.slice(0, 2)}-${key.slice(0, 2)}`
+    const id = this.id
+    const url = `${this.url}/${id}/${key}`
 
-    const socket = new WebSocketStream(url, tag)
-
+    const socket = new WebSocket(url)
     this.keys.set(key, socket)
 
-    const protocol = this.stream()
-
-    await socket.ready
-    // protocol.pipe(socket)
-    // socket.pipe(protocol)
-
-    log('ready', key)
-    this.emit('ready', key)
-
-    protocol.on('error', err => {
-      log('protocol.onerror %s', tag, err)
-    })
-
     socket.on('error', err => {
-      log('socket.onerror %s', tag, err)
+      log('socket.onerror %s', err)
     })
 
     socket.once('end', () => {
@@ -62,13 +51,26 @@ export class Peer extends Duplex {
       log('socket.onclose')
       this.remove(key)
     })
+
+    socket.on('open', () => {
+      log('open', key)
+      this.emit('open', key)
+    })
+  }
+
+  has(key: string): boolean {
+    return this.keys.has(key)
+  }
+
+  get(key: string) {
+    return this.keys.get(key)
   }
 
   close(key: string) {
-    const socket = this.keys.get(key)
+    const socket = this.get(key)
     if (socket) {
       log('%s closing socket: %s', this.id, key)
-      socket._destroy(null, () => {})
+      socket.close()
       this.keys.delete(key)
     }
   }

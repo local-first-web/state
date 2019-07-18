@@ -1,4 +1,6 @@
 export namespace Message {
+  export type ClientToServer = Hello | Join | Leave
+
   export interface Hello {
     type: 'Hello'
     id: string
@@ -17,12 +19,11 @@ export namespace Message {
     leave: string[]
   }
 
-  export interface Connect {
-    type: 'Connect'
+  export type ServerToClient = Introduction
+
+  export interface Introduction {
+    type: 'Introduction'
     id: string
     keys: string[]
   }
-
-  export type ClientToServer = Hello | Join | Leave
-  export type ServerToClient = Connect
 }
