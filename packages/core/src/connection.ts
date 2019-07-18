@@ -48,6 +48,7 @@ export class Connection<T = any> {
     log('constructor: onReceive', this.onReceive)
 
     // TODO: This will change to `.on('message')
+    // DM: actually, that would happen on a socket. We need to retrieve one.
     this.peer.on('data', (data: any) => {
       const message = JSON.parse(data.toString())
       this.receive(message)
@@ -94,6 +95,7 @@ export class Connection<T = any> {
     if (this.peer)
       try {
         // TODO: This *should* work as-is with signal-client
+        // DM: it doesn't, because peer does not send. You need to .get a specific socket. But where's the key?
         this.peer.send(JSON.stringify(message))
       } catch {
         log('tried to send but peer is no longer connected', this.peer)
