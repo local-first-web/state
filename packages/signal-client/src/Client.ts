@@ -5,7 +5,7 @@ import { Peer } from './Peer'
 import { Message } from '../@types/Message'
 import WebSocket from 'ws'
 import { ClientOptions } from '../@types/ClientOptions'
-
+import uuid from 'uuid'
 
 /**
  * This is a client for `cevitxe-signal-server` that makes it easier to interact with it.
@@ -45,10 +45,10 @@ export class Client extends EventEmitter {
   log: DebuggerDeluxe
 
   /**
-   * @param id a string that identifies you uniquely, typically a UUID
+   * @param id a string that identifies you uniquely, defaults to a UUID
    * @param url the url of the `cevitxe-signal-server`, e.g. `http://signal.mydomain.com`
    */
-  constructor({ id, url }: ClientOptions) {
+  constructor({ id = uuid(), url }: ClientOptions) {
     super()
     this.log = debug(`cevitxe:signal-client:${id}`)
 
