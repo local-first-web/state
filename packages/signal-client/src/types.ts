@@ -1,7 +1,9 @@
-import { Duplex } from 'stream'
-
 export interface ClientOptions {
+  id?: string
+  url: string
+}
+
+export interface PeerOptions {
   id: string
   url: string
-  // stream: () => Duplex
 }
