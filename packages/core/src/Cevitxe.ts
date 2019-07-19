@@ -34,7 +34,6 @@ export class Cevitxe<T> extends EventEmitter {
 
   private feed?: Feed<string>
   private hub?: any
-  private swarm?: any
   private connections: Connection[]
 
   constructor({
@@ -85,15 +84,11 @@ export class Cevitxe<T> extends EventEmitter {
 
     client.join(documentId)
 
+    // For each peer that wants to connect, create a Connection object
     client.on('peer', (peer: Peer) => {
       const socket = peer.get(documentId)
       const connection = new Connection(docSet, socket, this.store!.dispatch, this.onReceive)
       this.connections.push(connection)
-    })
-
-    // For each peer that wants to connect, create a Connection object
-    this.swarm.on('peer', (peer: Peer, id: string) => {
-      log('connecting to peer', id)
     })
 
     return this.store
@@ -111,11 +106,9 @@ export class Cevitxe<T> extends EventEmitter {
     this.store = undefined
     if (this.connections) await this.connections.forEach(async c => await c.close())
     if (this.feed) await promisify(this.feed.close)
-    // if (this.swarm) await promisify(this.swarm.close)
     // if (this.hub) await promisify(this.hub.close)
     this.feed = undefined
     this.hub = undefined
-    this.swarm = undefined
     this.connections = []
   }
 }

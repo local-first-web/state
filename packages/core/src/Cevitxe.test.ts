@@ -53,12 +53,12 @@ describe('Cevitxe', () => {
   //   if (cevitxe) await cevitxe.close()
   // })
 
-  // it('joinStore should return a connected redux store', async () => {
-  //   expect.assertions(2)
-  //   const store = await cevitxe.joinStore(documentId)
-  //   expect(store).not.toBeUndefined()
-  //   expect(store.getState()).toEqual({})
-  // })
+  it('joinStore should return a connected redux store', async () => {
+    expect.assertions(2)
+    const store = await cevitxe.joinStore(documentId)
+    expect(store).not.toBeUndefined()
+    expect(store.getState()).toEqual({})
+  })
 
   // describe('connections enabled', () => {
   //   beforeEach(async () => {
