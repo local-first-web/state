@@ -1,7 +1,7 @@
 {
   "name": "cevitxe-signal-server",
   "version": "0.1.8",
-  "main": "src/Server.ts",
+  "main": "src/index.ts",
   "license": "MIT",
   "scripts": {
     "build": "tsc",

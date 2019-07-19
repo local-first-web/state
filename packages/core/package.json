@@ -4,8 +4,8 @@
   "version": "0.1.8",
   "private": false,
   "license": "MIT",
-  "main": "dist/src/index.js",
-  "typings": "dist/src/index.d.ts",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "scripts": {
     "build": "tsc ",
     "lint": "tsc -p tsconfig.strict.json --noEmit",
