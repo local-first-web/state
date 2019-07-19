@@ -1,9 +1,9 @@
 import A from 'automerge'
-import { Peer } from 'cevitxe-signal-client'
 import { debug } from 'debug-deluxe'
 import { SingleDocSet } from './SingleDocSet'
 import { Dispatch, AnyAction } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
+import WebSocket from 'ws'
 
 const log = debug('cevitxe:connection')
 
@@ -30,26 +30,23 @@ B and D determine C is at A.v1 so they both send the changes
  */
 export class Connection<T = any> {
   private AConnection: A.Connection<T>
-  private peer?: Peer | null | undefined
+  private peerSocket: WebSocket | null | undefined
   private docSet: SingleDocSet<T>
   private dispatch?: Dispatch<AnyAction>
   private onReceive?: Function
 
   constructor(
     docSet: SingleDocSet<T>,
-    peer: Peer,
+    peerSocket: WebSocket,
     dispatch?: Dispatch<AnyAction>,
     onReceive?: Function
   ) {
     this.docSet = docSet
-    this.peer = peer
+    this.peerSocket = peerSocket
     if (dispatch) this.dispatch = dispatch
     if (onReceive) this.onReceive = onReceive
-    log('constructor: onReceive', this.onReceive)
 
-    // TODO: This will change to `.on('message')
-    // DM: actually, that would happen on a socket. We need to retrieve one.
-    this.peer.on('data', (data: any) => {
+    this.peerSocket.on('message', (data: any) => {
       const message = JSON.parse(data.toString())
       this.receive(message)
     })
@@ -92,19 +89,19 @@ export class Connection<T = any> {
 
   send = (message: A.Message<T>) => {
     log('send', message)
-    if (this.peer)
+    if (this.peerSocket)
       try {
         // TODO: This *should* work as-is with signal-client
         // DM: it doesn't, because peer does not send. You need to .get a specific socket. But where's the key?
-        this.peer.send(JSON.stringify(message))
+        this.peerSocket.send(JSON.stringify(message))
       } catch {
-        log('tried to send but peer is no longer connected', this.peer)
+        log('tried to send but peer is no longer connected', this.peerSocket)
       }
   }
 
   close = () => {
-    if (!this.peer) return
-    this.peer.destroy()
-    this.peer = null
+    if (!this.peerSocket) return
+    this.peerSocket.close()
+    this.peerSocket = null
   }
 }
