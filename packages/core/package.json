@@ -27,6 +27,7 @@
     "wrtc": "^0"
   },
   "devDependencies": {
+    "cevitxe-signal-server": "^0",
     "@types/debug": "^4",
     "@types/jest": "24",
     "idb": "^4",
