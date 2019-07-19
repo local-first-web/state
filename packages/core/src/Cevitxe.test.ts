@@ -7,6 +7,7 @@ import { ProxyReducer } from './types'
 import { Store } from 'redux'
 import { Server } from 'cevitxe-signal-server'
 import { Client } from 'cevitxe-signal-client'
+import 'fake-indexeddb/auto'
 
 const log = debug('cevitxe:tests')
 

@@ -27,9 +27,10 @@
     "wrtc": "^0"
   },
   "devDependencies": {
-    "cevitxe-signal-server": "^0",
     "@types/debug": "^4",
     "@types/jest": "24",
+    "cevitxe-signal-server": "^0",
+    "fake-indexeddb": "^2",
     "idb": "^4",
     "jest": "^24",
     "npm-watch": "^0",
