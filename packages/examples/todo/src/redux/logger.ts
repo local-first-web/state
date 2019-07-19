@@ -10,7 +10,6 @@ export const logger: Middleware = store => next => action => {
   const result = next(action)
 
   log('next state', store.getState())
-  log.groupEnd()
 
   return result
 }
