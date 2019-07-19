@@ -5,10 +5,8 @@ import hypercore from 'hypercore'
 import db from 'random-access-idb'
 import * as Redux from 'redux'
 import { Middleware, Store } from 'redux'
-import signalhub from 'signalhub'
-import { Instance as Peer } from 'simple-peer'
-import webrtcSwarm from 'webrtc-swarm'
 
+import { Client, Peer } from 'cevitxe-signal-client'
 import { adaptReducer } from './adaptReducer'
 import { Connection } from './Connection'
 import { DEFAULT_PEER_HUBS } from './constants'
@@ -17,8 +15,6 @@ import { promisify } from './helpers/promisify'
 import { getKeys, getKnownDocumentIds } from './keys'
 import { SingleDocSet } from './SingleDocSet'
 import { CevitxeOptions, ProxyReducer } from './types'
-
-const wrtc = require('wrtc')
 
 const valueEncoding = 'utf-8'
 
@@ -34,7 +30,7 @@ export class Cevitxe<T> extends EventEmitter {
   databaseName: string
   store?: Store
 
-  private peerHubs: string[]
+  private urls: string[]
 
   private feed?: Feed<string>
   private hub?: any
@@ -45,7 +41,7 @@ export class Cevitxe<T> extends EventEmitter {
     databaseName,
     proxyReducer,
     initialState,
-    peerHubs = DEFAULT_PEER_HUBS,
+    urls: peerHubs = DEFAULT_PEER_HUBS,
     middlewares = [],
     onReceive,
   }: CevitxeOptions<T>) {
@@ -55,7 +51,7 @@ export class Cevitxe<T> extends EventEmitter {
     this.initialState = initialState
     this.onReceive = onReceive
     this.databaseName = databaseName
-    this.peerHubs = peerHubs
+    this.urls = peerHubs
     this.connections = []
   }
 
@@ -83,19 +79,21 @@ export class Cevitxe<T> extends EventEmitter {
     const enhancer = Redux.applyMiddleware(...this.middlewares, cevitxeMiddleware)
     this.store = Redux.createStore(reducer, state, enhancer)
 
-    // TODO: replace signalhub and webrtcSwarm with signal-client
-    // Join swarm
-    log('joining swarm')
-    this.hub = signalhub(documentId, this.peerHubs)
-    this.swarm = webrtcSwarm(this.hub, { wrtc })
+    // TODO: randomly select a URL?
+    const url = this.urls[0]
+    const client = new Client({ url })
+
+    client.join(documentId)
+
+    client.on('peer', (peer: Peer) => {
+      const socket = peer.get(documentId)
+      const connection = new Connection(docSet, socket, this.store!.dispatch, this.onReceive)
+      this.connections.push(connection)
+    })
 
     // For each peer that wants to connect, create a Connection object
     this.swarm.on('peer', (peer: Peer, id: string) => {
       log('connecting to peer', id)
-      // TODO: we'll receive a peer and a key, need to give the connection the socket instead of the
-      // whole peer
-      const connection = new Connection(docSet, peer, this.store!.dispatch, this.onReceive)
-      this.connections.push(connection)
     })
 
     return this.store
