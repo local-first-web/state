@@ -4,7 +4,7 @@ import { Server } from 'cevitxe-signal-server'
 import { Peer } from './Peer'
 
 const kill = require('kill-port')
-const port = 1234
+const port = 10001
 const url = `ws://localhost:${port}`
 
 describe('Client', () => {
@@ -46,7 +46,7 @@ describe('Client', () => {
 
     it('should connect to the discovery server', () => {
       client = new Client({ id: localId, url })
-      expect(client.serverConnection.url).toContain('ws://localhost:1234/introduction/local')
+      expect(client.serverConnection.url).toContain('ws://localhost:10001/introduction/local')
     })
   })
 

@@ -3,7 +3,7 @@ import WebSocket from 'ws'
 import { Server } from './Server'
 
 const kill = require('kill-port')
-const port = 1234
+const port = 10002
 const url = `ws://localhost:${port}`
 const introductionUrl = `${url}/introduction`
 const connectUrl = `${url}/connect`
