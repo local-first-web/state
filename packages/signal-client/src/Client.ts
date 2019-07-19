@@ -86,7 +86,7 @@ export class Client extends EventEmitter {
     })
 
     this.serverConnection.on('error', (event: any) => {
-      console.error('server.onerror', event.error)
+      console.error('server.onerror', event)
     })
 
     return this.serverConnection
