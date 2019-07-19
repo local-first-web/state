@@ -1,5 +1,5 @@
 import A from 'automerge'
-import { debug } from 'debug-deluxe'
+import debug from 'debug'
 import { EventEmitter } from 'events'
 import hypercore from 'hypercore'
 import db from 'random-access-idb'

@@ -1,4 +1,4 @@
-import { debug, DebuggerDeluxe } from 'debug-deluxe'
+import debug, { Debugger } from 'debug'
 import { EventEmitter } from 'events'
 
 import { Peer } from './Peer'

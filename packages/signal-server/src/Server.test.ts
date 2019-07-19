@@ -1,4 +1,4 @@
-import { debug } from 'debug-deluxe'
+import debug from 'debug'
 import WebSocket from 'ws'
 import { Server } from './Server'
 

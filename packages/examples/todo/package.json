@@ -16,7 +16,7 @@
     "cevitxe": "^0",
     "cevitxe-toolbar": "^0",
     "classnames": "^2",
-    "debug-deluxe": "^2",
+    "debug": "^4",
     "npm-run-all": "^4",
     "react": "^16",
     "react-dom": "^16",

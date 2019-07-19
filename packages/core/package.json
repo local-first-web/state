@@ -17,7 +17,7 @@
     "@types/simple-peer": "^6",
     "automerge": "herbcaudill/automerge#with-dist",
     "cevitxe-signal-client": "^0",
-    "debug-deluxe": "^2",
+    "debug": "^4",
     "hypercore": "^7",
     "hypercore-crypto": "^1",
     "random-access-idb": "^1",

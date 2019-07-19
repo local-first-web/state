@@ -12,9 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bs58": "^4",
-    "debug-deluxe": "*",
-    "hypercore": "^6",
+    "debug": "^4",
     "ts-node": "^7",
     "ws": "^6"
   },

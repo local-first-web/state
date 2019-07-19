@@ -1,4 +1,4 @@
-import { debug } from 'debug-deluxe'
+import debug from 'debug'
 import { EventEmitter } from 'events'
 import express from 'express'
 import expressWs from 'express-ws'

@@ -13,7 +13,7 @@
     "@emotion/core": "^10",
     "cevitxe": "^0",
     "cevitxe-toolbar": "^0",
-    "debug-deluxe": "^2",
+    "debug": "^4",
     "react": "^16",
     "react-dom": "^16",
     "react-redux": "^7",

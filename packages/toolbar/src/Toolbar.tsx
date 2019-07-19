@@ -2,7 +2,7 @@
 
 import { CSSObject, jsx } from '@emotion/core'
 import { Cevitxe } from 'cevitxe'
-import { debug } from 'debug-deluxe'
+import debug from 'debug'
 import { Field, Formik, FormikHelpers, FormikValues } from 'formik'
 import { useEffect, useState, useRef } from 'react'
 import Redux from 'redux'

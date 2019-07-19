@@ -1,4 +1,4 @@
-import { debug } from 'debug-deluxe'
+import debug from 'debug'
 import { Client } from './Client'
 import { Server } from 'cevitxe-signal-server'
 import { Peer } from './Peer'

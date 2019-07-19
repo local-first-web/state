@@ -1,5 +1,5 @@
 import A from 'automerge'
-import { debug } from 'debug-deluxe'
+import debug from 'debug'
 import { MiddlewareFactory } from './types'
 import { SingleDocSet } from './SingleDocSet'
 

@@ -23,7 +23,7 @@
     "@types/jest": "^24",
     "@types/node": "^10",
     "@types/ws": "^5",
-    "debug-deluxe": "^2",
+    "debug": "^4",
     "jest": "^24",
     "kill-port": "^1",
     "mock-socket": "^8",
