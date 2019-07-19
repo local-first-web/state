@@ -56,7 +56,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
   }
 
   const onSubmit = (values: FormikValues, actions: FormikHelpers<any>) => {
-    join(values.documentId)
+    join(values.documentId as string)
     actions.setSubmitting(false)
   }
 
