@@ -2,9 +2,9 @@ import debug, { Debugger } from 'debug'
 import { EventEmitter } from 'events'
 
 import { Peer } from './Peer'
-import { Message } from '../@types/Message'
+import { Message } from 'cevitxe-signal-server'
 import WebSocket from 'ws'
-import { ClientOptions } from '../@types/ClientOptions'
+import { ClientOptions } from './types'
 import uuid from 'uuid'
 
 /**
@@ -42,7 +42,7 @@ export class Client extends EventEmitter {
   peers: Map<string, Peer> = new Map()
   serverConnection: WebSocket
 
-  log: DebuggerDeluxe
+  log: Debugger
 
   /**
    * @param id a string that identifies you uniquely, defaults to a UUID

@@ -1,6 +1,6 @@
 import Debug from 'debug'
 import WebSocket from 'ws'
-import { PeerOptions } from '../@types/PeerOptions'
+import { PeerOptions } from './types'
 import { EventEmitter } from 'events'
 
 const log = Debug('cevitxe:signal-client:peer')
