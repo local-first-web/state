@@ -16,7 +16,7 @@ export interface CevitxeOptions<T> {
 
   // hypercore feed options
   databaseName: string
-  peerHubs?: string[]
+  urls?: string[]
 }
 
 export interface CreateStoreResult {
