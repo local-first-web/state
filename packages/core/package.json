@@ -20,11 +20,7 @@
     "debug": "^4",
     "hypercore": "^7",
     "hypercore-crypto": "^1",
-    "random-access-idb": "^1",
-    "signalhub": "^4",
-    "simple-peer": "^9",
-    "webrtc-swarm": "^2",
-    "wrtc": "^0"
+    "random-access-idb": "^1"
   },
   "devDependencies": {
     "@types/debug": "^4",
