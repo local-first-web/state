@@ -9,7 +9,6 @@ const url = `ws://localhost:${port}`
 
 describe('Client', () => {
   const log = debug('cevitxe:signal-client:tests')
-  const _log = console.log
 
   let server: Server
   let key: string
@@ -18,12 +17,9 @@ describe('Client', () => {
   let remoteId: string
 
   beforeAll(async () => {
-    // prevent server from logging 'listening on port...' during tests
-    console.log = () => {}
-
     await kill(port, 'tcp') // kill anything that's still listening on our port (e.g. previous test run didn't end cleanly)
     server = new Server({ port })
-    await server.listen()
+    await server.listen({ silent: true })
   })
 
   beforeEach(() => {
@@ -38,7 +34,6 @@ describe('Client', () => {
 
   afterAll(() => {
     server.close()
-    console.log = _log
   })
 
   describe('Initialization', () => {
