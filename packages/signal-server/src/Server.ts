@@ -16,13 +16,13 @@ const log = debug('cevitxe:signal-server')
 /**
  * This server provides two services:
  *
- * - **Introduction** (aka introduction): A client can provide one or more document keys that they're interested in. If *
- *   any other client is interested in the same key or keys, each will receive an `Introduction` message with
- *   the other's id. They can then use that information to connect:
+ * - **Introductions** (aka discovery): A client can provide one or more document keys that they're
+ *   interested in. If any other client is interested in the same key or keys, each will receive
+ *   an `Introduction` message with the other's id. They can then use that information to connect:
  *
- * - **Connection**: Client A can request to connect with Client B on a given document key (can think of
- *   it as a 'channel'). If we get matching connection requests from A and B, we just pipe their
- *   sockets together.
+ * - **Connection**: Client A can request to connect with Client B on a given document key (can
+ *   think of it as a 'channel'). If we get matching connection requests from A and B, we just pipe
+ *   their sockets together.
  */
 export class Server extends EventEmitter {
   port: number
@@ -174,7 +174,7 @@ export class Server extends EventEmitter {
 
   // SERVER
 
-  listen() {
+  listen({ silent } = { silent: false }) {
     return new Promise(ready => {
       // It's nice to be able to hit this server from a browser as a sanity check
       app.get('/', (req, res, next) => {
@@ -194,7 +194,7 @@ export class Server extends EventEmitter {
       })
 
       this.httpServer = app.listen(this.port, '0.0.0.0', () => {
-        console.log(`🐟 Listening at http://localhost:${this.port}`)
+        if (!silent) console.log(`🐟 Listening at http://localhost:${this.port}`)
         this.emit('ready')
         ready()
       })
