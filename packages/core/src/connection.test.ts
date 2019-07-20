@@ -24,7 +24,7 @@ describe('Connection', () => {
 
   beforeAll(async () => {
     server = new Server({ port })
-    await server.listen()
+    await server.listen({ silent: true })
   })
 
   beforeEach(() => {
