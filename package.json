@@ -19,7 +19,7 @@
     "watch": "lerna run watch --stream --no-sort --concurrency 999",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:log": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 yarn test --watch",
+    "test:log": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 yarn test:watch",
     "purge": "scripts/purge.bat"
   },
   "devDependencies": {

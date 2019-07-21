@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "ts-node src/start.ts",
     "test": "jest",
-    "dev": "nodemon",
+    "dev": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 ts-node-dev --respawn --transpileOnly src/start.ts",
     "watch": "tsc --watch"
   },
   "dependencies": {
@@ -27,11 +27,11 @@
     "jest": "^24",
     "kill-port": "^1",
     "mock-socket": "^8",
-    "nodemon": "^1",
     "prettier": "^1",
     "supports-color": "^7",
     "ts-jest": "^24",
     "ts-node": "^8",
+    "ts-node-dev": "^1.0.0-pre.40",
     "tslib": "^1",
     "typescript": "^3"
   },
@@ -42,15 +42,5 @@
       "/node_modules/",
       "/dist"
     ]
-  },
-  "nodemon": {
-    "watch": [
-      "src"
-    ],
-    "ext": "ts",
-    "ignore": [
-      "src/**/*.spec.ts"
-    ],
-    "exec": "yarn start"
   }
 }
