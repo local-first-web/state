@@ -15,7 +15,7 @@
       "label": "Start TodoMVC example",
       "type": "shell",
       "command": "yarn",
-      "args": ["start"],
+      "args": ["dev:todo"],
       "group": {
         "kind": "build",
         "isDefault": true
