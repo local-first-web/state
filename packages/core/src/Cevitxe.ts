@@ -13,7 +13,6 @@ import { DEFAULT_PEER_HUBS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { promisify } from './helpers/promisify'
 import { getKeys, getKnownDocumentIds } from './keys'
-import { SingleDocSet } from './SingleDocSet'
 import { CevitxeOptions, ProxyReducer } from './types'
 
 const valueEncoding = 'utf-8'
@@ -69,12 +68,12 @@ export class Cevitxe<T> extends EventEmitter {
       ? await getStateFromStorage(this.feed)
       : setInitialState(this.feed, {})
 
-    const docSet = new SingleDocSet(state)
-    log('created initial DocSet', docSet.id)
+    const watchableDoc = new A.WatchableDoc(state)
+    log('created initial watchableDoc', state)
 
     // Create Redux store
     const reducer = adaptReducer(this.proxyReducer)
-    const cevitxeMiddleware = getMiddleware(this.feed, docSet)
+    const cevitxeMiddleware = getMiddleware(this.feed, watchableDoc)
     const enhancer = Redux.applyMiddleware(...this.middlewares, cevitxeMiddleware)
     this.store = Redux.createStore(reducer, state, enhancer)
 
@@ -86,9 +85,9 @@ export class Cevitxe<T> extends EventEmitter {
 
     // For each peer that wants to connect, create a Connection object
     client.on('peer', (peer: Peer) => {
-      log('connecting to peer', peer.id, docSet.id)
+      log('connecting to peer', peer.id)
       const socket = peer.get(documentId)
-      const connection = new Connection(docSet, socket, this.store!.dispatch, this.onReceive)
+      const connection = new Connection(watchableDoc, socket, this.store!.dispatch, this.onReceive)
       this.connections.push(connection)
     })
 

@@ -1,9 +1,8 @@
 import A from 'automerge'
-import { AConnection, DocSet } from './AConnection'
+import { AConnection, Message } from './AConnection'
 import debug from 'debug'
 import { AnyAction, Dispatch } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
-import { SingleDocSet } from './SingleDocSet'
 
 const log = debug('cevitxe:connection')
 
@@ -12,30 +11,30 @@ const log = debug('cevitxe:connection')
 export class Connection<T = any> {
   private AConnection: AConnection<T>
   private peerSocket: WebSocket | null | undefined
-  private docSet: SingleDocSet<T>
   private dispatch?: Dispatch<AnyAction>
+  private watchableDoc: A.WatchableDoc<A.Doc<T>, T>
   private onReceive?: Function
 
   constructor(
-    docSet: SingleDocSet<T>,
+    watchableDoc: A.WatchableDoc<A.Doc<T>, T>,
     peerSocket: WebSocket,
     dispatch?: Dispatch<AnyAction>,
     onReceive?: Function
   ) {
     log('new connection')
-    this.docSet = docSet
+    this.watchableDoc = watchableDoc
     this.peerSocket = peerSocket
     if (dispatch) this.dispatch = dispatch
     if (onReceive) this.onReceive = onReceive
 
     this.peerSocket.onmessage = this.receive.bind(this)
 
-    this.AConnection = new AConnection(this.docSet.base as DocSet<T>, this.send)
+    this.AConnection = new AConnection(this.watchableDoc, this.send)
     this.AConnection.open()
   }
 
-  public get state(): T {
-    return this.docSet.get()
+  public get state(): A.Doc<T> {
+    return this.watchableDoc.get()
   }
 
   receive = ({ data }: any) => {
@@ -66,7 +65,7 @@ export class Connection<T = any> {
     }
   }
 
-  send = (message: A.Message<T>) => {
+  send = (message: Message<T>) => {
     log('send %o', message)
     if (this.peerSocket)
       try {

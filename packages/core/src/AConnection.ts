@@ -26,11 +26,11 @@ const log = debug('cevitxe:Aconnection')
 // `ourClock` is the most recent VClock that we've advertised to the peer (i.e. where we've told the
 // peer that we have it).
 export class AConnection<T> {
-  private watchableDoc: A.WatchableDoc<A.Doc<T>>
+  private watchableDoc: A.WatchableDoc<A.Doc<T>, T>
   private sendMsg: (msg: Message<T>) => void
   private clocks: Clocks
 
-  constructor(watchableDoc: A.WatchableDoc<A.Doc<T>>, sendMsg: (msg: Message<T>) => void) {
+  constructor(watchableDoc: A.WatchableDoc<A.Doc<T>, T>, sendMsg: (msg: Message<T>) => void) {
     this.watchableDoc = watchableDoc
     this.sendMsg = sendMsg
     this.clocks = { ours: Map(), theirs: Map() }

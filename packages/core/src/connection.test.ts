@@ -1,7 +1,6 @@
 import A from 'automerge'
 import { Server } from 'cevitxe-signal-server'
 import { Connection } from './Connection'
-import { SingleDocSet } from './SingleDocSet'
 
 import { WebSocket } from 'mock-socket'
 import uuid from 'uuid'
@@ -26,7 +25,7 @@ const localActorId = uuid()
 describe('Connection', () => {
   const initialState: FooState = A.change(A.init(localActorId), doc => (doc.foo = 1))
 
-  let docSet: SingleDocSet<FooState>
+  let watchableDoc: A.WatchableDoc<A.Doc<FooState>>
   let server
 
   beforeAll(async () => {
@@ -35,18 +34,18 @@ describe('Connection', () => {
   })
 
   beforeEach(() => {
-    docSet = new SingleDocSet<FooState>(initialState)
+    watchableDoc = new A.WatchableDoc<A.Doc<FooState>>(initialState)
   })
 
   it('should expose its current state', () => {
     const peer = new WebSocket(url)
-    const connection = new Connection(docSet, peer, fakeDispatch)
+    const connection = new Connection(watchableDoc, peer, fakeDispatch)
     expect(connection.state).toEqual(initialState)
   })
 
   it('should send messages to the peer when local state changes', () => {
     const peer = new WebSocket(url)
-    const connection = new Connection(docSet, peer, fakeDispatch)
+    const connection = new Connection(watchableDoc, peer, fakeDispatch)
     expect(peer.send).toHaveBeenCalledWith(
       expect.stringContaining(JSON.stringify({ [localActorId]: 1 }))
     )
@@ -54,9 +53,9 @@ describe('Connection', () => {
       expect.stringContaining(JSON.stringify({ [localActorId]: 2 }))
     )
 
-    const localDoc = docSet.get()
+    const localDoc = watchableDoc.get()
     const updatedDoc = A.change(localDoc, 'update', doc => (doc.boo = 2))
-    docSet.set(updatedDoc)
+    watchableDoc.set(updatedDoc)
 
     expect(connection.state.boo).toBe(2)
     expect(peer.send).toHaveBeenCalledWith(
@@ -66,7 +65,7 @@ describe('Connection', () => {
 
   it('should call close on peer when close is called', () => {
     const peer = new WebSocket(url)
-    const connection = new Connection(docSet, peer, fakeDispatch)
+    const connection = new Connection(watchableDoc, peer, fakeDispatch)
     connection.close()
     expect(peer.close).toHaveBeenCalled()
   })

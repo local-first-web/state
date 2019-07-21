@@ -1,13 +1,12 @@
 import A from 'automerge'
 import debug from 'debug'
 import { MiddlewareFactory } from './types'
-import { SingleDocSet } from './SingleDocSet'
 
 const log = debug('cevitxe:middleware')
 
 export const getMiddleware: MiddlewareFactory = <T>(
   feed: Feed<string>,
-  docSet: SingleDocSet<any>
+  docSet: A.WatchableDoc<any>
 ) => {
   return store => next => action => {
     // before changes

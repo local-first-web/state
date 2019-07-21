@@ -30,7 +30,7 @@ class Channel extends EventEmitter {
   }
 }
 
-describe(`A.Connection`, () => {
+describe(`AConnection`, () => {
   describe('Changes after connecting', () => {
     let localWatchableDoc: A.WatchableDoc<BirdCount>
     let remoteWatchableDoc: A.WatchableDoc<BirdCount>

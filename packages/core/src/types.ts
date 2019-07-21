@@ -1,7 +1,5 @@
 import A from 'automerge'
 import { AnyAction, Middleware, Reducer, Store } from 'redux'
-import { SingleDocSet } from './SingleDocSet'
-// import { Feed } from 'hypercore'
 
 export type ProxyReducer<T> = (action: AnyAction) => A.ChangeFn<T> | null
 export type ReducerConverter = <T>(proxy: ProxyReducer<T>) => Reducer
@@ -25,7 +23,7 @@ export interface CreateStoreResult {
 }
 
 // TODO: sort out the type for feed after building, can't get it to pick up the Feed type from the ambient hypercore types
-export type MiddlewareFactory = <T>(feed: any, docSet: SingleDocSet<T | {}>) => Middleware // feed: Feed<string>
+export type MiddlewareFactory = <T>(feed: any, watchableDoc: A.WatchableDoc<A.Doc<T>>) => Middleware // feed: Feed<string>
 
 // A keychain maps a discovery key (the id we share to the signal server) with a public/private
 // keypair (which we use for storage etc). The discovery key can be any string that we think is
