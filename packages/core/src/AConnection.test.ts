@@ -1,5 +1,5 @@
 ﻿import A from 'automerge'
-import { AConnection } from './AConnection'
+import { AConnection, Message } from './AConnection'
 import { EventEmitter } from 'events'
 
 interface BirdCount {
@@ -7,7 +7,7 @@ interface BirdCount {
 }
 
 const makeConnection = (id: string, watchableDoc: A.WatchableDoc<BirdCount>, channel: Channel) => {
-  const send = (msg: A.Message<BirdCount>) => {
+  const send = (msg: Message<BirdCount>) => {
     // console.log(`${id} sends`, JSON.stringify(msg))
     channel.write(id, msg)
   }
@@ -25,7 +25,7 @@ const makeConnection = (id: string, watchableDoc: A.WatchableDoc<BirdCount>, cha
 }
 
 class Channel extends EventEmitter {
-  write(id: string, msg: A.Message<BirdCount>) {
+  write(id: string, msg: Message<BirdCount>) {
     this.emit('data', id, msg)
   }
 }
