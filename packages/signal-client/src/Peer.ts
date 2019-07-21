@@ -1,5 +1,4 @@
 import Debug from 'debug'
-import WebSocket from 'ws'
 import { PeerOptions } from './types'
 import { EventEmitter } from 'events'
 
@@ -38,24 +37,21 @@ export class Peer extends EventEmitter {
     const socket = new WebSocket(url)
     this.keys.set(key, socket)
 
-    socket.on('error', err => {
-      log('socket.onerror %s', err)
-    })
-
-    socket.once('end', () => {
-      log('socket.onend')
-      this.remove(key)
-    })
-
-    socket.once('close', () => {
-      log('socket.onclose')
-      this.remove(key)
-    })
-
-    socket.on('open', () => {
+    const onopen = () => {
       log('open', key)
       this.emit('open', key)
-    })
+    }
+    const onclose = () => {
+      log('socket.onclose')
+      this.remove(key)
+    }
+    const onerror = ({ err }: any) => {
+      log('socket.onerror %s', err)
+    }
+
+    socket.onopen = onopen.bind(this)
+    socket.onclose = onclose.bind(this)
+    socket.onerror = onerror.bind(this)
   }
 
   has(key: string): boolean {

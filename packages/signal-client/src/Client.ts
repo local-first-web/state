@@ -3,7 +3,6 @@ import { EventEmitter } from 'events'
 
 import { Peer } from './Peer'
 import { Message } from 'cevitxe-signal-server'
-import WebSocket from 'ws'
 import { ClientOptions } from './types'
 import uuid from 'uuid'
 
@@ -66,28 +65,33 @@ export class Client extends EventEmitter {
 
     this.serverConnection = new WebSocket(url)
 
-    this.serverConnection.on('open', () => {
+    const onopen = () => {
       this.sendToServer({
         type: 'Hello',
         id: this.id,
         join: [...this.keys],
       })
-    })
+    }
 
-    this.serverConnection.on('close', () => {
+    const onclose = () => {
       this.log('server connection closed... reconnecting in 5s')
       setTimeout(this.connectToServer, 5000)
-    })
+    }
 
-    this.serverConnection.on('message', data => {
+    const onmessage = ({ data }: { data: string }) => {
       this.log('message from server', data)
       const message = JSON.parse(data.toString()) as Message.ServerToClient
       this.receiveFromServer(message)
-    })
+    }
 
-    this.serverConnection.on('error', (event: any) => {
+    const onerror = ({ event }: any) => {
       console.error('server.onerror', event)
-    })
+    }
+
+    this.serverConnection.onopen = onopen.bind(this)
+    this.serverConnection.onclose = onclose.bind(this)
+    this.serverConnection.onmessage = onmessage.bind(this)
+    this.serverConnection.onerror = onerror.bind(this)
 
     return this.serverConnection
   }

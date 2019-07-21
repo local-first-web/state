@@ -2,11 +2,9 @@ import A from 'automerge'
 import debug from 'debug'
 import uuid from 'uuid'
 import { Cevitxe } from './Cevitxe'
-import { pause } from './helpers/pause'
 import { ProxyReducer } from './types'
 import { Store } from 'redux'
 import { Server } from 'cevitxe-signal-server'
-import { Client } from 'cevitxe-signal-client'
 import 'fake-indexeddb/auto'
 
 const log = debug('cevitxe:tests')
@@ -30,7 +28,7 @@ describe('Cevitxe', () => {
   const initialState: FooState = { foo: 1 }
   let store: Store
   const port = 10004
-  const urls = [`http://localhost/${port}`]
+  const urls = [`ws://localhost/${port}`]
 
   let server
 

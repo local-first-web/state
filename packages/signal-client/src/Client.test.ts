@@ -92,10 +92,10 @@ describe('Client', () => {
       remoteClient.on('peer', (peer: Peer) => {
         const socket = peer.get(key)
 
-        socket.on('message', message => {
-          expect(message).toEqual('hello')
+        socket.onmessage = ({ data }) => {
+          expect(data).toEqual('hello')
           done()
-        })
+        }
       })
     })
   })
