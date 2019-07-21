@@ -4,7 +4,7 @@ import { Connection } from './Connection'
 import { SingleDocSet } from './SingleDocSet'
 
 import { WebSocket } from 'mock-socket'
-  import uuid from 'uuid'
+import uuid from 'uuid'
 
 // @ts-ignore
 global.WebSocket = WebSocket
@@ -48,10 +48,10 @@ describe('Connection', () => {
     const peer = new WebSocket(url)
     const connection = new Connection(docSet, peer, fakeDispatch)
     expect(peer.send).toHaveBeenCalledWith(
-      JSON.stringify({ docId: '1', clock: { [localActorId]: 1 } })
+      expect.stringContaining(JSON.stringify({ [localActorId]: 1 }))
     )
     expect(peer.send).not.toHaveBeenCalledWith(
-      JSON.stringify({ docId: '1', clock: { [localActorId]: 2 } })
+      expect.stringContaining(JSON.stringify({ [localActorId]: 2 }))
     )
 
     const localDoc = docSet.get()
@@ -60,7 +60,7 @@ describe('Connection', () => {
 
     expect(connection.state.boo).toBe(2)
     expect(peer.send).toHaveBeenCalledWith(
-      JSON.stringify({ docId: '1', clock: { [localActorId]: 2 } })
+      expect.stringContaining(JSON.stringify({ [localActorId]: 2 }))
     )
   })
 
