@@ -6,7 +6,7 @@ import { ProxyReducer } from './types'
 import { Store } from 'redux'
 import { Server } from 'cevitxe-signal-server'
 import 'fake-indexeddb/auto'
-import { pause } from './helpers/pause'
+import { pause } from './lib/pause'
 
 const log = debug('cevitxe:tests')
 const kill = require('kill-port')

@@ -11,7 +11,7 @@ import { adaptReducer } from './adaptReducer'
 import { Connection } from './Connection'
 import { DEFAULT_PEER_HUBS } from './constants'
 import { getMiddleware } from './getMiddleware'
-import { promisify } from './helpers/promisify'
+import { promisify } from './lib/promisify'
 import { getKeys, getKnownDocumentIds } from './keys'
 import { CevitxeOptions, ProxyReducer } from './types'
 
