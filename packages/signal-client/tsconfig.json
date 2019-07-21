@@ -4,13 +4,14 @@
     "alwaysStrict": true,
     "baseUrl": "./",
     "declaration": true,
+    "downlevelIteration": true,
     "esModuleInterop": true,
     "lib": ["dom", "esnext"],
     "moduleResolution": "node",
     "noEmit": false,
     "outDir": "dist",
     "sourceMap": true,
-    "target": "es6"
+    "target": "es5"
   },
   "include": ["src", "@types"]
 }
