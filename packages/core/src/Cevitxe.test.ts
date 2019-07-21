@@ -6,8 +6,10 @@ import { ProxyReducer } from './types'
 import { Store } from 'redux'
 import { Server } from 'cevitxe-signal-server'
 import 'fake-indexeddb/auto'
+import { pause } from './helpers/pause'
 
 const log = debug('cevitxe:tests')
+const kill = require('kill-port')
 
 interface FooState {
   foo?: number
@@ -23,16 +25,17 @@ const proxyReducer: ProxyReducer<FooState> = ({ type, payload }) => {
 }
 
 describe('Cevitxe', () => {
-  let cevitxe: Cevitxe<FooState>
+  let localCevitxe: Cevitxe<FooState>
   let documentId: string
   const initialState: FooState = { foo: 1 }
-  let store: Store
+  let localStore: Store
   const port = 10004
   const urls = [`ws://localhost:${port}`]
 
   let server
 
   beforeAll(async () => {
+    await kill(port, 'tcp')
     server = new Server({ port })
     await server.listen({ silent: true })
   })
@@ -40,7 +43,7 @@ describe('Cevitxe', () => {
   beforeEach(() => {
     documentId = uuid()
     const databaseName = 'test'
-    cevitxe = new Cevitxe({ databaseName, proxyReducer, initialState, urls })
+    localCevitxe = new Cevitxe({ databaseName, proxyReducer, initialState, urls })
   })
 
   // afterEach(async () => {
@@ -49,14 +52,15 @@ describe('Cevitxe', () => {
 
   it('joinStore should return a connected redux store', async () => {
     expect.assertions(2)
-    const store = await cevitxe.joinStore(documentId)
+    const store = await localCevitxe.joinStore(documentId)
     expect(store).not.toBeUndefined()
     expect(store.getState()).toEqual({})
   })
 
   describe('connections enabled', () => {
     beforeEach(async () => {
-      store = await cevitxe.createStore(documentId)
+      localStore = await localCevitxe.createStore(documentId)
+      log('instantiated local store')
     })
 
     afterEach(() => {
@@ -65,49 +69,52 @@ describe('Cevitxe', () => {
 
     it('createStore should return a connected redux store', async () => {
       expect.assertions(2)
-      expect(store).not.toBeUndefined()
-      expect(store.getState()).toEqual(A.from(initialState))
+      expect(localStore).not.toBeUndefined()
+      expect(localStore.getState()).toEqual(A.from(initialState))
     })
 
     it('should use the reducer we gave it', () => {
-      store.dispatch({ type: 'SET_FOO', payload: { value: 3 } })
-      const doc = store.getState()
+      localStore.dispatch({ type: 'SET_FOO', payload: { value: 3 } })
+      const doc = localStore.getState()
       expect(doc.foo).toEqual(3)
     })
 
     it('should return something that looks like a store', () => {
-      expect(store).toHaveProperty('getState')
-      expect(store).toHaveProperty('dispatch')
-      expect(store).toHaveProperty('subscribe')
+      expect(localStore).toHaveProperty('getState')
+      expect(localStore).toHaveProperty('dispatch')
+      expect(localStore).toHaveProperty('subscribe')
     })
 
-    // it('{FLAKY TEST} should communicate changes from one store to another', async done => {
-    //   // instantiate remote store
+    it('should communicate changes from one store to another', async done => {
+      const remoteCevitxe = new Cevitxe({
+        databaseName: 'remote-store',
+        proxyReducer,
+        initialState: {},
+        urls,
+        onReceive,
+      })
 
-    //   const remoteCevitxe = new Cevitxe({
-    //     proxyReducer,
-    //     initialState: {},
-    //     onReceive,
-    //     databaseName: 'remote-store',
-    //   })
+      await remoteCevitxe.joinStore(documentId)
+      log('instantiated remote store')
 
-    //   remoteCevitxe.joinStore(documentId)
-    //   // We're going to intentionally delay changes to the local store,
-    //   // this allows us to test receiving of the initial state and additional changes
-    //   let receiveCount = 0
-    //   function onReceive(message: any) {
-    //     if (receiveCount === 0) expect(store.getState().foo).toEqual(1)
-    //     if (receiveCount === 1) {
-    //       expect(store.getState().foo).toEqual(42)
-    //       done()
-    //     }
-    //     receiveCount++
-    //   }
-    //   // Delay new change to the local store so remote gets 2 separate messages
-    //   await pause(1000)
-    //   // change something in the local store
-    //   store.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
-    // })
+      let receiveCount = 0
+      function onReceive(message: any) {
+        log('onReceive %o', message)
+        log('receiveCount', receiveCount)
+        if (receiveCount === 0) {
+          expect(localStore.getState().foo).toEqual(1)
+        }
+        if (receiveCount === 1) {
+          expect(localStore.getState().foo).toEqual(42)
+          done()
+        }
+        receiveCount++
+      }
+      // Delay new change to the local store so remote gets 2 separate messages
+      await pause(1000)
+      // change something in the local store
+      localStore.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
+    })
   })
 })
 
