@@ -13,6 +13,10 @@ const { app } = expressWs(express())
 
 const log = debug('cevitxe:signal-server')
 
+interface ListenOptions {
+  silent?: boolean
+}
+
 /**
  * This server provides two services:
  *
@@ -174,27 +178,30 @@ export class Server extends EventEmitter {
 
   // SERVER
 
-  listen({ silent } = { silent: false }) {
+  listen({ silent = false }: ListenOptions = {}) {
     return new Promise(ready => {
       // It's nice to be able to hit this server from a browser as a sanity check
       app.get('/', (req, res, next) => {
         log('get /')
-        res.send('<body style="font-size:10em;padding:30%;text-align:center">🐟</body>')
+        res.send('<body style="font-size:10em;padding:2em;text-align:center">🐟</body>')
         res.end()
       })
 
       // Introduction request
       app.ws('/introduction/:id', (ws, { params: { id } }) => {
+        log('received introduction request', id)
         this.openIntroductionConnection(ws as WebSocket, id)
       })
 
       // Connection request
       app.ws('/connect/:A/:B/:key', (ws, { params: { A, B, key } }) => {
+        log('received connection request', A, B)
         this.openConnection({ peerA: ws as WebSocket, A, B, key })
       })
 
-      this.httpServer = app.listen(this.port, '0.0.0.0', () => {
-        if (!silent) console.log(`🐟 Listening at http://localhost:${this.port}`)
+      this.httpServer = app.listen(this.port, () => {
+        if (!silent) console.log(` 🐟  Listening at http://localhost:${this.port}  `)
+        log('listening')
         this.emit('ready')
         ready()
       })
