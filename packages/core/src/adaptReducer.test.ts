@@ -22,24 +22,4 @@ describe('adaptReducer', () => {
     it('should not change the original state', () => expect(state).not.toHaveProperty('foo'))
     it('should return a modified state', () => expect(newState).toEqual({ foo: 2 }))
   })
-
-  // TODO: Get test working again
-  // describe('should apply automerge changes from the feed', () => {
-  //   const reducer = adaptReducer(proxyReducer)
-
-  //   const state1 = A.from({} as FooState)
-  //   const docSet = new DocSetOfOne<FooState>(state1)
-
-  //   const changes = automerge.getChanges(state1, automerge.change(state1, s => (s.foo = 2)))
-
-  //   const message = { clock: {}, changes }
-  //   const connection = new Connection(docSet, )
-  //   const action = {
-  //     type: RECEIVE_MESSAGE_FROM_FEED,
-  //     payload: { message, connection },
-  //   }
-  //   const state2 = reducer(state1, action)
-
-  //   it('should apply the changes and return the new state', () => expect(state2.foo).toEqual(2))
-  // })
 })

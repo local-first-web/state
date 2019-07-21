@@ -1,13 +1,17 @@
 ﻿import A from 'automerge'
 import { AConnection } from './AConnection'
-import { EventEmitter } from 'events'
 import { Message } from './types'
+import { TestChannel } from './lib/TestChannel'
 
-interface BirdCount {
+export interface BirdCount {
   [bird: string]: number
 }
 
-const makeConnection = (id: string, watchableDoc: A.WatchableDoc<BirdCount>, channel: Channel) => {
+const makeConnection = (
+  id: string,
+  watchableDoc: A.WatchableDoc<BirdCount>,
+  channel: TestChannel<BirdCount>
+) => {
   const send = (msg: Message<BirdCount>) => {
     // console.log(`${id} sends`, JSON.stringify(msg))
     channel.write(id, msg)
@@ -24,12 +28,6 @@ const makeConnection = (id: string, watchableDoc: A.WatchableDoc<BirdCount>, cha
   return connection
 }
 
-class Channel extends EventEmitter {
-  write(id: string, msg: Message<BirdCount>) {
-    this.emit('data', id, msg)
-  }
-}
-
 describe(`AConnection`, () => {
   describe('Changes after connecting', () => {
     let localWatchableDoc: A.WatchableDoc<BirdCount>
@@ -40,7 +38,7 @@ describe(`AConnection`, () => {
       localWatchableDoc = new A.WatchableDoc<BirdCount>(A.from({ swallows: 1 }))
       remoteWatchableDoc = new A.WatchableDoc<BirdCount>(A.from({}))
 
-      const channel = new Channel()
+      const channel = new TestChannel<BirdCount>()
       makeConnection('1', localWatchableDoc, channel)
       makeConnection('2', remoteWatchableDoc, channel)
     })
@@ -92,7 +90,7 @@ describe(`AConnection`, () => {
 
       const remoteWatchableDoc = new A.WatchableDoc<BirdCount>(A.from({}))
 
-      const channel = new Channel()
+      const channel = new TestChannel()
       makeConnection('L', localWatchableDoc, channel)
       makeConnection('R', remoteWatchableDoc, channel)
 
@@ -110,7 +108,7 @@ describe(`AConnection`, () => {
     let remoteConnection: AConnection<BirdCount>
     let localWatchableDoc: A.WatchableDoc<BirdCount>
     let remoteWatchableDoc: A.WatchableDoc<BirdCount>
-    let channel = new Channel()
+    let channel = new TestChannel()
 
     function networkOff() {
       channel.removeAllListeners()
@@ -119,7 +117,7 @@ describe(`AConnection`, () => {
     }
 
     function networkOn() {
-      channel = new Channel()
+      channel = new TestChannel()
       localConnection = makeConnection('L', localWatchableDoc, channel)
       remoteConnection = makeConnection('R', remoteWatchableDoc, channel)
     }
