@@ -1,13 +1,13 @@
 {
-  "name": "@cevitxe/root",
+  "name": "cevitxe-root",
   "version": "0.1.8",
   "license": "MIT",
   "private": true,
   "scripts": {
     "start": "run-p watch start:todo",
-    "start:chat": "yarn workspace @cevitxe/chat start",
-    "start:grid": "yarn workspace @cevitxe/grid start",
-    "start:todo": "yarn workspace @cevitxe/todo start",
+    "start:chat": "yarn workspace cevitxe-example-chat start",
+    "start:grid": "yarn workspace cevitxe-example-grid start",
+    "start:todo": "yarn workspace cevitxe-example-todo start",
     "dev": "run-p watch test:watch",
     "dev:chat": "run-p watch start:chat",
     "dev:grid": "run-p watch start:grid",
