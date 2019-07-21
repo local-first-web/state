@@ -1,8 +1,13 @@
 <img src='logo.svg' width=500 alt=''>
 
-> ### ⚠ Under construction
->
-> This package isn't ready for production use!
+<table width='100%'>
+  <tr>
+    <td>
+      <h3>⚠ Under construction</h3>
+      <p>This package isn't ready for production use!</p>
+    </td>
+  </tr>
+<table>
 
 ## What is this?
 
