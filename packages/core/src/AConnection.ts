@@ -42,7 +42,7 @@ export class AConnection<T> {
   open() {
     // Process initial state of each existing doc
     log('open')
-    for (let docId of this.docSet.docIds) this.registerDoc(docId)
+    for (let docId of this.docSet.docIds!) this.registerDoc(docId) // TODO: remove !
 
     // Subscribe to docSet changes
     this.docSet.registerHandler(this.docChanged.bind(this))
@@ -201,7 +201,7 @@ export interface DocSet<T> {
   applyChanges(docId: string, changes: A.Change<T>[]): T
   getDoc(docId: string): A.Doc<T>
   setDoc(docId: string, doc: A.Doc<T>): void
-  docIds: string[]
+  docIds?: string[] // TODO: remove ?
   registerHandler(handler: DocSetHandler<T>): void
   unregisterHandler(handler: DocSetHandler<T>): void
 }
