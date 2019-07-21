@@ -1,4 +1,4 @@
-﻿import A, { Backend, Frontend } from 'automerge'
+﻿import A, { Backend, Frontend, DocSet } from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
 
@@ -16,23 +16,23 @@ const log = debug('cevitxe:Aconnection')
 // * `receiveMsg` (method on the connection object) should be called by the network stack when a
 //   message is received from the remote peer.
 //
-// The documents to be synced are managed by a `DocSet`. Whenever a document is changed locally,
-// call `setDoc()` on the docSet. The connection registers a callback on the docSet, and it figures
-// out whenever there are changes that need to be sent to the remote peer.
+// The document to be synced is managed by a `WatchableDoc`. Whenever it is changed locally, call
+// `set()` on the WatchableDoc. The connection registers a callback on the WatchableDoc, and it
+// figures out whenever there are changes that need to be sent to the remote peer.
 //
-// "`theirClock"` is the most recent VClock that we think the peer has (either because they've told us
-// that it's their clock, or because it corresponds to a state we have sent to them on this
+// "`theirClock"` is the most recent VClock that we think the peer has (either because they've told
+// us that it's their clock, or because it corresponds to a state we have sent to them on this
 // connection). Thus, everything more recent than theirClock should be sent to the peer.
 //
-// `ourClock` is the most recent VClock that we've advertised to the peer (i.e. where we've
-// told the peer that we have it).
+// `ourClock` is the most recent VClock that we've advertised to the peer (i.e. where we've told the
+// peer that we have it).
 export class AConnection<T> {
-  private docSet: DocSet<T>
+  private watchableDoc: A.WatchableDoc<A.Doc<T>>
   private sendMsg: (msg: A.Message<T>) => void
   private clock: ClockMaps
 
-  constructor(docSet: DocSet<T>, sendMsg: (msg: A.Message<T>) => void) {
-    this.docSet = docSet
+  constructor(watchableDoc: A.WatchableDoc<A.Doc<T>>, sendMsg: (msg: A.Message<T>) => void) {
+    this.watchableDoc = watchableDoc
     this.sendMsg = sendMsg
     this.clock = { ours: Map(), theirs: Map() }
   }
@@ -42,20 +42,20 @@ export class AConnection<T> {
   open() {
     // Process initial state of each existing doc
     log('open')
-    for (let docId of this.docSet.docIds!) this.registerDoc(docId) // TODO: remove !
+    this.registerDoc() // TODO: remove !
 
-    // Subscribe to docSet changes
-    this.docSet.registerHandler(this.docChanged.bind(this))
+    // Subscribe to watchableDoc changes
+    this.watchableDoc.registerHandler(this.docChanged.bind(this))
   }
 
   close() {
     log('close')
-    // Unsubscribe from docSet changes
-    this.docSet.unregisterHandler(this.docChanged.bind(this))
+    // Unsubscribe from watchableDoc changes
+    this.watchableDoc.unregisterHandler(this.docChanged.bind(this))
   }
 
   // Called by the network stack whenever it receives a message from a peer
-  receiveMsg({ docId, clock, changes }: { docId: string; clock: Clock; changes: A.Change<T>[] }) {
+  receiveMsg({ docId, clock, changes }: { docId: string; clock: Clock; changes: A.Change<any>[] }) {
     // log('receive', { docId, clock, changes })
     // Record their clock value for this document
     if (clock) this.updateClock(theirs, docId, clock)
@@ -63,14 +63,14 @@ export class AConnection<T> {
     const weHaveDoc = this.getState(docId) !== undefined
 
     // If they sent changes, apply them to our document
-    if (changes) this.docSet.applyChanges(docId, changes)
+    if (changes) this.watchableDoc.applyChanges(changes)
     // If no changes and we have the document, treat it as a request for our latest changes
     else if (weHaveDoc) this.maybeSendChanges(docId)
     // If no changes and we don't have the document, treat it as an advertisement and request it
     else this.advertise(docId)
 
     // Return the current state of the document
-    return this.docSet.getDoc(docId)
+    return this.watchableDoc.get()
   }
 
   // Private methods
@@ -85,7 +85,8 @@ export class AConnection<T> {
     if (!lessOrEqual(ourClock, clock)) throw new RangeError(ERR_OLDCLOCK)
   }
 
-  registerDoc(docId: string) {
+  registerDoc() {
+    const docId = '' //this.watchableDoc.id
     const clock = this.getClockFromDoc(docId)
     this.validateDoc(docId, clock)
     // Advertise the document
@@ -94,9 +95,10 @@ export class AConnection<T> {
     this.updateClock(ours, docId, clock)
   }
 
-  // Callback that is called by the docSet whenever a document is changed
-  docChanged(docId: string) {
-    log('doc changed %s', docId)
+  // Callback that is called by the watchableDoc whenever a document is changed
+  docChanged() {
+    log('doc changed')
+    const docId = ''
     const clock = this.getClockFromDoc(docId)
     this.validateDoc(docId, clock)
     this.maybeSendChanges(docId)
@@ -156,7 +158,7 @@ export class AConnection<T> {
   }
 
   getState(docId: string): A.Doc<T> | undefined {
-    const doc = this.docSet.getDoc(docId) as A.Doc<T>
+    const doc = this.watchableDoc.get() as A.Doc<T>
     if (doc) return Frontend.getBackendState(doc)
   }
 
@@ -195,13 +197,3 @@ function lessOrEqual(clock1: Clock, clock2: Clock) {
 // TODO: Need to apply this change in the Automerge repo
 type Clock = Map<string, number>
 
-// TODO: Need to apply this change in the Automerge repo
-type DocSetHandler<T> = (docId: string, doc: A.Doc<T>) => void
-export interface DocSet<T> {
-  applyChanges(docId: string, changes: A.Change<T>[]): T
-  getDoc(docId: string): A.Doc<T>
-  setDoc(docId: string, doc: A.Doc<T>): void
-  docIds?: string[] // TODO: remove ?
-  registerHandler(handler: DocSetHandler<T>): void
-  unregisterHandler(handler: DocSetHandler<T>): void
-}
