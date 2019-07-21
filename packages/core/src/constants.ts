@@ -7,4 +7,4 @@ export const MSG_INVALID_KEYS =
   'The `key` should be a 32-byte hexadecimal value (64 characters). ' +
   'The `secretKey` should be a 64-byte hexadecimal value (128 characters). '
 
-export const DEFAULT_PEER_HUBS = ['ws://localhost:8080/'] // default public signaling server
+export const DEFAULT_PEER_HUBS = ['ws://localhost:8080'] // default public signaling server
