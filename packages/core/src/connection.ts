@@ -6,8 +6,8 @@ import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
 
 const log = debug('cevitxe:connection')
 
-// The Connection class wraps an automerge.Connection, which keeps track of communication between us
-// and one peer. `automerge.Connection` takes a DocSet.
+// The Connection class wraps an AConnection, which keeps track of communication between us
+// and one peer. `AConnection` takes a `watchableDoc`.
 export class Connection<T = any> {
   private AConnection: AConnection<T>
   private peerSocket: WebSocket | null | undefined
