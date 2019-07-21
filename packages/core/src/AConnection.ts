@@ -1,7 +1,8 @@
-﻿import A, { Backend, Frontend, DocSet } from 'automerge'
+﻿import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
 import { lessOrEqual } from './lib/lessOrEqual'
+import { Clock, Message } from './types'
 
 type Clocks = { ours: Clock; theirs: Clock }
 
@@ -10,9 +11,9 @@ const log = debug('cevitxe:Aconnection')
  * Keeps track of the two-way communication with a single peer regarding a single document.
  *
  * To integrate a connection with a particular networking stack, two functions are used:
- * - `sendMsg` (callback passed to the constructor, will be called when local state is updated)
+ * - `send` (callback passed to the constructor, will be called when local state is updated)
  *   takes a message as argument, and sends it out to the remote peer.
- * - `receiveMsg` (method on the connection object) should be called by the network stack when a
+ * - `receive` (method on the connection object) should be called by the network stack when a
  *   message is received from the remote peer.
  *
  * The document to be synced is managed by a `WatchableDoc`. Whenever it is changed locally, call
@@ -30,12 +31,12 @@ const log = debug('cevitxe:Aconnection')
  */
 export class AConnection<T> {
   private watchableDoc: A.WatchableDoc<A.Doc<T>, T>
-  private sendMsg: (msg: Message<T>) => void
+  private send: (msg: Message<T>) => void
   private clock: Clocks
 
-  constructor(watchableDoc: A.WatchableDoc<A.Doc<T>, T>, sendMsg: (msg: Message<T>) => void) {
+  constructor(watchableDoc: A.WatchableDoc<A.Doc<T>, T>, send: (msg: Message<T>) => void) {
     this.watchableDoc = watchableDoc
-    this.sendMsg = sendMsg
+    this.send = send
     this.clock = { ours: Map(), theirs: Map() }
   }
 
@@ -56,7 +57,7 @@ export class AConnection<T> {
   }
 
   // Called by the network stack whenever it receives a message from a peer
-  receiveMsg({ clock, changes }: { clock: Clock; changes: A.Change<any>[] }) {
+  receive({ clock, changes }: { clock: Clock; changes: A.Change<any>[] }) {
     // Record their clock value for this document
     if (clock) this.updateClock(theirs, clock)
 
@@ -99,14 +100,14 @@ export class AConnection<T> {
     const ourState = this.getState() as T
 
     // If we have changes they don't have, send them
-    const changes = Backend.getMissingChanges(ourState, theirClock)
+    const changes = A.Backend.getMissingChanges(ourState, theirClock)
     if (changes.length > 0) this.sendChanges(changes)
   }
 
   private sendChanges(changes: A.Change<T>[]) {
     log('sending %s changes', changes.length)
     const clock = this.getClockFromDoc()
-    this.sendMsg({ clock: clock.toJS(), changes })
+    this.send({ clock: clock.toJS(), changes })
     this.updateClock(ours)
   }
 
@@ -121,7 +122,7 @@ export class AConnection<T> {
   // A message with no changes and a clock is a request for changes
   private requestChanges(clock = this.getClockFromDoc()) {
     log('requesting changes')
-    this.sendMsg({ clock: clock.toJS() })
+    this.send({ clock: clock.toJS() })
   }
 
   private getClock(which: 'ours'): Clock
@@ -152,7 +153,7 @@ export class AConnection<T> {
 
   private getState(): A.Doc<T> | undefined {
     const doc = this.watchableDoc.get() as A.Doc<T>
-    if (doc) return Frontend.getBackendState(doc)
+    if (doc) return A.Frontend.getBackendState(doc)
   }
 }
 
@@ -163,10 +164,3 @@ const ERR_NOCLOCK =
 
 const ours = 'ours'
 const theirs = 'theirs'
-
-export type Clock = Map<string, number>
-
-export interface Message<T> {
-  clock: Clock
-  changes?: A.Change<T>[]
-}

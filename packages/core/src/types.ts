@@ -1,5 +1,7 @@
+import { Map } from 'immutable'
 import A from 'automerge'
 import { AnyAction, Middleware, Reducer, Store } from 'redux'
+import { AConnection } from './AConnection'
 
 export type ProxyReducer<T> = (action: AnyAction) => A.ChangeFn<T> | null
 export type ReducerConverter = <T>(proxy: ProxyReducer<T>) => Reducer
@@ -37,12 +39,14 @@ export interface KeyPair {
   secretKey: string
 }
 
-// Our connection class has a single document with a fixed `docId`, so the messages we pass to it don't need to have that field
-export type Message<T> = PartialBy<A.Message<T>, 'docId'>
-
-type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
-
 export interface ReceiveMessagePayload<T> {
-  message: A.Message<any>
-  connection: A.Connection<T>
+  message: Message<T>
+  connection: AConnection<T>
+}
+
+export type Clock = Map<string, number>
+
+export interface Message<T> {
+  clock: Clock
+  changes?: A.Change<T>[]
 }

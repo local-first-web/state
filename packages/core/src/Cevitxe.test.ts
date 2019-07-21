@@ -1,12 +1,12 @@
 import A from 'automerge'
+import { Server } from 'cevitxe-signal-server'
 import debug from 'debug'
+import 'fake-indexeddb/auto'
+import { Store } from 'redux'
 import uuid from 'uuid'
 import { Cevitxe } from './Cevitxe'
-import { ProxyReducer } from './types'
-import { Store } from 'redux'
-import { Server } from 'cevitxe-signal-server'
-import 'fake-indexeddb/auto'
 import { pause } from './lib/pause'
+import { ProxyReducer } from './types'
 
 const log = debug('cevitxe:tests')
 const kill = require('kill-port')

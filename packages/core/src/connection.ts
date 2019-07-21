@@ -1,8 +1,9 @@
 import A from 'automerge'
-import { AConnection, Message } from './AConnection'
+import { AConnection } from './AConnection'
 import debug from 'debug'
 import { AnyAction, Dispatch } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
+import { Message } from './types'
 
 const log = debug('cevitxe:connection')
 
@@ -53,7 +54,7 @@ export class Connection<T = any> {
       } else {
         // TODO: figure out a way to pass a fake dispatcher or something for testing
         log(`temp - only for use by testing without passing a dispatcher`)
-        this.AConnection.receiveMsg(message) // this updates the doc
+        this.AConnection.receive(message) // this updates the doc
       }
       if (this.onReceive) {
         log('changes, calling onReceive')
@@ -61,7 +62,7 @@ export class Connection<T = any> {
       }
     } else {
       log(`no changes, catch up with peer`)
-      this.AConnection.receiveMsg(message) // this updates the doc
+      this.AConnection.receive(message) // this updates the doc
     }
   }
 

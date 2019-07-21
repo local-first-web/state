@@ -38,7 +38,7 @@ const feedReducer: Reducer = <T>(state: T, { type, payload }: AnyAction) => {
       const { message, connection } = payload as ReceiveMessagePayload<T>
       log('received %o', message)
 
-      const doc = connection.receiveMsg(message)
+      const doc = connection.receive(message)
       return doc
     }
     default:

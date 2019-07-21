@@ -147,4 +147,3 @@ const createStorageFeed = async (documentId: string, databaseName: string) => {
 
 export const getDbName = (databaseName: string, documentId: string) =>
   `cevitxe-${databaseName}-${documentId.substr(0, 12)}`
-//

@@ -1,6 +1,7 @@
 ﻿import A from 'automerge'
-import { AConnection, Message } from './AConnection'
+import { AConnection } from './AConnection'
 import { EventEmitter } from 'events'
+import { Message } from './types'
 
 interface BirdCount {
   [bird: string]: number
@@ -16,8 +17,7 @@ const makeConnection = (id: string, watchableDoc: A.WatchableDoc<BirdCount>, cha
 
   channel.on('data', (peer_id, msg) => {
     if (peer_id === id) return // ignore messages that we sent
-    // console.log(`${id} receives`, msg)
-    connection.receiveMsg(msg)
+    connection.receive(msg)
   })
 
   connection.open()
