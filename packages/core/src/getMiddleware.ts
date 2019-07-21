@@ -5,9 +5,10 @@ import { SingleDocSet } from './SingleDocSet'
 
 const log = debug('cevitxe:middleware')
 
-export const getMiddleware: MiddlewareFactory = <T>(feed: Feed<string>, state: T) => {
-  const docSet = new SingleDocSet(state)
-
+export const getMiddleware: MiddlewareFactory = <T>(
+  feed: Feed<string>,
+  docSet: SingleDocSet<any>
+) => {
   return store => next => action => {
     // before changes
     const prevState = store.getState() || A.init()
