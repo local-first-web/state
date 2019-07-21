@@ -1,5 +1,5 @@
 {
-  "name": "@cevitxe/todo",
+  "name": "cevitxe-example-todo",
   "description": "TodoMVC implemented with React-Redux & Cevitxe.",
   "version": "0.1.8",
   "private": true,

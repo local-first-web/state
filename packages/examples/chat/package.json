@@ -1,5 +1,5 @@
 {
-  "name": "@cevitxe/chat",
+  "name": "cevitxe-example-chat",
   "description": "Chat sample implemented with React-Redux & Cevitxe.",
   "version": "0.1.8",
   "private": true,
