@@ -56,7 +56,7 @@ export class AConnection<T> {
 
   // Called by the network stack whenever it receives a message from a peer
   receiveMsg({ docId, clock, changes }: { docId: string; clock: Clock; changes: A.Change<T>[] }) {
-    log('receiveMsg')
+    // log('receive', { docId, clock, changes })
     // Record their clock value for this document
     if (clock) this.updateClock(theirs, docId, clock)
 
@@ -76,7 +76,6 @@ export class AConnection<T> {
   // Private methods
 
   validateDoc(docId: string, clock: Clock) {
-    log('validate doc', docId)
     const ourClock = this.getClock(docId, ours)
 
     // Make sure doc has a clock (i.e. is an automerge object)
@@ -87,7 +86,6 @@ export class AConnection<T> {
   }
 
   registerDoc(docId: string) {
-    log('register doc', docId)
     const clock = this.getClockFromDoc(docId)
     this.validateDoc(docId, clock)
     // Advertise the document
@@ -98,7 +96,7 @@ export class AConnection<T> {
 
   // Callback that is called by the docSet whenever a document is changed
   docChanged(docId: string) {
-    log('doc changed', docId)
+    log('doc changed %s', docId)
     const clock = this.getClockFromDoc(docId)
     this.validateDoc(docId, clock)
     this.maybeSendChanges(docId)
@@ -108,7 +106,6 @@ export class AConnection<T> {
 
   // Send changes if we have more recent information than they do
   maybeSendChanges(docId: string) {
-    log('maybe send changes', docId)
     const theirClock = (this.getClock(docId, theirs) as unknown) as A.Clock
     if (!theirClock) return
 
@@ -120,6 +117,7 @@ export class AConnection<T> {
   }
 
   sendChanges(docId: string, changes: A.Change<T>[]) {
+    log('sending %s changes', changes.length)
     const clock = this.getClockFromDoc(docId)
     this.sendMsg({ docId, clock: clock.toJS(), changes })
     this.updateClock(ours, docId)
@@ -134,6 +132,7 @@ export class AConnection<T> {
 
   // A message with no changes and a clock is a request for changes
   requestChanges(docId: string, clock = this.getClockFromDoc(docId)) {
+    log('requesting changes')
     this.sendMsg({ docId, clock: clock.toJS() })
   }
 
@@ -152,7 +151,6 @@ export class AConnection<T> {
     // Merge the clocks, keeping the maximum sequence number for each node
     const largestWins = (x: number, y: number): number => Math.max(x, y)
     const newClock = oldClock.mergeWith(largestWins, clock)
-    log('updating clock', which, docId, newClock)
     // Update the clockMap
     this.clock[which] = clockMap.set(docId, newClock)
   }

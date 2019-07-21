@@ -39,11 +39,10 @@ export class Connection<T = any> {
   }
 
   receive = ({ data }: any) => {
-    log('receive', data)
+    log('receive %o', data)
     const message = JSON.parse(data.toString())
-    const myDoc = this.docSet.get()
     if (message.changes) {
-      log('changes received', message.changes)
+      log('%s changes received', message.changes.length)
       if (this.dispatch) {
         this.dispatch({
           type: RECEIVE_MESSAGE_FROM_PEER,
@@ -68,7 +67,7 @@ export class Connection<T = any> {
   }
 
   send = (message: A.Message<T>) => {
-    log('send', message)
+    log('send %o', message)
     if (this.peerSocket)
       try {
         this.peerSocket.send(JSON.stringify(message))

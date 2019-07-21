@@ -83,7 +83,7 @@ export class Client extends EventEmitter {
     }
 
     const onerror = (args: any) => {
-      console.error('signal server error', args)
+      this.log('signal server error')
     }
 
     this.serverConnection.onopen = onopen.bind(this)

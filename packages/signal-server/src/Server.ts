@@ -101,7 +101,7 @@ export class Server extends EventEmitter {
 
     return (data: Data) => {
       const message = JSON.parse(data.toString())
-      log('received introduction request', message)
+      log('received introduction request %o', message)
 
       // honor join/leave requests
       const current = this.keys[A]

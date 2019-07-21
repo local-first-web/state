@@ -36,7 +36,7 @@ const feedReducer: Reducer = <T>(state: T, { type, payload }: AnyAction) => {
   switch (type) {
     case RECEIVE_MESSAGE_FROM_PEER: {
       const { message, connection } = payload as ReceiveMessagePayload<T>
-      log('received', message)
+      log('received %o', message)
 
       const doc = connection.receiveMsg(message)
       return doc

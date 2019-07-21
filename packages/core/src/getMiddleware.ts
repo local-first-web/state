@@ -12,8 +12,8 @@ export const getMiddleware: MiddlewareFactory = <T>(
   return store => next => action => {
     // before changes
     const prevState = store.getState() || A.init()
-    log('action', action)
-    log('prevDoc', prevState)
+    log('action %o', action)
+    log('prevDoc %o', prevState)
 
     // changes
     const result = next(action)
@@ -21,7 +21,7 @@ export const getMiddleware: MiddlewareFactory = <T>(
     // after changes
     const nextState = store.getState()
     if (!action.payload.cameFromFeed && docSet) {
-      log('calling setDoc', nextState)
+      log('calling setDoc %o', nextState)
       docSet.set(nextState)
     }
     // Write all actions to the feed for persistence
