@@ -1,8 +1,15 @@
 import A from 'automerge'
-
+import { Server } from 'cevitxe-signal-server'
 import { Connection } from './Connection'
 import { SingleDocSet } from './SingleDocSet'
-import { Server } from 'cevitxe-signal-server'
+
+import { WebSocket } from 'mock-socket'
+  import uuid from 'uuid'
+
+// @ts-ignore
+global.WebSocket = WebSocket
+
+jest.mock('mock-socket')
 
 interface FooState {
   foo: number
@@ -14,8 +21,11 @@ const fakeDispatch = <T>(s: T) => s
 const port = 10003
 const url = `ws://localhost:${port}`
 
+const localActorId = uuid()
+
 describe('Connection', () => {
-  const initialState: FooState = A.from({ foo: 1 })
+  const initialState: FooState = A.change(A.init(localActorId), doc => (doc.foo = 1))
+
   let docSet: SingleDocSet<FooState>
   let server
 
@@ -37,20 +47,27 @@ describe('Connection', () => {
   it('should send messages to the peer when local state changes', () => {
     const peer = new WebSocket(url)
     const connection = new Connection(docSet, peer, fakeDispatch)
+    expect(peer.send).toHaveBeenCalledWith(
+      JSON.stringify({ docId: '1', clock: { [localActorId]: 1 } })
+    )
+    expect(peer.send).not.toHaveBeenCalledWith(
+      JSON.stringify({ docId: '1', clock: { [localActorId]: 2 } })
+    )
 
     const localDoc = docSet.get()
     const updatedDoc = A.change(localDoc, 'update', doc => (doc.boo = 2))
     docSet.set(updatedDoc)
 
     expect(connection.state.boo).toBe(2)
-
-    // expect(peer.send).toHaveBeenCalled()
+    expect(peer.send).toHaveBeenCalledWith(
+      JSON.stringify({ docId: '1', clock: { [localActorId]: 2 } })
+    )
   })
 
-  it('should call end on peer when close is called', () => {
+  it('should call close on peer when close is called', () => {
     const peer = new WebSocket(url)
     const connection = new Connection(docSet, peer, fakeDispatch)
     connection.close()
-    // expect(peer.close).toHaveBeenCalled()
+    expect(peer.close).toHaveBeenCalled()
   })
 })
