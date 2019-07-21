@@ -2,8 +2,7 @@
 import debug from 'debug'
 import { Map } from 'immutable'
 
-type ClockMap = Map<string, Clock>
-type ClockMaps = { ours: ClockMap; theirs: ClockMap }
+type Clocks = { ours: Clock; theirs: Clock }
 
 const log = debug('cevitxe:Aconnection')
 
@@ -28,13 +27,13 @@ const log = debug('cevitxe:Aconnection')
 // peer that we have it).
 export class AConnection<T> {
   private watchableDoc: A.WatchableDoc<A.Doc<T>>
-  private sendMsg: (msg: A.Message<T>) => void
-  private clock: ClockMaps
+  private sendMsg: (msg: Message<T>) => void
+  private clocks: Clocks
 
-  constructor(watchableDoc: A.WatchableDoc<A.Doc<T>>, sendMsg: (msg: A.Message<T>) => void) {
+  constructor(watchableDoc: A.WatchableDoc<A.Doc<T>>, sendMsg: (msg: Message<T>) => void) {
     this.watchableDoc = watchableDoc
     this.sendMsg = sendMsg
-    this.clock = { ours: Map(), theirs: Map() }
+    this.clocks = { ours: Map(), theirs: Map() }
   }
 
   // Public API
@@ -55,19 +54,17 @@ export class AConnection<T> {
   }
 
   // Called by the network stack whenever it receives a message from a peer
-  receiveMsg({ docId, clock, changes }: { docId: string; clock: Clock; changes: A.Change<any>[] }) {
+  receiveMsg({ clock, changes }: { clock: Clock; changes: A.Change<any>[] }) {
     // log('receive', { docId, clock, changes })
     // Record their clock value for this document
-    if (clock) this.updateClock(theirs, docId, clock)
+    if (clock) this.updateClock(theirs, clock)
 
-    const weHaveDoc = this.getState(docId) !== undefined
+    // const weHaveDoc = this.getState(docId) !== undefined
 
     // If they sent changes, apply them to our document
     if (changes) this.watchableDoc.applyChanges(changes)
     // If no changes and we have the document, treat it as a request for our latest changes
-    else if (weHaveDoc) this.maybeSendChanges(docId)
-    // If no changes and we don't have the document, treat it as an advertisement and request it
-    else this.advertise(docId)
+    else this.maybeSendChanges()
 
     // Return the current state of the document
     return this.watchableDoc.get()
@@ -75,8 +72,8 @@ export class AConnection<T> {
 
   // Private methods
 
-  validateDoc(docId: string, clock: Clock) {
-    const ourClock = this.getClock(docId, ours)
+  validateDoc(clock: Clock) {
+    const ourClock = this.getClock(ours)
 
     // Make sure doc has a clock (i.e. is an automerge object)
     if (!clock) throw new TypeError(ERR_NOCLOCK)
@@ -86,94 +83,85 @@ export class AConnection<T> {
   }
 
   registerDoc() {
-    const docId = '' //this.watchableDoc.id
-    const clock = this.getClockFromDoc(docId)
-    this.validateDoc(docId, clock)
+    const clock = this.getClockFromDoc()
+    this.validateDoc(clock)
     // Advertise the document
-    this.requestChanges(docId, clock)
+    this.requestChanges(clock)
     // Record the doc's initial clock
-    this.updateClock(ours, docId, clock)
+    this.updateClock(ours, clock)
   }
 
   // Callback that is called by the watchableDoc whenever a document is changed
   docChanged() {
     log('doc changed')
-    const docId = ''
-    const clock = this.getClockFromDoc(docId)
-    this.validateDoc(docId, clock)
-    this.maybeSendChanges(docId)
-    this.maybeRequestChanges(docId, clock)
-    this.updateClock(ours, docId, clock)
+    const clock = this.getClockFromDoc()
+    this.validateDoc(clock)
+    this.maybeSendChanges()
+    this.maybeRequestChanges(clock)
+    this.updateClock(ours, clock)
   }
 
   // Send changes if we have more recent information than they do
-  maybeSendChanges(docId: string) {
-    const theirClock = (this.getClock(docId, theirs) as unknown) as A.Clock
+  maybeSendChanges() {
+    const theirClock = (this.getClock(theirs) as unknown) as A.Clock
     if (!theirClock) return
 
-    const ourState = this.getState(docId) as T
+    const ourState = this.getState() as T
 
     // If we have changes they don't have, send them
     const changes = Backend.getMissingChanges(ourState, theirClock)
-    if (changes.length > 0) this.sendChanges(docId, changes)
+    if (changes.length > 0) this.sendChanges(changes)
   }
 
-  sendChanges(docId: string, changes: A.Change<T>[]) {
+  sendChanges(changes: A.Change<T>[]) {
     log('sending %s changes', changes.length)
-    const clock = this.getClockFromDoc(docId)
-    this.sendMsg({ docId, clock: clock.toJS(), changes })
-    this.updateClock(ours, docId)
+    const clock = this.getClockFromDoc()
+    this.sendMsg({ clock: clock.toJS(), changes })
+    this.updateClock(ours)
   }
 
   // Request changes if we're out of date
-  maybeRequestChanges(docId: string, clock = this.getClockFromDoc(docId)) {
-    const ourClock = this.getClock(docId, ours)
+  maybeRequestChanges(clock = this.getClockFromDoc()) {
+    const ourClock = this.getClock(ours)
     // If the document is newer than what we have, request changes
-    if (!lessOrEqual(clock, ourClock)) this.requestChanges(docId, clock)
+    if (!lessOrEqual(clock, ourClock)) this.requestChanges(clock)
   }
 
   // A message with no changes and a clock is a request for changes
-  requestChanges(docId: string, clock = this.getClockFromDoc(docId)) {
+  requestChanges(clock = this.getClockFromDoc()) {
     log('requesting changes')
-    this.sendMsg({ docId, clock: clock.toJS() })
-  }
-
-  // A message with a docId and an empty clock is an advertisement for the document
-  // (if we have it) or a request for the document (if we don't)
-  advertise(docId: string) {
-    this.sendMsg({ docId, clock: {} })
+    this.sendMsg({ clock: clock.toJS() })
   }
 
   // Updates the vector clock for `docId` in the given `clockMap` (mapping from docId to vector
   // clock) by merging in the new vector clock `clock`, setting each node's sequence number has been
   // set to the maximum for that node.
-  updateClock(which: keyof ClockMaps, docId: string, clock = this.getClockFromDoc(docId)) {
-    const clockMap = this.clock[which]
-    const oldClock = clockMap.get(docId, Map() as Clock)
+  updateClock(which: keyof Clocks, clock = this.getClockFromDoc()) {
+    const oldClock = this.clocks[which] || Map()
     // Merge the clocks, keeping the maximum sequence number for each node
     const largestWins = (x: number, y: number): number => Math.max(x, y)
     const newClock = oldClock.mergeWith(largestWins, clock)
     // Update the clockMap
-    this.clock[which] = clockMap.set(docId, newClock)
+    this.clocks[which] = newClock
   }
 
-  getState(docId: string): A.Doc<T> | undefined {
+  getState(): A.Doc<T> | undefined {
     const doc = this.watchableDoc.get() as A.Doc<T>
     if (doc) return Frontend.getBackendState(doc)
   }
 
-  getClock(docId: string, which: 'ours'): Clock
-  getClock(docId: string, which: 'theirs'): Clock | undefined
-  getClock(docId: string, which: keyof ClockMaps): Clock | undefined {
+  getClock(which: 'ours'): Clock
+  getClock(which: 'theirs'): Clock | undefined
+  getClock(which: keyof Clocks): Clock | undefined {
     const initialClockValue =
       which === ours
         ? (Map() as Clock) // our default clock value is an empty clock
         : undefined // their default clock value is undefined
-    return this.clock[which].get(docId, initialClockValue)
+    return this.clocks[which] || initialClockValue
   }
 
-  getClockFromDoc(docId: string) {
-    const state = this.getState(docId)
+  getClockFromDoc() {
+    const state = this.getState()
     if (state === undefined) return
     else return (state as any).getIn(['opSet', 'clock'])
   }
@@ -197,3 +185,7 @@ function lessOrEqual(clock1: Clock, clock2: Clock) {
 // TODO: Need to apply this change in the Automerge repo
 type Clock = Map<string, number>
 
+export interface Message<T> {
+  clock: Clock
+  changes?: A.Change<T>[]
+}
