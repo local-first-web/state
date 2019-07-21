@@ -8,7 +8,7 @@
     "start:chat": "yarn workspace cevitxe-example-chat start",
     "start:grid": "yarn workspace cevitxe-example-grid start",
     "start:todo": "yarn workspace cevitxe-example-todo start",
-    "dev": "run-p watch test:watch",
+    "dev": "run-p watch test:log",
     "dev:signal-server": "yarn workspace cevitxe-signal-server dev",
     "dev:chat": "run-p dev:signal-server watch start:chat",
     "dev:grid": "run-p dev:signal-server watch start:grid",
