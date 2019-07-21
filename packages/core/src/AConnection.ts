@@ -32,7 +32,6 @@ export class AConnection<T> {
   private clock: ClockMaps
 
   constructor(docSet: DocSet<T>, sendMsg: (msg: A.Message<T>) => void) {
-    log('new connection', docSet.id)
     this.docSet = docSet
     this.sendMsg = sendMsg
     this.clock = { ours: Map(), theirs: Map() }
