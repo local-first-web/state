@@ -69,8 +69,8 @@ export class Cevitxe<T> extends EventEmitter {
       ? await getStateFromStorage(this.feed)
       : setInitialState(this.feed, {})
 
-    log('creating initial docSet', JSON.stringify(state))
     const docSet = new SingleDocSet(state)
+    log('created initial DocSet', docSet.id)
 
     // Create Redux store
     const reducer = adaptReducer(this.proxyReducer)
@@ -86,6 +86,7 @@ export class Cevitxe<T> extends EventEmitter {
 
     // For each peer that wants to connect, create a Connection object
     client.on('peer', (peer: Peer) => {
+      log('connecting to peer', peer.id, docSet.id)
       const socket = peer.get(documentId)
       const connection = new Connection(docSet, socket, this.store!.dispatch, this.onReceive)
       this.connections.push(connection)
