@@ -15,7 +15,7 @@
     "build": "lerna run build",
     "lint": "lerna run lint",
     "publish": "lerna publish --yes",
-    "watch": "lerna run watch",
+    "watch": "lerna run watch --stream --no-sort --concurrency 999",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:log": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 yarn test --watch",
