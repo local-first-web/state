@@ -20,6 +20,8 @@
     "debug": "^4",
     "hypercore": "^7",
     "hypercore-crypto": "^1",
+    "immutable": "^4.0.0-rc.12",
+    "mock-socket": "^8.0.5",
     "random-access-idb": "^1"
   },
   "devDependencies": {
