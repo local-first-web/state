@@ -28,7 +28,7 @@ describe('Cevitxe', () => {
   const initialState: FooState = { foo: 1 }
   let store: Store
   const port = 10004
-  const urls = [`ws://localhost/${port}`]
+  const urls = [`ws://localhost:${port}`]
 
   let server
 
