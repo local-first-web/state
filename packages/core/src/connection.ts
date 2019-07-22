@@ -8,9 +8,9 @@ import { Message } from './types'
 const log = debug('cevitxe:connection')
 
 /**
- * The Connection keeps a local document synchronized with a peer's replica of the same document. It
- * wraps a `DocumentSync`, which takes care of the synchronization logic, and integrates it with
- * Cevitxe's networking stack and with the Redux store.
+ * A `Connection` keeps one local document synchronized with one peer's replica of the same
+ * document. It uses `DocumentSync` for the synchronization logic, and integrates it with Cevitxe's
+ * networking stack and with the Redux store.
  */
 export class Connection<T = any> {
   private DocumentSync: DocumentSync<T>
