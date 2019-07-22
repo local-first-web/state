@@ -1,7 +1,7 @@
 {
   "name": "cevitxe-example-grid",
   "description": "Grid implemented with React-Redux & Cevitxe.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "main": "src/index.tsx",
   "scripts": {
@@ -15,8 +15,8 @@
     "ag-grid-community": "^21",
     "ag-grid-enterprise": "^21",
     "ag-grid-react": "^21",
-    "cevitxe": "^0.2.0",
-    "cevitxe-toolbar": "^0.2.0",
+    "cevitxe": "^0.2.1",
+    "cevitxe-toolbar": "^0.2.1",
     "debug": "^4",
     "muibox": "^1",
     "react": "^16",

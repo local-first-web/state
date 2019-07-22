@@ -1,6 +1,6 @@
 {
   "name": "cevitxe-signal-client",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,7 +20,7 @@
     "@types/jest": "^24",
     "@types/node": "^10",
     "@types/ws": "^6",
-    "cevitxe-signal-server": "^0.2.0",
+    "cevitxe-signal-server": "^0.2.1",
     "jest": "^24",
     "supports-color": "^7",
     "ts-jest": "^24",
