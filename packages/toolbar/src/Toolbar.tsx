@@ -67,12 +67,18 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
       {appStore && (
         <Formik initialValues={{ documentId }} onSubmit={onSubmit}>
           {({ setFieldValue, values }) => {
-            const onClickNew = async () => setFieldValue('documentId', await create())
-            const onClickJoin = async () => {
+            const newClick = async () => setFieldValue('documentId', await create())
+            const joinClick = async () => {
               setDocumentIdHasFocus(false)
               join(values.documentId)
             }
-            const onFocus = (e: Event) => {
+            const itemClick = (documentId: string) => () => {
+              setFieldValue('documentId', documentId)
+              setDocumentId(documentId)
+              join(documentId)
+              setDocumentIdHasFocus(false)
+            }
+            const inputFocus = (e: Event) => {
               if (e && e.target) {
                 const input = e.target as HTMLInputElement
                 input.select()
@@ -82,41 +88,28 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
             return (
               <React.Fragment>
                 <div css={styles.toolbarGroup}>
-                  <div css={styles.dropdownWrapper}>
-                    <Field
-                      type="text"
-                      name="documentId"
-                      css={styles.input}
-                      onFocus={onFocus}
-                      // onBlur={onClickJoin}
-                    />
-                    <div
-                      css={{ ...styles.dropdown, display: documentIdHasFocus ? 'block' : 'none' }}
-                    >
+                  <div css={styles.menuWrapper}>
+                    <Field type="text" name="documentId" css={styles.input} onFocus={inputFocus} />
+                    <div css={{ ...menu(documentIdHasFocus) }}>
                       {documentIds.map(documentId => (
                         <button
                           key={documentId}
                           role="button"
                           type="button"
-                          onClick={() => {
-                            setFieldValue('documentId', documentId)
-                            setDocumentId(documentId)
-                            join(documentId)
-                            setDocumentIdHasFocus(false)
-                          }}
-                          css={styles.dropdownElement}
+                          onClick={itemClick(documentId)}
+                          css={styles.menuItem}
                         >
                           {documentId}
                         </button>
                       ))}
                     </div>
                   </div>
-                  <button role="button" type="button" onClick={onClickJoin} css={styles.button}>
+                  <button role="button" type="button" onClick={joinClick} css={styles.button}>
                     Join
                   </button>
                 </div>
                 <div css={styles.toolbarGroup}>
-                  <button role="button" type="button" onClick={onClickNew} css={styles.button}>
+                  <button role="button" type="button" onClick={newClick} css={styles.button}>
                     New
                   </button>
                 </div>
@@ -145,25 +138,46 @@ const useAppStore = (cb: (store: Redux.Store) => void) => {
   return [appStore, setAppStore]
 }
 
-type Stylesheet = { [k: string]: CSSObject }
+const menu = (documentIdHasFocus: boolean) =>
+  ({
+    display: documentIdHasFocus ? 'block' : 'none',
+    position: 'absolute',
+    background: 'white',
+    top: 30,
+  } as CSSObject)
+
+const fontFamily = 'inconsolata, monospace'
+const button: CSSObject = {
+  background: 'white',
+  border: '1px solid #ddd',
+  padding: '.3em 1em',
+  textAlign: 'left',
+  cursor: 'pointer',
+  fontFamily,
+  fontSize: 14,
+  ':hover': {
+    background: 'lightBlue',
+  },
+}
+
+type Stylesheet = { [k: string]: CSSObject | ((...props: any[]) => CSSObject) }
 const styles: Stylesheet = {
   toolbar: {
-    background: 'rgba(250, 250, 250, .5)',
+    background: '#eee',
     borderBottom: '1px solid #ddd',
     display: 'flex',
     flexGrow: 0,
     alignItems: 'center',
-    fontFamily: 'inconsolata, monospace',
+    fontFamily,
     fontSize: 14,
+    position: 'relative',
+    zIndex: 9,
   },
   button: {
+    ...button,
     margin: '0 5px',
-    border: '1px solid #ddd',
-    padding: '.3em 1em',
     borderRadius: 3,
     textTransform: 'uppercase',
-    cursor: 'pointer',
-    fontSize: 14,
   },
   input: {
     marginRight: 5,
@@ -175,30 +189,22 @@ const styles: Stylesheet = {
     },
     height: 16,
     width: 150,
-    fontFamily: 'inconsolata, monospace',
+    fontFamily,
     fontSize: 14,
   },
   toolbarGroup: {
     borderRight: '1px solid #eee',
     padding: 10,
   },
-  dropdownWrapper: {
+  menuWrapper: {
     position: 'relative',
     display: 'inline-block',
   },
-  dropdown: {
-    position: 'absolute',
-    background: 'white',
-    top: 30,
-  },
-  dropdownElement: {
+  menuItem: {
+    ...button,
     display: 'block',
-    border: '1px solid #ddd',
     marginTop: -2,
     width: 200,
     height: 30,
-    padding: '.3em 1em',
-    textAlign: 'left',
-    cursor: 'pointer',
   },
 }
