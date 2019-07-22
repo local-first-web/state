@@ -1,6 +1,7 @@
 import uuid from 'uuid'
 
 export const SCHEMA_LOAD = 'SCHEMA_LOAD'
+export const SCHEMA_INFER = 'SCHEMA_INFER'
 export const FIELD_ADD = 'FIELD_ADD'
 export const FIELD_RENAME = 'FIELD_RENAME'
 export const FIELD_DELETE = 'FIELD_DELETE'
@@ -12,6 +13,10 @@ export const ITEM_REMOVE = 'ITEM_REMOVE'
 
 export function loadSchema(schema: any[]) {
   return { type: SCHEMA_LOAD, payload: { schema } }
+}
+
+export function inferSchema(sampleData: any) {
+  return { type: SCHEMA_INFER, payload: { sampleData } }
 }
 
 export function addField() {
