@@ -9,7 +9,8 @@ type Clocks = { ours: Clock; theirs: Clock }
 const log = debug('cevitxe:documentsync')
 
 /**
- * Keeps a local document in sync with a remote peer's replica of the same document.
+ * One instance of `DocumentSync` keeps one local document in sync with one remote peer's replica of
+ * the same document.
  *
  * This class works with a local `WatchableDoc`; it listens for changes to the document, and if it
  * thinks it has changes that the remote peer doesn't know about, it generates a message to be sent
@@ -40,17 +41,22 @@ const log = debug('cevitxe:documentsync')
  * - "Our" clock is the most recent VClock that we've advertised to the peer (i.e. where we've told
  *   the peer that we have it).
  *
- * > Note: This class began life as a vendored & refactored copy of the Automerge.Connection class;
- * > if you're familiar with that class, this plays exactly the same role. The only difference is
- * > that this uses a WatchableDoc (an observable wrapper around a single document), whereas
- * > Automerge.Connection uses a DocSet (an observable wrapper around a set of documents).
+ * > Note: This class began life as a vendored & refactored copy of the `Automerge.Connection`
+ * > class; if you're familiar with that class, this one plays exactly the same role. The only
+ * > difference is that this uses a WatchableDoc (an observable wrapper around a single document),
+ * > whereas Automerge.Connection uses a DocSet (an observable wrapper around a set of documents).
  */
 export class DocumentSync<T> {
   private watchableDoc: A.WatchableDoc<A.Doc<T>, T>
-  private send: (msg: Message<T>) => void
+  private send: (msg: Message) => void
   private clock: Clocks
 
-  constructor(watchableDoc: A.WatchableDoc<A.Doc<T>, T>, send: (msg: Message<T>) => void) {
+  /**
+   * @param watchableDoc An `Automerge.WatchableDoc` containing the document being synchronized.
+   * @param send Callback function, called when the local document changes. Should send the given
+   * message to the remote peer.
+   */
+  constructor(watchableDoc: A.WatchableDoc<A.Doc<T>, T>, send: (msg: Message) => void) {
     this.watchableDoc = watchableDoc
     this.send = send
     this.clock = { ours: Map(), theirs: Map() }
@@ -73,7 +79,7 @@ export class DocumentSync<T> {
   }
 
   // Called by the network stack whenever it receives a message from a peer
-  receive({ clock, changes }: { clock: Clock; changes: A.Change<any>[] }) {
+  receive({ clock, changes }: { clock: Clock; changes?: A.Change[] }) {
     // Record their clock value for this document
     if (clock) this.updateClock(theirs, clock)
 
@@ -113,17 +119,17 @@ export class DocumentSync<T> {
     const theirClock = (this.getClock(theirs) as unknown) as A.Clock
     if (theirClock === undefined) return
 
-    const ourState = this.getState() as T
+    const ourState = this.getState()
 
     // If we have changes they don't have, send them
     const changes = A.Backend.getMissingChanges(ourState, theirClock)
     if (changes.length > 0) this.sendChanges(changes)
   }
 
-  private sendChanges(changes: A.Change<T>[]) {
+  private sendChanges(changes: A.Change[]) {
     log('sending %s changes', changes.length)
     const clock = this.getClockFromDoc()
-    this.send({ clock: clock.toJS(), changes })
+    this.send({ clock: clock.toJS() as Clock, changes })
     this.updateClock(ours)
   }
 
@@ -138,11 +144,13 @@ export class DocumentSync<T> {
   // A message with no changes and a clock is a request for changes
   private requestChanges(clock = this.getClockFromDoc()) {
     log('requesting changes')
-    this.send({ clock: clock.toJS() })
+    this.send({ clock: clock.toJS() as Clock })
   }
 
+  // overloads
   private getClock(which: 'ours'): Clock
   private getClock(which: 'theirs'): Clock | undefined
+  // implementation
   private getClock(which: keyof Clocks): Clock | undefined {
     const initialClockValue =
       which === ours
@@ -151,11 +159,7 @@ export class DocumentSync<T> {
     return this.clock[which] || initialClockValue
   }
 
-  private getClockFromDoc() {
-    const state = this.getState()
-    if (state === undefined) return
-    else return (state as any).getIn(['opSet', 'clock'])
-  }
+  private getClockFromDoc = () => (this.getState() as any).getIn(['opSet', 'clock']) as Clock
 
   // Updates the vector clock by merging in the new vector clock `clock`, setting each node's
   // sequence number has been set to the maximum for that node.
@@ -167,9 +171,9 @@ export class DocumentSync<T> {
     this.clock[which] = newClock
   }
 
-  private getState(): A.Doc<T> | undefined {
-    const doc = this.watchableDoc.get() as A.Doc<T>
-    if (doc) return A.Frontend.getBackendState(doc)
+  private getState(): A.BackendState {
+    const doc = this.watchableDoc.get()
+    return A.Frontend.getBackendState(doc)
   }
 }
 

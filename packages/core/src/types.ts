@@ -39,14 +39,14 @@ export interface KeyPair {
   secretKey: string
 }
 
+export interface Message {
+  clock: Clock
+  changes?: A.Change[]
+}
+
 export interface ReceiveMessagePayload<T> {
-  message: Message<T>
+  message: Message
   connection: DocumentSync<T>
 }
 
 export type Clock = Map<string, number>
-
-export interface Message<T> {
-  clock: Clock
-  changes?: A.Change<T>[]
-}

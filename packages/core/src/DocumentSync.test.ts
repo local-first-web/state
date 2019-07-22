@@ -12,7 +12,7 @@ const makeConnection = (
   watchableDoc: A.WatchableDoc<BirdCount>,
   channel: TestChannel<BirdCount>
 ) => {
-  const send = (msg: Message<BirdCount>) => {
+  const send = (msg: Message) => {
     channel.write(id, msg)
   }
 
@@ -102,7 +102,6 @@ describe(`DocumentSync`, () => {
   })
 
   describe('Intermittent connection', () => {
-    const ID = '123'
     let localConnection: DocumentSync<BirdCount>
     let remoteConnection: DocumentSync<BirdCount>
     let localWatchableDoc: A.WatchableDoc<BirdCount>
@@ -122,18 +121,15 @@ describe(`DocumentSync`, () => {
     }
 
     beforeEach(() => {
-      // A.from but allowing us to set an ActorID
-      const init = (s: BirdCount, actorId: string) => {
-        return A.change(A.init<BirdCount>(actorId), d => (d = Object.assign(d, s)))
-      }
+      // new version of A.from that allows passing options to initialState
+      // const from = <T>(initialState: T, options: any) =>
+      //   A.change(A.init(options), 'Initialization', doc => Object.assign(doc, initialState))
 
       // only need to do this to get a known ActorID on remote -
       // otherwise everything works without it
-      remoteWatchableDoc = new A.WatchableDoc(init({}, 'R'))
-      localWatchableDoc = new A.WatchableDoc(init({ swallows: 1 }, 'L'))
+      remoteWatchableDoc = new A.WatchableDoc(A.from({}, 'R'))
+      localWatchableDoc = new A.WatchableDoc(A.from({ swallows: 1 }, 'L'))
       networkOn()
-
-      // console.log({ remoteWatchableDoc, localWatchableDoc })
     })
 
     it('should sync local changes made while offline', () => {

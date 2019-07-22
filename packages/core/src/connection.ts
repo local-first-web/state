@@ -65,14 +65,13 @@ export class Connection<T = any> {
         log('changes, calling onReceive')
         this.onReceive(message)
       }
-      
     } else {
       log(`no changes, catch up with peer`)
       this.DocumentSync.receive(message) // this updates the doc
     }
   }
 
-  send = (message: Message<T>) => {
+  send = (message: Message) => {
     log('send %o', message)
     if (this.peerSocket)
       try {
