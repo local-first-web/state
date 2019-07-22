@@ -1,5 +1,5 @@
 ﻿import A from 'automerge'
-import { AConnection } from './AConnection'
+import { DocumentSync } from './DocumentSync'
 import { Message } from './types'
 import { TestChannel } from './lib/TestChannel'
 
@@ -13,11 +13,10 @@ const makeConnection = (
   channel: TestChannel<BirdCount>
 ) => {
   const send = (msg: Message<BirdCount>) => {
-    // console.log(`${id} sends`, JSON.stringify(msg))
     channel.write(id, msg)
   }
 
-  const connection = new AConnection(watchableDoc, send)
+  const connection = new DocumentSync(watchableDoc, send)
 
   channel.on('data', (peer_id, msg) => {
     if (peer_id === id) return // ignore messages that we sent
@@ -28,7 +27,7 @@ const makeConnection = (
   return connection
 }
 
-describe(`AConnection`, () => {
+describe(`DocumentSync`, () => {
   describe('Changes after connecting', () => {
     let localWatchableDoc: A.WatchableDoc<BirdCount>
     let remoteWatchableDoc: A.WatchableDoc<BirdCount>
@@ -104,8 +103,8 @@ describe(`AConnection`, () => {
 
   describe('Intermittent connection', () => {
     const ID = '123'
-    let localConnection: AConnection<BirdCount>
-    let remoteConnection: AConnection<BirdCount>
+    let localConnection: DocumentSync<BirdCount>
+    let remoteConnection: DocumentSync<BirdCount>
     let localWatchableDoc: A.WatchableDoc<BirdCount>
     let remoteWatchableDoc: A.WatchableDoc<BirdCount>
     let channel = new TestChannel()

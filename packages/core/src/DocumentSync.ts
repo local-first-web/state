@@ -6,15 +6,26 @@ import { Clock, Message } from './types'
 
 type Clocks = { ours: Clock; theirs: Clock }
 
-const log = debug('cevitxe:Aconnection')
+const log = debug('cevitxe:documentsync')
+
 /**
- * Keeps track of the two-way communication with a single peer regarding a single document.
+ * Keeps a local document in sync with a remote peer's replica of the same document.
  *
- * To integrate a connection with a particular networking stack, two functions are used:
- * - `send` (callback passed to the constructor, will be called when local state is updated)
- *   takes a message as argument, and sends it out to the remote peer.
+ * This class works with a local `WatchableDoc`; it listens for changes to the document, and if it
+ * thinks it has changes that the remote peer doesn't know about, it generates a message to be sent
+ * the peer. It also processes messages from its counterpart on the peer, and applies them to the
+ * local document as needed.
+ *
+ * This class doesn't get involved in the actual transmission of the messages; it only generates
+ * them for someone else to send, and processes them when someone else receives them. To integrate a
+ * connection with a particular networking stack, two functions are used:
+ *
+ * - `send` (callback passed to the constructor, will be called when local state is updated) takes a
+ *   message as argument, and sends it out to the remote peer.
  * - `receive` (method on the connection object) should be called by the network stack when a
  *   message is received from the remote peer.
+ *
+ * In this context, networking is provided by the Cevitxe `connection` class.
  *
  * The document to be synced is managed by a `WatchableDoc`. Whenever it is changed locally, call
  * `set()` on the WatchableDoc. The connection registers a callback on the WatchableDoc, and it
@@ -26,10 +37,15 @@ const log = debug('cevitxe:Aconnection')
  *   us that it's their clock, or because it corresponds to a state we have sent to them on this
  *   connection). Thus, everything more recent than theirClock should be sent to the peer.
  *
- * - "Our" clock is the most recent VClock that we've advertised to the peer (i.e. where we've told the
- *   peer that we have it).
+ * - "Our" clock is the most recent VClock that we've advertised to the peer (i.e. where we've told
+ *   the peer that we have it).
+ *
+ * > Note: This class began life as a vendored & refactored copy of the Automerge.Connection class;
+ * > if you're familiar with that class, this plays exactly the same role. The only difference is
+ * > that this uses a WatchableDoc (an observable wrapper around a single document), whereas
+ * > Automerge.Connection uses a DocSet (an observable wrapper around a set of documents).
  */
-export class AConnection<T> {
+export class DocumentSync<T> {
   private watchableDoc: A.WatchableDoc<A.Doc<T>, T>
   private send: (msg: Message<T>) => void
   private clock: Clocks

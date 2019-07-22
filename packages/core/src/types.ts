@@ -1,7 +1,7 @@
 import { Map } from 'immutable'
 import A from 'automerge'
 import { AnyAction, Middleware, Reducer, Store } from 'redux'
-import { AConnection } from './AConnection'
+import { DocumentSync } from './DocumentSync'
 
 export type ProxyReducer<T> = (action: AnyAction) => A.ChangeFn<T> | null
 export type ReducerConverter = <T>(proxy: ProxyReducer<T>) => Reducer
@@ -41,7 +41,7 @@ export interface KeyPair {
 
 export interface ReceiveMessagePayload<T> {
   message: Message<T>
-  connection: AConnection<T>
+  connection: DocumentSync<T>
 }
 
 export type Clock = Map<string, number>

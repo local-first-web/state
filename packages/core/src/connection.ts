@@ -1,5 +1,5 @@
 import A from 'automerge'
-import { AConnection } from './AConnection'
+import { DocumentSync } from './DocumentSync'
 import debug from 'debug'
 import { AnyAction, Dispatch } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
@@ -7,10 +7,13 @@ import { Message } from './types'
 
 const log = debug('cevitxe:connection')
 
-// The Connection class wraps an AConnection, which keeps track of communication between us
-// and one peer. `AConnection` takes a `watchableDoc`.
+/**
+ * The Connection keeps a local document synchronized with a peer's replica of the same document. It
+ * wraps a `DocumentSync`, which takes care of the synchronization logic, and integrates it with
+ * Cevitxe's networking stack and with the Redux store.
+ */
 export class Connection<T = any> {
-  private AConnection: AConnection<T>
+  private DocumentSync: DocumentSync<T>
   private peerSocket: WebSocket | null | undefined
   private dispatch?: Dispatch<AnyAction>
   private watchableDoc: A.WatchableDoc<A.Doc<T>, T>
@@ -30,8 +33,8 @@ export class Connection<T = any> {
 
     this.peerSocket.onmessage = this.receive.bind(this)
 
-    this.AConnection = new AConnection(this.watchableDoc, this.send)
-    this.AConnection.open()
+    this.DocumentSync = new DocumentSync(this.watchableDoc, this.send)
+    this.DocumentSync.open()
   }
 
   public get state(): A.Doc<T> {
@@ -43,26 +46,29 @@ export class Connection<T = any> {
     const message = JSON.parse(data.toString())
     if (message.changes) {
       log('%s changes received', message.changes.length)
+
       if (this.dispatch) {
         this.dispatch({
           type: RECEIVE_MESSAGE_FROM_PEER,
           payload: {
-            connection: this.AConnection,
+            connection: this.DocumentSync,
             message,
           },
         })
       } else {
         // TODO: figure out a way to pass a fake dispatcher or something for testing
         log(`temp - only for use by testing without passing a dispatcher`)
-        this.AConnection.receive(message) // this updates the doc
+        this.DocumentSync.receive(message) // this updates the doc
       }
+
       if (this.onReceive) {
         log('changes, calling onReceive')
         this.onReceive(message)
       }
+      
     } else {
       log(`no changes, catch up with peer`)
-      this.AConnection.receive(message) // this updates the doc
+      this.DocumentSync.receive(message) // this updates the doc
     }
   }
 
@@ -82,23 +88,3 @@ export class Connection<T = any> {
     this.peerSocket = null
   }
 }
-
-// TODO incorporate this into documentation
-/* 
-
-Scribbles from Diego & Herb's conversation
-
-A -- B
-|    |
-D -- C
-
-A action "adds test"
-  document v1 -> v2
-sent "changeset" to B and D
-Both B and D merge the changeset and are now at A.v2 (plus whatever v of their own)
-B and D determine C is at A.v1 so they both send the changes
-  C might receive them in any order; it will only apply the first one because they are essentially
-  the same
-
-
- */

@@ -6,7 +6,7 @@ const log = debug('cevitxe:middleware')
 
 export const getMiddleware: MiddlewareFactory = <T>(
   feed: Feed<string>,
-  docSet: A.WatchableDoc<any>
+  watchableDoc: A.WatchableDoc<any>
 ) => {
   return store => next => action => {
     // before changes
@@ -19,9 +19,9 @@ export const getMiddleware: MiddlewareFactory = <T>(
 
     // after changes
     const nextState = store.getState()
-    if (!action.payload.cameFromFeed && docSet) {
+    if (!action.payload.cameFromFeed && watchableDoc) {
       log('calling setDoc %o', nextState)
-      docSet.set(nextState)
+      watchableDoc.set(nextState)
     }
     // Write all actions to the feed for persistence
     const changes = A.getChanges(prevState, nextState)
