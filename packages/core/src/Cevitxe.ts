@@ -57,16 +57,16 @@ export class Cevitxe<T> extends EventEmitter {
 
   createStore = (documentId: string) => this.makeStore(documentId, true)
 
-  makeStore = async (documentId: string, creating: boolean = false) => {
+  private makeStore = async (documentId: string, creating: boolean = false) => {
     log = debug(`cevitxe:${creating ? 'createStore' : 'joinStore'}:${documentId}`)
 
     this.feed = await createStorageFeed(documentId, this.databaseName)
 
     const state = creating
-      ? setInitialState(this.feed, this.initialState)
+      ? setInitialState(this.feed, this.initialState) // ceating a new document, starting with default state
       : this.feed.length > 0
-      ? await getStateFromStorage(this.feed)
-      : setInitialState(this.feed, {})
+      ? await getStateFromStorage(this.feed) // rehydrating state from storage
+      : setInitialState(this.feed, {}) // joining a peer's feed, starting with an empty doc
 
     const watchableDoc = new A.WatchableDoc(state)
     log('created initial watchableDoc', state)
@@ -94,7 +94,7 @@ export class Cevitxe<T> extends EventEmitter {
     return this.store
   }
 
-  get connectionCount() {
+  public get connectionCount() {
     return this.connections.length
   }
 
@@ -114,12 +114,14 @@ export class Cevitxe<T> extends EventEmitter {
 }
 
 const getStateFromStorage = async (feed: Feed<string>) => {
+  log('getting change sets from storage')
   const batch = new Promise(yes => feed.getBatch(0, feed.length, (_, data) => yes(data)))
   const data = (await batch) as string[]
   const changeSets = data.map(d => JSON.parse(d))
   log('rehydrating from stored change sets', changeSets)
   let state = A.init()
   changeSets.forEach(changes => (state = A.applyChanges(state, changes)))
+  log('done rehydrating')
   return state
 }
 
@@ -128,6 +130,7 @@ const setInitialState = <T>(feed: Feed<string>, initialState: T) => {
   const state = A.from(initialState)
   const changeSet = A.getChanges(A.init(), state)
   feed.append(JSON.stringify(changeSet))
+  log('initialized')
   return state
 }
 
