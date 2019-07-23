@@ -214,8 +214,10 @@ export class Server extends EventEmitter {
   close() {
     return new Promise(closed => {
       if (this.httpServer) {
+        log('attempting httpServer.close')
         this.sockets.forEach(socket => socket.destroy())
         this.httpServer.close(() => {
+          log('closed')
           this.emit('closed')
           closed()
         })
