@@ -10,24 +10,24 @@
     "test": "react-scripts-ts test"
   },
   "dependencies": {
-    "@emotion/core": "^10",
+    "@emotion/core": "10",
     "cevitxe": "^0.2.1",
     "cevitxe-toolbar": "^0.2.1",
-    "debug": "^4",
-    "react": "^16",
-    "react-dom": "^16",
-    "react-redux": "^7",
-    "redux": "^4",
-    "uuid": "^3"
+    "debug": "4",
+    "react": "16",
+    "react-dom": "16",
+    "react-redux": "7",
+    "redux": "4",
+    "uuid": "3"
   },
   "devDependencies": {
-    "@types/debug": "^4",
-    "@types/jest": "^24",
-    "@types/node": "^12",
-    "@types/react": "^16",
-    "@types/react-dom": "^16",
-    "@types/react-redux": "^7",
-    "prettier": "^1",
-    "typescript": "^3"
+    "@types/debug": "4",
+    "@types/jest": "24",
+    "@types/node": "12",
+    "@types/react": "16",
+    "@types/react-dom": "16",
+    "@types/react-redux": "7",
+    "prettier": "1",
+    "typescript": "3"
   }
 }

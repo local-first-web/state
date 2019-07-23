@@ -12,19 +12,19 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "debug": "^4",
-    "ts-node": "^7",
-    "ws": "^6"
+    "debug": "4",
+    "ts-node": "7",
+    "ws": "6"
   },
   "devDependencies": {
-    "@types/jest": "^24",
-    "@types/node": "^10",
-    "@types/ws": "^6",
+    "@types/jest": "24",
+    "@types/node": "10",
+    "@types/ws": "6",
     "cevitxe-signal-server": "^0.2.1",
-    "jest": "^24",
-    "supports-color": "^7",
-    "ts-jest": "^24",
-    "typescript": "^3"
+    "jest": "24",
+    "supports-color": "7",
+    "ts-jest": "24",
+    "typescript": "3"
   },
   "jest": {
     "preset": "ts-jest",

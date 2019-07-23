@@ -4,7 +4,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "run-p watch start:todo",
+    "start": "run-p watch start:grid",
     "start:chat": "yarn workspace cevitxe-example-chat start",
     "start:grid": "yarn workspace cevitxe-example-grid start",
     "start:todo": "yarn workspace cevitxe-example-todo start",
@@ -24,12 +24,12 @@
     "purge": "scripts/purge.bat"
   },
   "devDependencies": {
-    "@types/jest": "^24",
-    "cross-env": "^5.2.0",
-    "jest": "^24",
-    "lerna": "^3",
-    "npm-run-all": "^4",
-    "ts-jest": "^24"
+    "@types/jest": "24",
+    "cross-env": "5",
+    "jest": "24",
+    "lerna": "3",
+    "npm-run-all": "4",
+    "ts-jest": "24"
   },
   "workspaces": {
     "packages": [
