@@ -3,7 +3,7 @@ import { Server } from 'cevitxe-signal-server'
 import { Connection } from './Connection'
 
 import { WebSocket } from 'mock-socket'
-import uuid from 'uuid'
+import { newid } from './lib/newid'
 
 // @ts-ignore
 global.WebSocket = WebSocket
@@ -20,7 +20,7 @@ const fakeDispatch = <T>(s: T) => s
 const port = 10003
 const url = `ws://localhost:${port}`
 
-const localActorId = uuid()
+const localActorId = newid()
 
 describe('Connection', () => {
   const initialState: FooState = A.change(A.init(localActorId), doc => (doc.foo = 1))
