@@ -40,10 +40,16 @@ describe('Cevitxe', () => {
       urls = [`ws://localhost:${port}`]
 
       // instantiate local store
-      documentId = newid()
+      documentId = newid(6)
       const databaseName = `test-${newid()}`
       localCevitxe = new Cevitxe({ databaseName, proxyReducer, initialState, urls })
     })
+
+    afterEach(async () => {
+      await pause(10) // HACK: wait for indexeddb to finish whatever it's doing
+      await localCevitxe.close()
+    })
+
     describe('joinStore', () => {
       beforeEach(async () => {
         localStore = await localCevitxe.joinStore(documentId)
@@ -82,6 +88,22 @@ describe('Cevitxe', () => {
       })
     })
 
+    describe('close', () => {
+      beforeEach(async () => {
+        localStore = await localCevitxe.createStore(documentId)
+      })
+
+      // it('close should destroy any current store', async () => {
+      //   expect.assertions(2)
+      //   expect(localCevitxe.store).not.toBeUndefined()
+
+      //   await pause(500) // HACK:
+
+      //   await localCevitxe.close()
+      //   expect(localCevitxe.store).toBeUndefined()
+      // })
+    })
+
     describe('persistence', () => {
       beforeEach(async () => {
         localStore = await localCevitxe.createStore(documentId)
@@ -101,7 +123,7 @@ describe('Cevitxe', () => {
         expect(localStore.getState().foo).toBe(42)
 
         // disconnect current store
-        await pause(500)
+        await pause(500) // HACK:
         await localCevitxe.close()
 
         // Then we create a new store, which should see the state in the fake db and load it
@@ -120,75 +142,74 @@ describe('Cevitxe', () => {
       await server.listen({ silent: true })
 
       // instantiate local store
-      documentId = newid()
+      documentId = newid(6)
       const databaseName = `local-${newid()}`
-      localCevitxe = new Cevitxe({ databaseName, proxyReducer, initialState, urls })
+      localCevitxe = new Cevitxe({
+        databaseName,
+        proxyReducer,
+        initialState,
+        urls,
+      })
       localStore = await localCevitxe.createStore(documentId)
     })
 
     afterEach(async () => {
-      // await server.close()
+      await server.close()
     })
 
-    // it('should communicate changes from one store to another', async done => {
-    //   const remoteCevitxe = new Cevitxe({
-    //     databaseName: `remote-${newid()}`,
-    //     proxyReducer,
-    //     initialState: {},
-    //     urls,
-    //     onReceive,
-    //   })
+    describe('close', () => {
+      it('should close all connections', async done => {
+        // expect.assertions(2)
+        // await pause(500)
 
-    //   await remoteCevitxe.joinStore(documentId)
+        log('close test')
 
-    //   let receiveCount = 0
-    //   function onReceive(message: any) {
-    //     const { foo } = localStore.getState()
-    //     log('pass', receiveCount, foo)
+        localCevitxe.on('peer', () => {
+          expect(Object.keys(localCevitxe.connections)).toHaveLength(1)
+          done()
+        })
 
-    //     // TODO this is bullshit
+        // instantiate remote store
+        const remoteCevitxe = new Cevitxe({
+          databaseName: `remote-${newid()}`,
+          proxyReducer,
+          initialState: {},
+          urls,
+        })
+        const remoteStore = await remoteCevitxe.joinStore(documentId)
 
-    //     // if (receiveCount < 2) {
-    //     //   expect(foo).toEqual(1)
-    //     // } else {
-    //     //   expect(foo).toEqual(42)
-    //     //   done()
-    //     // }
-    //     if (foo === 42) done()
-    //     receiveCount++
-    //   }
-    //   // TODO wait for some event to do this
-    //   await pause(1500)
-    //   // change something in the local store
-    //   localStore.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
-    // })
+        // await pause(500)
+
+        // await localCevitxe.close()
+
+        // expect(Object.keys(localCevitxe.connections)).toHaveLength(0)
+        // done()
+      })
+    })
   })
-
-  //   it.skip('close should destroy any current store', async () => {
-  //     expect.assertions(2)
-  //     await cevitxe.createStore(documentId)
-  //     expect(cevitxe.store).not.toBeUndefined()
-  //     await cevitxe.close()
-  //     expect(cevitxe.store).toBeUndefined()
-  //   })
-
-  //   it.skip('close should close all connections', async () => {
-  //     // expect.assertions(2)
-  //     await cevitxe.createStore(documentId)
-  //     // @ts-ignore
-  //     expect(cevitxe.connections).not.toBeUndefined()
-  //     // @ts-ignore
-  //     expect(cevitxe.swarm).not.toBeUndefined()
-  //     // @ts-ignore
-  //     expect(cevitxe.hub).not.toBeUndefined()
-  //     await pause(100)
-  //     cevitxe.close()
-  //     // @ts-ignore
-  //     expect(cevitxe.connections).toBeUndefined()
-  //     // @ts-ignore
-  //     expect(cevitxe.swarm).toBeUndefined()
-  //     // @ts-ignore
-  //     expect(cevitxe.hub).toBeUndefined()
-  //   })
-  // })
 })
+
+// it('should communicate changes from one store to another', async done => {
+//   await remoteCevitxe.joinStore(documentId)
+
+//   let receiveCount = 0
+//   function onReceive(message: any) {
+//     const { foo } = localStore.getState()
+//     log('pass', receiveCount, foo)
+
+//     // TODO this is bullshit
+
+//     // if (receiveCount < 2) {
+//     //   expect(foo).toEqual(1)
+//     // } else {
+//     //   expect(foo).toEqual(42)
+//     //   done()
+//     // }
+//     if (foo === 42) done()
+//     receiveCount++
+//   }
+//   // TODO wait for some event to do this
+//   await pause(1500)
+//   // change something in the local store
+//   localStore.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
+// })

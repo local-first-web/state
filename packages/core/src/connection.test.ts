@@ -26,7 +26,7 @@ describe('Connection', () => {
   const initialState: FooState = A.change(A.init(localActorId), doc => (doc.foo = 1))
 
   let watchableDoc: A.WatchableDoc<A.Doc<FooState>>
-  let server
+  let server: Server
 
   beforeAll(async () => {
     server = new Server({ port })
@@ -35,6 +35,10 @@ describe('Connection', () => {
 
   beforeEach(() => {
     watchableDoc = new A.WatchableDoc<A.Doc<FooState>>(initialState)
+  })
+
+  afterAll(async () => {
+    await server.close()
   })
 
   it('should expose its current state', () => {

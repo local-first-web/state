@@ -43,6 +43,7 @@ export class Peer extends EventEmitter {
     }
     const onclose = () => {
       log('socket.onclose')
+      this.emit('close')
       this.remove(key)
     }
     const onerror = ({ err }: any) => {

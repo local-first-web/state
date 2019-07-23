@@ -25,7 +25,7 @@ export class Cevitxe<T> extends EventEmitter {
   private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
 
   private feed?: Feed<string>
-  private connections: Connection[]
+  connections: { [peerId: string]: Connection }
 
   public databaseName: string
   public store?: Store
@@ -43,7 +43,8 @@ export class Cevitxe<T> extends EventEmitter {
     this.initialState = initialState
     this.databaseName = databaseName
     this.urls = urls
-    this.connections = []
+
+    this.connections = {}
   }
 
   joinStore = (documentId: string) => this.makeStore(documentId, false)
@@ -77,18 +78,33 @@ export class Cevitxe<T> extends EventEmitter {
     client.join(documentId)
 
     // For each peer that wants to connect, create a Connection object
-    client.on('peer', (peer: Peer) => {
+    client.on('peer', async (peer: Peer) => {
+      if (this.store === undefined) return
+
       log('connecting to peer', peer.id)
+
+      const remove = async (peerId: string) => {
+        await this.connections[peerId].close()
+        delete this.connections[peerId]
+      }
+
+      if (this.connections[peer.id]) remove(peer.id)
+      peer.on('close', () => remove(peer.id))
+
       const socket = peer.get(documentId)
-      const connection = new Connection(watchableDoc, socket, this.store!.dispatch)
-      this.connections.push(connection)
+      const connection = new Connection(watchableDoc, socket, this.store.dispatch)
+      this.connections[peer.id] = connection
+      log('connected to peer', peer.id)
+
+      this.emit('peer', peer)
     })
 
+    this.emit('ready')
     return this.store
   }
 
   public get connectionCount() {
-    return this.connections.length
+    return Object.keys(this.connections).length
   }
 
   get knownDocumentIds() {
@@ -98,28 +114,36 @@ export class Cevitxe<T> extends EventEmitter {
   close = async () => {
     this.store = undefined
 
-    if (this.connections) await this.connections.forEach(async c => await c.close())
-    this.connections = []
+    const closeAllConnections = Object.keys(this.connections).map(peerId =>
+      this.connections[peerId].close()
+    )
+    await Promise.all(closeAllConnections)
+    this.connections = {}
 
     const feed = this.feed
     if (feed) {
       await Promise.all([
-        new Promise(ok => feed.close(err => ok())),
-        new Promise(ok => feed.on('close', () => ok())),
+        new Promise(ok => feed.close(ok)),
+        new Promise(ok => feed.on('close', ok)),
       ])
       this.feed = undefined
     }
+    this.emit('close')
   }
 }
 
 const getStateFromStorage = async (feed: Feed<string>) => {
   log('getting change sets from storage')
-  const batch = new Promise(yes => feed.getBatch(0, feed.length, (_, data) => yes(data)))
-  const data = (await batch) as string[]
-  const changeSets = data.map(d => JSON.parse(d))
+
+  // read full contents of the feed in one batch
+  const feedContents = new Promise(yes => feed.getBatch(0, feed.length, (_, data) => yes(data)))
+  const data = (await feedContents) as string[]
+  const changeSets = data.map(changes => JSON.parse(changes))
+
   log('rehydrating from stored change sets %o', changeSets)
   let state = A.init()
   changeSets.forEach(changes => (state = A.applyChanges(state, changes)))
+
   log('done rehydrating')
   return state
 }
@@ -127,9 +151,11 @@ const getStateFromStorage = async (feed: Feed<string>) => {
 const setInitialState = <T>(feed: Feed<string>, initialState: T) => {
   log('nothing in storage; initializing %o', initialState)
   const state = A.from(initialState)
+
+  // send initialization changes to the feed for persistence
   const changeSet = A.getChanges(A.init(), state)
   feed.append(JSON.stringify(changeSet))
-  log('initialized')
+
   return state
 }
 
