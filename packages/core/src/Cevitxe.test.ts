@@ -5,10 +5,9 @@ import { Cevitxe } from './Cevitxe'
 import { newid } from './lib/newid'
 import { ProxyReducer } from './types'
 import { pause } from './lib/pause'
+import pEvent from 'p-event'
 
 require('fake-indexeddb/auto')
-
-const log = debug('cevitxe:tests')
 
 interface FooState {
   foo?: number
@@ -29,18 +28,16 @@ describe('Cevitxe', () => {
   const initialState: FooState = { foo: 1 }
   let localStore: Store
 
-  let port: number = 10000 + Math.floor(Math.random() * 1000)
-  let urls: string[]
+  let port: number = 10000
+  let urls = [`ws://localhost:${port}`]
 
-  let server: Server
+  beforeEach(async () => {
+    documentId = newid(6)
+  })
 
   describe('offline', () => {
     beforeEach(async () => {
-      port++ // increment the port with each test
-      urls = [`ws://localhost:${port}`]
-
       // instantiate local store
-      documentId = newid(6)
       const databaseName = `test-${newid()}`
       localCevitxe = new Cevitxe({ databaseName, proxyReducer, initialState, urls })
     })
@@ -93,15 +90,15 @@ describe('Cevitxe', () => {
         localStore = await localCevitxe.createStore(documentId)
       })
 
-      // it('close should destroy any current store', async () => {
-      //   expect.assertions(2)
-      //   expect(localCevitxe.store).not.toBeUndefined()
+      it('close should destroy any current store', async () => {
+        expect.assertions(2)
+        expect(localCevitxe.store).not.toBeUndefined()
 
-      //   await pause(500) // HACK:
+        await pause(10) // HACK for indexeddb
 
-      //   await localCevitxe.close()
-      //   expect(localCevitxe.store).toBeUndefined()
-      // })
+        await localCevitxe.close()
+        expect(localCevitxe.store).toBeUndefined()
+      })
     })
 
     describe('persistence', () => {
@@ -134,15 +131,14 @@ describe('Cevitxe', () => {
   })
 
   describe('online', () => {
-    beforeEach(async () => {
-      port++ // increment the port with each test to avoid conflicts
-      urls = [`ws://localhost:${port}`]
+    let server: Server
+    let remoteCevitxe: Cevitxe<any>
 
+    beforeEach(async () => {
       server = new Server({ port })
       await server.listen({ silent: true })
 
       // instantiate local store
-      documentId = newid(6)
       const databaseName = `local-${newid()}`
       localCevitxe = new Cevitxe({
         databaseName,
@@ -150,66 +146,40 @@ describe('Cevitxe', () => {
         initialState,
         urls,
       })
+      remoteCevitxe = new Cevitxe({
+        databaseName: `remote-${newid()}`,
+        proxyReducer,
+        initialState: {},
+        urls,
+      })
       localStore = await localCevitxe.createStore(documentId)
     })
 
-    afterEach(async () => {
+    async function close() {
+      await localCevitxe.close()
+      await remoteCevitxe.close()
       await server.close()
-    })
+    }
 
     describe('close', () => {
-      it('should close all connections', async done => {
-        // expect.assertions(2)
-        // await pause(500)
-
-        log('close test')
-
-        localCevitxe.on('peer', () => {
-          expect(Object.keys(localCevitxe.connections)).toHaveLength(1)
-          done()
-        })
-
+      it('should close all connections', async () => {
+        const onPeer = pEvent(localCevitxe, 'peer')
         // instantiate remote store
-        const remoteCevitxe = new Cevitxe({
-          databaseName: `remote-${newid()}`,
-          proxyReducer,
-          initialState: {},
-          urls,
-        })
-        const remoteStore = await remoteCevitxe.joinStore(documentId)
-
-        // await pause(500)
-
-        // await localCevitxe.close()
-
-        // expect(Object.keys(localCevitxe.connections)).toHaveLength(0)
-        // done()
+        await remoteCevitxe.joinStore(documentId)
+        await onPeer
+        expect(Object.keys(localCevitxe.connections)).toHaveLength(1)
+        await close()
+        expect(Object.keys(localCevitxe.connections)).toHaveLength(0)
       })
+    })
+
+    it('should communicate changes from one store to another', async () => {
+      const remoteStore = await remoteCevitxe.joinStore(documentId)
+      // change something in the local store
+      localStore.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
+      await pEvent(remoteCevitxe, 'change')
+      expect(remoteStore.getState().foo).toBe(42)
+      await close()
     })
   })
 })
-
-// it('should communicate changes from one store to another', async done => {
-//   await remoteCevitxe.joinStore(documentId)
-
-//   let receiveCount = 0
-//   function onReceive(message: any) {
-//     const { foo } = localStore.getState()
-//     log('pass', receiveCount, foo)
-
-//     // TODO this is bullshit
-
-//     // if (receiveCount < 2) {
-//     //   expect(foo).toEqual(1)
-//     // } else {
-//     //   expect(foo).toEqual(42)
-//     //   done()
-//     // }
-//     if (foo === 42) done()
-//     receiveCount++
-//   }
-//   // TODO wait for some event to do this
-//   await pause(1500)
-//   // change something in the local store
-//   localStore.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
-// })
