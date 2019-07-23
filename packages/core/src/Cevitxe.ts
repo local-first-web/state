@@ -11,7 +11,6 @@ import { adaptReducer } from './adaptReducer'
 import { Connection } from './Connection'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
-import { promisify } from './lib/promisify'
 import { getKeys, getKnownDocumentIds } from './keys'
 import { CevitxeOptions, ProxyReducer } from './types'
 
@@ -98,7 +97,7 @@ export class Cevitxe<T> extends EventEmitter {
 
   close = async () => {
     this.store = undefined
-    
+
     if (this.connections) await this.connections.forEach(async c => await c.close())
     this.connections = []
 
@@ -137,8 +136,7 @@ const setInitialState = <T>(feed: Feed<string>, initialState: T) => {
 const createStorageFeed = async (documentId: string, databaseName: string) => {
   log('creating storage feed')
   const { key, secretKey } = getKeys(databaseName, documentId)
-  const dbName = getDbName(databaseName, documentId)
-  const storage = db(dbName)
+  const storage = db(`cevitxe-${databaseName}-${documentId.substr(0, 12)}`)
 
   const feed: Feed<string> = hypercore(storage, key, { secretKey, valueEncoding })
   feed.on('error', (err: any) => console.error(err))
@@ -147,6 +145,3 @@ const createStorageFeed = async (documentId: string, databaseName: string) => {
   log('feed ready')
   return feed
 }
-
-export const getDbName = (databaseName: string, documentId: string) =>
-  `cevitxe-${databaseName}-${documentId.substr(0, 12)}`
