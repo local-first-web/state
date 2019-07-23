@@ -9,7 +9,7 @@ import { Middleware, Store } from 'redux'
 import { Client, Peer } from 'cevitxe-signal-client'
 import { adaptReducer } from './adaptReducer'
 import { Connection } from './Connection'
-import { DEFAULT_PEER_HUBS } from './constants'
+import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { promisify } from './lib/promisify'
 import { getKeys, getKnownDocumentIds } from './keys'
@@ -21,35 +21,29 @@ let log = debug('cevitxe')
 
 export class Cevitxe<T> extends EventEmitter {
   private proxyReducer: ProxyReducer<any>
-  private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
   private initialState: T
-
-  private onReceive?: Function
-
-  databaseName: string
-  store?: Store
-
   private urls: string[]
+  private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
 
   private feed?: Feed<string>
-  private hub?: any
   private connections: Connection[]
+
+  public databaseName: string
+  public store?: Store
 
   constructor({
     databaseName,
     proxyReducer,
     initialState,
-    urls: peerHubs = DEFAULT_PEER_HUBS,
+    urls = DEFAULT_SIGNAL_SERVERS,
     middlewares = [],
-    onReceive,
   }: CevitxeOptions<T>) {
     super()
     this.proxyReducer = proxyReducer
     this.middlewares = middlewares
     this.initialState = initialState
-    this.onReceive = onReceive
     this.databaseName = databaseName
-    this.urls = peerHubs
+    this.urls = urls
     this.connections = []
   }
 
@@ -77,7 +71,7 @@ export class Cevitxe<T> extends EventEmitter {
     const enhancer = Redux.applyMiddleware(...this.middlewares, cevitxeMiddleware)
     this.store = Redux.createStore(reducer, state, enhancer)
 
-    // TODO: randomly select a URL?
+    // TODO: randomly select a URL if more than one is provided? select best based on ping?
     const url = this.urls[0]
     const client = new Client({ url })
 
@@ -87,7 +81,7 @@ export class Cevitxe<T> extends EventEmitter {
     client.on('peer', (peer: Peer) => {
       log('connecting to peer', peer.id)
       const socket = peer.get(documentId)
-      const connection = new Connection(watchableDoc, socket, this.store!.dispatch, this.onReceive)
+      const connection = new Connection(watchableDoc, socket, this.store!.dispatch)
       this.connections.push(connection)
     })
 
@@ -104,12 +98,18 @@ export class Cevitxe<T> extends EventEmitter {
 
   close = async () => {
     this.store = undefined
+    
     if (this.connections) await this.connections.forEach(async c => await c.close())
-    if (this.feed) await promisify(this.feed.close)
-    // if (this.hub) await promisify(this.hub.close)
-    this.feed = undefined
-    this.hub = undefined
     this.connections = []
+
+    const feed = this.feed
+    if (feed) {
+      await Promise.all([
+        new Promise(ok => feed.close(err => ok())),
+        new Promise(ok => feed.on('close', () => ok())),
+      ])
+      this.feed = undefined
+    }
   }
 }
 
@@ -118,7 +118,7 @@ const getStateFromStorage = async (feed: Feed<string>) => {
   const batch = new Promise(yes => feed.getBatch(0, feed.length, (_, data) => yes(data)))
   const data = (await batch) as string[]
   const changeSets = data.map(d => JSON.parse(d))
-  log('rehydrating from stored change sets', changeSets)
+  log('rehydrating from stored change sets %o', changeSets)
   let state = A.init()
   changeSets.forEach(changes => (state = A.applyChanges(state, changes)))
   log('done rehydrating')
@@ -126,7 +126,7 @@ const getStateFromStorage = async (feed: Feed<string>) => {
 }
 
 const setInitialState = <T>(feed: Feed<string>, initialState: T) => {
-  log('nothing in storage; initializing', JSON.stringify(initialState))
+  log('nothing in storage; initializing %o', initialState)
   const state = A.from(initialState)
   const changeSet = A.getChanges(A.init(), state)
   feed.append(JSON.stringify(changeSet))
