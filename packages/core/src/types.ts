@@ -12,8 +12,6 @@ export interface CevitxeOptions<T> {
   middlewares?: Middleware[] // TODO: accept an `enhancer` object instead
   initialState: T
 
-  onReceive?: Function
-
   // hypercore feed options
   databaseName: string
   urls?: string[]
