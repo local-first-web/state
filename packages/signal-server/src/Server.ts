@@ -2,7 +2,7 @@ import debug from 'debug'
 import { EventEmitter } from 'events'
 import express from 'express'
 import expressWs from 'express-ws'
-import { Server as HttpServer } from 'net'
+import { Server as HttpServer, Socket } from 'net'
 import WebSocket, { Data } from 'ws'
 import { ConnectRequestParams, KeySet } from './types'
 import { deduplicate } from './lib/deduplicate'
@@ -53,6 +53,8 @@ export class Server extends EventEmitter {
    * When we start listening, we keep a reference to the `httpServer` so we can close it if asked to.
    */
   private httpServer?: HttpServer
+
+  private sockets: Socket[] = []
 
   constructor({ port = 8080 } = {}) {
     super()
@@ -205,16 +207,19 @@ export class Server extends EventEmitter {
         this.emit('ready')
         ready()
       })
+      this.httpServer.on('connection', socket => this.sockets.push(socket))
     })
   }
 
   close() {
     return new Promise(closed => {
-      if (this.httpServer)
+      if (this.httpServer) {
+        this.sockets.forEach(socket => socket.destroy())
         this.httpServer.close(() => {
           this.emit('closed')
           closed()
         })
+      } else log('nothing to close!')
     })
   }
 }
