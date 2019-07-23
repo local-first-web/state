@@ -63,6 +63,7 @@ export class Cevitxe<T> extends EventEmitter {
       : setInitialState(this.feed, {}) // joining a peer's feed, starting with an empty doc
 
     const watchableDoc = new A.WatchableDoc(state)
+    watchableDoc.registerHandler(doc => this.emit('change', doc))
     log('created initial watchableDoc', state)
 
     // Create Redux store
@@ -113,6 +114,7 @@ export class Cevitxe<T> extends EventEmitter {
 
   close = async () => {
     this.store = undefined
+    this.removeAllListeners()
 
     const closeAllConnections = Object.keys(this.connections).map(peerId =>
       this.connections[peerId].close()
