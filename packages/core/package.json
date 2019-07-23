@@ -27,11 +27,13 @@
   "devDependencies": {
     "@types/debug": "4",
     "@types/jest": "24",
+    "@types/p-event": "3",
     "cevitxe-signal-server": "^0.2.1",
     "fake-indexeddb": "2",
     "idb": "4",
     "jest": "24",
     "npm-watch": "0",
+    "p-event": "4",
     "prettier": "1",
     "redux": "4",
     "ts-jest": "24",
