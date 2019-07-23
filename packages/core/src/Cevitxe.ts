@@ -85,6 +85,7 @@ export class Cevitxe<T> extends EventEmitter {
       log('connecting to peer', peer.id)
 
       const remove = async (peerId: string) => {
+        log('removing peer', peerId)
         await this.connections[peerId].close()
         delete this.connections[peerId]
       }
