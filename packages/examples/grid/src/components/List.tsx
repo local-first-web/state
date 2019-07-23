@@ -1,33 +1,39 @@
 /** @jsx jsx */
 
 import { CSSObject, jsx } from '@emotion/core'
-import { useSelector, useDispatch } from 'react-redux'
-import React, { useState } from 'react'
 import {
-  addItem,
-  updateItem,
-  addField,
-  renameField,
-  deleteField,
-  setFieldType,
-} from '../redux/actions'
-import { AgGridReact } from 'ag-grid-react'
-import 'ag-grid-enterprise'
-import 'ag-grid-community/dist/styles/ag-grid.css'
-import 'ag-grid-community/dist/styles/ag-theme-balham.css'
-import { CellKeyPressEvent, ModelUpdatedEvent } from 'ag-grid-community/dist/lib/events'
-import {
-  ValueSetterParams,
   ColDef,
-  ValueParserParams,
   GetMainMenuItemsParams,
   MenuItemDef,
+  ValueParserParams,
+  ValueSetterParams,
 } from 'ag-grid-community'
+import { CellKeyPressEvent, ModelUpdatedEvent } from 'ag-grid-community/dist/lib/events'
+import 'ag-grid-community/dist/styles/ag-grid.css'
+import 'ag-grid-community/dist/styles/ag-theme-balham.css'
+import 'ag-grid-enterprise'
+import { AgGridReact } from 'ag-grid-react'
 import { useDialog } from 'muibox'
+import { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  addField,
+  addItem,
+  deleteField,
+  renameField,
+  setFieldType,
+  updateItem,
+} from '../redux/actions'
 import { State } from '../redux/store'
+import { Loading } from './Loading'
 
 const List = () => {
-  const collection = useSelector<State, any[]>((state: any) => {
+  const ready = useSelector(
+    (state: any) => state !== undefined && state.list !== undefined && state.schema
+  )
+  const rowCount = useSelector((state: any) => state.list.length)
+
+  const collection = useSelector((state: any) => {
     // We might not have any state if we're waiting to join a Cevitxe store
     // Return empty collection if we have no state yet
     if (!state || !state.list) return []
@@ -165,24 +171,31 @@ const List = () => {
   }
 
   return (
-    <div className="ag-theme-balham" css={styles.grid}>
-      <AgGridReact
-        columnDefs={columns}
-        defaultColDef={{
-          editable: true,
-          resizable: true,
-          sortable: true,
-          filter: true,
-          valueSetter,
-          valueParser,
-        }}
-        rowData={collection}
-        deltaRowDataMode={true}
-        getRowNodeId={item => item.id}
-        onCellKeyDown={handleKeyDown}
-        onModelUpdated={handleModelUpdated}
-        getMainMenuItems={getMainMenu}
-      />
+    <div>
+      {true ? (
+        <div className="ag-theme-balham" css={styles.grid}>
+          <p>{rowCount} rows</p>
+          <AgGridReact
+            columnDefs={columns}
+            defaultColDef={{
+              editable: true,
+              resizable: true,
+              sortable: true,
+              filter: true,
+              valueSetter,
+              valueParser,
+            }}
+            rowData={collection}
+            deltaRowDataMode={true}
+            getRowNodeId={item => item.id}
+            onCellKeyDown={handleKeyDown}
+            onModelUpdated={handleModelUpdated}
+            getMainMenuItems={getMainMenu}
+          />
+        </div>
+      ) : (
+        <Loading />
+      )}
     </div>
   )
 }
@@ -190,6 +203,7 @@ type Stylesheet = { [k: string]: CSSObject }
 const styles: Stylesheet = {
   grid: {
     flexGrow: 5,
+    height: '100vh',
   },
 }
 

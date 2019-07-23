@@ -6,7 +6,7 @@ export const FIELD_ADD = 'FIELD_ADD'
 export const FIELD_RENAME = 'FIELD_RENAME'
 export const FIELD_DELETE = 'FIELD_DELETE'
 export const FIELD_SET_TYPE = 'FIELD_SET_TYPE'
-export const COLLECTION_LOAD = 'ITEMS_LOAD'
+export const COLLECTION_LOAD = 'COLLECTION_LOAD'
 export const ITEM_ADD = 'ITEM_ADD'
 export const ITEM_UPDATE = 'ITEM_UPDATE'
 export const ITEM_REMOVE = 'ITEM_REMOVE'
@@ -39,8 +39,8 @@ export function loadCollection(collection: any[]) {
   return { type: COLLECTION_LOAD, payload: { collection } }
 }
 
-export function addItem() {
-  return { type: ITEM_ADD, payload: { id: uuid() } }
+export function addItem(item: any = { id: uuid() }) {
+  return { type: ITEM_ADD, payload: item }
 }
 
 export function updateItem(id: string, field: string, value: any) {
