@@ -140,8 +140,7 @@ const createStorageFeed = async (documentId: string, databaseName: string) => {
 
   const feed: Feed<string> = hypercore(storage, key, { secretKey, valueEncoding })
   feed.on('error', (err: any) => console.error(err))
-  const feedReady = new Promise(ok => feed.on('ready', ok))
-  await feedReady
+  await new Promise(ok => feed.on('ready', ok))
   log('feed ready')
   return feed
 }
