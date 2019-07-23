@@ -4,6 +4,7 @@ import debug from 'debug'
 import { AnyAction, Dispatch } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
 import { Message } from './types'
+import { EventEmitter } from 'events'
 
 const log = debug('cevitxe:connection')
 
@@ -12,24 +13,22 @@ const log = debug('cevitxe:connection')
  * document. It uses `DocumentSync` for the synchronization logic, and integrates it with Cevitxe's
  * networking stack and with the Redux store.
  */
-export class Connection<T = any> {
+export class Connection<T = any> extends EventEmitter {
   private DocumentSync: DocumentSync<T>
-  private peerSocket: WebSocket | null | undefined
+  private peerSocket: WebSocket | null
   private dispatch?: Dispatch<AnyAction>
   private watchableDoc: A.WatchableDoc<A.Doc<T>, T>
-  private onReceive?: Function
 
   constructor(
     watchableDoc: A.WatchableDoc<A.Doc<T>, T>,
     peerSocket: WebSocket,
-    dispatch?: Dispatch<AnyAction>,
-    onReceive?: Function
+    dispatch?: Dispatch<AnyAction>
   ) {
+    super()
     log('new connection')
     this.watchableDoc = watchableDoc
     this.peerSocket = peerSocket
     if (dispatch) this.dispatch = dispatch
-    if (onReceive) this.onReceive = onReceive
 
     this.peerSocket.onmessage = this.receive.bind(this)
 
@@ -42,11 +41,11 @@ export class Connection<T = any> {
   }
 
   receive = ({ data }: any) => {
-    log('receive %o', data)
     const message = JSON.parse(data.toString())
+    log('receive %o', message)
+    this.emit('receive', message)
     if (message.changes) {
       log('%s changes received', message.changes.length)
-
       if (this.dispatch) {
         this.dispatch({
           type: RECEIVE_MESSAGE_FROM_PEER,
@@ -59,11 +58,6 @@ export class Connection<T = any> {
         // TODO: figure out a way to pass a fake dispatcher or something for testing
         log(`temp - only for use by testing without passing a dispatcher`)
         this.DocumentSync.receive(message) // this updates the doc
-      }
-
-      if (this.onReceive) {
-        log('changes, calling onReceive')
-        this.onReceive(message)
       }
     } else {
       log(`no changes, catch up with peer`)
