@@ -3,7 +3,7 @@ import { Server } from 'cevitxe-signal-server'
 import { Connection } from './Connection'
 
 import { WebSocket } from 'mock-socket'
-import { newid } from './lib/newid'
+import { newid } from 'cevitxe-signal-client'
 
 // @ts-ignore
 global.WebSocket = WebSocket
