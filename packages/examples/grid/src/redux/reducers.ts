@@ -13,6 +13,12 @@ export const proxyReducer: ProxyReducer<State> = ({ type, payload }) => {
         s.map = payload.collection
       }
 
+    case actions.COLLECTION_CLEAR:
+      return s => {
+        s.list = []
+        s.map = {}
+      }
+
     case actions.ITEM_ADD:
       return s => {
         s.list.push(payload.id)
