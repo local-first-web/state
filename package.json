@@ -31,6 +31,9 @@
     "npm-run-all": "4",
     "ts-jest": "24"
   },
+  "engines": {
+    "yarn": "1.17.3"
+  },
   "workspaces": {
     "packages": [
       "packages/*",
