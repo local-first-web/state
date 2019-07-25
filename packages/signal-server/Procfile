@@ -1,1 +1,1 @@
-web: yarn workspace cevitxe-signal-server start
+web: node -r esm packages\signal-server\dist\start.js
