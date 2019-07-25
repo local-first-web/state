@@ -6,7 +6,8 @@
   "main": "src/index.tsx",
   "scripts": {
     "start": "react-scripts-ts start",
-    "test": "react-scripts-ts test"
+    "test": "react-scripts-ts test",
+    "build": "react-scripts-ts build"
   },
   "dependencies": {
     "@emotion/core": "10",
