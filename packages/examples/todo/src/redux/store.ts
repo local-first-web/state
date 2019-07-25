@@ -13,9 +13,13 @@ const initialState = {
 // TODO: Figure out how to combine enhancers
 const middlewares = [logger]
 
+const urls = process.env.REACT_APP_SIGNAL_SERVERS
+  ? process.env.REACT_APP_SIGNAL_SERVERS.split(',')
+  : undefined
 export const cevitxe = new Cevitxe({
   databaseName: 'todo',
   proxyReducer,
   initialState,
+  urls,
   middlewares,
 })
