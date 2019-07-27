@@ -16,10 +16,14 @@ const logger = createLogger()
 
 //const composeEnhancers =
 //  (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+const urls = process.env.REACT_APP_SIGNAL_SERVERS
+  ? process.env.REACT_APP_SIGNAL_SERVERS.split(',')
+  : undefined
 
 export const cevitxe = new Cevitxe({
   databaseName: 'grid',
   proxyReducer,
   initialState,
+  urls,
   middlewares: [logger],
 })

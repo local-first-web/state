@@ -23,6 +23,9 @@
     "test:log": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 yarn test:watch",
     "purge": "scripts/purge.bat"
   },
+  "dependencies": {
+    "esm": "3"
+  },
   "devDependencies": {
     "@types/jest": "24",
     "cross-env": "5",
@@ -30,6 +33,9 @@
     "lerna": "3",
     "npm-run-all": "4",
     "ts-jest": "24"
+  },
+  "engines": {
+    "yarn": "1.17.3"
   },
   "workspaces": {
     "packages": [

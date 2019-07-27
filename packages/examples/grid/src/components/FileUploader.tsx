@@ -1,6 +1,6 @@
 ﻿import React, { ChangeEvent } from 'react'
 import { useDispatch } from 'react-redux'
-import { addItem, inferSchema } from '../redux/actions'
+import { addItem, inferSchema, clearCollection } from '../redux/actions'
 import debug from 'debug'
 const log = debug('cevitxe:grid:fileuploader')
 
@@ -13,6 +13,7 @@ export const FileUploader = () => {
     reader.onload = progress => {
       log('loading', progress)
       const data = JSON.parse((progress.target as any).result)
+      dispatch(clearCollection())
       dispatch(inferSchema(data))
       Object.values(data).forEach((item: any) => {
         dispatch(addItem(item))
