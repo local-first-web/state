@@ -7,6 +7,7 @@ import {
   MenuItemDef,
   ValueParserParams,
   ValueSetterParams,
+  GetContextMenuItemsParams,
 } from 'ag-grid-community'
 import { CellKeyPressEvent, ModelUpdatedEvent } from 'ag-grid-community/dist/lib/events'
 import 'ag-grid-community/dist/styles/ag-grid.css'
@@ -23,6 +24,7 @@ import {
   renameField,
   setFieldType,
   updateItem,
+  removeItem,
 } from '../redux/actions'
 import { State } from '../redux/store'
 import { Loading } from './Loading'
@@ -171,6 +173,11 @@ const List = () => {
     return (params.defaultItems as any[]).concat(items)
   }
 
+  function getContextMenuItems(params: GetContextMenuItemsParams) {
+    const items = [{ name: 'Delete', action: () => dispatch(removeItem(params.node.data.id)) }]
+    return (params.defaultItems as any[]).concat(items)
+  }
+
   return (
     <div>
       {true ? (
@@ -196,6 +203,7 @@ const List = () => {
             enableRangeSelection={true}
             enterMovesDown={true}
             enterMovesDownAfterEdit={true}
+            getContextMenuItems={getContextMenuItems}
           />
         </div>
       ) : (
