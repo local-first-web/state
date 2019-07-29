@@ -10801,6 +10801,11 @@ levn@^0.3.0, levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
+linq-es2015@2:
+  version "2.4.34"
+  resolved "https://registry.yarnpkg.com/linq-es2015/-/linq-es2015-2.4.34.tgz#9708aad112f1bd5958cb994f0c8d6bb9b558921d"
+  integrity sha512-g40yfB5/4/cWD3l31eqtEcb3mDrMIgmX5p91gzVuMEGAWVH/3VaBjecDfTcTc+eYHCsS99BFTUA4xbxMi4/nyg==
+
 listr-silent-renderer@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/listr-silent-renderer/-/listr-silent-renderer-1.1.1.tgz#924b5a3757153770bf1a8e3fbf74b8bbf3f9242e"

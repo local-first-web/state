@@ -17,6 +17,7 @@ import { AgGridReact } from 'ag-grid-react'
 import { useDialog } from 'muibox'
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import * as Enumerable from 'linq-es2015'
 import {
   addField,
   addItem,
@@ -174,7 +175,25 @@ const List = () => {
   }
 
   function getContextMenuItems(params: GetContextMenuItemsParams) {
-    const items = [{ name: 'Delete', action: () => dispatch(removeItem(params.node.data.id)) }]
+    let ids: string[]
+    const ranges = params.api!.getCellRanges()
+    if (!ranges.length) ids = [params.node.data.id]
+    else
+      ids = Enumerable.asEnumerable(ranges)
+        .SelectMany(d =>
+          Enumerable.Range(d.startRow!.rowIndex, d.endRow!.rowIndex - d.startRow!.rowIndex + 1)
+        )
+        .Distinct()
+        .Select(d => params.api!.getModel().getRow(d)!.id)
+        .ToArray()
+    const items = [
+      {
+        name: `Delete ${ids.length} items`,
+        action: () => {
+          ids.forEach(id => dispatch(removeItem(id)))
+        },
+      },
+    ]
     return (params.defaultItems as any[]).concat(items)
   }
 
@@ -204,6 +223,7 @@ const List = () => {
             enterMovesDown={true}
             enterMovesDownAfterEdit={true}
             getContextMenuItems={getContextMenuItems}
+            rowDeselection={true}
           />
         </div>
       ) : (
