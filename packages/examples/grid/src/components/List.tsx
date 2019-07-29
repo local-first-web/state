@@ -72,6 +72,7 @@ const List = () => {
     if (event.event) {
       switch ((event.event as KeyboardEvent).key) {
         case 'ArrowDown':
+        case 'Enter':
           if (event.rowIndex === collection.length - 1) {
             const action = addItem()
             setNextRowId(action.payload.id)
@@ -193,6 +194,8 @@ const List = () => {
             getMainMenuItems={getMainMenu}
             rowSelection="multiple"
             enableRangeSelection={true}
+            enterMovesDown={true}
+            enterMovesDownAfterEdit={true}
           />
         </div>
       ) : (
