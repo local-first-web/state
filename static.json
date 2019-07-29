@@ -1,0 +1,6 @@
+{
+  "root": "packages/examples/${EXAMPLE}/build/",
+  "routes": {
+    "/**": "index.html"
+  }
+}
