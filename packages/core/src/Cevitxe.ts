@@ -84,14 +84,8 @@ export class Cevitxe<T> extends EventEmitter {
 
       log('connecting to peer', peer.id)
 
-      const remove = async (peerId: string) => {
-        log('removing peer', peerId)
-        await this.connections[peerId].close()
-        delete this.connections[peerId]
-      }
-
-      if (this.connections[peer.id]) remove(peer.id)
-      peer.on('close', () => remove(peer.id))
+      peer.on('close', () => this.removePeer(peer.id))
+      this.removePeer(peer.id)
 
       const socket = peer.get(documentId)
       const connection = new Connection(watchableDoc, socket, this.store.dispatch)
@@ -113,13 +107,17 @@ export class Cevitxe<T> extends EventEmitter {
     return getKnownDocumentIds(this.databaseName)
   }
 
+  removePeer = (peerId: string) => {
+    log('removing peer', peerId)
+    if (this.connections[peerId]) this.connections[peerId].close()
+    delete this.connections[peerId]
+  }
+
   close = async () => {
     this.store = undefined
     this.removeAllListeners()
 
-    const closeAllConnections = Object.keys(this.connections).map(peerId =>
-      this.connections[peerId].close()
-    )
+    const closeAllConnections = Object.keys(this.connections).map(peerId => this.removePeer(peerId))
     await Promise.all(closeAllConnections)
     this.connections = {}
 
