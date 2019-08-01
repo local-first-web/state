@@ -30,6 +30,7 @@ export class Cevitxe<T> extends EventEmitter {
 
   public databaseName: string
   public store?: Store
+  documentId: string | null = null
 
   constructor({
     databaseName,
@@ -53,6 +54,7 @@ export class Cevitxe<T> extends EventEmitter {
 
   private makeStore = async (documentId: string, creating: boolean = false) => {
     log = debug(`cevitxe:${creating ? 'createStore' : 'joinStore'}:${documentId}`)
+    this.documentId = documentId
 
     this.feed = await createStorageFeed(documentId, this.databaseName)
 
@@ -64,6 +66,7 @@ export class Cevitxe<T> extends EventEmitter {
 
     const watchableDoc = new A.WatchableDoc(state)
     watchableDoc.registerHandler(doc => {
+      log('change', documentId)
       this.emit('change', doc)
     }) // hook for testing
     log('created initial watchableDoc', state)
