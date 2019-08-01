@@ -24,6 +24,7 @@ export class Cevitxe<T> extends EventEmitter {
   private urls: string[]
   private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
 
+  private id = newid()
   private feed?: Feed<string>
   connections: { [peerId: string]: Connection }
 
@@ -43,7 +44,6 @@ export class Cevitxe<T> extends EventEmitter {
     this.initialState = initialState
     this.databaseName = databaseName
     this.urls = urls
-
     this.connections = {}
   }
 
@@ -74,7 +74,7 @@ export class Cevitxe<T> extends EventEmitter {
 
     // TODO: randomly select a URL if more than one is provided? select best based on ping?
     const url = this.urls[0]
-    const client = new Client({ url })
+    const client = new Client({ id: this.id, url })
 
     client.join(documentId)
 
