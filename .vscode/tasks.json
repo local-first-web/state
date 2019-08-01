@@ -12,10 +12,10 @@
       }
     },
     {
-      "label": "Start TodoMVC example",
+      "label": "Start Grid example",
       "type": "shell",
       "command": "yarn",
-      "args": ["dev:todo"],
+      "args": ["dev:grid"],
       "group": {
         "kind": "build",
         "isDefault": true

@@ -2,11 +2,11 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Client",
+      "name": "Launch Grid example",
       "type": "chrome",
       "request": "launch",
       "url": "http://localhost:3000",
-      "preLaunchTask": "Start TodoMVC example"
+      "preLaunchTask": "Start Grid example"
     }
   ]
 }
