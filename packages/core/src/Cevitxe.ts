@@ -6,7 +6,7 @@ import db from 'random-access-idb'
 import * as Redux from 'redux'
 import { Middleware, Store } from 'redux'
 
-import { Client, Peer } from 'cevitxe-signal-client'
+import { Client, Peer, newid } from 'cevitxe-signal-client'
 import { adaptReducer } from './adaptReducer'
 import { Connection } from './Connection'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
