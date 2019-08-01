@@ -63,7 +63,9 @@ export class Cevitxe<T> extends EventEmitter {
       : setInitialState(this.feed, {}) // joining a peer's feed, starting with an empty doc
 
     const watchableDoc = new A.WatchableDoc(state)
-    watchableDoc.registerHandler(doc => this.emit('change', doc)) // hook for testing 
+    watchableDoc.registerHandler(doc => {
+      this.emit('change', doc)
+    }) // hook for testing
     log('created initial watchableDoc', state)
 
     // Create Redux store
