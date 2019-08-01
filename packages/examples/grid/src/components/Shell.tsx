@@ -8,11 +8,17 @@ import { Provider } from 'react-redux'
 import Redux from 'redux'
 import { cevitxe } from 'src/redux/store'
 import { App } from './App'
+import debug from 'debug'
+
+const log = debug('cevitxe:grid:Shell')
 
 export const Shell = () => {
   const [appStore, setAppStore] = useState<Redux.Store>()
 
-  const onStoreReady = (store: Redux.Store) => setAppStore(store)
+  const onStoreReady = (store: Redux.Store) => {
+    log('store ready', cevitxe.documentId)
+    return setAppStore(store)
+  }
 
   return (
     <div css={styles.shell}>
