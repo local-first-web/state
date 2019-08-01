@@ -20,7 +20,7 @@ export const getMiddleware: MiddlewareFactory = <T>(
     // after changes
     const nextState = store.getState()
     if (!action.payload.cameFromFeed && watchableDoc) {
-      log('calling setDoc %o', nextState)
+      log('calling watchableDoc.set %o', nextState)
       watchableDoc.set(nextState)
     }
     // Write all actions to the feed for persistence
