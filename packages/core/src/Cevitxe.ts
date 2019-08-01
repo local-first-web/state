@@ -30,7 +30,7 @@ export class Cevitxe<T> extends EventEmitter {
 
   public databaseName: string
   public store?: Store
-  documentId: string | null = null
+  documentId?: string = undefined
 
   constructor({
     databaseName,
