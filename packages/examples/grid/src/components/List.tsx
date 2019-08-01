@@ -31,10 +31,8 @@ import { State } from '../redux/store'
 import { Loading } from './Loading'
 
 const List = () => {
-  const ready = useSelector(
-    (state: any) => state !== undefined && state.list !== undefined && state.schema
-  )
-  const rowCount = useSelector((state: any) => state.list.length)
+  const ready = useSelector((state: any) => !!state && !!state.list && !!state.schema)
+  const rowCount = useSelector((state: any) => ready && state.list.length)
 
   const collection = useSelector((state: any) => {
     // We might not have any state if we're waiting to join a Cevitxe store
@@ -199,7 +197,8 @@ const List = () => {
 
   return (
     <div>
-      {true ? (
+      <pre>{JSON.stringify({ ready })}</pre>
+      {ready ? (
         <div className="ag-theme-balham" css={styles.grid}>
           <p>{rowCount} rows</p>
           <AgGridReact
