@@ -90,7 +90,6 @@ export class Cevitxe<T> extends EventEmitter {
       log('connecting to peer', peer.id)
 
       peer.on('close', () => this.removePeer(peer.id))
-      this.removePeer(peer.id)
 
       const socket = peer.get(documentId)
       const connection = new Connection(watchableDoc, socket, this.store.dispatch)
