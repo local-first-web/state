@@ -18,6 +18,7 @@ import { useDialog } from 'muibox'
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import * as Enumerable from 'linq-es2015'
+import { debug } from 'debug'
 import {
   addField,
   addItem,
@@ -30,7 +31,12 @@ import {
 import { State } from '../redux/store'
 import { Loading } from './Loading'
 
+const log = debug('cevitxe:grid:List')
+
 const List = () => {
+  const stateTestId = useSelector((s: State) => s._testId)
+  log('state id', stateTestId)
+
   const ready = useSelector((state: State) => !!state && !!state.list && !!state.schema)
   const rowCount = useSelector((state: State) => ready && state.list.length)
 
@@ -112,6 +118,7 @@ const List = () => {
       case 'numericColumn':
         if (Number.isNaN(params.newValue)) return false
     }
+    log('dispatching updateItem, state id', stateTestId)
     dispatch(updateItem(params.data.id, params.colDef.field!, params.newValue))
     return true
   }

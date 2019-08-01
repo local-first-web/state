@@ -8,6 +8,7 @@ export interface State {
   list: string[]
   map: { [key: string]: any }
   schema: JSONSchema7
+  _testId: string
 }
 
 const initialState: State = emptyGrid(3, 3)
