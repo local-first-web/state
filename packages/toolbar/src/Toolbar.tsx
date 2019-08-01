@@ -17,6 +17,15 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
   const [documentId, setDocumentId] = useDocumentId()
   const input = useRef<HTMLInputElement>() as React.RefObject<HTMLInputElement>
 
+  const useAppStore = (cb: (store: Redux.Store) => void) => {
+    const [appStore, _setAppStore] = useState()
+    const setAppStore = (store: Redux.Store) => {
+      _setAppStore(store)
+      cb(store)
+    }
+    return [appStore, setAppStore]
+  }
+
   const [appStore, setAppStore] = useAppStore(onStoreReady)
 
   const [documentIdHasFocus, setDocumentIdHasFocus] = useState(false)
@@ -42,7 +51,6 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
     setAppStore(await cevitxe.createStore(newDocumentId))
     setBusy(false)
     log('created store ', newDocumentId)
-    join(newDocumentId)
     return newDocumentId
   }
 
@@ -127,15 +135,6 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
 export interface ToolbarProps<T> {
   cevitxe: Cevitxe<T>
   onStoreReady: (store: Redux.Store) => void
-}
-
-const useAppStore = (cb: (store: Redux.Store) => void) => {
-  const [appStore, _setAppStore] = useState()
-  const setAppStore = (store: Redux.Store) => {
-    _setAppStore(store)
-    cb(store)
-  }
-  return [appStore, setAppStore]
 }
 
 const menu = (documentIdHasFocus: boolean) =>
