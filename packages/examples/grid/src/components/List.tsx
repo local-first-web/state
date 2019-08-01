@@ -197,7 +197,6 @@ const List = () => {
 
   return (
     <div>
-      <pre>{JSON.stringify({ ready })}</pre>
       {ready ? (
         <div className="ag-theme-balham" css={styles.grid}>
           <p>{rowCount} rows</p>
