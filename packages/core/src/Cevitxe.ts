@@ -94,7 +94,7 @@ export class Cevitxe<T> extends EventEmitter {
       this.connections[peer.id] = connection
       log('connected to peer', peer.id)
 
-      this.emit('peer', peer) // hook for testing 
+      this.emit('peer', peer) // hook for testing
     })
 
     return this.store
