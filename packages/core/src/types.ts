@@ -23,7 +23,11 @@ export interface CreateStoreResult {
 }
 
 // TODO: sort out the type for feed after building, can't get it to pick up the Feed type from the ambient hypercore types
-export type MiddlewareFactory = <T>(feed: any, watchableDoc: A.WatchableDoc<A.Doc<T>>) => Middleware // feed: Feed<string>
+export type MiddlewareFactory = <T>(
+  feed: any,
+  watchableDoc: A.WatchableDoc<A.Doc<T>>,
+  documentId?: string
+) => Middleware // feed: Feed<string>
 
 // A keychain maps a discovery key (the id we share to the signal server) with a public/private
 // keypair (which we use for storage etc). The discovery key can be any string that we think is

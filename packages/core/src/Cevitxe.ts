@@ -73,7 +73,7 @@ export class Cevitxe<T> extends EventEmitter {
 
     // Create Redux store
     const reducer = adaptReducer(this.proxyReducer)
-    const cevitxeMiddleware = getMiddleware(this.feed, watchableDoc)
+    const cevitxeMiddleware = getMiddleware(this.feed, watchableDoc, this.documentId)
     const enhancer = Redux.applyMiddleware(...this.middlewares, cevitxeMiddleware)
     this.store = Redux.createStore(reducer, state, enhancer)
 

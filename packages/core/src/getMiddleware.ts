@@ -6,9 +6,11 @@ const log = debug('cevitxe:middleware')
 
 export const getMiddleware: MiddlewareFactory = <T>(
   feed: Feed<string>,
-  watchableDoc: A.WatchableDoc<any>
+  watchableDoc: A.WatchableDoc<any>,
+  documentId?: string
 ) => {
   return store => next => action => {
+    log('document', documentId)
     // before changes
     const prevState = store.getState() || A.init()
     log('action %o', action)
