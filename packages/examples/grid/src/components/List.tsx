@@ -41,16 +41,12 @@ const List = () => {
   const rowCount = useSelector((state: State) => ready && state.list.length)
 
   const collection = useSelector((state: State) => {
-    // We might not have any state if we're waiting to join a Cevitxe store
-    // Return empty collection if we have no state yet
-    if (!state || !state.list) return []
+    if (!ready) return []
     return state.list.map((d: string) => state.map[d])
   })
 
   const columns = useSelector((state: State) => {
-    // We might not have any state if we're waiting to join a Cevitxe store
-    // Return empty collection if we have no state yet
-    if (!state || !state.schema) return []
+    if (!ready) return []
     return Object.entries(state.schema.properties || {}).map(entry =>
       colDefFromSchemaProperty(entry[0], entry[1])
     )
