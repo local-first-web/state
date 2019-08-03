@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { CSSObject, jsx } from '@emotion/core'
+import { CSSObject, jsx, css } from '@emotion/core'
 import {
   ColDef,
   GetMainMenuItemsParams,
@@ -21,7 +21,7 @@ import 'ag-grid-enterprise'
 import { AgGridReact } from 'ag-grid-react'
 import { useDialog } from 'muibox'
 import { useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector, useStore } from 'react-redux'
 import * as Enumerable from 'linq-es2015'
 import { debug } from 'debug'
 import {
@@ -39,9 +39,6 @@ import { Loading } from './Loading'
 const log = debug('cevitxe:grid:List')
 
 const List = () => {
-  const stateTestId = useSelector((s: State) => s._testId)
-  log('state id', stateTestId)
-
   const ready = useSelector((state: State) => !!state && !!state.list && !!state.schema)
   const rowCount = useSelector((state: State) => ready && state.list.length)
 
@@ -74,7 +71,12 @@ const List = () => {
     return colDef
   }
 
-  const dispatch = useDispatch()
+  const store = useStore()
+
+  const stateTestId = store.getState()._testId
+  log('state id', stateTestId)
+
+  const dispatch = store.dispatch
   const [nextRowId, setNextRowId] = useState()
   const [nextColumn, setNextColumn] = useState()
 
@@ -246,12 +248,11 @@ const List = () => {
     </div>
   )
 }
-type Stylesheet = { [k: string]: CSSObject }
-const styles: Stylesheet = {
-  grid: {
+const styles = {
+  grid: css({
     flexGrow: 5,
     height: '100vh',
-  },
+  }),
 }
 
 export default List

@@ -1,14 +1,14 @@
 /** @jsx jsx */
 
-import { CSSObject, jsx } from '@emotion/core'
+import { css, jsx } from '@emotion/core'
 import { Toolbar } from 'cevitxe-toolbar'
+import debug from 'debug'
 import { DialogProvider } from 'muibox'
 import { useState } from 'react'
 import { Provider } from 'react-redux'
 import Redux from 'redux'
 import { cevitxe } from 'src/redux/store'
 import { App } from './App'
-import debug from 'debug'
 
 const log = debug('cevitxe:grid:shell')
 
@@ -16,8 +16,8 @@ export const Shell = () => {
   const [appStore, setAppStore] = useState<Redux.Store>()
 
   const onStoreReady = (store: Redux.Store) => {
-    log('store ready', cevitxe.documentId)
-    return setAppStore(store)
+    log('store ready', cevitxe.documentId, store.getState()._testId)
+    setAppStore(store)
   }
 
   return (
@@ -34,12 +34,11 @@ export const Shell = () => {
   )
 }
 
-type Stylesheet = { [k: string]: CSSObject }
-const styles: Stylesheet = {
-  shell: {
+const styles = {
+  shell: css({
     display: 'flex',
     flexDirection: 'column',
     width: '100%',
     height: '100vh',
-  },
+  }),
 }

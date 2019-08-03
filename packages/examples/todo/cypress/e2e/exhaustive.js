@@ -1,16 +1,14 @@
-const NO_WAIT = { timeout: 10 }
+// const NO_WAIT = { timeout: 10 }
 
 describe('TodoMVC - React/Apollo - Exhaustive', () => {
-  // setup these constants to match what TodoMVC does
   let TODO_ITEM_ONE = 'buy some cheese'
   let TODO_ITEM_TWO = 'feed the cat'
   let TODO_ITEM_THREE = 'book a doctors appointment'
 
   beforeEach(function() {
-    cy.visit('/')
+    cy.wait(100).visit('/')
   })
 
-  // a very simple example helpful during presentations
   it('adds 2 todos', function() {
     cy.get('.new-todo')
       .type('learn testing{enter}')
@@ -26,7 +24,7 @@ describe('TodoMVC - React/Apollo - Exhaustive', () => {
 
   context('No Todos', function() {
     it('should hide #main and #footer', function() {
-      cy.get('.todo-list li', NO_WAIT).should('not.exist')
+      cy.get('.todo-list li').should('not.exist')
       cy.get('.main').should('not.be.visible')
       cy.get('.footer').should('not.be.visible')
     })
@@ -105,74 +103,6 @@ describe('TodoMVC - React/Apollo - Exhaustive', () => {
       cy.createTodo(TODO_ITEM_ONE)
       cy.get('.main').should('be.visible')
       cy.get('.footer').should('be.visible')
-    })
-  })
-
-  context.skip('Mark all as completed', function() {
-    beforeEach(function() {
-      cy.createDefaultTodos().as('todos')
-    })
-
-    it('should allow me to mark all items as completed', function() {
-      // because that indicates our intention much clearer
-      cy.get('.toggle-all').check()
-
-      // get each todo li and ensure its class is 'completed'
-      cy.get('@todos')
-        .eq(0)
-        .should('have.class', 'completed')
-      cy.get('@todos')
-        .eq(1)
-        .should('have.class', 'completed')
-      cy.get('@todos')
-        .eq(2)
-        .should('have.class', 'completed')
-    })
-
-    it('should allow me to clear the complete state of all items', function() {
-      // check and then immediately uncheck
-      cy.get('.toggle-all')
-        .check()
-        .uncheck()
-
-      cy.get('@todos')
-        .eq(0)
-        .should('not.have.class', 'completed')
-      cy.get('@todos')
-        .eq(1)
-        .should('not.have.class', 'completed')
-      cy.get('@todos')
-        .eq(2)
-        .should('not.have.class', 'completed')
-    })
-
-    it('complete all checkbox should update state when items are completed / cleared', function() {
-      // alias the .toggle-all for reuse later
-      cy.get('.toggle-all')
-        .as('toggleAll')
-        .check()
-        // this assertion is silly here IMO but
-        // it is what TodoMVC does
-        .should('be.checked')
-
-      // alias the first todo and then click it
-      cy.get('.todo-list li')
-        .eq(0)
-        .as('firstTodo')
-        .find('.toggle')
-        .uncheck()
-
-      // reference the .toggle-all element again
-      // and make sure its not checked
-      cy.get('@toggleAll').should('not.be.checked')
-
-      // reference the first todo again and now toggle it
-      cy.get('@firstTodo')
-        .find('.toggle')
-        .check()
-
-      // assert the toggle all is checked again
-      cy.get('@toggleAll').should('be.checked')
     })
   })
 
@@ -433,25 +363,7 @@ describe('TodoMVC - React/Apollo - Exhaustive', () => {
         .should('contain', TODO_ITEM_ONE)
       cy.get('@todos')
         .eq(1)
-        .should('contain', TODO_ITEM_TWO)
-    })
-
-    it.skip('should respect the back button', function() {
-      cy.get('@todos')
-        .eq(1)
-        .find('.toggle')
-        .check()
-      cy.get('.filters')
-        .contains('Active')
-        .click()
-      cy.get('.filters')
-        .contains('Completed')
-        .click()
-      cy.get('@todos').should('have.length', 1)
-      cy.go('back')
-      cy.get('@todos').should('have.length', 2)
-      cy.go('back')
-      cy.get('@todos').should('have.length', 3)
+        .should('contain', TODO_ITEM_THREE)
     })
 
     it('should allow me to display completed items', function() {

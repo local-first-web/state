@@ -8,13 +8,13 @@
   "scripts": {
     "start": "react-scripts-ts start",
     "lint": "tsc -p tsconfig.strict.json --noEmit",
-    "test:c": "cypress open",
+    "test:e2e": "cypress open",
     "dev": "run-p start"
   },
   "dependencies": {
     "@emotion/core": "10",
-    "cevitxe": "^0.2.1",
-    "cevitxe-toolbar": "^0.2.1",
+    "cevitxe": "0",
+    "cevitxe-toolbar": "0",
     "classnames": "2",
     "debug": "4",
     "npm-run-all": "4",

@@ -2246,14 +2246,6 @@
     "@babel/runtime" "^7.4.5"
     "@testing-library/dom" "^5.0.1"
 
-"@testing-library/cypress@^4.0.5":
-  version "4.0.5"
-  resolved "https://registry.yarnpkg.com/@testing-library/cypress/-/cypress-4.0.5.tgz#9015eea19f732a72dc44cc9d439479a039455870"
-  integrity sha512-xmtvi647OZuUNmUOg2oUuew89PKwsKGSLIQeK8+WVmfbtMhit2km4we2Lf/XliMQHfKIHrtnRL7yqpHjWaasuQ==
-  dependencies:
-    "@babel/runtime" "^7.4.5"
-    "@testing-library/dom" "^5.6.0"
-
 "@testing-library/dom@^5.0.1":
   version "5.5.0"
   resolved "https://registry.yarnpkg.com/@testing-library/dom/-/dom-5.5.0.tgz#7c5024116ca8173187b52c538648884ac6b7b2f9"
@@ -2265,7 +2257,7 @@
     pretty-format "^24.8.0"
     wait-for-expect "^1.2.0"
 
-"@testing-library/dom@^5.5.4", "@testing-library/dom@^5.6.0":
+"@testing-library/dom@^5.5.4":
   version "5.6.1"
   resolved "https://registry.yarnpkg.com/@testing-library/dom/-/dom-5.6.1.tgz#705a1cb4a039b877c1e69e916824038e837ab637"
   integrity sha512-Y1T2bjtvQMewffn1CJ28kpgnuvPYKsBcZMagEH0ppfEMZPDc8AkkEnTk4smrGZKw0cblNB3lhM2FMnpfLExlHg==
@@ -2276,7 +2268,7 @@
     pretty-format "^24.8.0"
     wait-for-expect "^1.2.0"
 
-"@testing-library/jest-dom@^4.0.0":
+"@testing-library/jest-dom@4":
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/@testing-library/jest-dom/-/jest-dom-4.0.0.tgz#56eee8dd183fe14a682fda7aca6413ec4e5303d2"
   integrity sha512-YQA/LnRRfqHV5YRauawOGgMDgq43XfyqCz3whmxIPyrfvTdjLCNyY/BseGaa48y54yb3oiRo/NZT0oXNMQdkTA==
@@ -2291,7 +2283,7 @@
     pretty-format "^24.0.0"
     redent "^3.0.0"
 
-"@testing-library/react@^8.0.7":
+"@testing-library/react@8":
   version "8.0.7"
   resolved "https://registry.yarnpkg.com/@testing-library/react/-/react-8.0.7.tgz#b5992c9156e926850a0e3a7c882ae1aed83b1c77"
   integrity sha512-6XoeWSr3UCdxMswbkW0BmuXYw8a6w+stt+5gg4D4zAcljfhXETQ5o28bjJFwNab4OPg8gBNK8KIVot86L4Q8Vg==
@@ -6079,42 +6071,6 @@ cypress@3:
     lazy-ass "1.6.0"
     listr "0.12.0"
     lodash "4.17.11"
-    log-symbols "2.2.0"
-    minimist "1.2.0"
-    moment "2.24.0"
-    ramda "0.24.1"
-    request "2.88.0"
-    request-progress "3.0.0"
-    supports-color "5.5.0"
-    tmp "0.1.0"
-    url "0.11.0"
-    yauzl "2.10.0"
-
-cypress@^3.4.1:
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/cypress/-/cypress-3.4.1.tgz#ca2e4e9864679da686c6a6189603efd409664c30"
-  integrity sha512-1HBS7t9XXzkt6QHbwfirWYty8vzxNMawGj1yI+Fu6C3/VZJ8UtUngMW6layqwYZzLTZV8tiDpdCNBypn78V4Dg==
-  dependencies:
-    "@cypress/listr-verbose-renderer" "0.4.1"
-    "@cypress/xvfb" "1.2.4"
-    arch "2.1.1"
-    bluebird "3.5.0"
-    cachedir "1.3.0"
-    chalk "2.4.2"
-    check-more-types "2.24.0"
-    commander "2.15.1"
-    common-tags "1.8.0"
-    debug "3.2.6"
-    execa "0.10.0"
-    executable "4.1.1"
-    extract-zip "1.6.7"
-    fs-extra "5.0.0"
-    getos "3.1.1"
-    is-ci "1.2.1"
-    is-installed-globally "0.1.0"
-    lazy-ass "1.6.0"
-    listr "0.12.0"
-    lodash "4.17.15"
     log-symbols "2.2.0"
     minimist "1.2.0"
     moment "2.24.0"
@@ -10765,7 +10721,7 @@ jsx-ast-utils@^2.0.1:
     array-includes "^3.0.3"
     object.assign "^4.1.0"
 
-keycode@^2.2.0:
+keycode@2:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/keycode/-/keycode-2.2.0.tgz#3d0af56dc7b8b8e5cba8d0a97f107204eec22b04"
   integrity sha1-PQr1bce4uOXLqNCpfxByBO7CKwQ=
@@ -11177,15 +11133,15 @@ lodash@4.17.11, "lodash@>=3.5 <5", lodash@^4.17.10, lodash@^4.17.11, lodash@^4.1
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
   integrity sha512-cQKh8igo5QUhZ7lg38DYWAxMvjSAKG0A8wGSVimP07SIUEK2UO+arSRKbRZWtelMtN5V0Hkwh5ryOto/SshYIg==
 
-lodash@4.17.15, lodash@^4.17.2, lodash@^4.17.3, lodash@^4.17.4, lodash@^4.3.0:
-  version "4.17.15"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
-  integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
-
 lodash@^4.17.12, lodash@^4.17.14:
   version "4.17.14"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.14.tgz#9ce487ae66c96254fe20b599f21b6816028078ba"
   integrity sha512-mmKYbW3GLuJeX+iGP+Y7Gp1AiGHGbXHCOh/jZmrawMmsE7MS4znI3RL2FsjbqOyMayHInjOeykW7PEajUk1/xw==
+
+lodash@^4.17.2, lodash@^4.17.3, lodash@^4.17.4, lodash@^4.3.0:
+  version "4.17.15"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
+  integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
 
 log-symbols@2.2.0:
   version "2.2.0"
