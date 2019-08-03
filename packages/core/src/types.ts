@@ -5,12 +5,13 @@ import { DocumentSync } from './DocumentSync'
 
 export type ProxyReducer<T> = (action: AnyAction) => A.ChangeFn<T> | null
 export type ReducerConverter = <T>(proxy: ProxyReducer<T>) => Reducer
+export type StateFactory<T> = () => T
 
 export interface CevitxeOptions<T> {
   // Redux store
   proxyReducer: ProxyReducer<any>
   middlewares?: Middleware[] // TODO: accept an `enhancer` object instead
-  initialState: T
+  initialState: T | StateFactory<T>
 
   // hypercore feed options
   databaseName: string

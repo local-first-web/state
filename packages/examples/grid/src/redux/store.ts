@@ -10,7 +10,7 @@ export interface State {
   _testId: string
 }
 
-const initialState: State = emptyGrid(3, 3)
+const initialState = () => emptyGrid(3, 3)
 
 const urls = process.env.REACT_APP_SIGNAL_SERVERS
   ? process.env.REACT_APP_SIGNAL_SERVERS.split(',')

@@ -12,7 +12,7 @@ import { Connection } from './Connection'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getKeys, getKnownDocumentIds } from './keys'
-import { CevitxeOptions, ProxyReducer } from './types'
+import { CevitxeOptions, ProxyReducer, StateFactory } from './types'
 
 const valueEncoding = 'utf-8'
 
@@ -20,7 +20,7 @@ let log = debug('cevitxe')
 
 export class Cevitxe<T> extends EventEmitter {
   private proxyReducer: ProxyReducer<any>
-  private initialState: T
+  private initialState: T | StateFactory<T>
   private urls: string[]
   private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
 
@@ -152,8 +152,13 @@ const getStateFromStorage = async (feed: Feed<string>) => {
   return state
 }
 
-const setInitialState = <T>(feed: Feed<string>, initialState: T) => {
+const setInitialState = <T>(feed: Feed<string>, initialState: T | StateFactory<T>) => {
+  if (isFunction(initialState)) {
+    const generateInitialState = initialState as (StateFactory<T>)
+    initialState = generateInitialState()
+  }
   log('nothing in storage; initializing %o', initialState)
+
   const state = A.from(initialState)
 
   // send initialization changes to the feed for persistence
@@ -174,3 +179,5 @@ const createStorageFeed = async (documentId: string, databaseName: string) => {
   log('feed ready')
   return feed
 }
+
+const isFunction = (obj: any) => !!(obj && obj.constructor && obj.call && obj.apply)
