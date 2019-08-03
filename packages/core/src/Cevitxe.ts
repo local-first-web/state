@@ -26,11 +26,11 @@ export class Cevitxe<T> extends EventEmitter {
 
   private id = newid()
   private feed?: Feed<string>
-  connections: { [peerId: string]: Connection }
 
+  public connections: { [peerId: string]: Connection }
   public databaseName: string
   public store?: Store
-  documentId?: string = undefined
+  public documentId?: string = undefined
 
   constructor({
     databaseName,
