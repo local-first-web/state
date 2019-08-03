@@ -8,3 +8,5 @@ dist
 .env
 .vscode/settings.json
 
+cypress/videos
+cypress/screenshots
