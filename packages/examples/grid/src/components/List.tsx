@@ -8,8 +8,13 @@ import {
   ValueParserParams,
   ValueSetterParams,
   GetContextMenuItemsParams,
+  GridApi,
 } from 'ag-grid-community'
-import { CellKeyPressEvent, ModelUpdatedEvent } from 'ag-grid-community/dist/lib/events'
+import {
+  CellKeyPressEvent,
+  ModelUpdatedEvent,
+  GridReadyEvent,
+} from 'ag-grid-community/dist/lib/events'
 import 'ag-grid-community/dist/styles/ag-grid.css'
 import 'ag-grid-community/dist/styles/ag-theme-balham.css'
 import 'ag-grid-enterprise'
@@ -52,6 +57,8 @@ const List = () => {
     )
   })
 
+  const [grid, setGrid] = useState<GridApi>()
+
   const dialog = useDialog()
 
   function colDefFromSchemaProperty(field: string, schema: any) {
@@ -70,6 +77,11 @@ const List = () => {
   const dispatch = useDispatch()
   const [nextRowId, setNextRowId] = useState()
   const [nextColumn, setNextColumn] = useState()
+
+  function handleGridReady(event: GridReadyEvent) {
+    log('grid ready', event)
+    setGrid(event.api)
+  }
 
   function handleKeyDown(event: CellKeyPressEvent) {
     if (event.event) {
@@ -216,6 +228,7 @@ const List = () => {
             rowData={collection}
             deltaRowDataMode={true}
             getRowNodeId={item => item.id}
+            onGridReady={handleGridReady}
             onCellKeyDown={handleKeyDown}
             onModelUpdated={handleModelUpdated}
             getMainMenuItems={getMainMenu}

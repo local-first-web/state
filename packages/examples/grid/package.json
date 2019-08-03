@@ -36,6 +36,7 @@
     "uuid": "3"
   },
   "devDependencies": {
+    "@testing-library/cypress": "^4.0.5",
     "@types/debug": "4",
     "@types/jest": "24",
     "@types/json-schema": "7",
@@ -47,6 +48,7 @@
     "@types/redux-logger": "3",
     "@types/uuid": "3",
     "cypress": "^3.4.1",
+    "keycode": "^2.2.0",
     "prettier": "1",
     "typescript": "3"
   },

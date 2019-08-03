@@ -10,7 +10,7 @@ import { cevitxe } from 'src/redux/store'
 import { App } from './App'
 import debug from 'debug'
 
-const log = debug('cevitxe:grid:Shell')
+const log = debug('cevitxe:grid:shell')
 
 export const Shell = () => {
   const [appStore, setAppStore] = useState<Redux.Store>()
