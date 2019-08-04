@@ -6,7 +6,6 @@ import debug from 'debug'
 import { Field, Formik, FormikHelpers, FormikValues } from 'formik'
 import React, { useEffect, useRef, useState } from 'react'
 import Redux from 'redux'
-import createPersistedState from 'use-persisted-state'
 import { wordPair } from './wordPair'
 import { useQueryParam, StringParam } from 'use-query-params'
 
@@ -22,7 +21,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
 
   const [appStore, setAppStore] = useState()
 
-  const [documentIdHasFocus, setDocumentIdHasFocus] = useState(false)
+  const [documentIdHasFocus, inputHasFocus] = useState(false)
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
@@ -72,14 +71,8 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
         <Formik initialValues={{ documentId }} onSubmit={() => {}}>
           {({ setFieldValue, values }) => {
             const newClick = async () => {
-              setFieldValue('documentId', await createStore())
-              setTimeout(() => window.location.reload(), 200)
-            }
-
-            const joinClick = async () => {
-              setDocumentIdHasFocus(false)
-              joinStore(values.documentId!)
-              window.location.reload()
+              const newDocumentId = await createStore()
+              setTimeout(() => window.location.assign(`?id=${newDocumentId}`), 200)
             }
 
             const inputFocus = (e: Event) => {
@@ -87,10 +80,10 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
                 const input = e.target as HTMLInputElement
                 input.select()
               }
-              setDocumentIdHasFocus(true)
+              inputHasFocus(true)
             }
 
-            const inputBlur = (e: Event) => setTimeout(() => setDocumentIdHasFocus(false), 500)
+            const inputBlur = (e: Event) => setTimeout(() => inputHasFocus(false), 500)
 
             return (
               <React.Fragment>
@@ -117,9 +110,14 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
                       ))}
                     </div>
                   </div>
-                  <button role="button" type="button" onClick={joinClick} css={styles.button}>
+                  <a
+                    role="button"
+                    type="button"
+                    href={`?id=${values.documentId!}`}
+                    css={styles.button}
+                  >
                     Join
-                  </button>
+                  </a>
                 </div>
                 <div css={styles.toolbarGroup}>
                   <button role="button" type="button" onClick={newClick} css={styles.button}>
@@ -159,6 +157,7 @@ const styles = {
   button: css({
     background: 'white',
     border: '1px solid #ddd',
+    color: 'black',
     padding: '.3em 1em',
     textAlign: 'left',
     cursor: 'pointer',
@@ -169,6 +168,7 @@ const styles = {
     },
     margin: '0 5px',
     borderRadius: 3,
+    textDecoration: 'none',
     textTransform: 'uppercase',
   }),
   input: css({
