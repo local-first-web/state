@@ -9,9 +9,8 @@ describe('grid', () => {
     // enter some text in the first cell, then hit enter
     it('accepts input', () => {
       cy.firstCell()
-        .edit()
-        .type('qrs')
-        .type('{enter}')
+        .typeInCell('qrs')
+        .enter()
 
       // confirm that the text is in the cell
       cy.firstCell().should('contain.text', 'qrs')
@@ -45,7 +44,29 @@ describe('grid', () => {
       cy.rows().should('have.length', 4)
     })
 
-    it('allows selecting cells', () => {})
+    it('allows selecting cells', () => {
+      cy.selectedCells().should('have.length', 0)
+
+      // start in first cell, hit shift-down twice
+      cy.firstCell()
+        .shiftDown()
+        .shiftDown()
+
+      // confirm number of selected cells
+      cy.selectedCells().should('have.length', 3)
+    })
+
+    it.only('allows deleting rows', () => {
+      // confirm number of rows
+      cy.rows().should('have.length', 3)
+
+      // select two rows
+      cy.firstCell().shiftDown()
+
+      cy.focusedCell()
+        .trigger('contextMenu')
+        .trigger('mouseEnter')
+    })
   })
 
   describe('after creating store', () => {
@@ -57,13 +78,11 @@ describe('grid', () => {
     it('accepts input', () => {
       // enter some text in the first cell, then hit enter
       cy.firstCell()
-        .edit()
-        .type('qrs')
-        .type('{enter}')
+        .typeInCell('qrs')
+        .enter()
 
       // confirm that the text is in the cell
       cy.firstCell().should('contain.text', 'qrs')
     })
   })
 })
-//
