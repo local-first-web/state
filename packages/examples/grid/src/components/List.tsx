@@ -34,6 +34,14 @@ import { Loading } from './Loading'
 const log = debug('cevitxe:grid:List')
 
 const List = () => {
+  const store = useStore()
+
+  const stateTestId = store.getState()._testId
+  log('state id', stateTestId)
+
+  const dispatch = store.dispatch
+  const getDispatch = () => store.dispatch
+
   const ready = useSelector((state: State) => !!state && !!state.list && !!state.schema)
   const rowCount = useSelector((state: State) => ready && state.list.length)
 
@@ -48,8 +56,6 @@ const List = () => {
       colDefFromSchemaProperty(entry[0], entry[1])
     )
   })
-
-  // const [grid, setGrid] = useState<GridApi>()
 
   const dialog = useDialog()
 
@@ -66,19 +72,8 @@ const List = () => {
     return colDef
   }
 
-  const store = useStore()
-
-  const stateTestId = store.getState()._testId
-  log('state id', stateTestId)
-
-  const dispatch = store.dispatch
   const [nextRowId, setNextRowId] = useState()
   const [nextColumn, setNextColumn] = useState()
-
-  // function handleGridReady(event: GridReadyEvent) {
-  //   log('grid ready', event)
-  //   setGrid(event.api)
-  // }
 
   function handleKeyDown(event: CellKeyPressEvent) {
     if (event.event) {
@@ -124,7 +119,8 @@ const List = () => {
         if (Number.isNaN(params.newValue)) return false
     }
     log('dispatching updateItem, state id', stateTestId)
-    dispatch(updateItem(params.data.id, params.colDef.field!, params.newValue))
+    const _dispatch = getDispatch()
+    _dispatch(updateItem(params.data.id, params.colDef.field!, params.newValue))
     return true
   }
 
@@ -209,9 +205,10 @@ const List = () => {
 
   return (
     <div>
+      <pre>{JSON.stringify(store.getState())}</pre>
       {ready ? (
         <div className="ag-theme-balham" css={styles.grid}>
-          <p>{rowCount} rows</p>
+          {/* <p>{rowCount} rows</p> */}
           <AgGridReact
             columnDefs={columns}
             defaultColDef={{
@@ -225,7 +222,6 @@ const List = () => {
             rowData={collection}
             deltaRowDataMode={true}
             getRowNodeId={item => item.id}
-            // onGridReady={handleGridReady}
             onCellKeyDown={handleKeyDown}
             onModelUpdated={handleModelUpdated}
             getMainMenuItems={getMainMenu}
