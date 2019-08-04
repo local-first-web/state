@@ -1,7 +1,6 @@
 /** @jsx jsx */
 
-import { jsx, CSSObject } from '@emotion/core'
-import React from 'react'
+import { css, jsx } from '@emotion/core'
 import Spinner from 'react-spinkit'
 
 export const Loading = () => {
@@ -15,9 +14,8 @@ export const Loading = () => {
   )
 }
 
-type Stylesheet = { [k: string]: CSSObject }
-const styles: Stylesheet = {
-  loading: {
+const styles = {
+  loading: css({
     position: 'absolute',
     left: 0,
     top: 0,
@@ -26,15 +24,15 @@ const styles: Stylesheet = {
     background: 'rgba(150,150,150,.5)',
     textAlign: 'center',
     paddingTop: '30%',
-  },
-  label: {
+  }),
+  label: css({
     letterSpacing: 3,
     fontSize: 10,
     color: 'gray',
     textTransform: 'uppercase',
-  },
-  spinner: {
+  }),
+  spinner: css({
     display: 'block',
     margin: 30,
-  },
+  }),
 }
