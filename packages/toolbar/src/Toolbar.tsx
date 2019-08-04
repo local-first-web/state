@@ -30,14 +30,14 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
 
   useEffect(() => {
     log('setup')
-    if (documentId) join(documentId)
-    else create()
+    if (documentId) joinStore(documentId)
+    else createStore()
   }, []) // only runs on first render
 
   const log = debug(`cevitxe:toolbar:${documentId}`)
   log('render')
 
-  const create = async () => {
+  const createStore = async () => {
     setBusy(true)
     const newDocumentId = wordPair()
     setDocumentId(newDocumentId)
@@ -49,7 +49,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
     return newDocumentId
   }
 
-  const join = async (_documentId: string) => {
+  const joinStore = async (_documentId: string) => {
     if (busy) return
     setBusy(true)
     setDocumentId(_documentId)
@@ -61,7 +61,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
   }
 
   const onSubmit = (values: FormikValues, actions: FormikHelpers<any>) => {
-    join(values.documentId as string)
+    joinStore(values.documentId as string)
     actions.setSubmitting(false)
   }
 
@@ -70,15 +70,15 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
       {appStore && (
         <Formik initialValues={{ documentId }} onSubmit={onSubmit}>
           {({ setFieldValue, values }) => {
-            const newClick = async () => setFieldValue('documentId', await create())
+            const newClick = async () => setFieldValue('documentId', await createStore())
             const joinClick = async () => {
               setDocumentIdHasFocus(false)
-              join(values.documentId)
+              joinStore(values.documentId)
             }
             const itemClick = (documentId: string) => () => {
               setFieldValue('documentId', documentId)
               setDocumentId(documentId)
-              join(documentId)
+              joinStore(documentId)
               setDocumentIdHasFocus(false)
             }
             const inputFocus = (e: Event) => {
