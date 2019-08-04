@@ -44,6 +44,8 @@ describe('grid', () => {
       // confirm that we now have 4 cells
       cy.rows().should('have.length', 4)
     })
+
+    it('allows selecting cells', () => {})
   })
 
   describe('after creating store', () => {
