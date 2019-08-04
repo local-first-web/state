@@ -1,5 +1,4 @@
 /** @jsx jsx */
-import * as R from 'ramda'
 import { css, jsx } from '@emotion/core'
 import {
   ColDef,
@@ -8,8 +7,6 @@ import {
   MenuItemDef,
   ValueParserParams,
   ValueSetterParams,
-  CellRange,
-  GridApi,
 } from 'ag-grid-community'
 import { CellKeyPressEvent, ModelUpdatedEvent } from 'ag-grid-community/dist/lib/events'
 import 'ag-grid-community/dist/styles/ag-grid.css'
@@ -17,10 +14,10 @@ import 'ag-grid-community/dist/styles/ag-theme-balham.css'
 import 'ag-grid-enterprise'
 import { AgGridReact } from 'ag-grid-react'
 import { debug } from 'debug'
-import * as Enumerable from 'linq-es2015'
 import { useDialog } from 'muibox'
 import { useState } from 'react'
 import { useSelector, useStore } from 'react-redux'
+import { getSelectedRowIds } from 'src/gridUtils'
 import {
   addField,
   addItem,
@@ -32,6 +29,7 @@ import {
 } from '../redux/actions'
 import { State } from '../redux/store'
 import { Loading } from './Loading'
+import { ContextMenuFactory } from 'ag-grid-enterprise'
 
 const log = debug('cevitxe:grid:List')
 
@@ -185,35 +183,17 @@ const List = () => {
   const getContextMenuItems = (params: GetContextMenuItemsParams) =>
     (params.defaultItems as any[]).concat([deleteCommand(params)])
 
-  const deleteCommand = (params: GetContextMenuItemsParams) => {
-    const { api, node } = params
+  const deleteCommand = ({ api, node }: GetContextMenuItemsParams) => {
     if (!api) return
 
-    const ranges = api.getCellRanges()
-    log('ranges', ranges)
-    const rowIds = ranges.length === 0 ? [node.data.id] : getRowIdsFromRanges(api, ranges)
+    const rowIds: string[] = getSelectedRowIds(api) || [node.data.id]
+
+    const deleteRow = (rowId: string) => dispatch(removeItem(rowId))
 
     return {
       name: `Delete ${rowIds.length} ${rowIds.length === 1 ? 'row' : 'rows'}`,
-      action: () => rowIds.forEach(id => dispatch(removeItem(id))),
+      action: () => rowIds.forEach(deleteRow),
     }
-  }
-
-  const getRowIdsFromRanges = (api: GridApi, cellRanges: CellRange[]) => {
-    const getIndexes = (cellRange: CellRange) => {
-      const start = cellRange.startRow!.rowIndex
-      const end = cellRange.endRow!.rowIndex + 1
-      return R.range(start, end)
-    }
-
-    const getDistinctIndexes = (cellRanges: CellRange[]) => {
-      const allIndexes = cellRanges.map(getIndexes)
-      return R.uniq(R.flatten(allIndexes))
-    }
-
-    const getRowIdFromIndex = (i: number) => api.getModel().getRow(i)!.id
-
-    return getDistinctIndexes(cellRanges).map(getRowIdFromIndex)
   }
 
   return (
