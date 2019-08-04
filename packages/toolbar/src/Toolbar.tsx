@@ -13,20 +13,13 @@ import React from 'react'
 //TODO ToolbarProps<T>
 
 export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
+  // Hooks
+
   const useDocumentId = createPersistedState(`cevitxe/${cevitxe.databaseName}/documentId`)
   const [documentId, setDocumentId] = useDocumentId()
   const input = useRef<HTMLInputElement>() as React.RefObject<HTMLInputElement>
 
-  const useAppStore = (cb: (store: Redux.Store) => void) => {
-    const [appStore, _setAppStore] = useState()
-    const setAppStore = (store: Redux.Store) => {
-      _setAppStore(store)
-      cb(store)
-    }
-    return [appStore, setAppStore]
-  }
-
-  const [appStore, setAppStore] = useAppStore(onStoreReady)
+  const [appStore, setAppStore] = useState()
 
   const [documentIdHasFocus, setDocumentIdHasFocus] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -48,9 +41,11 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
     setBusy(true)
     const newDocumentId = wordPair()
     setDocumentId(newDocumentId)
-    setAppStore(await cevitxe.createStore(newDocumentId))
+    const newStore = await cevitxe.createStore(newDocumentId)
+    setAppStore(newStore)
+    onStoreReady(newStore)
     setBusy(false)
-    log('created store ', newDocumentId)
+    log('created store', newDocumentId)
     return newDocumentId
   }
 
@@ -58,17 +53,17 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
     if (busy) return
     setBusy(true)
     setDocumentId(_documentId)
-    setAppStore(await cevitxe.joinStore(_documentId))
+    const newStore = await cevitxe.joinStore(_documentId)
+    setAppStore(newStore)
+    onStoreReady(newStore)
     setBusy(false)
-    log('joined store ', _documentId)
+    log('joined store', _documentId)
   }
 
   const onSubmit = (values: FormikValues, actions: FormikHelpers<any>) => {
     join(values.documentId as string)
     actions.setSubmitting(false)
   }
-
-  const documentIds = cevitxe.knownDocumentIds
 
   return (
     <div css={styles.toolbar}>
@@ -99,7 +94,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
                   <div css={styles.menuWrapper}>
                     <Field type="text" name="documentId" css={styles.input} onFocus={inputFocus} />
                     <div css={{ ...menu(documentIdHasFocus) }}>
-                      {documentIds.map(documentId => (
+                      {cevitxe.knownDocumentIds.map(documentId => (
                         <button
                           key={documentId}
                           role="button"
