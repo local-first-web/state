@@ -13,6 +13,7 @@ import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getKeys, getKnownDocumentIds } from './keys'
 import { CevitxeOptions, ProxyReducer, StateFactory } from './types'
+import { composeWithDevTools } from 'redux-devtools-extension'
 
 const valueEncoding = 'utf-8'
 
@@ -67,14 +68,20 @@ export class Cevitxe<T> extends EventEmitter {
     const watchableDoc = new A.WatchableDoc(state)
     watchableDoc.registerHandler(doc => {
       log('change', documentId)
+      // hook for testing
       this.emit('change', doc)
-    }) // hook for testing
+    })
     log('created initial watchableDoc', state)
 
     // Create Redux store
     const reducer = adaptReducer(this.proxyReducer)
+
     const cevitxeMiddleware = getMiddleware(this.feed, watchableDoc, this.documentId)
-    const enhancer = Redux.applyMiddleware(...this.middlewares, cevitxeMiddleware)
+
+    const enhancer = composeWithDevTools(
+      Redux.applyMiddleware(...this.middlewares, cevitxeMiddleware)
+    )
+
     this.store = Redux.createStore(reducer, state, enhancer)
 
     // TODO: randomly select a URL if more than one is provided? select best based on ping?
