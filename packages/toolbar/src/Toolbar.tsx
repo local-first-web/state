@@ -1,14 +1,13 @@
 /** @jsx jsx */
-import { codes } from 'keycode'
-
-import { css, jsx, CSSObject } from '@emotion/core'
+import { css, CSSObject, jsx } from '@emotion/core'
 import { Cevitxe } from 'cevitxe'
 import debug from 'debug'
-import { Field, Formik, FormikHelpers, FormikValues } from 'formik'
+import { Field, Formik } from 'formik'
+import { codes } from 'keycode'
 import React, { useEffect, useRef, useState } from 'react'
 import Redux from 'redux'
+import { StringParam, useQueryParam } from 'use-query-params'
 import { wordPair } from './wordPair'
-import { useQueryParam, StringParam } from 'use-query-params'
 
 //TODO ToolbarProps<T>
 
@@ -16,13 +15,11 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
   // Hooks
 
   const [documentId, setDocumentId] = useQueryParam('id', StringParam)
-
-  const input = useRef<HTMLInputElement>() as React.RefObject<HTMLInputElement>
-
   const [appStore, setAppStore] = useState()
-
   const [inputHasFocus, setInputHasFocus] = useState(false)
   const [busy, setBusy] = useState(false)
+
+  const input = useRef<HTMLInputElement>() as React.RefObject<HTMLInputElement>
 
   // join or create store
   useEffect(() => {
@@ -64,15 +61,19 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
     log('joined store', newDocumentId)
   }
 
+  const url = (documentId: string = '') =>
+    `${location.protocol}//${location.host}/?id=${documentId}`
+
+  // Loads a documentId by navigating to its URL
   const load = (documentId: string | undefined) => {
-    if (documentId !== undefined) window.location.assign(`?id=${documentId}`)
+    if (documentId !== undefined) window.location.assign(url(documentId))
   }
 
   return (
     <div css={styles.toolbar}>
       {appStore && (
-        <Formik initialValues={{ documentId }} onSubmit={() => {}}>
-          {({ setFieldValue, values }) => {
+        <Formik initialValues={{ documentId }} onSubmit={() => load(documentId)}>
+          {({ values }) => {
             const newClick = async () => {
               const newDocumentId = await createStore()
               setTimeout(() => load(newDocumentId), 200)
@@ -86,10 +87,9 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
               setInputHasFocus(true)
             }
 
-            const inputBlur = (e: Event) =>
-              setTimeout(() => {
-                setInputHasFocus(false)
-              }, 500)
+            // when the input loses focus, we need to wait a moment before hiding the menu
+            // in case the blur was caused by clicking on a menu item
+            const inputBlur = (e: Event) => setTimeout(() => setInputHasFocus(false), 100)
 
             const keyDown = (event: KeyboardEvent) => {
               if (event) {
@@ -112,13 +112,13 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
                       onBlur={inputBlur}
                       onKeyDown={keyDown}
                     />
-                    <div css={styles.menu(inputHasFocus)}>
+                    <div css={menu(inputHasFocus)}>
                       {cevitxe.knownDocumentIds.map(documentId => (
                         <a
                           key={documentId}
                           role="button"
                           type="button"
-                          href={`?id=${documentId}`}
+                          href={url(documentId)}
                           css={styles.menuItem}
                         >
                           {documentId}
@@ -126,22 +126,28 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
                       ))}
                     </div>
                   </div>
-                  <a
-                    role="button"
-                    type="button"
-                    href={`?id=${values.documentId}`}
-                    css={styles.button}
-                  >
-                    Join
-                  </a>
+                  <div>
+                    <a
+                      role="button"
+                      type="button"
+                      href={url(values.documentId)}
+                      css={styles.button}
+                    >
+                      Join
+                    </a>
+                  </div>
                 </div>
                 <div css={styles.toolbarGroup}>
                   <button role="button" type="button" onClick={newClick} css={styles.button}>
                     New
                   </button>
                 </div>
-                <div css={styles.toolbarGroup}>{busy ? 'busy' : 'idle'}</div>
-                <div css={styles.toolbarGroup}>{cevitxe.connectionCount}</div>
+                <div css={styles.toolbarGroup}>
+                  <label>{busy ? 'busy' : 'idle'}</label>
+                </div>
+                <div css={styles.toolbarGroup}>
+                  <label>{cevitxe.connectionCount}</label>
+                </div>
               </React.Fragment>
             )
           }}
@@ -157,11 +163,37 @@ export interface ToolbarProps<T> {
 }
 
 const fontFamily = 'inconsolata, monospace'
+const button: CSSObject = {
+  background: 'white',
+  border: '1px solid #ddd',
+  boxSizing: 'border-box',
+  color: 'black',
+  cursor: 'pointer',
+  display: 'block',
+  fontFamily,
+  fontSize: 14,
+  ':hover': {
+    background: 'lightBlue',
+  },
+  height: 30,
+  lineHeight: 1,
+  padding: '6px 15px',
+  textDecoration: 'none',
+  textTransform: 'uppercase',
+}
 
-const styles = {
+const menu = (documentIdHasFocus: boolean): CSSObject => ({
+  display: documentIdHasFocus ? 'block' : 'none',
+  position: 'absolute',
+  background: 'white',
+  top: 30,
+})
+
+const styles: Stylesheet = {
   toolbar: {
     background: '#eee',
     borderBottom: '1px solid #ddd',
+    lineHeight: '1',
     display: 'flex',
     flexGrow: 0,
     alignItems: 'center',
@@ -169,68 +201,49 @@ const styles = {
     fontSize: 14,
     position: 'relative',
     zIndex: 9,
-  } as CSSObject,
-  button: css({
-    background: 'white',
-    border: '1px solid #ddd',
-    color: 'black',
-    padding: '.3em 1em',
+  },
+  button: {
+    ...button,
     textAlign: 'left',
-    cursor: 'pointer',
-    fontFamily,
-    fontSize: 14,
-    ':hover': {
-      background: 'lightBlue',
-    },
     margin: '0 5px',
     borderRadius: 3,
-    textDecoration: 'none',
-    textTransform: 'uppercase',
-  }),
-  input: css({
+  },
+  input: {
+    boxSizing: 'border-box',
     marginRight: 5,
-    padding: '.3em 1em',
+    padding: '6px 15px',
     border: '1px solid #eee',
     borderRadius: '3px',
     ['::placeholder']: {
       fontStyle: 'normal!important',
     },
-    height: 16,
-    width: 150,
+    height: 30,
+    width: 175,
     fontFamily,
     fontSize: 14,
-  }),
-  toolbarGroup: css({
-    borderRight: '1px solid #eee',
+  },
+  toolbarGroup: {
+    borderRight: '1px solid #ddd',
     padding: 10,
-  }),
-  menuWrapper: css({
+    height: 30,
+    minWidth: 40,
+    textAlign: 'center',
+    display: 'flex',
+    label: {
+      margin: 'auto',
+    },
+  },
+  menuWrapper: {
     position: 'relative',
     display: 'inline-block',
-  }),
-  menu: (documentIdHasFocus: boolean) =>
-    css({
-      display: documentIdHasFocus ? 'block' : 'none',
-      position: 'absolute',
-      background: 'white',
-      top: 30,
-    }),
-  menuItem: css({
-    background: 'white',
-    color: 'black',
-    lineHeight: '1',
-    border: '1px solid #ddd',
-    padding: '.5em 1em',
-    textAlign: 'left',
-    cursor: 'pointer',
-    fontFamily,
-    fontSize: 14,
-    ':hover': {
-      background: 'lightBlue',
-    },
+  },
+  menuItem: {
+    ...button,
     display: 'block',
+    textAlign: 'left',
     marginTop: -2,
     width: 200,
-    textDecoration: 'none',
-  }),
+  },
 }
+
+type Stylesheet = { [k: string]: CSSObject | ((...args: any[]) => CSSObject) }
