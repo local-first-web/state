@@ -1,37 +1,32 @@
 /** @jsx jsx */
 
-import { CSSObject, jsx, css } from '@emotion/core'
+import { css, jsx } from '@emotion/core'
 import {
   ColDef,
+  GetContextMenuItemsParams,
   GetMainMenuItemsParams,
   MenuItemDef,
   ValueParserParams,
   ValueSetterParams,
-  GetContextMenuItemsParams,
-  GridApi,
 } from 'ag-grid-community'
-import {
-  CellKeyPressEvent,
-  ModelUpdatedEvent,
-  GridReadyEvent,
-} from 'ag-grid-community/dist/lib/events'
+import { CellKeyPressEvent, ModelUpdatedEvent } from 'ag-grid-community/dist/lib/events'
 import 'ag-grid-community/dist/styles/ag-grid.css'
 import 'ag-grid-community/dist/styles/ag-theme-balham.css'
 import 'ag-grid-enterprise'
 import { AgGridReact } from 'ag-grid-react'
+import { debug } from 'debug'
+import * as Enumerable from 'linq-es2015'
 import { useDialog } from 'muibox'
 import { useState } from 'react'
-import { useDispatch, useSelector, useStore } from 'react-redux'
-import * as Enumerable from 'linq-es2015'
-import { debug } from 'debug'
+import { useSelector, useStore } from 'react-redux'
 import {
   addField,
   addItem,
   deleteField,
+  removeItem,
   renameField,
   setFieldType,
   updateItem,
-  removeItem,
 } from '../redux/actions'
 import { State } from '../redux/store'
 import { Loading } from './Loading'
@@ -54,7 +49,7 @@ const List = () => {
     )
   })
 
-  const [grid, setGrid] = useState<GridApi>()
+  // const [grid, setGrid] = useState<GridApi>()
 
   const dialog = useDialog()
 
@@ -80,10 +75,10 @@ const List = () => {
   const [nextRowId, setNextRowId] = useState()
   const [nextColumn, setNextColumn] = useState()
 
-  function handleGridReady(event: GridReadyEvent) {
-    log('grid ready', event)
-    setGrid(event.api)
-  }
+  // function handleGridReady(event: GridReadyEvent) {
+  //   log('grid ready', event)
+  //   setGrid(event.api)
+  // }
 
   function handleKeyDown(event: CellKeyPressEvent) {
     if (event.event) {
@@ -151,7 +146,7 @@ const List = () => {
         required: true,
         defaultValue: current,
       })
-      .then(newName => dispatch(renameField(colDef.field!, newName)))
+      .then((newName: string) => dispatch(renameField(colDef.field!, newName)))
       .catch(() => {})
   }
 
@@ -195,7 +190,7 @@ const List = () => {
     if (!ranges.length) ids = [params.node.data.id]
     else
       ids = Enumerable.asEnumerable(ranges)
-        .SelectMany(d =>
+        .SelectMany((d: any) =>
           Enumerable.Range(d.startRow!.rowIndex, d.endRow!.rowIndex - d.startRow!.rowIndex + 1)
         )
         .Distinct()
@@ -230,7 +225,7 @@ const List = () => {
             rowData={collection}
             deltaRowDataMode={true}
             getRowNodeId={item => item.id}
-            onGridReady={handleGridReady}
+            // onGridReady={handleGridReady}
             onCellKeyDown={handleKeyDown}
             onModelUpdated={handleModelUpdated}
             getMainMenuItems={getMainMenu}
