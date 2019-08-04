@@ -8,14 +8,16 @@ import React, { useEffect, useRef, useState } from 'react'
 import Redux from 'redux'
 import createPersistedState from 'use-persisted-state'
 import { wordPair } from './wordPair'
+import { useQueryParam, StringParam } from 'use-query-params'
 
 //TODO ToolbarProps<T>
 
 export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
   // Hooks
 
-  const useDocumentId = createPersistedState(`cevitxe/${cevitxe.databaseName}/documentId`)
-  const [documentId, setDocumentId] = useDocumentId()
+  // const useDocumentId = createPersistedState(`cevitxe/${cevitxe.databaseName}/documentId`)
+  const [documentId, setDocumentId] = useQueryParam('id', StringParam)
+
   const input = useRef<HTMLInputElement>() as React.RefObject<HTMLInputElement>
 
   const [appStore, setAppStore] = useState()
@@ -29,11 +31,12 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
 
   useEffect(() => {
     log('setup')
-    if (documentId) joinStore(documentId)
-    else createStore()
+    if (documentId) {
+      joinStore(documentId)
+    } else {
+      createStore()
+    }
   }, []) // only runs on first render
-
-  // Logger
 
   const log = debug(`cevitxe:toolbar:${documentId}`)
   log('render')
@@ -63,11 +66,6 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
     log('joined store', newDocumentId)
   }
 
-  // const onSubmit = (values: FormikValues, actions: FormikHelpers<any>) => {
-  //   // joinStore(values.documentId as string)
-  //   // actions.setSubmitting(false)
-  // }
-
   return (
     <div css={styles.toolbar}>
       {appStore && (
@@ -80,7 +78,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
 
             const joinClick = async () => {
               setDocumentIdHasFocus(false)
-              joinStore(values.documentId)
+              joinStore(values.documentId!)
               window.location.reload()
             }
 
@@ -115,15 +113,15 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
                     />
                     <div css={styles.menu(documentIdHasFocus)}>
                       {cevitxe.knownDocumentIds.map(documentId => (
-                        <button
+                        <a
                           key={documentId}
                           role="button"
                           type="button"
-                          onClick={itemClick(documentId)}
+                          href={`?id=${documentId}`}
                           css={styles.menuItem}
                         >
                           {documentId}
-                        </button>
+                        </a>
                       ))}
                     </div>
                   </div>
@@ -211,8 +209,10 @@ const styles = {
     }),
   menuItem: css({
     background: 'white',
+    color: 'black',
+    lineHeight: '1',
     border: '1px solid #ddd',
-    padding: '.3em 1em',
+    padding: '.5em 1em',
     textAlign: 'left',
     cursor: 'pointer',
     fontFamily,
@@ -223,6 +223,6 @@ const styles = {
     display: 'block',
     marginTop: -2,
     width: 200,
-    height: 30,
+    textDecoration: 'none',
   }),
 }
