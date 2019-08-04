@@ -56,16 +56,21 @@ describe('grid', () => {
       cy.selectedCells().should('have.length', 3)
     })
 
-    it.only('allows deleting rows', () => {
+    it('allows deleting rows', () => {
       // confirm number of rows
       cy.rows().should('have.length', 3)
 
       // select two rows
       cy.firstCell().shiftDown()
 
-      cy.focusedCell()
-        .trigger('contextMenu')
-        .trigger('mouseEnter')
+      cy.focusedCell().trigger('contextmenu')
+
+      cy.get('.ag-menu')
+        .queryByText('Delete 2 items')
+        .click()
+
+      // confirm only one row left
+      cy.rows().should('have.length', 1)
     })
   })
 
