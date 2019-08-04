@@ -205,7 +205,6 @@ const List = () => {
 
   return (
     <div>
-      <pre>{JSON.stringify(store.getState())}</pre>
       {ready ? (
         <div className="ag-theme-balham" css={styles.grid}>
           {/* <p>{rowCount} rows</p> */}
