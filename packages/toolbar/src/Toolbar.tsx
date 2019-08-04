@@ -21,21 +21,20 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
 
   const [appStore, setAppStore] = useState()
 
-  const [documentIdHasFocus, inputHasFocus] = useState(false)
+  const [inputHasFocus, setInputHasFocus] = useState(false)
   const [busy, setBusy] = useState(false)
 
-  useEffect(() => {
-    if (documentIdHasFocus && input.current) input.current.select()
-  }, [documentIdHasFocus])
-
+  // join or create store
   useEffect(() => {
     log('setup')
-    if (documentId) {
-      joinStore(documentId)
-    } else {
-      createStore()
-    }
+    if (documentId) joinStore(documentId)
+    else createStore()
   }, []) // only runs on first render
+
+  // select on focus
+  useEffect(() => {
+    if (inputHasFocus && input.current) input.current.select()
+  }, [inputHasFocus])
 
   const log = debug(`cevitxe:toolbar:${documentId}`)
   log('render')
@@ -84,12 +83,12 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
                 const input = e.target as HTMLInputElement
                 input.select()
               }
-              inputHasFocus(true)
+              setInputHasFocus(true)
             }
 
             const inputBlur = (e: Event) =>
               setTimeout(() => {
-                inputHasFocus(false)
+                setInputHasFocus(false)
               }, 500)
 
             const keyDown = (event: KeyboardEvent) => {
@@ -113,7 +112,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
                       onBlur={inputBlur}
                       onKeyDown={keyDown}
                     />
-                    <div css={styles.menu(documentIdHasFocus)}>
+                    <div css={styles.menu(inputHasFocus)}>
                       {cevitxe.knownDocumentIds.map(documentId => (
                         <a
                           key={documentId}
