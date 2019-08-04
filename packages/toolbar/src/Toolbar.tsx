@@ -179,7 +179,6 @@ const button: CSSObject = {
   lineHeight: 1,
   padding: '6px 15px',
   textDecoration: 'none',
-  textTransform: 'uppercase',
 }
 
 const menu = (documentIdHasFocus: boolean): CSSObject => ({
@@ -207,6 +206,7 @@ const styles: Stylesheet = {
     textAlign: 'left',
     margin: '0 5px',
     borderRadius: 3,
+    textTransform: 'uppercase',
   },
   input: {
     boxSizing: 'border-box',
