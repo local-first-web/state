@@ -1,14 +1,13 @@
 /** @jsx jsx */
 
-import { CSSObject, jsx } from '@emotion/core'
+import { css, jsx } from '@emotion/core'
 import { Cevitxe } from 'cevitxe'
 import debug from 'debug'
 import { Field, Formik, FormikHelpers, FormikValues } from 'formik'
-import { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Redux from 'redux'
 import createPersistedState from 'use-persisted-state'
 import { wordPair } from './wordPair'
-import React from 'react'
 
 //TODO ToolbarProps<T>
 
@@ -34,8 +33,12 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
     else createStore()
   }, []) // only runs on first render
 
+  // Logger
+
   const log = debug(`cevitxe:toolbar:${documentId}`)
   log('render')
+
+  // Handlers
 
   const createStore = async () => {
     setBusy(true)
@@ -133,15 +136,15 @@ export interface ToolbarProps<T> {
 }
 
 const menu = (documentIdHasFocus: boolean) =>
-  ({
+  css({
     display: documentIdHasFocus ? 'block' : 'none',
     position: 'absolute',
     background: 'white',
     top: 30,
-  } as CSSObject)
+  })
 
 const fontFamily = 'inconsolata, monospace'
-const button: CSSObject = {
+const button = css({
   background: 'white',
   border: '1px solid #ddd',
   padding: '.3em 1em',
@@ -152,11 +155,10 @@ const button: CSSObject = {
   ':hover': {
     background: 'lightBlue',
   },
-}
+})
 
-type Stylesheet = { [k: string]: CSSObject | ((...props: any[]) => CSSObject) }
-const styles: Stylesheet = {
-  toolbar: {
+const styles = {
+  toolbar: css({
     background: '#eee',
     borderBottom: '1px solid #ddd',
     display: 'flex',
@@ -166,14 +168,14 @@ const styles: Stylesheet = {
     fontSize: 14,
     position: 'relative',
     zIndex: 9,
-  },
-  button: {
+  }),
+  button: css({
     ...button,
     margin: '0 5px',
     borderRadius: 3,
     textTransform: 'uppercase',
-  },
-  input: {
+  }),
+  input: css({
     marginRight: 5,
     padding: '.3em 1em',
     border: '1px solid #eee',
@@ -185,20 +187,20 @@ const styles: Stylesheet = {
     width: 150,
     fontFamily,
     fontSize: 14,
-  },
-  toolbarGroup: {
+  }),
+  toolbarGroup: css({
     borderRight: '1px solid #eee',
     padding: 10,
-  },
-  menuWrapper: {
+  }),
+  menuWrapper: css({
     position: 'relative',
     display: 'inline-block',
-  },
-  menuItem: {
+  }),
+  menuItem: css({
     ...button,
     display: 'block',
     marginTop: -2,
     width: 200,
     height: 30,
-  },
+  }),
 }
