@@ -224,7 +224,6 @@ const List = () => {
             onCellKeyDown={handleKeyDown}
             onModelUpdated={handleModelUpdated}
             getMainMenuItems={getMainMenu}
-            rowSelection="multiple"
             enableRangeSelection={true}
             enterMovesDown={true}
             enterMovesDownAfterEdit={true}
