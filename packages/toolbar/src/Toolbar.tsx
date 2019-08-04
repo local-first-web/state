@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { css, jsx } from '@emotion/core'
+import { css, jsx, CSSObject } from '@emotion/core'
 import { Cevitxe } from 'cevitxe'
 import debug from 'debug'
 import { Field, Formik, FormikHelpers, FormikValues } from 'formik'
@@ -63,27 +63,35 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
     log('joined store', newDocumentId)
   }
 
-  const onSubmit = (values: FormikValues, actions: FormikHelpers<any>) => {
-    joinStore(values.documentId as string)
-    actions.setSubmitting(false)
-  }
+  // const onSubmit = (values: FormikValues, actions: FormikHelpers<any>) => {
+  //   // joinStore(values.documentId as string)
+  //   // actions.setSubmitting(false)
+  // }
 
   return (
     <div css={styles.toolbar}>
       {appStore && (
-        <Formik initialValues={{ documentId }} onSubmit={onSubmit}>
+        <Formik initialValues={{ documentId }} onSubmit={() => {}}>
           {({ setFieldValue, values }) => {
-            const newClick = async () => setFieldValue('documentId', await createStore())
+            const newClick = async () => {
+              setFieldValue('documentId', await createStore())
+              setTimeout(() => window.location.reload(), 200)
+            }
+
             const joinClick = async () => {
               setDocumentIdHasFocus(false)
               joinStore(values.documentId)
+              window.location.reload()
             }
+
             const itemClick = (documentId: string) => () => {
               setFieldValue('documentId', documentId)
               setDocumentId(documentId)
               joinStore(documentId)
               setDocumentIdHasFocus(false)
+              window.location.reload()
             }
+
             const inputFocus = (e: Event) => {
               if (e && e.target) {
                 const input = e.target as HTMLInputElement
@@ -91,12 +99,21 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
               }
               setDocumentIdHasFocus(true)
             }
+
+            const inputBlur = (e: Event) => setTimeout(() => setDocumentIdHasFocus(false), 500)
+
             return (
               <React.Fragment>
                 <div css={styles.toolbarGroup}>
                   <div css={styles.menuWrapper}>
-                    <Field type="text" name="documentId" css={styles.input} onFocus={inputFocus} />
-                    <div css={{ ...menu(documentIdHasFocus) }}>
+                    <Field
+                      type="text"
+                      name="documentId"
+                      css={styles.input}
+                      onFocus={inputFocus}
+                      onBlur={inputBlur}
+                    />
+                    <div css={styles.menu(documentIdHasFocus)}>
                       {cevitxe.knownDocumentIds.map(documentId => (
                         <button
                           key={documentId}
@@ -135,30 +152,10 @@ export interface ToolbarProps<T> {
   onStoreReady: (store: Redux.Store) => void
 }
 
-const menu = (documentIdHasFocus: boolean) =>
-  css({
-    display: documentIdHasFocus ? 'block' : 'none',
-    position: 'absolute',
-    background: 'white',
-    top: 30,
-  })
-
 const fontFamily = 'inconsolata, monospace'
-const button = css({
-  background: 'white',
-  border: '1px solid #ddd',
-  padding: '.3em 1em',
-  textAlign: 'left',
-  cursor: 'pointer',
-  fontFamily,
-  fontSize: 14,
-  ':hover': {
-    background: 'lightBlue',
-  },
-})
 
 const styles = {
-  toolbar: css({
+  toolbar: {
     background: '#eee',
     borderBottom: '1px solid #ddd',
     display: 'flex',
@@ -168,9 +165,18 @@ const styles = {
     fontSize: 14,
     position: 'relative',
     zIndex: 9,
-  }),
+  } as CSSObject,
   button: css({
-    ...button,
+    background: 'white',
+    border: '1px solid #ddd',
+    padding: '.3em 1em',
+    textAlign: 'left',
+    cursor: 'pointer',
+    fontFamily,
+    fontSize: 14,
+    ':hover': {
+      background: 'lightBlue',
+    },
     margin: '0 5px',
     borderRadius: 3,
     textTransform: 'uppercase',
@@ -196,8 +202,24 @@ const styles = {
     position: 'relative',
     display: 'inline-block',
   }),
+  menu: (documentIdHasFocus: boolean) =>
+    css({
+      display: documentIdHasFocus ? 'block' : 'none',
+      position: 'absolute',
+      background: 'white',
+      top: 30,
+    }),
   menuItem: css({
-    ...button,
+    background: 'white',
+    border: '1px solid #ddd',
+    padding: '.3em 1em',
+    textAlign: 'left',
+    cursor: 'pointer',
+    fontFamily,
+    fontSize: 14,
+    ':hover': {
+      background: 'lightBlue',
+    },
     display: 'block',
     marginTop: -2,
     width: 200,
