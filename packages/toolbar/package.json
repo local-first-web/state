@@ -20,7 +20,8 @@
     "react": "16",
     "react-dom": "16",
     "redux": "4",
-    "use-persisted-state": "0"
+    "use-persisted-state": "0",
+    "use-query-params": "0"
   },
   "devDependencies": {
     "@types/jest": "24",
