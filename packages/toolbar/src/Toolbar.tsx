@@ -52,15 +52,15 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
     return newDocumentId
   }
 
-  const joinStore = async (_documentId: string) => {
+  const joinStore = async (newDocumentId: string) => {
     if (busy) return
     setBusy(true)
-    setDocumentId(_documentId)
-    const newStore = await cevitxe.joinStore(_documentId)
+    setDocumentId(newDocumentId)
+    const newStore = await cevitxe.joinStore(newDocumentId)
     setAppStore(newStore)
     onStoreReady(newStore)
     setBusy(false)
-    log('joined store', _documentId)
+    log('joined store', newDocumentId)
   }
 
   const onSubmit = (values: FormikValues, actions: FormikHelpers<any>) => {
