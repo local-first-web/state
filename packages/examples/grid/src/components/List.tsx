@@ -30,6 +30,7 @@ import {
 import { State } from '../redux/store'
 import { Loading } from './Loading'
 import { ContextMenuFactory } from 'ag-grid-enterprise'
+import { deleteCommand } from './deleteCommand'
 
 const log = debug('cevitxe:grid:List')
 
@@ -180,20 +181,11 @@ const List = () => {
     return (params.defaultItems as any[]).concat(items)
   }
 
-  const getContextMenuItems = (params: GetContextMenuItemsParams) =>
-    (params.defaultItems as any[]).concat([deleteCommand(params)])
-
-  const deleteCommand = ({ api, node }: GetContextMenuItemsParams) => {
-    if (!api) return
-
-    const rowIds: string[] = getSelectedRowIds(api) || [node.data.id]
-
-    const deleteRow = (rowId: string) => dispatch(removeItem(rowId))
-
-    return {
-      name: `Delete ${rowIds.length} ${rowIds.length === 1 ? 'row' : 'rows'}`,
-      action: () => rowIds.forEach(deleteRow),
-    }
+  const getContextMenuItems = (params: GetContextMenuItemsParams) => {
+    const commands = [
+      deleteCommand(dispatch, params), //..
+    ]
+    return (params.defaultItems as any[]).concat(commands)
   }
 
   return (
