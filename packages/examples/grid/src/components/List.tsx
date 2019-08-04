@@ -1,5 +1,5 @@
 /** @jsx jsx */
-
+import * as R from 'ramda'
 import { css, jsx } from '@emotion/core'
 import {
   ColDef,
@@ -8,6 +8,8 @@ import {
   MenuItemDef,
   ValueParserParams,
   ValueSetterParams,
+  CellRange,
+  GridApi,
 } from 'ag-grid-community'
 import { CellKeyPressEvent, ModelUpdatedEvent } from 'ag-grid-community/dist/lib/events'
 import 'ag-grid-community/dist/styles/ag-grid.css'
@@ -180,34 +182,44 @@ const List = () => {
     return (params.defaultItems as any[]).concat(items)
   }
 
-  function getContextMenuItems(params: GetContextMenuItemsParams) {
-    let ids: string[]
-    const ranges = params.api!.getCellRanges()
-    if (!ranges.length) ids = [params.node.data.id]
-    else
-      ids = Enumerable.asEnumerable(ranges)
-        .SelectMany((d: any) =>
-          Enumerable.Range(d.startRow!.rowIndex, d.endRow!.rowIndex - d.startRow!.rowIndex + 1)
-        )
-        .Distinct()
-        .Select(d => params.api!.getModel().getRow(d)!.id)
-        .ToArray()
-    const items = [
-      {
-        name: `Delete ${ids.length} items`,
-        action: () => {
-          ids.forEach(id => dispatch(removeItem(id)))
-        },
-      },
-    ]
-    return (params.defaultItems as any[]).concat(items)
+  const getContextMenuItems = (params: GetContextMenuItemsParams) =>
+    (params.defaultItems as any[]).concat([deleteCommand(params)])
+
+  const deleteCommand = (params: GetContextMenuItemsParams) => {
+    const { api, node } = params
+    if (!api) return
+
+    const ranges = api.getCellRanges()
+    log('ranges', ranges)
+    const rowIds = ranges.length === 0 ? [node.data.id] : getRowIdsFromRanges(api, ranges)
+
+    return {
+      name: `Delete ${rowIds.length} ${rowIds.length === 1 ? 'row' : 'rows'}`,
+      action: () => rowIds.forEach(id => dispatch(removeItem(id))),
+    }
+  }
+
+  const getRowIdsFromRanges = (api: GridApi, cellRanges: CellRange[]) => {
+    const getIndexes = (cellRange: CellRange) => {
+      const start = cellRange.startRow!.rowIndex
+      const end = cellRange.endRow!.rowIndex + 1
+      return R.range(start, end)
+    }
+
+    const getDistinctIndexes = (cellRanges: CellRange[]) => {
+      const allIndexes = cellRanges.map(getIndexes)
+      return R.uniq(R.flatten(allIndexes))
+    }
+
+    const getRowIdFromIndex = (i: number) => api.getModel().getRow(i)!.id
+
+    return getDistinctIndexes(cellRanges).map(getRowIdFromIndex)
   }
 
   return (
     <div>
       {ready ? (
         <div className="ag-theme-balham" css={styles.grid}>
-          {/* <p>{rowCount} rows</p> */}
           <AgGridReact
             columnDefs={columns}
             defaultColDef={{
