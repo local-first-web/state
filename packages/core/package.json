@@ -36,6 +36,7 @@
     "p-event": "4",
     "prettier": "1",
     "redux": "4",
+    "redux-devtools-extension": "2",
     "ts-jest": "24",
     "tslib": "1",
     "typescript": "3"
