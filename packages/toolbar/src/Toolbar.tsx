@@ -1,4 +1,5 @@
 /** @jsx jsx */
+import { codes } from 'keycode'
 
 import { css, jsx, CSSObject } from '@emotion/core'
 import { Cevitxe } from 'cevitxe'
@@ -14,7 +15,6 @@ import { useQueryParam, StringParam } from 'use-query-params'
 export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
   // Hooks
 
-  // const useDocumentId = createPersistedState(`cevitxe/${cevitxe.databaseName}/documentId`)
   const [documentId, setDocumentId] = useQueryParam('id', StringParam)
 
   const input = useRef<HTMLInputElement>() as React.RefObject<HTMLInputElement>
@@ -65,6 +65,10 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
     log('joined store', newDocumentId)
   }
 
+  const load = (documentId: string | undefined) => {
+    if (documentId !== undefined) window.location.assign(`?id=${documentId}`)
+  }
+
   return (
     <div css={styles.toolbar}>
       {appStore && (
@@ -72,7 +76,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
           {({ setFieldValue, values }) => {
             const newClick = async () => {
               const newDocumentId = await createStore()
-              setTimeout(() => window.location.assign(`?id=${newDocumentId}`), 200)
+              setTimeout(() => load(newDocumentId), 200)
             }
 
             const inputFocus = (e: Event) => {
@@ -83,8 +87,20 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
               inputHasFocus(true)
             }
 
-            const inputBlur = (e: Event) => setTimeout(() => inputHasFocus(false), 500)
+            const inputBlur = (e: Event) =>
+              setTimeout(() => {
+                inputHasFocus(false)
+              }, 500)
 
+            const keyDown = (event: KeyboardEvent) => {
+              if (event) {
+                switch (event.which) {
+                  case codes['enter']:
+                  case codes['tab']:
+                    load(values.documentId)
+                }
+              }
+            }
             return (
               <React.Fragment>
                 <div css={styles.toolbarGroup}>
@@ -95,6 +111,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
                       css={styles.input}
                       onFocus={inputFocus}
                       onBlur={inputBlur}
+                      onKeyDown={keyDown}
                     />
                     <div css={styles.menu(documentIdHasFocus)}>
                       {cevitxe.knownDocumentIds.map(documentId => (
@@ -113,7 +130,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
                   <a
                     role="button"
                     type="button"
-                    href={`?id=${values.documentId!}`}
+                    href={`?id=${values.documentId}`}
                     css={styles.button}
                   >
                     Join
