@@ -6,11 +6,14 @@ describe('grid', () => {
   beforeEach(() => cy.visit('/'))
 
   describe('on first load', () => {
+    // enter some text in the first cell, then hit enter
     it('accepts input', () => {
       cy.firstCell()
         .edit()
         .type('qrs')
         .type('{enter}')
+
+      // confirm that the text is in the cell
       cy.firstCell().should('contain.text', 'qrs')
     })
 
@@ -56,7 +59,7 @@ describe('grid', () => {
         .type('qrs')
         .type('{enter}')
 
-      // check that the text is in the cell
+      // confirm that the text is in the cell
       cy.firstCell().should('contain.text', 'qrs')
     })
   })
