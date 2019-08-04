@@ -82,14 +82,6 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
               window.location.reload()
             }
 
-            const itemClick = (documentId: string) => () => {
-              setFieldValue('documentId', documentId)
-              setDocumentId(documentId)
-              joinStore(documentId)
-              setDocumentIdHasFocus(false)
-              window.location.reload()
-            }
-
             const inputFocus = (e: Event) => {
               if (e && e.target) {
                 const input = e.target as HTMLInputElement
