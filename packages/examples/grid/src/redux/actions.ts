@@ -1,4 +1,5 @@
 import uuid from 'uuid'
+import { JSONSchema7 } from 'json-schema'
 
 export const SCHEMA_LOAD = 'SCHEMA_LOAD'
 export const SCHEMA_INFER = 'SCHEMA_INFER'
@@ -12,7 +13,7 @@ export const ITEM_ADD = 'ITEM_ADD'
 export const ITEM_UPDATE = 'ITEM_UPDATE'
 export const ITEM_REMOVE = 'ITEM_REMOVE'
 
-export function loadSchema(schema: any[]) {
+export function loadSchema(schema: JSONSchema7) {
   return { type: SCHEMA_LOAD, payload: { schema } }
 }
 
