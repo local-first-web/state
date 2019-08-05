@@ -56,7 +56,7 @@ describe('grid', () => {
       cy.selectedCells().should('have.length', 3)
     })
 
-    it.only('allows deleting rows', () => {
+    it('allows deleting rows', () => {
       // confirm number of rows
       cy.rows().should('have.length', 3)
 
