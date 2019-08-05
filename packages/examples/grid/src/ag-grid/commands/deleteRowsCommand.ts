@@ -1,5 +1,5 @@
 ﻿import { GetContextMenuItemsParams } from 'ag-grid-community'
-import { getSelectedRowIds } from 'src/gridUtils'
+import { getSelectedRowIds } from 'src/ag-grid/gridUtils'
 import { removeItem } from 'src/redux/actions'
 import { Dispatch, AnyAction } from 'redux'
 

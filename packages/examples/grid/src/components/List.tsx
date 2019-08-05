@@ -1,7 +1,6 @@
 /** @jsx jsx */
 import { css, jsx } from '@emotion/core'
 import {
-  ColDef,
   GetContextMenuItemsParams,
   GetMainMenuItemsParams,
   MenuItemDef,
@@ -26,8 +25,9 @@ import {
   updateItem,
 } from '../redux/actions'
 import { State } from '../redux/store'
+import { deleteRowsCommand } from 'src/ag-grid/commands/deleteRowsCommand'
 import { Loading } from './Loading'
-import { deleteRowsCommand } from './deleteRowsCommand'
+import { colDefFromSchemaProperty } from 'src/ag-grid/colDefFromSchemaProperty'
 
 const log = debug('cevitxe:grid:List')
 
@@ -41,7 +41,6 @@ const List = () => {
   const getDispatch = () => store.dispatch
 
   const ready = useSelector((state: State) => !!state && !!state.list && !!state.schema)
-  const rowCount = useSelector((state: State) => ready && state.list.length)
 
   const collection = useSelector((state: State) => {
     if (!ready) return []
@@ -57,23 +56,10 @@ const List = () => {
 
   const dialog = useDialog()
 
-  function colDefFromSchemaProperty(field: string, schema: any) {
-    const colDef: ColDef = { field }
-    if (schema.description) {
-      colDef.headerName = schema.description
-    }
-    switch (schema.type) {
-      case 'number':
-        colDef.type = 'numericColumn'
-        colDef.filter = 'number'
-    }
-    return colDef
-  }
-
   const [nextRowId, setNextRowId] = useState()
   const [nextColumn, setNextColumn] = useState()
 
-  function handleKeyDown(event: CellKeyPressEvent) {
+  const handleKeyDown = (event: CellKeyPressEvent) => {
     if (event.event) {
       switch ((event.event as KeyboardEvent).key) {
         case 'ArrowDown':
@@ -96,7 +82,7 @@ const List = () => {
     }
   }
 
-  function handleModelUpdated(event: ModelUpdatedEvent) {
+  const handleModelUpdated = (event: ModelUpdatedEvent) => {
     if (nextRowId) {
       const row = event.api.getRowNode(nextRowId)
       if (row) {
@@ -110,7 +96,7 @@ const List = () => {
     }
   }
 
-  function valueSetter(params: ValueSetterParams) {
+  const valueSetter = (params: ValueSetterParams) => {
     if (params.newValue === params.oldValue) return false
     switch (params.colDef.type) {
       case 'numericColumn':
@@ -122,7 +108,7 @@ const List = () => {
     return true
   }
 
-  function valueParser(params: ValueParserParams) {
+  const valueParser = (params: ValueParserParams) => {
     switch (params.colDef.type) {
       case 'numericColumn':
         return Number(params.newValue)
@@ -131,15 +117,12 @@ const List = () => {
     }
   }
 
-  function showDelete(params: GetMainMenuItemsParams) {
+  const deleteColumnCommand = (params: GetMainMenuItemsParams) => {
     const colDef = params.column.getColDef()
-    dialog
-      .confirm({ message: `Delete ${colDef.headerName}?` })
-      .then(() => dispatch(deleteField(colDef.field!)))
-      .catch(() => {})
+    dispatch(deleteField(colDef.field!))
   }
 
-  const renameCommand = (params: GetMainMenuItemsParams) => ({
+  const renameColumnCommand = (params: GetMainMenuItemsParams) => ({
     name: 'Rename',
     action: () => {
       const colDef = params.column.getColDef()
@@ -155,11 +138,11 @@ const List = () => {
     },
   })
 
-  function getMainMenu(params: GetMainMenuItemsParams) {
+  const getMainMenu = (params: GetMainMenuItemsParams) => {
     const colDef = params.column.getColDef()
     const items: MenuItemDef[] = [
-      renameCommand(params),
-      { name: 'Delete', action: () => showDelete(params) },
+      renameColumnCommand(params),
+      { name: 'Delete', action: () => deleteColumnCommand(params) },
       {
         name: 'Change column type',
         subMenu: [

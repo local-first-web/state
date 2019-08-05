@@ -1,5 +1,5 @@
 import { JSONSchema7 } from 'json-schema'
-import { State } from './redux/store'
+import { State } from '../redux/store'
 import { newid } from 'cevitxe-signal-client'
 
 export const emptyGrid = (rowCount: number, colCount: number) => {
