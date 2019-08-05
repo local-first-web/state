@@ -17,20 +17,17 @@ import { debug } from 'debug'
 import { useDialog } from 'muibox'
 import { useState } from 'react'
 import { useSelector, useStore } from 'react-redux'
-import { getSelectedRowIds } from 'src/gridUtils'
 import {
   addField,
   addItem,
   deleteField,
-  removeItem,
   renameField,
   setFieldType,
   updateItem,
 } from '../redux/actions'
 import { State } from '../redux/store'
 import { Loading } from './Loading'
-import { ContextMenuFactory } from 'ag-grid-enterprise'
-import { deleteCommand } from './deleteCommand'
+import { deleteRowsCommand } from './deleteRowsCommand'
 
 const log = debug('cevitxe:grid:List')
 
@@ -134,19 +131,6 @@ const List = () => {
     }
   }
 
-  function showRename(params: GetMainMenuItemsParams) {
-    const colDef = params.column.getColDef()
-    const current = colDef.headerName
-    dialog
-      .prompt({
-        message: 'Rename Field',
-        required: true,
-        defaultValue: current,
-      })
-      .then((newName: string) => dispatch(renameField(colDef.field!, newName)))
-      .catch(() => {})
-  }
-
   function showDelete(params: GetMainMenuItemsParams) {
     const colDef = params.column.getColDef()
     dialog
@@ -155,10 +139,26 @@ const List = () => {
       .catch(() => {})
   }
 
+  const renameCommand = (params: GetMainMenuItemsParams) => ({
+    name: 'Rename',
+    action: () => {
+      const colDef = params.column.getColDef()
+      const current = colDef.headerName
+      dialog
+        .prompt({
+          message: 'Rename Field',
+          required: true,
+          defaultValue: current,
+        })
+        .then((newName: string) => dispatch(renameField(colDef.field!, newName)))
+        .catch(() => {})
+    },
+  })
+
   function getMainMenu(params: GetMainMenuItemsParams) {
     const colDef = params.column.getColDef()
     const items: MenuItemDef[] = [
-      { name: 'Rename', action: () => showRename(params) },
+      renameCommand(params),
       { name: 'Delete', action: () => showDelete(params) },
       {
         name: 'Change column type',
@@ -183,7 +183,7 @@ const List = () => {
 
   const getContextMenuItems = (params: GetContextMenuItemsParams) => {
     const commands = [
-      deleteCommand(dispatch, params), //..
+      deleteRowsCommand(dispatch, params), //..
     ]
     return (params.defaultItems as any[]).concat(commands)
   }
