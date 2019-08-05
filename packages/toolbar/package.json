@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@types/jest": "24",
+    "@types/query-string": "6",
     "@types/use-persisted-state": "^0.3.0",
     "jest": "24",
     "prettier": "1",
