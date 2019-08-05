@@ -6,6 +6,7 @@ const keycode = name => ({ keyCode: codes[name], which: codes[name] })
 Cypress.Commands.add('firstCell', () => cy.get('.ag-cell:first').click())
 Cypress.Commands.add('focusedCell', () => cy.get('.ag-cell-focus'))
 Cypress.Commands.add('cell', (x, y) => cy.get(`.ag-row[row-id=${y}] .ag-cell[col-id=${x}]`).click())
+Cypress.Commands.add('columnMenu', (x) => cy.columns().eq(x).find('.ag-header-cell-menu-button').click())
 
 Cypress.Commands.add('columns', () => cy.get('.ag-header-cell'))
 Cypress.Commands.add('rows', () => cy.get('.ag-center-cols-viewport .ag-row'))

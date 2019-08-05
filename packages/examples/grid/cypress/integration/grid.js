@@ -72,6 +72,20 @@ describe('grid', () => {
       // confirm only one row left
       cy.rows().should('have.length', 1)
     })
+
+    it.only('allows deleting columns', () => {
+      // confirm number of columns
+      cy.columns().should('have.length', 3)
+
+      cy.columnMenu(1)
+        .queryByText('Delete')
+        .click()
+
+      // confirm only one two columns left
+      cy.columns().should('have.length', 2)
+      cy.columns().eq(0).should('contain.text', 'Field 1')
+      cy.columns().eq(1).should('contain.text', 'Field 3')
+    })
   })
 
   describe('after creating store', () => {
