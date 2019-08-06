@@ -12,7 +12,7 @@ import { Connection } from './Connection'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getKeys, getKnownDocumentIds } from './keys'
-import { CevitxeOptions, ProxyReducer, StateFactory } from './types'
+import { CevitxeOptions, ProxyReducer, StateFactory, ProxyMultiReducer } from './types'
 import { composeWithDevTools } from 'redux-devtools-extension'
 
 const valueEncoding = 'utf-8'
@@ -20,7 +20,7 @@ const valueEncoding = 'utf-8'
 let log = debug('cevitxe')
 
 export class Cevitxe<T> extends EventEmitter {
-  private proxyReducer: ProxyReducer<any>
+  private proxyReducer: ProxyReducer<any> | ProxyMultiReducer
   private initialState: T | StateFactory<T>
   private urls: string[]
   private middlewares: Middleware[] // TODO: accept an `enhancer` object instead

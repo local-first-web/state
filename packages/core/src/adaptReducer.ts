@@ -24,10 +24,15 @@ export const adaptReducer: ReducerConverter = proxyReducer => (state, action) =>
 // The purpose of this function is to turn a proxyReducer into a real reducer by
 // running the proxyReducer's change functions through `automerge.change`.
 const convertToReduxReducer: ReducerConverter = proxyReducer => (state, { type, payload }) => {
-  const msg = `${type}: ${JSON.stringify(payload)}`
-  const fn = proxyReducer({ type, payload })
-  if (!fn || !state) return state // no matching function - return the unmodified state
-  return A.change(state, msg, fn) // return a modified Automerge object
+  const fnOrMap = proxyReducer({ type, payload })
+  if (!fnOrMap || !state) return state // no matching function - return the unmodified state
+  // return a modified Automerge object
+  if (typeof fnOrMap === 'function') return A.change(state, type, fnOrMap)
+  else
+    return Object.entries(fnOrMap).reduce((acc, [key, fn]) => {
+      const itemState = acc[key]
+      //TODO at this point I should be working with multiple documents...
+    }, state)
 }
 
 // After setting up the feed in `createStore`, we listen to our connections and dispatch the

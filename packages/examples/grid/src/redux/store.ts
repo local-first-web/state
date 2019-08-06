@@ -4,8 +4,10 @@ import { emptyGrid } from '../ag-grid/emptyGrid'
 import { proxyReducer } from './reducers'
 
 export interface State {
-  list: string[]
-  map: { [key: string]: any }
+  // list: string[]
+  // map: { [key: string]: any }
+  [key: string]: any
+  index: { [key: string]: boolean }
   schema: JSONSchema7
   _testId: string
 }

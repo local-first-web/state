@@ -40,11 +40,11 @@ const List = () => {
   const dispatch = store.dispatch
   const getDispatch = () => store.dispatch
 
-  const ready = useSelector((state: State) => !!state && !!state.list && !!state.schema)
+  const ready = useSelector((state: State) => !!state && !!state.index && !!state.schema)
 
   const collection = useSelector((state: State) => {
     if (!ready) return []
-    return state.list.map((d: string) => state.map[d])
+    return Object.keys(state.index).map((d: string) => state[d])
   })
 
   const columns = useSelector((state: State) => {

@@ -4,12 +4,17 @@ import { AnyAction, Middleware, Reducer, Store } from 'redux'
 import { DocumentSync } from './DocumentSync'
 
 export type ProxyReducer<T> = (action: AnyAction) => A.ChangeFn<T> | null
-export type ReducerConverter = <T>(proxy: ProxyReducer<T>) => Reducer
+export type ProxyMultiReducer = (action: AnyAction) => ChangeMap | null
+export type ReducerConverter = <T>(proxy: ProxyReducer<T> | ProxyMultiReducer) => Reducer
 export type StateFactory<T> = () => T
+
+export interface ChangeMap {
+  [documentId: string]: A.ChangeFn<any>
+}
 
 export interface CevitxeOptions<T> {
   // Redux store
-  proxyReducer: ProxyReducer<any>
+  proxyReducer: ProxyReducer<any> | ProxyMultiReducer
   middlewares?: Middleware[] // TODO: accept an `enhancer` object instead
   initialState: T | StateFactory<T>
 

@@ -1,11 +1,91 @@
 import * as actions from './actions'
-import { ProxyReducer } from 'cevitxe'
+import { ProxyReducer, ProxyMultiReducer, ChangeMap } from 'cevitxe'
 import { State } from './store'
 import { JSONSchema7 } from 'json-schema'
-import uuid from 'uuid'
 import { inferSchema } from 'src/inferSchema'
 
-export const proxyReducer: ProxyReducer<State> = ({ type, payload }) => {
+const index: string = 'index'
+const schema: string = 'schema'
+
+export const proxyReducer: ProxyMultiReducer = ({ type, payload }) => {
+  switch (type) {
+    case actions.ITEM_ADD:
+      return {
+        [index]: s => (s[payload.id] = true),
+        [payload.id]: s => payload,
+      }
+    case actions.ITEM_REMOVE:
+      return {
+        [index]: s => delete s[payload.id],
+        [payload.id]: () => undefined,
+      }
+    case actions.ITEM_UPDATE:
+      return {
+        [payload.id]: s => (s[payload.field] = payload.value),
+      }
+    case actions.SCHEMA_LOAD:
+      return {
+        [schema]: () => payload.schema,
+      }
+    case actions.SCHEMA_INFER:
+      return {
+        [schema]: () => inferSchema(payload.sampleData),
+      }
+    case actions.FIELD_ADD:
+      return {
+        [schema]: s => {
+          s.properties = s.properties || {}
+          s.properties[payload.id] = { description: 'New Field' }
+        },
+      }
+    case actions.FIELD_RENAME:
+      return {
+        [schema]: s => {
+          const fieldSchema = s.properties![payload.id] as JSONSchema7
+          fieldSchema.description = payload.description
+        },
+      }
+    case actions.FIELD_DELETE: {
+      const changes: ChangeMap = {
+        [schema]: s => {
+          delete s.properties![payload.id]
+          //TODO: delete value from all items
+          //Object.values(s.map).forEach(d => delete d[payload.id])
+        },
+      }
+      return changes
+    }
+    case actions.FIELD_SET_TYPE: {
+      const changes: ChangeMap = {
+        [schema]: s => {
+          const fieldSchema = s.properties![payload.id] as JSONSchema7
+          fieldSchema.type = payload.type
+          //TODO: change all items
+          // Object.values(s.map).forEach(d => {
+          //   const currentValue = d[payload.id]
+          //   if (currentValue != null) {
+          //     switch (payload.type) {
+          //       case 'number':
+          //         const number = Number(currentValue)
+          //         if (Number.isNaN(number)) delete d[payload.id]
+          //         else d[payload.id] = number
+          //         break
+          //       case 'string':
+          //         d[payload.id] = String(currentValue)
+          //         break
+          //     }
+          //   }
+          // })
+        },
+      }
+      return changes
+    }
+    default:
+      return null
+  }
+}
+
+export const oldProxyReducer: ProxyReducer<State> = ({ type, payload }) => {
   switch (type) {
     case actions.COLLECTION_LOAD:
       return s => {
@@ -27,7 +107,7 @@ export const proxyReducer: ProxyReducer<State> = ({ type, payload }) => {
 
     case actions.ITEM_REMOVE:
       return s => {
-        s.list = s.list.filter(d => d !== payload.id)
+        //s.list = s.list.filter(d => d !== payload.id)
         delete s.map[payload.id]
       }
 
@@ -65,28 +145,28 @@ export const proxyReducer: ProxyReducer<State> = ({ type, payload }) => {
     case actions.FIELD_DELETE:
       return s => {
         delete s.schema.properties![payload.id]
-        Object.values(s.map).forEach(d => delete d[payload.id])
+        //Object.values(s.map).forEach(d => delete d[payload.id])
       }
 
     case actions.FIELD_SET_TYPE:
       return s => {
         const schema = s.schema.properties![payload.id] as JSONSchema7
         schema.type = payload.type
-        Object.values(s.map).forEach(d => {
-          const currentValue = d[payload.id]
-          if (currentValue != null) {
-            switch (payload.type) {
-              case 'number':
-                const number = Number(currentValue)
-                if (Number.isNaN(number)) delete d[payload.id]
-                else d[payload.id] = number
-                break
-              case 'string':
-                d[payload.id] = String(currentValue)
-                break
-            }
-          }
-        })
+        // Object.values(s.map).forEach(d => {
+        //   const currentValue = d[payload.id]
+        //   if (currentValue != null) {
+        //     switch (payload.type) {
+        //       case 'number':
+        //         const number = Number(currentValue)
+        //         if (Number.isNaN(number)) delete d[payload.id]
+        //         else d[payload.id] = number
+        //         break
+        //       case 'string':
+        //         d[payload.id] = String(currentValue)
+        //         break
+        //     }
+        //   }
+        // })
       }
     default:
       return null
