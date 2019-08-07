@@ -3344,10 +3344,9 @@ atomic-batcher@^1.0.2:
   resolved "https://registry.yarnpkg.com/atomic-batcher/-/atomic-batcher-1.0.2.tgz#d16901d10ccec59516c197b9ccd8930689b813b4"
   integrity sha1-0WkB0QzOxZUWwZe5zNiTBom4E7Q=
 
-automerge@^0.11.0:
+automerge@herbcaudill/automerge#type-tweaks:
   version "0.11.0"
-  resolved "https://registry.yarnpkg.com/automerge/-/automerge-0.11.0.tgz#a3098bd0e35fe320075e4790c588a3c5adf6fa9c"
-  integrity sha512-dlK5ULqBjvAd8lPX+0boq6YA6eejDGJO/3WQgYuABX1XgPiTEg/W+6p4Ci8e2vE7ucG0+flDMVyv9JxWC+abUw==
+  resolved "https://codeload.github.com/herbcaudill/automerge/tar.gz/d8fd73f8631d537bec951460dbb6d5988e473d7b"
   dependencies:
     immutable "^3.8.2"
     transit-immutable-js "^0.7.0"

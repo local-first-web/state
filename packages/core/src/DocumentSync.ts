@@ -76,14 +76,14 @@ export class DocSetSync {
   }
 
   // Called by the network stack whenever it receives a message from a peer
-  receive({ docId, clock, changes }: { docId: string,clock: Clock; changes?: A.Change[] }) {
+  receive({ docId, clock, changes }: { docId: string; clock: Clock; changes?: A.Change[] }) {
     // Record their clock value for this document
-    if (clock) this.updateClock(theirs, clock)
+    if (clock) this.updateClock(docId, theirs, clock)
 
     // If they sent changes, apply them to our document
     if (changes) this.docSet.applyChanges(docId, changes)
     // If no changes, treat it as a request for our latest changes
-    else this.maybeSendChanges()
+    else this.maybeSendChanges(docId)
 
     // Return the current state of the document
     return this.docSet.getDoc(docId)
@@ -91,7 +91,16 @@ export class DocSetSync {
 
   // Private methods
 
-  private validateDoc(clock: Clock) {
+  private registerDoc(docId: string) {
+    const clock = this.getClockFromDoc(docId)
+    this.validateDoc(docId, clock)
+    // Advertise the document
+    this.requestChanges(docId, clock)
+    // Record the doc's initial clock
+    this.updateClock(docId, ours, clock)
+  }
+
+  private validateDoc(docId: string, clock: Clock) {
     const ourClock = this.getClock(ours)
 
     // Make sure doc has a clock (i.e. is an automerge object)
@@ -104,11 +113,11 @@ export class DocSetSync {
   // Callback that is called by the docSet whenever a document is changed
   private docChanged(docId: string) {
     log('doc changed')
-    const clock = this.getClockFromDoc()
-    this.validateDoc(clock)
-    this.maybeSendChanges()
-    this.maybeRequestChanges(clock)
-    this.updateClock(ours, clock)
+    const clock = this.getClockFromDoc(docId)
+    this.validateDoc(docId, clock)
+    this.maybeSendChanges(docId)
+    this.maybeRequestChanges(docId, clock)
+    this.updateClock(docId, ours, clock)
   }
 
   // Send changes if we have more recent information than they do
@@ -120,26 +129,26 @@ export class DocSetSync {
 
     // If we have changes they don't have, send them
     const changes = A.Backend.getMissingChanges(ourState, theirClock)
-    if (changes.length > 0) this.sendChanges(changes)
+    if (changes.length > 0) this.sendChanges(docId, changes)
   }
 
-  private sendChanges(changes: A.Change[]) {
+  private sendChanges(docId: string, changes: A.Change[]) {
     log('sending %s changes', changes.length)
-    const clock = this.getClockFromDoc()
+    const clock = this.getClockFromDoc(docId)
     this.send({ clock: clock.toJS() as Clock, changes })
-    this.updateClock(ours)
+    this.updateClock(docId, ours)
   }
 
   // Request changes if we're out of date
-  private maybeRequestChanges(clock = this.getClockFromDoc()) {
+  private maybeRequestChanges(docId: string, clock = this.getClockFromDoc(docId)) {
     const ourClock = this.getClock(ours)
 
     // If the document is newer than what we have, request changes
-    if (!lessOrEqual(clock, ourClock)) this.requestChanges(clock)
+    if (!lessOrEqual(clock, ourClock)) this.requestChanges(docId, clock)
   }
 
   // A message with no changes and a clock is a request for changes
-  private requestChanges(clock = this.getClockFromDoc()) {
+  private requestChanges(docId: string, clock = this.getClockFromDoc(docId)) {
     log('requesting changes')
     this.send({ clock: clock.toJS() as Clock })
   }
@@ -156,11 +165,12 @@ export class DocSetSync {
     return this.clock[which] || initialClockValue
   }
 
-  private getClockFromDoc = (docId: string) => (this.getState(docId) as any).getIn(['opSet', 'clock']) as Clock
+  private getClockFromDoc = (docId: string) =>
+    (this.getState(docId) as any).getIn(['opSet', 'clock']) as Clock
 
   // Updates the vector clock by merging in the new vector clock `clock`, setting each node's
   // sequence number has been set to the maximum for that node.
-  private updateClock(which: keyof Clocks, clock = this.getClockFromDoc(docId)) {
+  private updateClock(docId: string, which: keyof Clocks, clock = this.getClockFromDoc(docId)) {
     const oldClock = this.clock[which] || Map()
     // Merge the clocks, keeping the maximum sequence number for each node
     const largestWins = (x: number, y: number): number => Math.max(x, y)
@@ -168,7 +178,8 @@ export class DocSetSync {
     this.clock[which] = newClock
   }
 
-  private getState(docId: string): A.BackendState {``
+  private getState(docId: string): A.BackendState {
+    ;``
     const doc = this.docSet.getDoc(docId)
     return A.Frontend.getBackendState(doc)
   }
