@@ -24,7 +24,7 @@ export const adaptReducer: ReducerConverter = proxyReducer => (state, action) =>
 // The purpose of this function is to turn a proxyReducer into a real reducer by
 // running the proxyReducer's change functions through `automerge.change`.
 const convertToReduxReducer: ReducerConverter = proxyReducer => (state, { type, payload }) => {
-  const fnOrMap = proxyReducer({ type, payload })
+  const fnOrMap = proxyReducer({ type, payload, state })
   if (!fnOrMap || !state) return state // no matching function - return the unmodified state
   // return a modified Automerge object
   if (typeof fnOrMap === 'function') return A.change(state, type, fnOrMap)

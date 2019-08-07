@@ -4,19 +4,16 @@ import { State } from './store'
 import { JSONSchema7 } from 'json-schema'
 import { inferSchema } from 'src/inferSchema'
 
-const index: string = 'index'
-const schema: string = 'schema'
-
-export const proxyReducer: ProxyMultiReducer = ({ type, payload }) => {
+export const proxyReducer: ProxyMultiReducer = ({ type, payload, state }) => {
   switch (type) {
     case actions.ITEM_ADD:
       return {
-        [index]: s => (s[payload.id] = true),
+        index: s => (s[payload.id] = true),
         [payload.id]: s => payload,
       }
     case actions.ITEM_REMOVE:
       return {
-        [index]: s => delete s[payload.id],
+        index: s => delete s[payload.id],
         [payload.id]: () => undefined,
       }
     case actions.ITEM_UPDATE:
@@ -25,39 +22,36 @@ export const proxyReducer: ProxyMultiReducer = ({ type, payload }) => {
       }
     case actions.SCHEMA_LOAD:
       return {
-        [schema]: () => payload.schema,
+        schema: () => payload.schema,
       }
     case actions.SCHEMA_INFER:
       return {
-        [schema]: () => inferSchema(payload.sampleData),
+        schema: () => inferSchema(payload.sampleData),
       }
     case actions.FIELD_ADD:
       return {
-        [schema]: s => {
+        schema: s => {
           s.properties = s.properties || {}
           s.properties[payload.id] = { description: 'New Field' }
         },
       }
     case actions.FIELD_RENAME:
       return {
-        [schema]: s => {
+        schema: s => {
           const fieldSchema = s.properties![payload.id] as JSONSchema7
           fieldSchema.description = payload.description
         },
       }
     case actions.FIELD_DELETE: {
       const changes: ChangeMap = {
-        [schema]: s => {
-          delete s.properties![payload.id]
-          //TODO: delete value from all items
-          //Object.values(s.map).forEach(d => delete d[payload.id])
-        },
+        schema: s => delete s.properties![payload.id],
       }
+      for (const id in state.index) changes[id] = d => delete d[payload.id]
       return changes
     }
     case actions.FIELD_SET_TYPE: {
       const changes: ChangeMap = {
-        [schema]: s => {
+        schema: s => {
           const fieldSchema = s.properties![payload.id] as JSONSchema7
           fieldSchema.type = payload.type
           //TODO: change all items
