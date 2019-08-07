@@ -1,5 +1,5 @@
 ﻿import A from 'automerge'
-import { DocumentSync } from './DocumentSync'
+import { DocsetSync } from './DocumentSync'
 import { Message } from './types'
 import { TestChannel } from './lib/TestChannel'
 
@@ -16,7 +16,7 @@ const makeConnection = (
     channel.write(id, msg)
   }
 
-  const connection = new DocumentSync(watchableDoc, send)
+  const connection = new DocsetSync(watchableDoc, send)
 
   channel.on('data', (peer_id, msg) => {
     if (peer_id === id) return // ignore messages that we sent
@@ -102,8 +102,8 @@ describe(`DocumentSync`, () => {
   })
 
   describe('Intermittent connection', () => {
-    let localConnection: DocumentSync<BirdCount>
-    let remoteConnection: DocumentSync<BirdCount>
+    let localConnection: DocsetSync<BirdCount>
+    let remoteConnection: DocsetSync<BirdCount>
     let localWatchableDoc: A.WatchableDoc<BirdCount>
     let remoteWatchableDoc: A.WatchableDoc<BirdCount>
     let channel = new TestChannel()

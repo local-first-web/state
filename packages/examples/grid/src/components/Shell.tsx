@@ -16,7 +16,7 @@ export const Shell = () => {
   const [appStore, setAppStore] = useState<Redux.Store>()
 
   const onStoreReady = (store: Redux.Store) => {
-    log('store ready', cevitxe.documentId, store.getState()._testId)
+    log('store ready', cevitxe.discoveryKey, store.getState())
     setAppStore(store)
   }
 

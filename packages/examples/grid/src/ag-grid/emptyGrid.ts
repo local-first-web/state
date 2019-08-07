@@ -18,9 +18,16 @@ export const emptyGrid = (rowCount: number, colCount: number) => {
   })
 
   return {
-    list: rows,
-    map: rows.reduce(rowReducer, {}),
+    ...rows.reduce(rowReducer, {}),
+    index: Object.fromEntries(rows.map(d => [d, true])),
     schema: { properties: cols.reduce(columnReducer, {}) },
-    _testId: newid(),
   }
 }
+
+// export interface State {
+//   // list: string[]
+//   // map: { [key: string]: any }
+//   [key: string]: any
+//   index: { [key: string]: boolean }
+//   schema: JSONSchema7
+// }

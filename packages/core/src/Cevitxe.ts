@@ -65,15 +65,14 @@ export class Cevitxe<T> extends EventEmitter {
       : setInitialState(this.feed, {}) // joining a peer's feed, starting with an empty doc
 
     const docSet = new A.DocSet<any>()
-    let key: string
-    for (key in Object.getOwnPropertyNames(state)) {
+    for (let key in Object.getOwnPropertyNames(state)) {
       docSet.setDoc(key, state[key])
     }
 
-    docSet.registerHandler(doc => {
-      log('change', discoveryKey)
+    docSet.registerHandler((key, doc) => {
+      log('change', key)
       // hook for testing
-      this.emit('change', doc)
+      this.emit('change', key, doc)
     })
     log('created initial docSet', state)
 

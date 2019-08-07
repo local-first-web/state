@@ -1,5 +1,5 @@
 import A from 'automerge'
-import { DocumentSync } from './DocumentSync'
+import { DocsetSync } from './DocumentSync'
 import debug from 'debug'
 import { AnyAction, Dispatch } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
@@ -14,30 +14,26 @@ const log = debug('cevitxe:connection')
  * networking stack and with the Redux store.
  */
 export class Connection<T = any> extends EventEmitter {
-  private DocumentSync: DocumentSync<T>
+  private DocumentSync: DocsetSync<T>
   private peerSocket: WebSocket | null
   private dispatch?: Dispatch<AnyAction>
-  private watchableDoc: A.WatchableDoc<A.Doc<T>, T>
+  private docSet: A.DocSet<any>
 
-  constructor(
-    watchableDoc: A.WatchableDoc<A.Doc<T>, T>,
-    peerSocket: WebSocket,
-    dispatch?: Dispatch<AnyAction>
-  ) {
+  constructor(docSet: A.DocSet<any>, peerSocket: WebSocket, dispatch?: Dispatch<AnyAction>) {
     super()
     log('new connection')
-    this.watchableDoc = watchableDoc
+    this.docSet = docSet
     this.peerSocket = peerSocket
     if (dispatch) this.dispatch = dispatch
 
     this.peerSocket.onmessage = this.receive.bind(this)
 
-    this.DocumentSync = new DocumentSync(this.watchableDoc, this.send)
+    this.DocumentSync = new DocsetSync(this.docSet, this.send)
     this.DocumentSync.open()
   }
 
   public get state(): A.Doc<T> {
-    return this.watchableDoc.get()
+    return this.docSet.get()
   }
 
   receive = ({ data }: any) => {

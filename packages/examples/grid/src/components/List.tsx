@@ -15,7 +15,9 @@ import { AgGridReact } from 'ag-grid-react'
 import { debug } from 'debug'
 import { useDialog } from 'muibox'
 import { useState } from 'react'
-import { useSelector, useStore } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { colDefFromSchemaProperty } from 'src/ag-grid/colDefFromSchemaProperty'
+import { deleteRowsCommand } from 'src/ag-grid/commands/deleteRowsCommand'
 import {
   addField,
   addItem,
@@ -25,20 +27,12 @@ import {
   updateItem,
 } from '../redux/actions'
 import { State } from '../redux/store'
-import { deleteRowsCommand } from 'src/ag-grid/commands/deleteRowsCommand'
 import { Loading } from './Loading'
-import { colDefFromSchemaProperty } from 'src/ag-grid/colDefFromSchemaProperty'
 
 const log = debug('cevitxe:grid:List')
 
 const List = () => {
-  const store = useStore()
-
-  const stateTestId = store.getState()._testId
-  log('state id', stateTestId)
-
-  const dispatch = store.dispatch
-  const getDispatch = () => store.dispatch
+  const dispatch = useDispatch()
 
   const ready = useSelector((state: State) => !!state && !!state.index && !!state.schema)
 
@@ -102,9 +96,8 @@ const List = () => {
       case 'numericColumn':
         if (Number.isNaN(params.newValue)) return false
     }
-    log('dispatching updateItem, state id', stateTestId)
-    const _dispatch = getDispatch()
-    _dispatch(updateItem(params.data.id, params.colDef.field!, params.newValue))
+    log('dispatching updateItem')
+    dispatch(updateItem(params.data.id, params.colDef.field!, params.newValue))
     return true
   }
 

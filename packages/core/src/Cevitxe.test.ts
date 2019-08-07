@@ -24,7 +24,7 @@ const proxyReducer: ProxyReducer<FooState> = ({ type, payload }) => {
   }
 }
 
-const newDocumentId = () => newid(6)
+const newdiscoveryKey = () => newid(6)
 
 const getLocalCevitxe = () => {
   const databaseName = `local-${newid()}`
@@ -42,9 +42,9 @@ describe('Cevitxe', () => {
       it('should return a redux store with empty state', async () => {
         expect.assertions(2)
 
-        const documentId = newDocumentId()
+        const discoveryKey = newdiscoveryKey()
         const localCevitxe = await getLocalCevitxe()
-        const localStore = await localCevitxe.joinStore(documentId)
+        const localStore = await localCevitxe.joinStore(discoveryKey)
 
         // store exists
         expect(localStore).not.toBeUndefined()
@@ -60,9 +60,9 @@ describe('Cevitxe', () => {
     describe('createStore', () => {
       it('should return a redux store', async () => {
         expect.assertions(5)
-        const documentId = newDocumentId()
+        const discoveryKey = newdiscoveryKey()
         const localCevitxe = await getLocalCevitxe()
-        const localStore = await localCevitxe.createStore(documentId)
+        const localStore = await localCevitxe.createStore(discoveryKey)
 
         // store exists
         expect(localStore).not.toBeUndefined()
@@ -82,9 +82,9 @@ describe('Cevitxe', () => {
       it('should use the reducer we gave it', async () => {
         expect.assertions(1)
 
-        const documentId = newDocumentId()
+        const discoveryKey = newdiscoveryKey()
         const localCevitxe = await getLocalCevitxe()
-        const localStore = await localCevitxe.createStore(documentId)
+        const localStore = await localCevitxe.createStore(discoveryKey)
 
         // dispatch a change
         localStore.dispatch({
@@ -104,9 +104,9 @@ describe('Cevitxe', () => {
       it('should destroy any current store', async () => {
         expect.assertions(2)
 
-        const documentId = newDocumentId()
+        const discoveryKey = newdiscoveryKey()
         const localCevitxe = await getLocalCevitxe()
-        const localStore = await localCevitxe.createStore(documentId) // don't need return value
+        const localStore = await localCevitxe.createStore(discoveryKey) // don't need return value
 
         // confirm that we have a store
         expect(localCevitxe.store).not.toBeUndefined()
@@ -122,9 +122,9 @@ describe('Cevitxe', () => {
 
     describe('persistence', () => {
       it('should rehydrate from persisted state when available', async () => {
-        const documentId = newDocumentId()
+        const discoveryKey = newdiscoveryKey()
         const localCevitxe = await getLocalCevitxe()
-        const localStore = await localCevitxe.createStore(documentId)
+        const localStore = await localCevitxe.createStore(discoveryKey)
 
         expect(localStore.getState().foo).toBe(1)
 
@@ -143,7 +143,7 @@ describe('Cevitxe', () => {
         await localCevitxe.close()
 
         // Then we create a new store, which should see the state in the fake db and load it
-        const newStore = await localCevitxe.joinStore(documentId)
+        const newStore = await localCevitxe.joinStore(discoveryKey)
         expect(newStore.getState().foo).toBe(42)
       })
     })
@@ -158,17 +158,17 @@ describe('Cevitxe', () => {
 
     it('should communicate changes from one store to another', async () => {
       const server = await startServer()
-      const documentId = newDocumentId()
+      const discoveryKey = newdiscoveryKey()
 
       // local cevitxe & store
       const localCevitxe = getLocalCevitxe()
-      const localStore = await localCevitxe.createStore(documentId)
+      const localStore = await localCevitxe.createStore(discoveryKey)
 
       // remote cevitxe (tests control timing of joining store)
       const remoteCevitxe = getRemoteCevitxe()
 
       // join store from remote store
-      const remoteStore = await remoteCevitxe.joinStore(documentId)
+      const remoteStore = await remoteCevitxe.joinStore(discoveryKey)
 
       // change something in the local store
       localStore.dispatch({
@@ -190,17 +190,17 @@ describe('Cevitxe', () => {
     describe('close', () => {
       it('should delete any connections', async () => {
         const server = await startServer()
-        const documentId = newDocumentId()
+        const discoveryKey = newdiscoveryKey()
 
         // local cevitxe & store
         const localCevitxe = getLocalCevitxe()
-        const localStore = await localCevitxe.createStore(documentId)
+        const localStore = await localCevitxe.createStore(discoveryKey)
 
         // join store from remote peer
         const remoteCevitxe = getRemoteCevitxe()
 
         // join store from remote peer
-        const _remoteStore = await remoteCevitxe.joinStore(documentId) // don't need the return value
+        const _remoteStore = await remoteCevitxe.joinStore(discoveryKey) // don't need the return value
 
         // wait for local peer to see connection
         const onPeer = eventPromise(localCevitxe, 'peer')

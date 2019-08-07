@@ -22,7 +22,7 @@ interface ReadOpts {
   valueEncoding?: string
 }
 
-declare function documentId(buf: Buffer): Buffer
+declare function discoveryKey(buf: Buffer): Buffer
 
 type DuplexStream = NodeJS.ReadableStream | NodeJS.WritableStream
 
@@ -46,7 +46,7 @@ declare interface Feed<T> {
   replicate: Function
   writable: boolean
   ready: Function
-  documentId: Buffer
+  discoveryKey: Buffer
   id: Buffer
   length: number
 

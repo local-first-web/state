@@ -6,23 +6,23 @@ const keychainId = (databaseName: string) => `cevitxe/${databaseName}/keychain`
 
 // Retrieves the keys for a given discovery key from local storage,
 // or generates new ones and stores them.
-export const getKeys = (databaseName: string, documentId: string) => {
+export const getKeys = (databaseName: string, discoveryKey: string) => {
   const keychain = getKeychain(databaseName)
   // use existing keys or generate new pair
-  const keys = keychain[documentId] || keyPair()
+  const keys = keychain[discoveryKey] || keyPair()
 
   // make sure it's a good pair
   if (!validateKeys(keys)) throw new Error(MSG_INVALID_KEYS)
 
   // put whatever we ended up with back in local storage
-  keychain[documentId] = keys
+  keychain[discoveryKey] = keys
   saveKeychain(databaseName, keychain)
 
   return keys
 }
 
-// Return all the documentIds we know
-export const getKnownDocumentIds = (databaseName: string) => {
+// Return all the discoveryKeys we know
+export const getKnowndiscoveryKeys = (databaseName: string) => {
   const keychain = getKeychain(databaseName)
   return Object.keys(keychain)
 }

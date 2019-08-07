@@ -5,7 +5,7 @@ import { EventEmitter } from 'events'
 const log = Debug('cevitxe:signal-client:peer')
 
 /**
- * The Peer class holds one or more sockets, one per key (aka documentId aka channel).
+ * The Peer class holds one or more sockets, one per key (aka discoveryKey aka channel).
  * To get the socket corresponding to a given key:
  * ```ts
  * const socket = peer.get(key)
