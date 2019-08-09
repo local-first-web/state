@@ -1,18 +1,23 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
+import { menu, styles } from 'cevitxe-toolbar'
 import { debug } from 'debug'
 import faker from 'faker'
-import { ChangeEvent } from 'react'
+import { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { clearCollection, loadCollection, loadSchema } from 'src/redux/actions'
 import uuid from 'uuid'
 
-const log = debug('cevitxe:grid:DataGenerator')
+const log = debug('cevitxe:grid:datagenerator')
 
 export function DataGenerator() {
   const dispatch = useDispatch()
+  const [menuOpen, setMenuOpen] = useState(false)
 
-  const generate = async (rows: number) => {
+  const toggleMenu = () => setTimeout(() => setMenuOpen(!menuOpen))
+  const hideMenu = () => setTimeout(() => setMenuOpen(false), 500)
+
+  const generate = (rows: number) => {
     dispatch(clearCollection())
     dispatch(
       loadSchema({
@@ -33,6 +38,7 @@ export function DataGenerator() {
       })
     )
     const collection = {} as any
+    log('generate: starting', rows)
     for (let i = 0; i < rows; i++) {
       const item = {
         id: uuid(),
@@ -50,24 +56,39 @@ export function DataGenerator() {
       }
       collection[item.id] = item
     }
+    log('generate: done', rows)
+    log('generate: dispatching')
     dispatch(loadCollection(collection))
-  }
-
-  const change = (event: ChangeEvent<HTMLSelectElement>) => {
-    const rowsToGenerate = +event.target.value
-    if (rowsToGenerate > 0) generate(+rowsToGenerate)
-    event.target.value = '0'
+    log('generate: dispatched')
   }
 
   return (
-    <div>
-      <select onChange={change}>
-        <option value={0}>Generate ...</option>
-        <option value={100}>100 rows</option>
-        <option value={1000}>1,000 rows</option>
-        <option value={10000}>10,000 rows</option>
-        <option value={100000}>100,000 rows</option>
-      </select>
+    <div css={styles.toolbarGroup}>
+      <div css={styles.menuWrapper}>
+        <button
+          role="button"
+          type="button"
+          onFocus={toggleMenu}
+          onBlur={hideMenu}
+          css={styles.button}
+        >
+          Generate data
+        </button>
+        <div css={menu(menuOpen)}>
+          {[100, 1000, 10000].map(rows => (
+            <button
+              css={styles.menuItem}
+              role="button"
+              type="button"
+              onClick={() => {
+                generate(rows)
+              }}
+            >
+              {rows} rows
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
