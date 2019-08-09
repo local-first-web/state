@@ -1,30 +1,26 @@
 /** @jsx jsx */
-import { css, jsx } from '@emotion/core'
-import { useDispatch } from 'react-redux'
-import { ChangeEvent } from 'react'
-import faker from 'faker'
-import { addItem, clearCollection, loadSchema } from 'src/redux/actions'
-import uuid from 'uuid'
+import { jsx } from '@emotion/core'
 import { debug } from 'debug'
+import faker from 'faker'
+import { ChangeEvent } from 'react'
+import { useDispatch } from 'react-redux'
+import { clearCollection, loadCollection, loadSchema } from 'src/redux/actions'
+import uuid from 'uuid'
 
 const log = debug('cevitxe:grid:DataGenerator')
 
 export function DataGenerator() {
   const dispatch = useDispatch()
 
-  const generate = (rows: number) => {
+  const generate = async (rows: number) => {
     dispatch(clearCollection())
     dispatch(
       loadSchema({
         type: 'object',
         properties: {
           name: {},
-          email: {
-            format: 'email',
-          },
-          age: {
-            type: 'number',
-          },
+          email: { format: 'email' },
+          age: { type: 'number' },
           street: {},
           city: {},
           state: {},
@@ -36,6 +32,7 @@ export function DataGenerator() {
         },
       })
     )
+    const collection = {} as any
     for (let i = 0; i < rows; i++) {
       const item = {
         id: uuid(),
@@ -51,9 +48,9 @@ export function DataGenerator() {
         longitude: +faker.address.longitude(),
         paragraph: faker.lorem.paragraph(),
       }
-      log('Adding item', i)
-      dispatch(addItem(item))
+      collection[item.id] = item
     }
+    dispatch(loadCollection(collection))
   }
 
   const change = (event: ChangeEvent<HTMLSelectElement>) => {
@@ -65,11 +62,11 @@ export function DataGenerator() {
   return (
     <div>
       <select onChange={change}>
-        <option value={0}>Generate N rows</option>
-        <option value={100}>Generate 100 rows</option>
-        <option value={1000}>Generate 1.000 rows</option>
-        <option value={10000}>Generate 10.000 rows</option>
-        <option value={100000}>Generate 100.000 rows</option>
+        <option value={0}>Generate ...</option>
+        <option value={100}>100 rows</option>
+        <option value={1000}>1,000 rows</option>
+        <option value={10000}>10,000 rows</option>
+        <option value={100000}>100,000 rows</option>
       </select>
     </div>
   )
