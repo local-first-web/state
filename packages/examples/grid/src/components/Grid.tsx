@@ -29,9 +29,9 @@ import { deleteRowsCommand } from 'src/ag-grid/commands/deleteRowsCommand'
 import { Loading } from './Loading'
 import { colDefFromSchemaProperty } from 'src/ag-grid/colDefFromSchemaProperty'
 
-const log = debug('cevitxe:grid:List')
+const log = debug('cevitxe:grid')
 
-const List = () => {
+const Grid = () => {
   const store = useStore()
 
   const stateTestId = store.getState()._testId
@@ -211,4 +211,4 @@ const styles = {
   }),
 }
 
-export default List
+export default Grid
