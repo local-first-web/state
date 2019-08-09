@@ -75,7 +75,7 @@ export function DataGenerator() {
           Generate data
         </button>
         <div css={menu(menuOpen)}>
-          {[100, 1000, 10000].map(rows => (
+          {[100, 1000, 10000, 100000].map(rows => (
             <button
               css={styles.menuItem}
               role="button"
