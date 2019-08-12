@@ -1,16 +1,21 @@
 /** @jsx jsx */
-import { css, jsx } from '@emotion/core'
-import { useDispatch } from 'react-redux'
-import { ChangeEvent } from 'react'
-import faker from 'faker'
-import { addItem, clearCollection, loadSchema } from 'src/redux/actions'
-import uuid from 'uuid'
+import { jsx } from '@emotion/core'
+import { menu, styles } from 'cevitxe-toolbar'
 import { debug } from 'debug'
+import faker from 'faker'
+import { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import { clearCollection, loadCollection, loadSchema } from 'src/redux/actions'
+import uuid from 'uuid'
 
-const log = debug('cevitxe:grid:DataGenerator')
+const log = debug('cevitxe:grid:datagenerator')
 
 export function DataGenerator() {
   const dispatch = useDispatch()
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  const toggleMenu = () => setTimeout(() => setMenuOpen(!menuOpen))
+  const hideMenu = () => setTimeout(() => setMenuOpen(false), 500)
 
   const generate = (rows: number) => {
     dispatch(clearCollection())
@@ -19,12 +24,8 @@ export function DataGenerator() {
         type: 'object',
         properties: {
           name: {},
-          email: {
-            format: 'email',
-          },
-          age: {
-            type: 'number',
-          },
+          email: { format: 'email' },
+          age: { type: 'number' },
           street: {},
           city: {},
           state: {},
@@ -36,6 +37,8 @@ export function DataGenerator() {
         },
       })
     )
+    const collection = {} as any
+    log('generate: starting', rows)
     for (let i = 0; i < rows; i++) {
       const item = {
         id: uuid(),
@@ -51,26 +54,41 @@ export function DataGenerator() {
         longitude: +faker.address.longitude(),
         paragraph: faker.lorem.paragraph(),
       }
-      log('Adding item', i)
-      dispatch(addItem(item))
+      collection[item.id] = item
     }
-  }
-
-  const change = (event: ChangeEvent<HTMLSelectElement>) => {
-    const rowsToGenerate = +event.target.value
-    if (rowsToGenerate > 0) generate(+rowsToGenerate)
-    event.target.value = '0'
+    log('generate: done', rows)
+    log('generate: dispatching')
+    dispatch(loadCollection(collection))
+    log('generate: dispatched')
   }
 
   return (
-    <div>
-      <select onChange={change}>
-        <option value={0}>Generate N rows</option>
-        <option value={100}>Generate 100 rows</option>
-        <option value={1000}>Generate 1.000 rows</option>
-        <option value={10000}>Generate 10.000 rows</option>
-        <option value={100000}>Generate 100.000 rows</option>
-      </select>
+    <div css={styles.toolbarGroup}>
+      <div css={styles.menuWrapper}>
+        <button
+          role="button"
+          type="button"
+          onFocus={toggleMenu}
+          onBlur={hideMenu}
+          css={styles.button}
+        >
+          Generate data
+        </button>
+        <div css={menu(menuOpen)}>
+          {[100, 1000, 10000, 100000].map(rows => (
+            <button
+              css={styles.menuItem}
+              role="button"
+              type="button"
+              onClick={() => {
+                generate(rows)
+              }}
+            >
+              {rows} rows
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

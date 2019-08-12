@@ -29,9 +29,11 @@ import {
 import { State } from '../redux/store'
 import { Loading } from './Loading'
 
-const log = debug('cevitxe:grid:List')
+const log = debug('cevitxe:grid')
 
-const List = () => {
+const Grid = () => {
+
+
   const dispatch = useDispatch()
 
   const ready = useSelector((state: State) => !!state && !!state.index && !!state.schema)
@@ -204,4 +206,4 @@ const styles = {
   }),
 }
 
-export default List
+export default Grid

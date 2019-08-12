@@ -3344,14 +3344,15 @@ atomic-batcher@^1.0.2:
   resolved "https://registry.yarnpkg.com/atomic-batcher/-/atomic-batcher-1.0.2.tgz#d16901d10ccec59516c197b9ccd8930689b813b4"
   integrity sha1-0WkB0QzOxZUWwZe5zNiTBom4E7Q=
 
-automerge@herbcaudill/automerge#type-tweaks:
-  version "0.11.0"
-  resolved "https://codeload.github.com/herbcaudill/automerge/tar.gz/d8fd73f8631d537bec951460dbb6d5988e473d7b"
+automerge@0:
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/automerge/-/automerge-0.12.0.tgz#fb4f8e2e9ffa68bd75556d4a85d89c327c74b9a4"
+  integrity sha512-0tlAF4U7UjFGpbCR65mVm0+oqKV0rbEkdHsSDDHscoMGGn4VDo3bAZI1xsX60O1GBEqHnFgD84uR+zbraR4C6A==
   dependencies:
     immutable "^3.8.2"
     transit-immutable-js "^0.7.0"
     transit-js "^0.8.861"
-    uuid "3.1.0"
+    uuid "3.3.2"
 
 autoprefixer@7.1.6:
   version "7.1.6"
@@ -11683,7 +11684,7 @@ mkdirp@*, mkdirp@0.5.1, mkdirp@0.5.x, mkdirp@0.x, mkdirp@^0.5.0, mkdirp@^0.5.1, 
   dependencies:
     minimist "0.0.8"
 
-mock-socket@8, mock-socket@^8.0.5:
+mock-socket@8:
   version "8.0.5"
   resolved "https://registry.yarnpkg.com/mock-socket/-/mock-socket-8.0.5.tgz#4ce8909601b2bcdf5f7680f35c2f7b34beb2afc4"
   integrity sha512-dE2EbcxJKQCeYLZSsI7BAiMZCe/bHbJ2LHb5aGwUuDmfoOINEJ8QI6qYJ85NHsSNkNa90F3s6onZcmt/+MppFA==
@@ -17241,15 +17242,10 @@ utils-merge@1.0.1:
   resolved "https://registry.yarnpkg.com/utils-merge/-/utils-merge-1.0.1.tgz#9f95710f50a267947b2ccc124741c1028427e713"
   integrity sha1-n5VxD1CiZ5R7LMwSR0HBAoQn5xM=
 
-uuid@3, uuid@^3.0.1, uuid@^3.3.2:
+uuid@3, uuid@3.3.2, uuid@^3.0.1, uuid@^3.3.2:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.3.2.tgz#1b4af4955eb3077c501c23872fc6513811587131"
   integrity sha512-yXJmeNaw3DnnKAOKJE51sL/ZaYfWJRl1pK9dr19YFCu0ObS231AB1/LbqTKRAQ5kw8A90rA6fr4riOUpTZvQZA==
-
-uuid@3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.1.0.tgz#3dd3d3e790abc24d7b0d3a034ffababe28ebbc04"
-  integrity sha512-DIWtzUkw04M4k3bf1IcpS2tngXEL26YUD2M0tMDUpnUrz2hgzUBlD55a4FjdLGPvfHxS6uluGWvaVEqgBcVa+g==
 
 validate-npm-package-license@^3.0.1, validate-npm-package-license@^3.0.3:
   version "3.0.4"

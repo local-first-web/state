@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { css, CSSObject, jsx } from '@emotion/core'
+import { CSSObject, jsx } from '@emotion/core'
 import { Cevitxe } from 'cevitxe'
 import debug from 'debug'
 import { Field, Formik } from 'formik'
@@ -188,7 +188,7 @@ const menu = (discoveryKeyHasFocus: boolean): CSSObject => ({
   top: 30,
 })
 
-const styles: Stylesheet = {
+export const styles: Stylesheet = {
   toolbar: {
     background: '#eee',
     borderBottom: '1px solid #ddd',
@@ -224,13 +224,14 @@ const styles: Stylesheet = {
   },
   toolbarGroup: {
     borderRight: '1px solid #ddd',
-    padding: 10,
+    padding: 3,
     height: 30,
     minWidth: 40,
     textAlign: 'center',
     display: 'flex',
     label: {
       margin: 'auto',
+      padding: '0 1em',
     },
   },
   menuWrapper: {
@@ -243,6 +244,8 @@ const styles: Stylesheet = {
     textAlign: 'left',
     marginTop: -2,
     width: 200,
+    position: 'relative',
+    zIndex: 99,
   },
 }
 
