@@ -9,6 +9,7 @@ import { Provider } from 'react-redux'
 import Redux from 'redux'
 import { cevitxe } from 'src/redux/store'
 import { App } from './App'
+import { Loading } from './Loading'
 
 const log = debug('cevitxe:grid:shell')
 
@@ -23,6 +24,7 @@ export const Shell = () => {
   return (
     <div css={styles.shell}>
       <Toolbar cevitxe={cevitxe} onStoreReady={onStoreReady} />
+      {!appStore && <Loading />}
       {appStore && (
         <Provider store={appStore}>
           <DialogProvider>
