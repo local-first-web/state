@@ -5,20 +5,37 @@ import { DataGenerator } from './DataGenerator'
 import { useSelector } from 'react-redux'
 import { State } from 'src/redux/store'
 
-export function Toolbar() {
+export const Toolbar = () => (
+  <div css={styles.toolbar}>
+    <DataGenerator />
+    <Loading />
+    <Rows />
+    <MemoryStats />
+  </div>
+)
+
+const Rows = () => {
   const rows = useSelector((state: State) => {
     if (state === undefined || state.list === undefined) return 0
     return state.list.length
   })
-
   return (
-    <div css={styles.toolbar}>
-      <DataGenerator />
-      <div css={styles.toolbarGroup}>
-        <label>{rows} rows</label>
-      </div>
-      <MemoryStats />
+    <div css={styles.toolbarGroup}>
+      <label>{rows} rows</label>
     </div>
+  )
+}
+const Loading = () => {
+  const loading = useSelector((state: State) => {
+    if (state === undefined || state.list === undefined) return true
+    else return false
+  })
+  return loading ? (
+    <div css={styles.toolbarGroup}>
+      <label>Loading...</label>
+    </div>
+  ) : (
+    <div />
   )
 }
 
