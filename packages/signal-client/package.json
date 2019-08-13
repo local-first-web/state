@@ -11,16 +11,19 @@
   },
   "author": "",
   "license": "ISC",
+  "resolutions": {
+    "jest": "24.7.1"
+  },
   "dependencies": {
     "debug": "4",
     "ts-node": "7",
     "ws": "6"
   },
   "devDependencies": {
+    "cevitxe-signal-server": "0",
     "@types/jest": "24",
     "@types/node": "10",
     "@types/ws": "6",
-    "cevitxe-signal-server": "^0.2.1",
     "jest": "24",
     "supports-color": "7",
     "ts-jest": "24",

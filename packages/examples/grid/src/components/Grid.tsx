@@ -16,8 +16,8 @@ import { debug } from 'debug'
 import { useDialog } from 'muibox'
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { colDefFromSchemaProperty } from 'src/ag-grid/colDefFromSchemaProperty'
-import { deleteRowsCommand } from 'src/ag-grid/commands/deleteRowsCommand'
+import { colDefFromSchemaProperty } from 'ag-grid/colDefFromSchemaProperty'
+import { deleteRowsCommand } from 'ag-grid/commands/deleteRowsCommand'
 import {
   addField,
   addItem,

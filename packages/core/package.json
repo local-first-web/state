@@ -7,27 +7,30 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc ",
+    "build": "tsc",
     "lint": "tsc -p tsconfig.strict.json --noEmit",
     "watch": "tsc --watch",
     "test": "jest",
     "test:debug": "node --inspect-brk=11580 node_modules\\jest\\bin\\jest.js --runInBand"
   },
+  "resolutions": {
+    "jest": "24.7.1"
+  },
   "dependencies": {
+    "cevitxe-signal-client": "0",
     "@types/simple-peer": "6",
     "automerge": "0",
-    "cevitxe-signal-client": "0",
     "debug": "4",
     "hypercore": "7",
     "hypercore-crypto": "1",
-    "immutable": "^4.0.0-rc.12",
+    "immutable": "3",
     "random-access-idb": "1"
   },
   "devDependencies": {
     "@types/debug": "4",
     "@types/jest": "24",
     "@types/p-event": "3",
-    "cevitxe-signal-server": "^0.2.1",
+    "cevitxe-signal-server": "0",
     "fake-indexeddb": "2",
     "idb": "4",
     "jest": "24",

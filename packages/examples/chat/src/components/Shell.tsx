@@ -4,7 +4,7 @@ import { Toolbar } from 'cevitxe-toolbar'
 import { useState } from 'react'
 import { Provider } from 'react-redux'
 import Redux from 'redux'
-import { cevitxe } from 'src/store/store'
+import { cevitxe } from 'store/store'
 import { Chat } from './Chat'
 
 export const Shell = () => {

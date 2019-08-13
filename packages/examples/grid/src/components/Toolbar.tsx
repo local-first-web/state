@@ -3,7 +3,7 @@ import { jsx } from '@emotion/core'
 import { styles } from 'cevitxe-toolbar'
 import { DataGenerator } from './DataGenerator'
 import { useSelector } from 'react-redux'
-import { State } from 'src/redux/store'
+import { State } from 'redux/store'
 
 export const Toolbar = () => (
   <div css={styles.toolbar}>
@@ -46,7 +46,7 @@ const MemoryStats = () => {
   const { memory } = window.performance as any
 
   if (!memory) return <div />
-  const { jsHeapSizeLimit: limit, totalJSHeapSize: allocated, usedJSHeapSize: used } = memory
+  const { jsHeapSizeLimit: limit, usedJSHeapSize: used } = memory
   return (
     <div css={styles.toolbarGroup}>
       <label>

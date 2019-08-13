@@ -5,7 +5,7 @@ import { debug } from 'debug'
 import faker from 'faker'
 import { useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { clearCollection, loadCollection, loadSchema } from 'src/redux/actions'
+import { clearCollection, loadCollection, loadSchema } from 'redux/actions'
 import uuid from 'uuid'
 
 const log = debug('cevitxe:grid:datagenerator')
@@ -65,20 +65,13 @@ export function DataGenerator() {
   return (
     <div css={styles.toolbarGroup}>
       <div css={styles.menuWrapper}>
-        <button
-          role="button"
-          type="button"
-          onFocus={toggleMenu}
-          onBlur={hideMenu}
-          css={styles.button}
-        >
+        <button type="button" onFocus={toggleMenu} onBlur={hideMenu} css={styles.button}>
           Generate data
         </button>
         <div css={menu(menuOpen)}>
           {[100, 1000, 10000, 100000].map(rows => (
             <button
               css={styles.menuItem}
-              role="button"
               type="button"
               onClick={() => {
                 generate(rows)

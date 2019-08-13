@@ -1,5 +1,5 @@
 ﻿import A from 'automerge'
-import { DocsetSync } from './DocumentSync'
+import { DocSetSync } from './DocSetSync'
 import { Message } from './types'
 import { TestChannel } from './lib/TestChannel'
 
@@ -7,19 +7,20 @@ export interface BirdCount {
   [bird: string]: number
 }
 
+const key = '1'
+
 const makeConnection = (
-  id: string,
-  watchableDoc: A.WatchableDoc<BirdCount>,
+  discoveryKey: string,
+  docSet: A.DocSet<BirdCount>,
   channel: TestChannel<BirdCount>
 ) => {
   const send = (msg: Message) => {
-    channel.write(id, msg)
+    channel.write(discoveryKey, msg)
   }
 
-  const connection = new DocsetSync(watchableDoc, send)
-
+  const connection = new DocSetSync(docSet, send)
   channel.on('data', (peer_id, msg) => {
-    if (peer_id === id) return // ignore messages that we sent
+    if (peer_id === discoveryKey) return // ignore messages that we sent
     connection.receive(msg)
   })
 
@@ -29,47 +30,48 @@ const makeConnection = (
 
 describe(`DocumentSync`, () => {
   describe('Changes after connecting', () => {
-    let localWatchableDoc: A.WatchableDoc<BirdCount>
-    let remoteWatchableDoc: A.WatchableDoc<BirdCount>
-    const ID = '123'
+    let localDocSet: A.DocSet<BirdCount>
+    let remoteDocSet: A.DocSet<BirdCount>
 
     beforeEach(() => {
-      localWatchableDoc = new A.WatchableDoc<BirdCount>(A.from({ swallows: 1 }))
-      remoteWatchableDoc = new A.WatchableDoc<BirdCount>(A.from({}))
+      localDocSet = new A.DocSet<BirdCount>()
+      localDocSet.setDoc(key, A.from({ swallows: 1 }))
+      remoteDocSet = new A.DocSet<BirdCount>()
+      remoteDocSet.setDoc(key, A.from({}))
 
       const channel = new TestChannel<BirdCount>()
-      makeConnection('1', localWatchableDoc, channel)
-      makeConnection('2', remoteWatchableDoc, channel)
+      makeConnection('1', localDocSet, channel)
+      makeConnection('2', remoteDocSet, channel)
     })
 
     it('should sync up initial state', () => {
-      expect(remoteWatchableDoc.get()).toEqual({ swallows: 1 })
+      expect(remoteDocSet.getDoc(key)).toEqual({ swallows: 1 })
     })
 
     it('should communicate local changes to remote', () => {
-      let localDoc = localWatchableDoc.get()
-      localWatchableDoc.set(A.change(localDoc, s => (s.swallows = 2)))
+      let localDoc = localDocSet.getDoc(key)
+      localDocSet.setDoc(key, A.change(localDoc, s => (s.swallows = 2)))
 
-      let remoteDoc = remoteWatchableDoc.get()
+      let remoteDoc = remoteDocSet.getDoc(key)
       expect(remoteDoc).toEqual({ swallows: 2 })
     })
 
     it('should communicate remote changes to local', () => {
-      let remoteDoc = remoteWatchableDoc.get()
-      remoteWatchableDoc.set(A.change(remoteDoc, s => (s.swallows = 42)))
+      let remoteDoc = remoteDocSet.getDoc(key)
+      remoteDocSet.setDoc(key, A.change(remoteDoc, s => (s.swallows = 42)))
 
-      let localDoc = localWatchableDoc.get()
+      let localDoc = localDocSet.getDoc(key)
       expect(localDoc).toEqual({ swallows: 42 })
     })
 
     it('should sync ongoing changes both ways', () => {
-      const localDoc = localWatchableDoc.get()
-      localWatchableDoc.set(A.change(localDoc, doc => (doc.orioles = 123)))
+      const localDoc = localDocSet.getDoc(key)
+      localDocSet.setDoc(key, A.change(localDoc, doc => (doc.orioles = 123)))
 
-      const remoteDoc = remoteWatchableDoc.get()
-      remoteWatchableDoc.set(A.change(remoteDoc, doc => (doc.wrens = 555)))
+      const remoteDoc = remoteDocSet.getDoc(key)
+      remoteDocSet.setDoc(key, A.change(remoteDoc, doc => (doc.wrens = 555)))
 
-      expect(remoteWatchableDoc.get()).toEqual({
+      expect(remoteDocSet.getDoc(key)).toEqual({
         swallows: 1,
         orioles: 123,
         wrens: 555,
@@ -79,33 +81,33 @@ describe(`DocumentSync`, () => {
 
   describe('Changes before connecting', () => {
     it('should sync after the fact', () => {
-      const ID = '123'
+      const localDocSet = new A.DocSet<BirdCount>()
+      localDocSet.setDoc(key, A.from({}))
 
-      const localWatchableDoc = new A.WatchableDoc<BirdCount>(A.from({}))
-
-      let localDoc = localWatchableDoc.get()
+      let localDoc = localDocSet.getDoc(key)
       localDoc = A.change(localDoc, doc => (doc.wrens = 2))
-      localWatchableDoc.set(localDoc)
+      localDocSet.setDoc(key, localDoc)
 
-      const remoteWatchableDoc = new A.WatchableDoc<BirdCount>(A.from({}))
+      const remoteDocSet = new A.DocSet<BirdCount>()
+      remoteDocSet.setDoc(key, A.from({}))
 
       const channel = new TestChannel()
-      makeConnection('L', localWatchableDoc, channel)
-      makeConnection('R', remoteWatchableDoc, channel)
+      makeConnection('L', localDocSet, channel)
+      makeConnection('R', remoteDocSet, channel)
 
       const exp = {
         wrens: 2,
       }
-      expect(remoteWatchableDoc.get()).toEqual(exp)
-      expect(localWatchableDoc.get()).toEqual(exp)
+      expect(remoteDocSet.getDoc(key)).toEqual(exp)
+      expect(localDocSet.getDoc(key)).toEqual(exp)
     })
   })
 
   describe('Intermittent connection', () => {
-    let localConnection: DocsetSync<BirdCount>
-    let remoteConnection: DocsetSync<BirdCount>
-    let localWatchableDoc: A.WatchableDoc<BirdCount>
-    let remoteWatchableDoc: A.WatchableDoc<BirdCount>
+    let localConnection: DocSetSync
+    let remoteConnection: DocSetSync
+    let localDocSet: A.DocSet<BirdCount>
+    let remoteDocSet: A.DocSet<BirdCount>
     let channel = new TestChannel()
 
     function networkOff() {
@@ -116,8 +118,8 @@ describe(`DocumentSync`, () => {
 
     function networkOn() {
       channel = new TestChannel()
-      localConnection = makeConnection('L', localWatchableDoc, channel)
-      remoteConnection = makeConnection('R', remoteWatchableDoc, channel)
+      localConnection = makeConnection('L', localDocSet, channel)
+      remoteConnection = makeConnection('R', remoteDocSet, channel)
     }
 
     beforeEach(() => {
@@ -127,63 +129,65 @@ describe(`DocumentSync`, () => {
 
       // only need to do this to get a known ActorID on remote -
       // otherwise everything works without it
-      remoteWatchableDoc = new A.WatchableDoc(A.from({}, 'R'))
-      localWatchableDoc = new A.WatchableDoc(A.from({ swallows: 1 }, 'L'))
+      remoteDocSet = new A.DocSet()
+      remoteDocSet.setDoc(key, A.from({}, 'R'))
+      localDocSet = new A.DocSet()
+      localDocSet.setDoc(key, A.from({ swallows: 1 }, 'L'))
       networkOn()
     })
 
     it('should sync local changes made while offline', () => {
-      let localDoc = localWatchableDoc.get()
+      let localDoc = localDocSet.getDoc(key)
 
       // remote peer has original state
-      expect(remoteWatchableDoc.get().swallows).toEqual(1)
+      expect(remoteDocSet.getDoc(key).swallows).toEqual(1)
 
       // make local changes online
       localDoc = A.change(localDoc, doc => (doc.swallows = 2))
-      localWatchableDoc.set(localDoc)
+      localDocSet.setDoc(key, localDoc)
 
       // remote peer sees changes immediately
-      expect(remoteWatchableDoc.get().swallows).toEqual(2)
+      expect(remoteDocSet.getDoc(key).swallows).toEqual(2)
 
       networkOff()
 
       // make local changes offline
       localDoc = A.change(localDoc, doc => (doc.swallows = 3))
-      localWatchableDoc.set(localDoc)
+      localDocSet.setDoc(key, localDoc)
 
       // remote peer doesn't see changes
-      expect(remoteWatchableDoc.get().swallows).toEqual(2)
+      expect(remoteDocSet.getDoc(key).swallows).toEqual(2)
 
       networkOn()
 
       // as soon as we're back online, remote peer sees changes
-      expect(remoteWatchableDoc.get().swallows).toEqual(3)
+      expect(remoteDocSet.getDoc(key).swallows).toEqual(3)
     })
 
     it('should bidirectionally sync offline changes', () => {
-      let localDoc = localWatchableDoc.get()
-      let remoteDoc = remoteWatchableDoc.get()
+      let localDoc = localDocSet.getDoc(key)
+      let remoteDoc = remoteDocSet.getDoc(key)
 
       networkOff()
 
       // local peer makes changes
       localDoc = A.change(localDoc, doc => (doc.wrens = 1))
-      localWatchableDoc.set(localDoc)
+      localDocSet.setDoc(key, localDoc)
 
       // remote peer doesn't see local changes
-      expect(remoteWatchableDoc.get()).toEqual({ swallows: 1 })
+      expect(remoteDocSet.getDoc(key)).toEqual({ swallows: 1 })
 
       // remote peer makes changes
       remoteDoc = A.change(remoteDoc, doc => (doc.robins = 1))
-      remoteWatchableDoc.set(remoteDoc)
+      remoteDocSet.setDoc(key, remoteDoc)
 
       // local peer doesn't see remote changes
-      expect(localWatchableDoc.get()).toEqual({ swallows: 1, wrens: 1 })
+      expect(localDocSet.getDoc(key)).toEqual({ swallows: 1, wrens: 1 })
 
       networkOn()
 
       // HACK: is there a way to to avoid this?
-      localWatchableDoc.set(localDoc) // we just need this to trigger a sync
+      localDocSet.setDoc(key, localDoc) // we just need this to trigger a sync
 
       // as soon as we're back online, both peers see both changes
       const expected = {
@@ -192,38 +196,38 @@ describe(`DocumentSync`, () => {
         wrens: 1,
       }
 
-      expect(localWatchableDoc.get()).toEqual(expected)
-      expect(remoteWatchableDoc.get()).toEqual(expected)
+      expect(localDocSet.getDoc(key)).toEqual(expected)
+      expect(remoteDocSet.getDoc(key)).toEqual(expected)
     })
 
     it('should resolve conflicts introduced while offline', () => {
-      let localDoc = localWatchableDoc.get()
-      let remoteDoc = remoteWatchableDoc.get()
+      let localDoc = localDocSet.getDoc(key)
+      let remoteDoc = remoteDocSet.getDoc(key)
 
       networkOff()
 
       // local peer makes changes
       localDoc = A.change(localDoc, doc => (doc.swallows = 13))
-      localWatchableDoc.set(localDoc)
+      localDocSet.setDoc(key, localDoc)
 
       // remote peer doesn't see local changes
-      expect(remoteWatchableDoc.get()).toEqual({ swallows: 1 })
+      expect(remoteDocSet.getDoc(key)).toEqual({ swallows: 1 })
 
       // remote peer makes changes
       remoteDoc = A.change(remoteDoc, doc => (doc.swallows = 42))
-      remoteWatchableDoc.set(remoteDoc)
+      remoteDocSet.setDoc(key, remoteDoc)
 
       // local peer doesn't see remote changes
-      expect(localWatchableDoc.get()).toEqual({ swallows: 13 })
+      expect(localDocSet.getDoc(key)).toEqual({ swallows: 13 })
 
       networkOn()
 
       // HACK: is there a way to to avoid this?
-      localWatchableDoc.set(localDoc) // we just need this to trigger a sync
+      localDocSet.setDoc(key, localDoc) // we just need this to trigger a sync
 
       // as soon as we're back online, one of the changes is selected
-      localDoc = localWatchableDoc.get()
-      remoteDoc = remoteWatchableDoc.get()
+      localDoc = localDocSet.getDoc(key)
+      remoteDoc = remoteDocSet.getDoc(key)
       const localValue = localDoc.swallows
       const remoteValue = remoteDoc.swallows
       expect(localValue).toEqual(remoteValue)

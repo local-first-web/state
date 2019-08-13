@@ -1,0 +1,32 @@
+﻿{
+   list: number[]
+   map: {[key: string]: any}
+   schema: JSONSchema7
+}
+
+
+
+
+{
+  [key: string]: any
+  index: {[key: string]: boolean}
+  schema: 
+}
+
+
+
+
+{
+  teamSettings: Settings
+  schools: Collection<School>
+  teachers: Collection<Teacher>
+  classes: Collection<Class>
+}
+
+{
+  teamSettings: Settings
+  schoolIndex: {[key: string]: boolean}
+  teacherIndex: {[key: string]: boolean}
+  classIndex: {[key: string]: boolean}
+  [key: string]: School | Teacher | Class
+}

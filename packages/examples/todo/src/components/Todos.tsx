@@ -1,8 +1,8 @@
 import cx from 'classnames'
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { getFilteredTodos } from 'src/redux/selectors'
-import { VisibilityFilter } from 'src/types'
+import { getFilteredTodos } from 'redux/selectors'
+import { VisibilityFilter } from 'types'
 
 import { AddTodo, ClearCompletedButton, TodoList, VisibilityFilters } from '../components'
 import { pluralize } from '../lib/pluralize'

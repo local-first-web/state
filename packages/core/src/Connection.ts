@@ -1,5 +1,5 @@
 import A from 'automerge'
-import { DocsetSync } from './DocumentSync'
+import { DocSetSync } from './DocSetSync'
 import debug from 'debug'
 import { AnyAction, Dispatch } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
@@ -14,7 +14,7 @@ const log = debug('cevitxe:connection')
  * networking stack and with the Redux store.
  */
 export class Connection<T = any> extends EventEmitter {
-  private DocumentSync: DocsetSync<T>
+  private docSetSync: DocSetSync
   private peerSocket: WebSocket | null
   private dispatch?: Dispatch<AnyAction>
   private docSet: A.DocSet<any>
@@ -28,12 +28,19 @@ export class Connection<T = any> extends EventEmitter {
 
     this.peerSocket.onmessage = this.receive.bind(this)
 
-    this.DocumentSync = new DocsetSync(this.docSet, this.send)
-    this.DocumentSync.open()
+    this.docSetSync = new DocSetSync(this.docSet, this.send)
+    this.docSetSync.open()
   }
 
-  public get state(): A.Doc<T> {
-    return this.docSet.get()
+  public get state(): T {
+    const _state: Partial<T> = {}
+    let key: keyof T
+    // get rid of next line when automerge v0.13 is published
+    // @ts-ignore
+    for (key of this.docSet.docIds) {
+      _state[key] = this.docSet.getDoc(key as string)
+    }
+    return _state as T
   }
 
   receive = ({ data }: any) => {
@@ -46,18 +53,18 @@ export class Connection<T = any> extends EventEmitter {
         this.dispatch({
           type: RECEIVE_MESSAGE_FROM_PEER,
           payload: {
-            connection: this.DocumentSync,
+            connection: this.docSetSync,
             message,
           },
         })
       } else {
         // TODO: figure out a way to pass a fake dispatcher or something for testing
         log(`temp - only for use by testing without passing a dispatcher`)
-        this.DocumentSync.receive(message) // this updates the doc
+        this.docSetSync.receive(message) // this updates the doc
       }
     } else {
       log(`no changes, catch up with peer`)
-      this.DocumentSync.receive(message) // this updates the doc
+      this.docSetSync.receive(message) // this updates the doc
     }
   }
 

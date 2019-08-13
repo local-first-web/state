@@ -2,7 +2,7 @@ import * as actions from './actions'
 import { ProxyReducer, ProxyMultiReducer, ChangeMap } from 'cevitxe'
 import { State } from './store'
 import { JSONSchema7 } from 'json-schema'
-import { inferSchema } from 'src/inferSchema'
+import { inferSchema } from 'inferSchema'
 
 export const proxyReducer: ProxyMultiReducer = ({ type, payload, state }) => {
   switch (type) {

@@ -6,8 +6,8 @@
   "license": "MIT",
   "main": "src/index.tsx",
   "scripts": {
-    "start": "react-scripts-ts start",
-    "test": "react-scripts-ts test"
+    "start": "react-scripts start",
+    "test": "react-scripts test"
   },
   "dependencies": {
     "@emotion/core": "10",

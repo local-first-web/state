@@ -12,6 +12,9 @@
     "watch": "tsc --watch",
     "test": "jest"
   },
+  "resolutions": {
+    "jest": "24.7.1"
+  },
   "dependencies": {
     "@emotion/core": "10",
     "cevitxe": "^0.2.1",

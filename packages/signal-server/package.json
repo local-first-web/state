@@ -10,6 +10,9 @@
     "dev": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 ts-node-dev --respawn --transpileOnly src/start.ts",
     "watch": "tsc --watch"
   },
+  "resolutions": {
+    "jest": "24.7.1"
+  },
   "dependencies": {
     "bs58": "4",
     "express": "4",

@@ -30,6 +30,9 @@
   "dependencies": {
     "esm": "3"
   },
+  "resolutions": {
+    "jest": "24.7.1"
+  },
   "devDependencies": {
     "@types/jest": "24",
     "cross-env": "5",

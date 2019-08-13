@@ -181,7 +181,7 @@ const button: CSSObject = {
   textDecoration: 'none',
 }
 
-const menu = (discoveryKeyHasFocus: boolean): CSSObject => ({
+export const menu = (discoveryKeyHasFocus: boolean): CSSObject => ({
   display: discoveryKeyHasFocus ? 'block' : 'none',
   position: 'absolute',
   background: 'white',

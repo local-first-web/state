@@ -40,7 +40,7 @@ const convertToReduxReducer: ReducerConverter = proxyReducer => (state, { type, 
 const feedReducer: Reducer = <T>(state: T, { type, payload }: AnyAction) => {
   switch (type) {
     case RECEIVE_MESSAGE_FROM_PEER: {
-      const { message, connection } = payload as ReceiveMessagePayload<T>
+      const { message, connection } = payload as ReceiveMessagePayload
       log('received %o', message)
 
       const doc = connection.receive(message)
