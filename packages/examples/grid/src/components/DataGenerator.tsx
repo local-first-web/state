@@ -13,11 +13,13 @@ const log = debug('cevitxe:grid:datagenerator')
 export function DataGenerator() {
   const dispatch = useDispatch()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [generationProgress, setGenerationProgress] = useState(0)
 
   const toggleMenu = () => setTimeout(() => setMenuOpen(!menuOpen))
   const hideMenu = () => setTimeout(() => setMenuOpen(false), 500)
 
   const generate = (rows: number) => {
+    setGenerationProgress(0)
     dispatch(clearCollection())
     dispatch(
       loadSchema({
@@ -39,7 +41,16 @@ export function DataGenerator() {
     )
     const collection = {} as any
     log('generate: starting', rows)
-    for (let i = 0; i < rows; i++) {
+    let i = 0
+    const nextIteration = () => {
+      if (i === rows) {
+        log('generate: done', rows)
+        log('generate: dispatching')
+        dispatch(loadCollection(collection))
+        log('generate: dispatched')
+        setGenerationProgress(0)
+        return
+      }
       const item = {
         id: uuid(),
         name: faker.name.findName(),
@@ -55,11 +66,11 @@ export function DataGenerator() {
         paragraph: faker.lorem.paragraph(),
       }
       collection[item.id] = item
+      setGenerationProgress(Math.ceil((i / rows) * 100))
+      i++
+      setTimeout(nextIteration, 0)
     }
-    log('generate: done', rows)
-    log('generate: dispatching')
-    dispatch(loadCollection(collection))
-    log('generate: dispatched')
+    nextIteration()
   }
 
   return (
@@ -71,6 +82,7 @@ export function DataGenerator() {
           onFocus={toggleMenu}
           onBlur={hideMenu}
           css={styles.button}
+          disabled={generationProgress > 0}
         >
           Generate data
         </button>
@@ -89,6 +101,7 @@ export function DataGenerator() {
           ))}
         </div>
       </div>
+      {generationProgress > 0 && <label>{`Generating... ${generationProgress}%`}</label>}
     </div>
   )
 }
