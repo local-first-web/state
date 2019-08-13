@@ -47,7 +47,7 @@ export interface KeyPair {
 }
 
 export interface Message {
-  key: string
+  docId: string
   clock: Clock
   changes?: A.Change[]
 }

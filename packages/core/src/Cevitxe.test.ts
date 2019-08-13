@@ -7,24 +7,30 @@ import eventPromise from 'p-event'
 
 require('fake-indexeddb/auto')
 
-interface FooState {
+interface Foo {
   foo?: number
 }
 
-const initialState: FooState = { foo: 1 }
+interface FooState {
+  state: Foo
+}
+
+const emptyState: FooState = { state: {} }
+const initialState: FooState = { state: { foo: 1 } }
+
 const port = 10000
 const urls = [`ws://localhost:${port}`]
 
 const proxyReducer: ProxyReducer<FooState> = ({ type, payload }) => {
   switch (type) {
     case 'SET_FOO':
-      return state => (state.foo = payload.value)
+      return s => (s.state.foo = payload.value)
     default:
       return null
   }
 }
 
-const newdiscoveryKey = () => newid(6)
+const newDiscoveryKey = () => newid(6)
 
 const getLocalCevitxe = () => {
   const databaseName = `local-${newid()}`
@@ -33,7 +39,7 @@ const getLocalCevitxe = () => {
 
 const getRemoteCevitxe = () => {
   const databaseName = `remote-${newid()}`
-  return new Cevitxe({ databaseName, proxyReducer, initialState: {}, urls })
+  return new Cevitxe({ databaseName, proxyReducer, initialState: emptyState, urls })
 }
 
 describe('Cevitxe', () => {
@@ -42,7 +48,7 @@ describe('Cevitxe', () => {
       it('should return a redux store with empty state', async () => {
         expect.assertions(2)
 
-        const discoveryKey = newdiscoveryKey()
+        const discoveryKey = newDiscoveryKey()
         const localCevitxe = await getLocalCevitxe()
         const localStore = await localCevitxe.joinStore(discoveryKey)
 
@@ -60,7 +66,7 @@ describe('Cevitxe', () => {
     describe('createStore', () => {
       it('should return a redux store', async () => {
         expect.assertions(5)
-        const discoveryKey = newdiscoveryKey()
+        const discoveryKey = newDiscoveryKey()
         const localCevitxe = await getLocalCevitxe()
         const localStore = await localCevitxe.createStore(discoveryKey)
 
@@ -82,7 +88,7 @@ describe('Cevitxe', () => {
       it('should use the reducer we gave it', async () => {
         expect.assertions(1)
 
-        const discoveryKey = newdiscoveryKey()
+        const discoveryKey = newDiscoveryKey()
         const localCevitxe = await getLocalCevitxe()
         const localStore = await localCevitxe.createStore(discoveryKey)
 
@@ -93,7 +99,7 @@ describe('Cevitxe', () => {
         })
 
         // confirm that the change was made
-        expect(localStore.getState().foo).toEqual(3)
+        expect(localStore.getState().state.foo).toEqual(3)
 
         await pause(100) // HACK: wait for indexeddb to finish whatever it's doing
         await localCevitxe.close()
@@ -104,7 +110,7 @@ describe('Cevitxe', () => {
       it('should destroy any current store', async () => {
         expect.assertions(2)
 
-        const discoveryKey = newdiscoveryKey()
+        const discoveryKey = newDiscoveryKey()
         const localCevitxe = await getLocalCevitxe()
         const localStore = await localCevitxe.createStore(discoveryKey) // don't need return value
 
@@ -122,11 +128,11 @@ describe('Cevitxe', () => {
 
     describe('persistence', () => {
       it('should rehydrate from persisted state when available', async () => {
-        const discoveryKey = newdiscoveryKey()
+        const discoveryKey = newDiscoveryKey()
         const localCevitxe = await getLocalCevitxe()
         const localStore = await localCevitxe.createStore(discoveryKey)
 
-        expect(localStore.getState().foo).toBe(1)
+        expect(localStore.getState().state.foo).toBe(1)
 
         // To simulate rehydrating from persisted state we dispatch a change to our local store.
         // This state gets written to our fake-indexeddb.
@@ -136,7 +142,7 @@ describe('Cevitxe', () => {
         })
 
         // confirm that the change took
-        expect(localStore.getState().foo).toBe(42)
+        expect(localStore.getState().state.foo).toBe(42)
 
         // disconnect current store
         await pause(500) // HACK:
@@ -144,7 +150,8 @@ describe('Cevitxe', () => {
 
         // Then we create a new store, which should see the state in the fake db and load it
         const newStore = await localCevitxe.joinStore(discoveryKey)
-        expect(newStore.getState().foo).toBe(42)
+
+        expect(newStore.getState().state.foo).toBe(42)
       })
     })
   })
@@ -158,7 +165,7 @@ describe('Cevitxe', () => {
 
     it('should communicate changes from one store to another', async () => {
       const server = await startServer()
-      const discoveryKey = newdiscoveryKey()
+      const discoveryKey = newDiscoveryKey()
 
       // local cevitxe & store
       const localCevitxe = getLocalCevitxe()
@@ -175,22 +182,24 @@ describe('Cevitxe', () => {
         type: 'SET_FOO',
         payload: { value: 42 },
       })
+      console.log('dispatched')
 
       // wait for remote peer to see change
       await eventPromise(remoteCevitxe, 'change')
+      console.log('changed')
 
       // confirm that the remote store has the new value
-      expect(remoteStore.getState().foo).toBe(42)
+      expect(remoteStore.getState().state.foo).toBe(42)
 
       await localCevitxe.close()
       await remoteCevitxe.close()
       await server.close()
     })
 
-    describe('close', () => {
+    describe.skip('close', () => {
       it('should delete any connections', async () => {
         const server = await startServer()
-        const discoveryKey = newdiscoveryKey()
+        const discoveryKey = newDiscoveryKey()
 
         // local cevitxe & store
         const localCevitxe = getLocalCevitxe()
