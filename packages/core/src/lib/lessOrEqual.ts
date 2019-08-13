@@ -8,7 +8,7 @@ export const lessOrEqual = (clock1: Clock, clock2: Clock) => {
     .map(key => clock1.get(key, 0) <= clock2.get(key, 0))
     .reduce(allAreTrue, true)
 
-  console.log({ clock1: clock1.toJS(), clock2: clock2.toJS(), result })
+  console.log({ both, clock1: clock1.toJS(), clock2: clock2.toJS(), result })
   return result
 }
 

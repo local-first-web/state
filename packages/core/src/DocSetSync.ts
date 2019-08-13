@@ -84,7 +84,7 @@ export class DocSetSync {
     // Record their clock value for this document
     if (clock) this.updateClock(docId, theirs, clock)
 
-    const weHaveDoc = this.getState(docId) !== undefined
+    const weHaveDoc = this.docSet.getDoc(docId) !== undefined
 
     // If they sent changes, apply them to our document
     if (changes) this.docSet.applyChanges(docId, changes)
@@ -113,7 +113,6 @@ export class DocSetSync {
   private validateDoc(docId: string, clock: Clock) {
     log('validateDoc', docId)
     const doc = this.docSet.getDoc(docId)
-    console.log('actorId', A.getActorId(doc))
 
     const ourClock = this.getClock(ours)
 
