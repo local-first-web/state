@@ -11,10 +11,12 @@ global.WebSocket = WebSocket
 jest.mock('mock-socket')
 
 interface FooState {
-  state: {
-    foo: number
-    boo?: number
-  }
+  foo: number
+  boo?: number
+}
+
+interface FooStateDoc {
+  state: FooState
 }
 
 const fakeDispatch = <T>(s: T) => s
@@ -24,7 +26,7 @@ const url = `ws://localhost:${port}`
 const localActorId = newid()
 
 describe('Connection', () => {
-  const initialState: FooState = A.from({ state: { foo: 1 } }, localActorId)
+  const initialState: FooStateDoc = { state: { foo: 1 } }
 
   let docSet: A.DocSet<any>
   let server: Server
@@ -36,10 +38,11 @@ describe('Connection', () => {
 
   beforeEach(() => {
     docSet = new A.DocSet<any>()
-    let key: keyof FooState
+    let key: keyof FooStateDoc
     for (key in initialState) {
       const value = initialState[key]
-      docSet.setDoc(key, A.from(value))
+      // docSet.setDoc(key, A.change(A.init(localActorId), s => value))
+      docSet.setDoc(key, A.from(value, localActorId))
     }
   })
 
@@ -64,10 +67,10 @@ describe('Connection', () => {
     )
 
     const localDoc = docSet.getDoc('state')
-    const updatedDoc = A.change<FooState>(localDoc, 'update', doc => (doc.state.boo = 2))
+    const updatedDoc = A.change<FooState>(localDoc, 'update', doc => (doc.boo = 2))
     docSet.setDoc('state', updatedDoc)
 
-    expect(connection.state.boo).toBe(2)
+    expect(connection.state.state.boo).toBe(2)
     expect(peer.send).toHaveBeenCalledWith(
       expect.stringContaining(JSON.stringify({ [localActorId]: 2 }))
     )
