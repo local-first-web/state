@@ -107,6 +107,7 @@ export class Cevitxe<T> extends EventEmitter {
       this.emit('peer', peer) // hook for testing
     })
 
+    this.emit('ready', this.store)
     return this.store
   }
 
@@ -183,5 +184,3 @@ const createStorageFeed = async (discoveryKey: string, databaseName: string) => 
   log('feed ready')
   return feed
 }
-
-const isFunction = (obj: any) => !!(obj && obj.constructor && obj.call && obj.apply)
