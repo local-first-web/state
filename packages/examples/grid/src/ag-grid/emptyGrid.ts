@@ -6,9 +6,13 @@ export const emptyGrid = (rowCount: number, colCount: number = rowCount) => {
   const rows = range(0, rowCount).map(i => `row_${i + 1}`)
   const cols = range(0, colCount).map(i => `col_${i + 1}`)
 
-  const rowReducer = (rowMap: State['map'], id: string, i: number) => ({
+  const rowReducer = (rowMap: { [key: string]: any }, id: string, i: number) => ({
     ...rowMap,
     [id]: { id },
+  })
+  const rowIndexReducer = (rowIndex: State['index'], id: string, i: number) => ({
+    ...rowIndex,
+    [id]: true,
   })
   const columnReducer = (colMap: JSONSchema7['properties'], id: string, i: number) => ({
     ...colMap,
@@ -17,7 +21,7 @@ export const emptyGrid = (rowCount: number, colCount: number = rowCount) => {
 
   return {
     ...rows.reduce(rowReducer, {}),
-    rows,
+    rows: rows.reduce(rowIndexReducer, {}),
     schema: { properties: cols.reduce(columnReducer, {}) },
   }
 }
