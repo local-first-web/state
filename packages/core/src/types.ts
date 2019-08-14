@@ -3,17 +3,17 @@ import A from 'automerge'
 import { AnyAction, Middleware, Reducer, Store } from 'redux'
 import { DocSetSync } from './DocSetSync'
 
-export type ProxyReducer<T> = (action: AnyAction) => A.ChangeFn<T> | null
-export type ProxyMultiReducer = (action: AnyAction) => ChangeMap | null
-export type ReducerConverter = <T>(proxy: ProxyReducer<T> | ProxyMultiReducer) => Reducer
+// DEPRECATED
+export type ProxyReducer = (action: AnyAction) => ChangeMap | null
+export type ReducerConverter = (proxyReducer: ProxyReducer, docSet: A.DocSet<any>) => Reducer
 
 export interface ChangeMap {
-  [discoveryKey: string]: A.ChangeFn<any>
+  [docId: string]: A.ChangeFn<any>
 }
 
 export interface CevitxeOptions<T> {
   // Redux store
-  proxyReducer: ProxyReducer<any> | ProxyMultiReducer
+  proxyReducer: ProxyReducer
   middlewares?: Middleware[] // TODO: accept an `enhancer` object instead
   initialState: T
 

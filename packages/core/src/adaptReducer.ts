@@ -9,9 +9,9 @@ const log = debug('cevitxe:adaptReducer')
 
 // This function is used when wiring up the store. It takes a proxyReducer and turns it
 // into a real reducer, plus adds our feedReducer to the pipeline.
-export const adaptReducer: ReducerConverter = proxyReducer => (state, action) => {
+export const adaptReducer: ReducerConverter = (proxyReducer, docSet) => (state, action) => {
   state = feedReducer(state, action)
-  state = convertToReduxReducer(proxyReducer)(state, action)
+  state = convertToReduxReducer(proxyReducer, docSet)(state, action)
   return state
 }
 
@@ -23,16 +23,18 @@ export const adaptReducer: ReducerConverter = proxyReducer => (state, action) =>
 
 // The purpose of this function is to turn a proxyReducer into a real reducer by
 // running the proxyReducer's change functions through `automerge.change`.
-const convertToReduxReducer: ReducerConverter = proxyReducer => (state, { type, payload }) => {
-  const fnOrMap = proxyReducer({ type, payload, state })
-  if (!fnOrMap || !state) return state // no matching function - return the unmodified state
-  // return a modified Automerge object
-  if (typeof fnOrMap === 'function') return A.change(state, type, fnOrMap)
-  else
-    return Object.entries(fnOrMap).reduce((acc, [key, fn]) => {
-      const itemState = acc[key]
-      //TODO at this point I should be working with multiple documents...
-    }, state)
+const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
+  state,
+  { type, payload }
+) => {
+  const functionMap = proxyReducer({ type, payload, state })
+  if (!functionMap || !state) return state // no matching function - return the unmodified state
+  return Object.entries(functionMap).reduce((acc, [key, fn]) => {
+    // iterate through the map
+    // apply changes to the corresponding docs in the docset
+
+    const itemState = acc[key]
+  }, state)
 }
 
 // After setting up the feed in `createStore`, we listen to our connections and dispatch the

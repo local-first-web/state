@@ -1,12 +1,13 @@
 import A from 'automerge'
 import { adaptReducer } from './adaptReducer'
 import { ProxyReducer } from './types'
+import { AnyAction } from 'redux'
 
 interface FooState {
   foo?: number
 }
 
-const proxyReducer: ProxyReducer<FooState> = () => state => (state.foo = 2)
+const proxyReducer: ProxyReducer = () => ({ state: s => (s.foo = 2) })
 
 describe('adaptReducer', () => {
   it('should be a function', () => {
@@ -14,7 +15,8 @@ describe('adaptReducer', () => {
   })
 
   describe('should return a working reducer', () => {
-    const reducer = adaptReducer(proxyReducer)
+    const docSet = new A.DocSet()
+    const reducer = adaptReducer(proxyReducer, docSet)
     const state = A.from({})
     const newState = reducer(state, { type: 'FOO' })
 

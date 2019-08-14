@@ -1,7 +1,7 @@
 import { Server } from 'cevitxe-signal-server'
 import { Cevitxe } from './Cevitxe'
 import { newid } from 'cevitxe-signal-client'
-import { ProxyReducer } from './types'
+import { ProxyReducer, ChangeMap } from './types'
 import { pause } from './lib/pause'
 import eventPromise from 'p-event'
 
@@ -20,10 +20,12 @@ describe('Cevitxe', () => {
   const port = 10000
   const urls = [`ws://localhost:${port}`]
 
-  const proxyReducer: ProxyReducer<FooState> = ({ type, payload }) => {
+  const proxyReducer: ProxyReducer = ({ type, payload }) => {
     switch (type) {
       case 'SET_FOO':
-        return s => (s.settings.foo = payload.value)
+        return {
+          settings: s => (s.foo = payload.value),
+        }
       default:
         return null
     }
@@ -223,24 +225,23 @@ describe('Cevitxe', () => {
       teachers: string[]
       [k: string]: any
     }
-
-    const proxyReducer: ProxyReducer<SchoolData> = ({ type, payload }) => {
+    const proxyReducer = (({ type, payload }) => {
       switch (type) {
-        case 'ADD_TEACHER':
-          return s => {
-            const { id } = payload
-            s.teachers.push(id)
-            s[id] = payload
+        case 'ADD_TEACHER': {
+          return {
+            teachers: s => s.push(payload.id),
+            [payload.id]: s => (s = Object.assign(s, payload)),
           }
-        case 'UPDATE_TEACHER':
-          return s => {
-            const { id } = payload
-            s[id] = { ...s[id], ...payload }
+        }
+        case 'UPDATE_TEACHER': {
+          return {
+            [payload.id]: s => (s = Object.assign(s, payload)),
           }
+        }
         default:
           return null
       }
-    }
+    }) as ProxyReducer
 
     const initialState: SchoolData = { teachers: [] }
 

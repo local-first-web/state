@@ -12,14 +12,14 @@ import { Connection } from './Connection'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getKeys, getKnowndiscoveryKeys } from './keys'
-import { CevitxeOptions, ProxyMultiReducer, ProxyReducer } from './types'
+import { CevitxeOptions, ProxyReducer } from './types'
 
 const valueEncoding = 'utf-8'
 
 let log = debug('cevitxe')
 
 export class Cevitxe<T> extends EventEmitter {
-  private proxyReducer: ProxyReducer<any> | ProxyMultiReducer
+  private proxyReducer: ProxyReducer
   private initialState: T
   private urls: string[]
   private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
@@ -78,7 +78,7 @@ export class Cevitxe<T> extends EventEmitter {
     log('created initial docSet', state)
 
     // Create Redux store
-    const reducer = adaptReducer(this.proxyReducer)
+    const reducer = adaptReducer(this.proxyReducer, docSet)
     const cevitxeMiddleware = getMiddleware(this.feed, docSet, this.discoveryKey)
     const enhancer = composeWithDevTools(
       Redux.applyMiddleware(...this.middlewares, cevitxeMiddleware)
