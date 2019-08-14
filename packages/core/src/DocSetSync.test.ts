@@ -18,6 +18,7 @@ const makeConnection = (
     channel.write(discoveryKey, msg)
   }
 
+  // @ts-ignore
   const connection = new DocSetSync(docSet, send)
   channel.on('data', (peer_id, msg) => {
     if (peer_id === discoveryKey) return // ignore messages that we sent
@@ -29,7 +30,7 @@ const makeConnection = (
 }
 
 describe(`DocumentSync`, () => {
-  describe.only('Changes after connecting', () => {
+  describe('Changes after connecting', () => {
     let localDocSet: A.DocSet<BirdCount>
     let remoteDocSet: A.DocSet<BirdCount>
 
@@ -78,13 +79,13 @@ describe(`DocumentSync`, () => {
       })
     })
 
-    describe.only('Sync new documents', () => {
+    describe('Sync new documents', () => {
       it('should sync up new documents from local', () => {
         localDocSet.setDoc('xyz', A.from({ boo: 999 }, 'L'))
         expect(remoteDocSet.getDoc('xyz')).toEqual({ boo: 999 })
       })
 
-      it.only('should sync up new documents from remote', () => {
+      it('should sync up new documents from remote', () => {
         remoteDocSet.setDoc('xyz', A.from({ boo: 999 }, 'R'))
         expect(localDocSet.getDoc('xyz')).toEqual({ boo: 999 })
       })

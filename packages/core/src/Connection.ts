@@ -28,6 +28,7 @@ export class Connection<T = any> extends EventEmitter {
 
     this.peerSocket.onmessage = this.receive.bind(this)
 
+    // @ts-ignore
     this.docSetSync = new DocSetSync(this.docSet, this.send)
     this.docSetSync.open()
   }
