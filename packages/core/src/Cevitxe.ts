@@ -13,6 +13,7 @@ import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getKeys, getKnowndiscoveryKeys } from './keys'
 import { CevitxeOptions, ProxyReducer } from './types'
+import { docSetFromObject } from './docSetHelpers'
 
 const valueEncoding = 'utf-8'
 
@@ -64,11 +65,7 @@ export class Cevitxe<T> extends EventEmitter {
       ? await getStateFromStorage(this.feed) // rehydrating state from storage
       : setInitialState(this.feed, {}) // joining a peer's feed, starting with an empty doc
 
-    const docSet = new A.DocSet<any>()
-    for (let key of Object.getOwnPropertyNames(state)) {
-      log('docSet: setting key', key)
-      docSet.setDoc(key, A.from(state[key]))
-    }
+    const docSet = docSetFromObject(state)
 
     docSet.registerHandler((key, doc) => {
       log('change', key)
