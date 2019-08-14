@@ -32,8 +32,12 @@ const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
   return Object.entries(functionMap).reduce((acc, [key, fn]) => {
     // iterate through the map
     // apply changes to the corresponding docs in the docset
-
-    const itemState = acc[key]
+    let doc = docSet.getDoc(key) || A.init()
+    doc = A.change(doc, fn)
+    docSet.setDoc(key, doc)
+    // apply changes to the redux state object
+    acc[key] = doc
+    return acc
   }, state)
 }
 
