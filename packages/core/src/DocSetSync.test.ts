@@ -95,8 +95,8 @@ describe(`DocumentSync`, () => {
         remoteDocSet.setDoc('qrs', A.from({ orioles: 123 }, 'R'))
 
         expect(1).toEqual(1)
-        //expect(remoteDocSet.getDoc('abc')).toEqual({ wrens: 555 })
-        // expect(localDocSet.getDoc('qrs')).toEqual({ orioles: 123 })
+        expect(remoteDocSet.getDoc('abc')).toEqual({ wrens: 555 })
+        expect(localDocSet.getDoc('qrs')).toEqual({ orioles: 123 })
       })
     })
   })

@@ -15,8 +15,8 @@ interface FooState {
   state: Foo
 }
 
-const emptyState: FooState = { state: {} }
-const initialState: FooState = { state: { foo: 1 } }
+const initialLocalState: FooState = { state: { foo: 1 } }
+const initialRemoteState: FooState = { state: {} }
 
 const port = 10000
 const urls = [`ws://localhost:${port}`]
@@ -34,12 +34,12 @@ const newDiscoveryKey = () => newid(6)
 
 const getLocalCevitxe = () => {
   const databaseName = `local-${newid()}`
-  return new Cevitxe({ databaseName, proxyReducer, initialState, urls })
+  return new Cevitxe({ databaseName, proxyReducer, initialState: initialLocalState, urls })
 }
 
 const getRemoteCevitxe = () => {
   const databaseName = `remote-${newid()}`
-  return new Cevitxe({ databaseName, proxyReducer, initialState: emptyState, urls })
+  return new Cevitxe({ databaseName, proxyReducer, initialState: initialRemoteState, urls })
 }
 
 describe('Cevitxe', () => {
@@ -79,7 +79,7 @@ describe('Cevitxe', () => {
         expect(localStore).toHaveProperty('subscribe')
 
         // it contains the initial state
-        expect(localStore.getState()).toEqual(initialState)
+        expect(localStore.getState()).toEqual(initialLocalState)
 
         await pause(100) // HACK: wait for indexeddb to finish whatever it's doing
         await localCevitxe.close()
@@ -177,16 +177,20 @@ describe('Cevitxe', () => {
       // join store from remote store
       const remoteStore = await remoteCevitxe.joinStore(discoveryKey)
 
+      // wait for local peer to see connection
+      await eventPromise(localCevitxe, 'peer')
+
       // change something in the local store
       localStore.dispatch({
         type: 'SET_FOO',
         payload: { value: 42 },
       })
-      console.log('dispatched')
+
+      // confirm that the change took locally
+      expect(localStore.getState().state.foo).toBe(42)
 
       // wait for remote peer to see change
       await eventPromise(remoteCevitxe, 'change')
-      console.log('changed')
 
       // confirm that the remote store has the new value
       expect(remoteStore.getState().state.foo).toBe(42)
@@ -196,7 +200,7 @@ describe('Cevitxe', () => {
       await server.close()
     })
 
-    describe.skip('close', () => {
+    describe('close', () => {
       it('should delete any connections', async () => {
         const server = await startServer()
         const discoveryKey = newDiscoveryKey()
@@ -212,8 +216,7 @@ describe('Cevitxe', () => {
         const _remoteStore = await remoteCevitxe.joinStore(discoveryKey) // don't need the return value
 
         // wait for local peer to see connection
-        const onPeer = eventPromise(localCevitxe, 'peer')
-        await onPeer
+        await eventPromise(localCevitxe, 'peer')
 
         // confirm that we have a connection
         expect(Object.keys(localCevitxe.connections)).toHaveLength(1)
