@@ -41,7 +41,7 @@ describe('Client', () => {
 
     it('should connect to the discovery server', () => {
       client = new Client({ id: localId, url })
-      expect(client.serverConnection.url).toContain('ws://localhost:10001/introduction/local')
+      expect(client.serverConnection.url).toContain(`ws://localhost:${port}/introduction/local`)
     })
   })
 
