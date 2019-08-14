@@ -19,7 +19,7 @@ export const adaptReducer: ReducerConverter = proxyReducer => (state, action) =>
 // except it's designed to work with automerge objects instead of plain javascript objects.
 // Instead of returning a modified state, it returns change functions.
 
-// Also, when it doesn't find a reducer for a given action, it returns`null` instead of the previous state.
+// Also, when it doesn't find a reducer for a given action, it returns `null` instead of the previous state.
 
 // The purpose of this function is to turn a proxyReducer into a real reducer by
 // running the proxyReducer's change functions through `automerge.change`.
