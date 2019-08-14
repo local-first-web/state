@@ -157,14 +157,10 @@ describe('Cevitxe', () => {
   })
 
   describe('online', () => {
-    const startServer = async () => {
+    const open = async () => {
       const server = new Server({ port })
       await server.listen({ silent: true })
-      return server
-    }
 
-    it('should communicate changes from one store to another', async () => {
-      const server = await startServer()
       const discoveryKey = newDiscoveryKey()
 
       // local cevitxe & store
@@ -179,6 +175,19 @@ describe('Cevitxe', () => {
 
       // wait for local peer to see connection
       await eventPromise(localCevitxe, 'peer')
+
+      // include a teardown function in the return values
+      const close = async () => {
+        await localCevitxe.close()
+        await remoteCevitxe.close()
+        await server.close()
+      }
+
+      return { close, localCevitxe, remoteCevitxe, localStore, remoteStore }
+    }
+
+    it('should communicate changes from one store to another', async () => {
+      const { close, remoteCevitxe, localStore, remoteStore } = await open()
 
       // change something in the local store
       localStore.dispatch({
@@ -195,35 +204,38 @@ describe('Cevitxe', () => {
       // confirm that the remote store has the new value
       expect(remoteStore.getState().state.foo).toBe(42)
 
-      await localCevitxe.close()
-      await remoteCevitxe.close()
-      await server.close()
+      await close()
+    })
+
+    it('should communicate changes from one store to another', async () => {
+      const { close, remoteCevitxe, localStore, remoteStore } = await open()
+
+      // change something in the local store
+      localStore.dispatch({
+        type: 'SET_FOO',
+        payload: { value: 42 },
+      })
+
+      // confirm that the change took locally
+      expect(localStore.getState().state.foo).toBe(42)
+
+      // wait for remote peer to see change
+      await eventPromise(remoteCevitxe, 'change')
+
+      // confirm that the remote store has the new value
+      expect(remoteStore.getState().state.foo).toBe(42)
+
+      await close()
     })
 
     describe('close', () => {
       it('should delete any connections', async () => {
-        const server = await startServer()
-        const discoveryKey = newDiscoveryKey()
-
-        // local cevitxe & store
-        const localCevitxe = getLocalCevitxe()
-        const localStore = await localCevitxe.createStore(discoveryKey)
-
-        // join store from remote peer
-        const remoteCevitxe = getRemoteCevitxe()
-
-        // join store from remote peer
-        const _remoteStore = await remoteCevitxe.joinStore(discoveryKey) // don't need the return value
-
-        // wait for local peer to see connection
-        await eventPromise(localCevitxe, 'peer')
+        const { close, localCevitxe } = await open()
 
         // confirm that we have a connection
         expect(Object.keys(localCevitxe.connections)).toHaveLength(1)
 
-        await localCevitxe.close()
-        await remoteCevitxe.close()
-        await server.close()
+        await close()
 
         // confirm that we no longer have a connection
         expect(Object.keys(localCevitxe.connections)).toHaveLength(0)
