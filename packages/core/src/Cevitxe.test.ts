@@ -7,42 +7,40 @@ import eventPromise from 'p-event'
 
 require('fake-indexeddb/auto')
 
-interface Foo {
-  foo?: number
-}
-
-interface FooState {
-  state: Foo
-}
-
-const initialLocalState: FooState = { state: { foo: 1 } }
-const initialRemoteState: FooState = { state: {} }
-
-const port = 10000
-const urls = [`ws://localhost:${port}`]
-
-const proxyReducer: ProxyReducer<FooState> = ({ type, payload }) => {
-  switch (type) {
-    case 'SET_FOO':
-      return s => (s.state.foo = payload.value)
-    default:
-      return null
-  }
-}
-
-const newDiscoveryKey = () => newid(6)
-
-const getLocalCevitxe = () => {
-  const databaseName = `local-${newid()}`
-  return new Cevitxe({ databaseName, proxyReducer, initialState: initialLocalState, urls })
-}
-
-const getRemoteCevitxe = () => {
-  const databaseName = `remote-${newid()}`
-  return new Cevitxe({ databaseName, proxyReducer, initialState: initialRemoteState, urls })
-}
-
 describe('Cevitxe', () => {
+  interface FooState {
+    settings: {
+      foo?: number
+    }
+  }
+
+  const initialLocalState: FooState = { settings: { foo: 1 } }
+  const initialRemoteState: FooState = { settings: {} }
+
+  const port = 10000
+  const urls = [`ws://localhost:${port}`]
+
+  const proxyReducer: ProxyReducer<FooState> = ({ type, payload }) => {
+    switch (type) {
+      case 'SET_FOO':
+        return s => (s.settings.foo = payload.value)
+      default:
+        return null
+    }
+  }
+
+  const newDiscoveryKey = () => newid(6)
+
+  const getLocalCevitxe = () => {
+    const databaseName = `local-${newid()}`
+    return new Cevitxe({ databaseName, proxyReducer, initialState: initialLocalState, urls })
+  }
+
+  const getRemoteCevitxe = () => {
+    const databaseName = `remote-${newid()}`
+    return new Cevitxe({ databaseName, proxyReducer, initialState: initialRemoteState, urls })
+  }
+
   describe('offline', () => {
     describe('joinStore', () => {
       it('should return a redux store with empty state', async () => {
@@ -93,13 +91,11 @@ describe('Cevitxe', () => {
         const localStore = await localCevitxe.createStore(discoveryKey)
 
         // dispatch a change
-        localStore.dispatch({
-          type: 'SET_FOO',
-          payload: { value: 3 },
-        })
+        localStore.dispatch({ type: 'SET_FOO', payload: { value: 3 } })
 
         // confirm that the change was made
-        expect(localStore.getState().state.foo).toEqual(3)
+        const state = localStore.getState() as FooState
+        expect(state.settings.foo).toEqual(3)
 
         await pause(100) // HACK: wait for indexeddb to finish whatever it's doing
         await localCevitxe.close()
@@ -132,17 +128,16 @@ describe('Cevitxe', () => {
         const localCevitxe = await getLocalCevitxe()
         const localStore = await localCevitxe.createStore(discoveryKey)
 
-        expect(localStore.getState().state.foo).toBe(1)
+        const state = localStore.getState() as FooState
+        expect(state.settings.foo).toEqual(1)
 
         // To simulate rehydrating from persisted state we dispatch a change to our local store.
         // This state gets written to our fake-indexeddb.
-        localStore.dispatch({
-          type: 'SET_FOO',
-          payload: { value: 42 },
-        })
+        localStore.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
 
         // confirm that the change took
-        expect(localStore.getState().state.foo).toBe(42)
+        const updatedState = localStore.getState() as FooState
+        expect(updatedState.settings.foo).toEqual(42)
 
         // disconnect current store
         await pause(500) // HACK:
@@ -151,7 +146,9 @@ describe('Cevitxe', () => {
         // Then we create a new store, which should see the state in the fake db and load it
         const newStore = await localCevitxe.joinStore(discoveryKey)
 
-        expect(newStore.getState().state.foo).toBe(42)
+        // Confirm that the modified state is still there
+        const newState = newStore.getState() as FooState
+        expect(newState.settings.foo).toEqual(42)
       })
     })
   })
@@ -190,40 +187,18 @@ describe('Cevitxe', () => {
       const { close, remoteCevitxe, localStore, remoteStore } = await open()
 
       // change something in the local store
-      localStore.dispatch({
-        type: 'SET_FOO',
-        payload: { value: 42 },
-      })
+      localStore.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
 
       // confirm that the change took locally
-      expect(localStore.getState().state.foo).toBe(42)
+      const localState = localStore.getState() as FooState
+      expect(localState.settings.foo).toEqual(42)
 
       // wait for remote peer to see change
       await eventPromise(remoteCevitxe, 'change')
 
       // confirm that the remote store has the new value
-      expect(remoteStore.getState().state.foo).toBe(42)
-
-      await close()
-    })
-
-    it('should communicate changes from one store to another', async () => {
-      const { close, remoteCevitxe, localStore, remoteStore } = await open()
-
-      // change something in the local store
-      localStore.dispatch({
-        type: 'SET_FOO',
-        payload: { value: 42 },
-      })
-
-      // confirm that the change took locally
-      expect(localStore.getState().state.foo).toBe(42)
-
-      // wait for remote peer to see change
-      await eventPromise(remoteCevitxe, 'change')
-
-      // confirm that the remote store has the new value
-      expect(remoteStore.getState().state.foo).toBe(42)
+      const remoteState = remoteStore.getState() as FooState
+      expect(remoteState.settings.foo).toEqual(42)
 
       await close()
     })
@@ -240,6 +215,126 @@ describe('Cevitxe', () => {
         // confirm that we no longer have a connection
         expect(Object.keys(localCevitxe.connections)).toHaveLength(0)
       })
+    })
+  })
+
+  describe('multiple documents', () => {
+    interface SchoolData {
+      teachers: string[]
+      [k: string]: any
+    }
+
+    const proxyReducer: ProxyReducer<SchoolData> = ({ type, payload }) => {
+      switch (type) {
+        case 'ADD_TEACHER':
+          return s => {
+            const { id } = payload
+            s.teachers.push(id)
+            s[id] = payload
+          }
+        default:
+          return null
+      }
+    }
+
+    const initialState: SchoolData = { teachers: [] }
+
+    const getLocalCevitxe = () => {
+      const databaseName = `local-${newid()}`
+      return new Cevitxe({ databaseName, proxyReducer, initialState, urls })
+    }
+
+    const getRemoteCevitxe = () => {
+      const databaseName = `remote-${newid()}`
+      return new Cevitxe({ databaseName, proxyReducer, initialState, urls })
+    }
+
+    const open = async () => {
+      const server = new Server({ port })
+      await server.listen({ silent: true })
+
+      const discoveryKey = newDiscoveryKey()
+
+      // local cevitxe & store
+      const localCevitxe = getLocalCevitxe()
+      const localStore = await localCevitxe.createStore(discoveryKey)
+
+      // remote cevitxe (tests control timing of joining store)
+      const remoteCevitxe = getRemoteCevitxe()
+
+      // join store from remote store
+      const remoteStore = await remoteCevitxe.joinStore(discoveryKey)
+
+      // wait for both peers to see connection
+      await Promise.all([
+        eventPromise(localCevitxe, 'peer'), //
+        eventPromise(remoteCevitxe, 'peer'),
+      ])
+
+      // include a teardown function in the return values
+      const close = async () => {
+        await localCevitxe.close()
+        await remoteCevitxe.close()
+        await server.close()
+      }
+
+      return { close, localCevitxe, remoteCevitxe, localStore, remoteStore }
+    }
+
+    it.only('should sync multiple documents', async () => {
+      const { close, remoteCevitxe, localStore, remoteStore } = await open()
+
+      // change something in the local store
+      const teacher = { id: 'abcxyz', first: 'Herb', last: 'Caudill' }
+      localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher })
+
+      const expectedState = {
+        abcxyz: { id: 'abcxyz', first: 'Herb', last: 'Caudill' },
+        teachers: ['abcxyz'],
+      }
+
+      // confirm that the change took locally
+      const localState = localStore.getState() as SchoolData
+      expect(localState).toEqual(expectedState)
+
+      // wait for remote peer to see change
+      await eventPromise(remoteCevitxe, 'change')
+
+      // confirm that the remote store has the new value
+      const remoteState = remoteStore.getState() as SchoolData
+      expect(remoteState).toEqual(expectedState)
+
+      await close()
+    })
+
+    it.only('should sync new documents in both directions', async () => {
+      const { close, localCevitxe, remoteCevitxe, localStore, remoteStore } = await open()
+
+      // add a teacher in the local store
+      const teacher1 = { id: 'abcxyz', first: 'Herb', last: 'Caudill' }
+      localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
+
+      // add a teacher in the remote store
+      const teacher2 = { id: 'qrstuv', first: 'Brent', last: 'Keller' }
+      remoteStore.dispatch({ type: 'ADD_TEACHER', payload: teacher2 })
+
+      const expectedState = {
+        abcxyz: { id: 'abcxyz', first: 'Herb', last: 'Caudill' },
+        qrstuv: { id: 'qrstuv', first: 'Brent', last: 'Keller' },
+        teachers: ['abcxyz', 'qrstuv'],
+      }
+
+      // wait for both peers to see change
+      await Promise.all([
+        eventPromise(remoteCevitxe, 'change'),
+        eventPromise(localCevitxe, 'change'),
+      ])
+
+      // confirm that the remote store has the new value
+      const remoteState = remoteStore.getState() as SchoolData
+      expect(remoteState).toEqual(expectedState)
+
+      await close()
     })
   })
 })
