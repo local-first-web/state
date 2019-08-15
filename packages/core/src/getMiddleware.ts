@@ -10,17 +10,21 @@ export const getMiddleware: MiddlewareFactory = <T>(
   discoveryKey?: string
 ) => {
   return store => next => action => {
-    log('document', discoveryKey)
     // before changes
     const prevState = store.getState() || A.init()
-    log('action %o', action)
-    log('prevDoc %o', prevState)
 
     // changes
     const result = next(action)
 
     // after changes
     const nextState = store.getState()
+    log('%o', {
+      discoveryKey,
+      type: action.type,
+      message: action.payload.message,
+      prevState,
+      nextState,
+    })
     // Middleware shouldn't need a docSet passed to it now that we're doing that in the reducer
     // if (!action.payload.cameFromFeed && docSet) {
     //   log('calling docSet.set %o', nextState)
