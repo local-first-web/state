@@ -11,7 +11,7 @@ export const getMiddleware: MiddlewareFactory = <T>(
 ) => {
   return store => next => action => {
     // before changes
-    const prevState = store.getState() || A.init()
+    const prevState = store.getState()
 
     // changes
     const result = next(action)
@@ -35,8 +35,8 @@ export const getMiddleware: MiddlewareFactory = <T>(
     // Can we get changes for a whole DocSet?
     // or should each action we're handling just be a single Doc?
     // // Write all actions to the feed for persistence
-    const changes = A.getChanges(prevState, nextState)
-    feed.append(JSON.stringify(changes))
+    // const changes = A.getChanges(prevState, nextState)
+    // feed.append(JSON.stringify(changes))
 
     return result
   }
