@@ -308,12 +308,7 @@ describe('Cevitxe', () => {
 
       // confirm that the change took locally
       const localState = localStore.getState() as SchoolData
-      // NOTE: This always failed deep equality tho it looked good-ish to me
-      // I don't know what the blue output of jest toEqual means exactly,
-      // seemed the like indenting was off or something?
-      //expect(localState).toEqual(expectedState)
-      expect(localState.teachers).toEqual({ abcxyz: true })
-      expect(localState.abcxyz).toMatchObject(teacher)
+      expect(localState).toEqual(expectedState)
 
       // wait for remote peer to see change
       await eventPromise(remoteCevitxe, 'change')
@@ -321,10 +316,10 @@ describe('Cevitxe', () => {
       // confirm that the remote store has the new value
       const remoteState = remoteStore.getState() as SchoolData
       console.log({ localState, remoteState })
-      //expect(remoteState).toEqual(expectedState)
-      // NOTE: remoteState ends up just being abcxyz instead of the full parent object :shrug:
-      expect(remoteState.teachers).toEqual({ abcxyz: true })
-      expect(remoteState.abcxyz).toMatchObject(teacher)
+      expect(remoteState).toEqual(expectedState)
+      // // NOTE: remoteState ends up just being abcxyz instead of the full parent object :shrug:
+      // expect(remoteState.teachers).toEqual({ abcxyz: true })
+      // expect(remoteState.abcxyz).toMatchObject(teacher)
 
       await close()
     })
