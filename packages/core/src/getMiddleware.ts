@@ -24,20 +24,19 @@ export const getMiddleware: MiddlewareFactory = <T>(
       prevState,
       nextState,
     })
-    // Middleware shouldn't need a docSet passed to it now that we're doing that in the reducer
-    // if (!action.payload.cameFromFeed && docSet) {
-    //   log('calling docSet.set %o', nextState)
-    //   // TODO: where does the key come from
-    //   docSet.setDoc('', nextState)
-    // }
 
-    // Disable persistence for now
-    // Can we get changes for a whole DocSet?
-    // or should each action we're handling just be a single Doc?
-    // // Write all actions to the feed for persistence
-    // const changes = A.getChanges(prevState, nextState)
-    // feed.append(JSON.stringify(changes))
-
+    // Write all actions to the feed for persistence
+    let changeSets = []
+    for (let docId of nextState.docIds) {
+      const prevDoc = prevState.getDoc(docId) || A.init()
+      const nextDoc = nextState.getDoc(docId)
+      const changes = A.getChanges(prevDoc, nextDoc)
+      changeSets.push({
+        docId,
+        changes,
+      })
+    }
+    feed.append(JSON.stringify(changeSets))
     return result
   }
 }

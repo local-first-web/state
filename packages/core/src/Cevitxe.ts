@@ -148,11 +148,15 @@ const getStateFromStorage = async <T>(feed: Feed<string>): Promise<Doc<T>> => {
   // read full contents of the feed in one batch
   const feedContents = new Promise(yes => feed.getBatch(0, feed.length, (_, data) => yes(data)))
   const data = (await feedContents) as string[]
-  const changeSets = data.map(changes => JSON.parse(changes))
+  const feedEntries = data.map(changes => JSON.parse(changes))
 
-  log('rehydrating from stored change sets %o', changeSets)
-  let state = A.init<T>()
-  changeSets.forEach(changes => (state = A.applyChanges(state, changes)))
+  log('rehydrating from stored change sets %o', feedEntries)
+  let docSet = new A.DocSet()
+  feedEntries.forEach(entry => {
+    entry.forEach((changeSet: any) => {
+      docSet.applyChanges(changeSet.docId, changeSet.changes)
+    })
+  })
 
   log('done rehydrating')
   return state
