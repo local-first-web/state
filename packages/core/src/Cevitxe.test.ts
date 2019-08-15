@@ -222,7 +222,6 @@ describe('Cevitxe', () => {
 
   describe('multiple documents', () => {
     interface SchoolData {
-      // NOTE: Apparently Automerge can't use arrays as a document either, so we're going with the map of IDs
       teachers: {}
       [k: string]: any
     }
