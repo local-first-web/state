@@ -30,7 +30,7 @@ const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
 ) => {
   const functionMap = proxyReducer({ type, payload, state })
   if (!functionMap || !state) return state // no matching function - return the unmodified state
-  const newState = { ...state }
+  // const newState = { ...state }
   let docId: string
   for (docId in functionMap) {
     const fn = functionMap[docId] as ChangeFn<any>
@@ -41,23 +41,21 @@ const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
     const newDoc = A.change(oldDoc, fn)
     docSet.setDoc(docId, oldDoc)
     // update the state object
-    newState[docId] = newDoc
+    // newState[docId] = newDoc
   }
-  return newState
+  return docSet
 }
 
 // After setting up the feed in `createStore`, we listen to our connections and dispatch the
 // incoming messages to our store. This is the reducer that handles those dispatches.
-
-
-
+// TODO: rewrite this, it's wrong
 const feedReducer: Reducer = <T>(state: T, { type, payload }: AnyAction) => {
   switch (type) {
     case RECEIVE_MESSAGE_FROM_PEER: {
       const { message, connection } = payload as ReceiveMessagePayload
       log('received %o', message)
       connection.receive(message)
-      return docSetToObject(connection.docSet)
+      return state
     }
     default:
       return state
