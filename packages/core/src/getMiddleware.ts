@@ -31,12 +31,13 @@ export const getMiddleware: MiddlewareFactory = <T>(
       const prevDoc = prevState.getDoc(docId) || A.init()
       const nextDoc = nextState.getDoc(docId)
       const changes = A.getChanges(prevDoc, nextDoc)
-      changeSets.push({
-        docId,
-        changes,
-      })
+      if (changes.length > 0)
+        changeSets.push({
+          docId,
+          changes,
+        })
     }
-    feed.append(JSON.stringify(changeSets))
+    if (changeSets.length > 0) feed.append(JSON.stringify(changeSets))
     return result
   }
 }
