@@ -32,7 +32,7 @@ describe('adaptReducer', () => {
         case 'REMOVE_TEACHER': {
           return {
             teachers: s => delete s[payload.id],
-            [payload.id]: s => undefined,
+            [payload.id]: s => undefined, // TODO: need to signal to a higher level that this should be deleted
           }
         }
         case 'UPDATE_TEACHER': {
