@@ -76,11 +76,11 @@ export class Cevitxe<T> extends EventEmitter {
 
     // Create Redux store
     const reducer = adaptReducer(this.proxyReducer, docSet)
-    const cevitxeMiddleware = getMiddleware(this.feed, docSet, this.discoveryKey)
-    const enhancer = composeWithDevTools(
-      Redux.applyMiddleware(...this.middlewares, cevitxeMiddleware)
-    )
-    this.store = Redux.createStore(reducer, state, enhancer)
+    // const cevitxeMiddleware = getMiddleware(this.feed, docSet, this.discoveryKey)
+    // const enhancer = composeWithDevTools(
+    //   Redux.applyMiddleware(...this.middlewares, cevitxeMiddleware)
+    // )
+    this.store = Redux.createStore(reducer, state) //, enhancer)
 
     // TODO: randomly select a URL if more than one is provided? select best based on ping?
     const url = this.urls[0]
