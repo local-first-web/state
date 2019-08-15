@@ -11,7 +11,7 @@ import { adaptReducer } from './adaptReducer'
 import { Connection } from './Connection'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
-import { getKeys, getKnowndiscoveryKeys } from './keys'
+import { getKeys, getKnowndiscoveryKeys as getKnownDiscoveryKeys } from './keys'
 import { CevitxeOptions, ProxyReducer } from './types'
 import { docSetFromObject } from './docSetHelpers'
 
@@ -112,8 +112,8 @@ export class Cevitxe<T> extends EventEmitter {
     return Object.keys(this.connections).length
   }
 
-  get knowndiscoveryKeys() {
-    return getKnowndiscoveryKeys(this.databaseName)
+  get knownDiscoveryKeys() {
+    return getKnownDiscoveryKeys(this.databaseName)
   }
 
   removePeer = (peerId: string) => {
