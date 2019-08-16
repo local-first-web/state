@@ -45,6 +45,7 @@ describe('Cevitxe', () => {
     return new Cevitxe({ databaseName, proxyReducer, initialState: initialRemoteState, urls })
   }
 
+  // TODO: Figure out why offline test suite causes "connected" suites to fail
   describe('offline', () => {
     describe('joinStore', () => {
       it('should return a redux store with empty state', async () => {
@@ -126,7 +127,7 @@ describe('Cevitxe', () => {
       })
     })
 
-    describe.skip('persistence', () => {
+    describe('persistence', () => {
       it('should rehydrate from persisted state when available', async () => {
         const discoveryKey = newDiscoveryKey()
         const localCevitxe = await getLocalCevitxe()

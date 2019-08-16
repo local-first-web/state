@@ -31,6 +31,7 @@ export interface CreateStoreResult {
 export type MiddlewareFactory = <T>(
   feed: any,
   docSet: A.DocSet<any>,
+  proxyReducer: ProxyReducer,
   discoveryKey?: string
 ) => Middleware // feed: Feed<string>
 
