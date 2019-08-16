@@ -18,9 +18,9 @@
     "jest": "24.7.1"
   },
   "dependencies": {
-    "cevitxe-signal-client": "0",
     "@types/simple-peer": "6",
     "automerge": "0",
+    "cevitxe-signal-client": "0",
     "debug": "4",
     "hypercore": "7",
     "hypercore-crypto": "1",
@@ -38,6 +38,7 @@
     "mock-socket": "8",
     "npm-watch": "0",
     "p-event": "4",
+    "portfinder": "^1.0.21",
     "prettier": "1",
     "redux": "4",
     "redux-devtools-extension": "2",

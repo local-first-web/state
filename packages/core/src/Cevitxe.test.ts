@@ -6,6 +6,7 @@ import { pause } from './lib/pause'
 import eventPromise from 'p-event'
 import debug from 'debug'
 import { docSetToObject } from './docSetHelpers'
+import { getPortPromise as getAvailablePort } from 'portfinder'
 require('fake-indexeddb/auto')
 
 const log = debug('cevitxe:test')
@@ -18,9 +19,6 @@ describe('Cevitxe', () => {
 
   const initialLocalState: FooState = { settings: { foo: 1 } }
   const initialRemoteState = {}
-
-  const port = 3001
-  const urls = [`ws://localhost:${port}`]
 
   const proxyReducer: ProxyReducer = ({ type, payload }) => {
     switch (type) {
@@ -35,12 +33,14 @@ describe('Cevitxe', () => {
 
   const newDiscoveryKey = () => newid(6)
 
-  const getLocalCevitxe = () => {
+  const getLocalCevitxe = (port: number = 1234) => {
+    const urls = [`ws://localhost:${port}`]
     const databaseName = `local-${newid()}`
     return new Cevitxe({ databaseName, proxyReducer, initialState: initialLocalState, urls })
   }
 
-  const getRemoteCevitxe = () => {
+  const getRemoteCevitxe = (port: number = 1234) => {
+    const urls = [`ws://localhost:${port}`]
     const databaseName = `remote-${newid()}`
     return new Cevitxe({ databaseName, proxyReducer, initialState: initialRemoteState, urls })
   }
@@ -158,18 +158,26 @@ describe('Cevitxe', () => {
   })
 
   describe('online', () => {
+    let server: Server
+
+    afterEach(async () => {
+      if (server) await server.close()
+    })
+
     const open = async () => {
-      const server = new Server({ port })
+      const port = await getAvailablePort({ port: 3000 })
+
+      server = new Server({ port })
       await server.listen({ silent: true })
 
       const discoveryKey = newDiscoveryKey()
 
       // local cevitxe & store
-      const localCevitxe = getLocalCevitxe()
+      const localCevitxe = getLocalCevitxe(port)
       const localStore = await localCevitxe.createStore(discoveryKey)
 
       // remote cevitxe (tests control timing of joining store)
-      const remoteCevitxe = getRemoteCevitxe()
+      const remoteCevitxe = getRemoteCevitxe(port)
 
       // join store from remote store
       const remoteStore = await remoteCevitxe.joinStore(discoveryKey)
@@ -181,7 +189,6 @@ describe('Cevitxe', () => {
       const close = async () => {
         await localCevitxe.close()
         await remoteCevitxe.close()
-        await server.close()
       }
 
       return { close, localCevitxe, remoteCevitxe, localStore, remoteStore }
@@ -223,6 +230,12 @@ describe('Cevitxe', () => {
   })
 
   describe('multiple documents', () => {
+    let server: Server
+
+    afterEach(async () => {
+      if (server) await server.close()
+    })
+
     interface SchoolData {
       teachers: {}
       [k: string]: any
@@ -254,7 +267,9 @@ describe('Cevitxe', () => {
     const initialState: SchoolData = { teachers: {} }
 
     const open = async () => {
-      const server = new Server({ port })
+      const port = await getAvailablePort({ port: 3000 })
+      const urls = [`ws://localhost:${port}`]
+      server = new Server({ port })
       await server.listen({ silent: true })
 
       const discoveryKey = newDiscoveryKey()
@@ -289,7 +304,6 @@ describe('Cevitxe', () => {
       const close = async () => {
         await localCevitxe.close()
         await remoteCevitxe.close()
-        await server.close()
       }
 
       return { close, localCevitxe, remoteCevitxe, localStore, remoteStore }
