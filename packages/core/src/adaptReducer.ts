@@ -30,18 +30,13 @@ const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
 ) => {
   const functionMap = proxyReducer({ type, payload, state })
   if (!functionMap || !state) return state // no matching function - return the unmodified state
-  // const newState = { ...state }
   let docId: string
   for (docId in functionMap) {
     const fn = functionMap[docId] as ChangeFn<any>
     // apply changes to the corresponding doc in the docset
-    // TODO: this is kind of an awkward setup, tracking state both as a plain object and as a DocSet
-    // would it make sense to get rid of the state object and just keep the docset?
-    let oldDoc = docSet.getDoc(docId) || A.init() // create a new doc if one doesn't exist
+    const oldDoc = docSet.getDoc(docId) || A.init() // create a new doc if one doesn't exist
     const newDoc = A.change(oldDoc, fn)
     docSet.setDoc(docId, oldDoc)
-    // update the state object
-    // newState[docId] = newDoc
   }
   return docSet
 }
