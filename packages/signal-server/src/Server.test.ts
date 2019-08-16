@@ -1,17 +1,18 @@
 import debug from 'debug'
 import WebSocket from 'ws'
 import { Server } from './Server'
+import { getPortPromise as getAvailablePort } from 'portfinder'
 
 const kill = require('kill-port')
-const port = 10002
-const url = `ws://localhost:${port}`
-const introductionUrl = `${url}/introduction`
-const connectUrl = `${url}/connect`
-
 const log = debug('cevitxe:signal-server:tests')
 const _log = console.log
 
 describe('Server', () => {
+  let port: number
+  let url: string
+  let introductionUrl: string
+  let connectUrl: string
+
   let server: Server
   let localId: string
   let remoteId: string
@@ -21,6 +22,13 @@ describe('Server', () => {
   beforeAll(async () => {
     // prevent server from logging 'listening on port...' during tests
     console.log = () => {}
+
+    // find a port and set things up
+    port = await getAvailablePort({ port: 3000 })
+    url = `ws://localhost:${port}`
+    introductionUrl = `${url}/introduction`
+    connectUrl = `${url}/connect`
+
     await kill(port, 'tcp') // kill anything that's still listening on our port (e.g. previous test run didn't end cleanly)
     server = new Server({ port })
     server.listen()

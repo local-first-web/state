@@ -31,6 +31,7 @@
     "jest": "24",
     "kill-port": "1",
     "mock-socket": "8",
+    "portfinder": "^1.0.21",
     "prettier": "1",
     "supports-color": "7",
     "ts-jest": "24",
