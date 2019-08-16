@@ -5,11 +5,7 @@ import { DocSetSync } from './DocSetSync'
 
 // DEPRECATED
 export type ProxyReducer = (action: AnyAction) => ChangeMap | null
-export type ReducerConverter = (
-  proxyReducer: ProxyReducer,
-  docSet: A.DocSet<any>,
-  feed: any
-) => Reducer
+export type ReducerConverter = (proxyReducer: ProxyReducer, docSet: A.DocSet<any>) => Reducer
 
 export interface ChangeMap {
   [docId: string]: A.ChangeFn<any>

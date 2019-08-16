@@ -10,9 +10,9 @@ const log = debug('cevitxe:adaptReducer')
 
 // This function is used when wiring up the store. It takes a proxyReducer and turns it
 // into a real reducer, plus adds our feedReducer to the pipeline.
-export const adaptReducer: ReducerConverter = (proxyReducer, docSet, feed) => (state, action) => {
+export const adaptReducer: ReducerConverter = (proxyReducer, docSet) => (state, action) => {
   state = feedReducer(state, action)
-  state = convertToReduxReducer(proxyReducer, docSet, feed)(state, action)
+  state = convertToReduxReducer(proxyReducer, docSet)(state, action)
   return state
 }
 
@@ -24,20 +24,15 @@ export const adaptReducer: ReducerConverter = (proxyReducer, docSet, feed) => (s
 
 // The purpose of this function is to turn a proxyReducer into a real reducer by
 // running the proxyReducer's change functions through `automerge.change`.
-const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet, feed) => (
+const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
   state,
   { type, payload }
 ) => {
   // Connection has already updated our docSet, update redux state to match
-  if (type === RECEIVE_MESSAGE_FROM_PEER) {
-    return docSetToObject(docSet)
-  }
+  if (type === RECEIVE_MESSAGE_FROM_PEER) return docSetToObject(docSet)
 
   const functionMap = proxyReducer({ type, payload })
   if (!functionMap || !state) return state // no matching function - return the unmodified state
-  // collect document changes for persistence
-  let changeSets = []
-  // apply changes from reducer
   let docId: string
   for (docId in functionMap) {
     const fn = functionMap[docId] as ChangeFn<any>
@@ -45,17 +40,7 @@ const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet, feed) => 
     const oldDoc = docSet.getDoc(docId) || A.init() // create a new doc if one doesn't exist
     const newDoc = A.change(oldDoc, fn)
     docSet.setDoc(docId, newDoc)
-    const changes = A.getChanges(oldDoc, newDoc)
-    if (changes.length > 0)
-      changeSets.push({
-        docId,
-        changes,
-      })
   }
-
-  // Write any changes to the feed for persistence
-  if (changeSets.length > 0) feed.append(JSON.stringify(changeSets))
-
   // return the new state of the docSet
   return docSetToObject(docSet)
 }
