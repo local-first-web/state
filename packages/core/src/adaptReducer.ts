@@ -1,9 +1,7 @@
 import A, { ChangeFn } from 'automerge'
 import debug from 'debug'
-import { AnyAction, Reducer } from 'redux'
-
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
-import { ReceiveMessagePayload, ReducerConverter } from './types'
+import { ReducerConverter } from './types'
 import { docSetToObject } from './docSetHelpers'
 
 const log = debug('cevitxe:adaptReducer')
@@ -11,7 +9,6 @@ const log = debug('cevitxe:adaptReducer')
 // This function is used when wiring up the store. It takes a proxyReducer and turns it
 // into a real reducer, plus adds our feedReducer to the pipeline.
 export const adaptReducer: ReducerConverter = (proxyReducer, docSet) => (state, action) => {
-  state = peerReducer(state, action)
   state = convertToReduxReducer(proxyReducer, docSet)(state, action)
   return state
 }
@@ -43,23 +40,4 @@ const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
   }
   // return the new state of the docSet
   return docSetToObject(docSet)
-}
-
-// Cevitxe Connections dispatch changes received from remote peers
-// the Connection's DocSetSync has already updated our docSet.
-// This exists solely to update our redux state and write to our persistence feed
-// TODO: I think we can find a way to get rid of this because we handle actions of type RECEIVE_MESSAGE_FROM_PEER above
-const peerReducer: Reducer = <T>(state: T, { type, payload }: AnyAction) => {
-  switch (type) {
-    case RECEIVE_MESSAGE_FROM_PEER: {
-      const { message, connection } = payload as ReceiveMessagePayload
-      log('received %o', message)
-      // loopback to apply change to local docSet
-      // If we can just do this in Connection before dispatching we can probably kill the peerReducer
-      connection.receive(message)
-      return state
-    }
-    default:
-      return state
-  }
 }

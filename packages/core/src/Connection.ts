@@ -50,18 +50,11 @@ export class Connection<T = any> extends EventEmitter {
     this.emit('receive', message)
     if (message.changes) {
       log('%s changes received', message.changes.length)
+      this.docSetSync.receive(message) // this updates the doc
       if (this.dispatch) {
         this.dispatch({
           type: RECEIVE_MESSAGE_FROM_PEER,
-          payload: {
-            connection: this.docSetSync,
-            message,
-          },
         })
-      } else {
-        // TODO: figure out a way to pass a fake dispatcher or something for testing
-        log(`temp - only for use by testing without passing a dispatcher`)
-        this.docSetSync.receive(message) // this updates the doc
       }
     } else {
       log(`no changes, catch up with peer`)
