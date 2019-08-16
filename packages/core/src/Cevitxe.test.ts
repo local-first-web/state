@@ -4,9 +4,10 @@ import { newid } from 'cevitxe-signal-client'
 import { ProxyReducer, ChangeMap } from './types'
 import { pause } from './lib/pause'
 import eventPromise from 'p-event'
-
+import debug from 'debug'
 require('fake-indexeddb/auto')
 
+const log = debug('cevitxe:test')
 describe('Cevitxe', () => {
   interface FooState {
     settings: {
@@ -230,7 +231,7 @@ describe('Cevitxe', () => {
         case 'ADD_TEACHER': {
           return {
             teachers: s => (s[payload.id] = true),
-            [payload.id]: s => (s = Object.assign(s, payload)),
+            // [payload.id]: s => (s = Object.assign(s, payload)),
           }
         }
         case 'REMOVE_TEACHER': {
@@ -299,6 +300,9 @@ describe('Cevitxe', () => {
       // change something in the local store
       const teacher = { id: 'abcxyz', first: 'Herb', last: 'Caudill' }
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher })
+      // wait for remote peer to see change
+      log('awaiting remote change')
+      await eventPromise(remoteCevitxe, 'change')
 
       const expectedState = {
         abcxyz: teacher,
@@ -308,9 +312,6 @@ describe('Cevitxe', () => {
       // confirm that the change took locally
       const localState = localStore.getState() as SchoolData
       expect(localState).toEqual(expectedState)
-
-      // wait for remote peer to see change
-      await eventPromise(remoteCevitxe, 'change')
 
       // confirm that the remote store has the new value
       const remoteState = remoteStore.getState() as SchoolData
