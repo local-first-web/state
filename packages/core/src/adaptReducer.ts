@@ -11,7 +11,7 @@ const log = debug('cevitxe:adaptReducer')
 // This function is used when wiring up the store. It takes a proxyReducer and turns it
 // into a real reducer, plus adds our feedReducer to the pipeline.
 export const adaptReducer: ReducerConverter = (proxyReducer, docSet) => (state, action) => {
-  state = feedReducer(state, action)
+  state = peerReducer(state, action)
   state = convertToReduxReducer(proxyReducer, docSet)(state, action)
   return state
 }
@@ -48,7 +48,7 @@ const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
 // After setting up the feed in `createStore`, we listen to our connections and dispatch the
 // incoming messages to our store. This is the reducer that handles those dispatches.
 // TODO: rewrite this, it's wrong
-const feedReducer: Reducer = <T>(state: T, { type, payload }: AnyAction) => {
+const peerReducer: Reducer = <T>(state: T, { type, payload }: AnyAction) => {
   switch (type) {
     case RECEIVE_MESSAGE_FROM_PEER: {
       const { message, connection } = payload as ReceiveMessagePayload
