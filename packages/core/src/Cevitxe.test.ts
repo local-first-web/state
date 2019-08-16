@@ -58,7 +58,7 @@ describe('Cevitxe', () => {
         expect(localStore).not.toBeUndefined()
 
         // it's in empty (waiting) state
-        expect(docSetToObject(localStore.getState())).toEqual({})
+        expect(localStore.getState()).toEqual({})
 
         await pause(100) // HACK: wait for indexeddb to finish whatever it's doing
         await localCevitxe.close()
@@ -81,7 +81,7 @@ describe('Cevitxe', () => {
         expect(localStore).toHaveProperty('subscribe')
 
         // it contains the initial state
-        expect(docSetToObject(localStore.getState())).toEqual(initialLocalState)
+        expect(localStore.getState()).toEqual(initialLocalState)
 
         await pause(100) // HACK: wait for indexeddb to finish whatever it's doing
         await localCevitxe.close()
@@ -98,7 +98,7 @@ describe('Cevitxe', () => {
         localStore.dispatch({ type: 'SET_FOO', payload: { value: 3 } })
 
         // confirm that the change was made
-        const state = docSetToObject(localStore.getState())
+        const state = localStore.getState()
         expect(state.settings.foo).toEqual(3)
 
         await pause(100) // HACK: wait for indexeddb to finish whatever it's doing
@@ -132,7 +132,7 @@ describe('Cevitxe', () => {
         const localCevitxe = await getLocalCevitxe()
         const localStore = await localCevitxe.createStore(discoveryKey)
 
-        const state = docSetToObject(localStore.getState())
+        const state = localStore.getState()
         expect(state.settings.foo).toEqual(1)
 
         // To simulate rehydrating from persisted state we dispatch a change to our local store.
@@ -140,7 +140,7 @@ describe('Cevitxe', () => {
         localStore.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
 
         // confirm that the change took
-        const updatedState = docSetToObject(localStore.getState())
+        const updatedState = localStore.getState()
         expect(updatedState.settings.foo).toEqual(42)
 
         // disconnect current store
@@ -151,7 +151,7 @@ describe('Cevitxe', () => {
         const newStore = await localCevitxe.joinStore(discoveryKey)
 
         // Confirm that the modified state is still there
-        const newState = docSetToObject(newStore.getState())
+        const newState = newStore.getState()
         expect(newState.settings.foo).toEqual(42)
       })
     })
@@ -194,14 +194,14 @@ describe('Cevitxe', () => {
       localStore.dispatch({ type: 'SET_FOO', payload: { value: 42 } })
 
       // confirm that the change took locally
-      const localState = docSetToObject(localStore.getState())
+      const localState = localStore.getState()
       expect(localState.settings.foo).toEqual(42)
 
       // wait for remote peer to see change
       await eventPromise(remoteCevitxe, 'change')
 
       // confirm that the remote store has the new value
-      const remoteState = docSetToObject(remoteStore.getState())
+      const remoteState = remoteStore.getState()
       expect(remoteState.settings.foo).toEqual(42)
 
       await close()
