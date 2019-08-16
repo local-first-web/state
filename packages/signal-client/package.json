@@ -20,11 +20,12 @@
     "ws": "6"
   },
   "devDependencies": {
-    "cevitxe-signal-server": "0",
     "@types/jest": "24",
     "@types/node": "10",
     "@types/ws": "6",
+    "cevitxe-signal-server": "0",
     "jest": "24",
+    "portfinder": "^1.0.21",
     "supports-color": "7",
     "ts-jest": "24",
     "typescript": "3"

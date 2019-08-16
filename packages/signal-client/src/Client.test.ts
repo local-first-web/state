@@ -2,13 +2,14 @@ import debug from 'debug'
 import { Client } from './Client'
 import { Server } from 'cevitxe-signal-server'
 import { Peer } from './Peer'
+import { getPortPromise as getAvailablePort } from 'portfinder'
 
 const kill = require('kill-port')
-const port = 10001
-const url = `ws://localhost:${port}`
 
 describe('Client', () => {
   const log = debug('cevitxe:signal-client:tests')
+  let port: number
+  let url: string
 
   let server: Server
   let key: string
@@ -17,6 +18,10 @@ describe('Client', () => {
   let remoteId: string
 
   beforeAll(async () => {
+    // find a port and set things up
+    port = await getAvailablePort({ port: 3000 })
+    url = `ws://localhost:${port}`
+
     await kill(port, 'tcp') // kill anything that's still listening on our port (e.g. previous test run didn't end cleanly)
     server = new Server({ port })
     await server.listen({ silent: true })
