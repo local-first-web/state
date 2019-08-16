@@ -45,14 +45,17 @@ const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
   return docSetToObject(docSet)
 }
 
-// After setting up the feed in `createStore`, we listen to our connections and dispatch the
-// incoming messages to our store. This is the reducer that handles those dispatches.
-// TODO: rewrite this, it's wrong
+// Cevitxe Connections dispatch changes received from remote peers
+// the Connection's DocSetSync has already updated our docSet.
+// This exists solely to update our redux state and write to our persistence feed
+// TODO: I think we can find a way to get rid of this because we handle actions of type RECEIVE_MESSAGE_FROM_PEER above
 const peerReducer: Reducer = <T>(state: T, { type, payload }: AnyAction) => {
   switch (type) {
     case RECEIVE_MESSAGE_FROM_PEER: {
       const { message, connection } = payload as ReceiveMessagePayload
       log('received %o', message)
+      // loopback to apply change to local docSet
+      // If we can just do this in Connection before dispatching we can probably kill the peerReducer
       connection.receive(message)
       return state
     }
