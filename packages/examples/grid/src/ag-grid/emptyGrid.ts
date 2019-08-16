@@ -21,7 +21,7 @@ export const emptyGrid = (rowCount: number, colCount: number = rowCount) => {
 
   return {
     ...rows.reduce(rowReducer, {}),
-    rows: rows.reduce(rowIndexReducer, {}),
+    rowIndex: rows.reduce(rowIndexReducer, {}),
     schema: { properties: cols.reduce(columnReducer, {}) },
   }
 }

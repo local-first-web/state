@@ -10,13 +10,13 @@ export const proxyReducer: ProxyReducer = ({ type, payload, state }) => {
   switch (type) {
     case actions.ITEM_ADD:
       return {
-        index: s => (s[payload.id] = true),
         [payload.id]: s => payload,
+        rowIndex: s => (s[payload.id] = true),
       }
     case actions.ITEM_REMOVE:
       return {
-        index: s => delete s[payload.id],
         [payload.id]: s => undefined,
+        rowIndex: s => delete s[payload.id],
       }
     case actions.ITEM_UPDATE:
       return {

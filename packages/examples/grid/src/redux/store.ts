@@ -5,7 +5,7 @@ import { proxyReducer } from './reducers'
 
 export interface State {
   [key: string]: any
-  index: { [key: string]: any }
+  rowIndex: { [key: string]: any }
   schema: JSONSchema7
 }
 
