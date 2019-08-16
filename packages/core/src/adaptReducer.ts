@@ -28,7 +28,7 @@ const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
   state,
   { type, payload }
 ) => {
-  const functionMap = proxyReducer({ type, payload, state })
+  const functionMap = proxyReducer({ type, payload })
   if (!functionMap || !state) return state // no matching function - return the unmodified state
   let docId: string
   for (docId in functionMap) {
@@ -36,9 +36,10 @@ const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
     // apply changes to the corresponding doc in the docset
     const oldDoc = docSet.getDoc(docId) || A.init() // create a new doc if one doesn't exist
     const newDoc = A.change(oldDoc, fn)
-    docSet.setDoc(docId, oldDoc)
+    docSet.setDoc(docId, newDoc)
   }
-  return docSet
+  // return the new state of the docSet
+  return docSetToObject(docSet)
 }
 
 // After setting up the feed in `createStore`, we listen to our connections and dispatch the
