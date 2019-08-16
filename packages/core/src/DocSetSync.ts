@@ -46,7 +46,7 @@ const log = debug('cevitxe:docsetsync')
  * > class; if you're familiar with that class, this one plays exactly the same role.
  */
 export class DocSetSync {
-  private docSet: A.DocSet<any>
+  public docSet: A.DocSet<any>
   private send: (msg: A.Message) => void
   private clock: Clocks
 
@@ -93,7 +93,7 @@ export class DocSetSync {
     else if (weHaveDoc) this.maybeSendChanges(docId)
     // If no changes and we don't have the document, treat it as an advertisement and request it
     else this.advertise(docId)
-
+ 
     // Return the current state of the document
     return this.docSet.getDoc(docId)
   }
