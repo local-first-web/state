@@ -1,9 +1,10 @@
-import A from 'automerge'
+import A, { ChangeFn } from 'automerge'
 import debug from 'debug'
 import { AnyAction, Reducer } from 'redux'
 
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
 import { ReceiveMessagePayload, ReducerConverter } from './types'
+import { docSetToObject } from './docSetHelpers'
 
 const log = debug('cevitxe:adaptReducer')
 
@@ -29,28 +30,34 @@ const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
 ) => {
   const functionMap = proxyReducer({ type, payload, state })
   if (!functionMap || !state) return state // no matching function - return the unmodified state
-  return Object.entries(functionMap).reduce((acc, [key, fn]) => {
-    // iterate through the map
-    // apply changes to the corresponding docs in the docset
-    let doc = docSet.getDoc(key) || A.init()
-    doc = A.change(doc, fn)
-    docSet.setDoc(key, doc)
-    // apply changes to the redux state object
-    acc[key] = doc
-    return acc
-  }, state)
+  const newState = { ...state }
+  let docId: string
+  for (docId in functionMap) {
+    const fn = functionMap[docId] as ChangeFn<any>
+    // apply changes to the corresponding doc in the docset
+    // TODO: this is kind of an awkward setup, tracking state both as a plain object and as a DocSet
+    // would it make sense to get rid of the state object and just keep the docset?
+    let oldDoc = docSet.getDoc(docId) || A.init() // create a new doc if one doesn't exist
+    const newDoc = A.change(oldDoc, fn)
+    docSet.setDoc(docId, oldDoc)
+    // update the state object
+    newState[docId] = newDoc
+  }
+  return newState
 }
 
 // After setting up the feed in `createStore`, we listen to our connections and dispatch the
 // incoming messages to our store. This is the reducer that handles those dispatches.
+
+
+
 const feedReducer: Reducer = <T>(state: T, { type, payload }: AnyAction) => {
   switch (type) {
     case RECEIVE_MESSAGE_FROM_PEER: {
       const { message, connection } = payload as ReceiveMessagePayload
       log('received %o', message)
-
-      const doc = connection.receive(message)
-      return doc
+      connection.receive(message)
+      return docSetToObject(connection.docSet)
     }
     default:
       return state
