@@ -325,15 +325,12 @@ describe('Cevitxe', () => {
       }
 
       // confirm that the change took locally
-      const localState = docSetToObject(localStore.getState())
+      const localState = localStore.getState()
       expect(localState).toEqual(expectedState)
 
       // confirm that the remote store has the new value
-      const remoteState = docSetToObject(remoteStore.getState())
+      const remoteState = remoteStore.getState()
       expect(remoteState).toEqual(expectedState)
-      // // NOTE: remoteState ends up just being abcxyz instead of the full parent object :shrug:
-      // expect(remoteState.teachers).toEqual({ abcxyz: true })
-      // expect(remoteState.abcxyz).toMatchObject(teacher)
 
       await close()
     })
@@ -360,11 +357,11 @@ describe('Cevitxe', () => {
       }
 
       // confirm that the local store is caught up
-      const localState = docSetToObject(localStore.getState())
+      const localState = localStore.getState()
       expect(localState).toEqual(expectedState)
 
       // confirm that the remote store is caught up
-      const remoteState = docSetToObject(remoteStore.getState())
+      const remoteState = remoteStore.getState()
       expect(remoteState).toEqual(expectedState)
 
       await close()
@@ -393,11 +390,11 @@ describe('Cevitxe', () => {
       }
 
       // confirm that the local store is caught up
-      const localState = docSetToObject(localStore.getState())
+      const localState = localStore.getState()
       expect(localState).toEqual(expectedState)
 
       // confirm that the remote store is caught up
-      const remoteState = docSetToObject(remoteStore.getState())
+      const remoteState = remoteStore.getState()
       expect(remoteState).toEqual(expectedState)
 
       await close()
