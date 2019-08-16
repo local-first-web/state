@@ -28,6 +28,9 @@ const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
   state,
   { type, payload }
 ) => {
+  // Connection has already updated our docSet, update redux state to match
+  if (type === RECEIVE_MESSAGE_FROM_PEER) return docSetToObject(docSet)
+
   const functionMap = proxyReducer({ type, payload })
   if (!functionMap || !state) return state // no matching function - return the unmodified state
   let docId: string
