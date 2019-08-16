@@ -13,7 +13,7 @@ import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getKeys, getKnowndiscoveryKeys as getKnownDiscoveryKeys } from './keys'
 import { CevitxeOptions, ProxyReducer } from './types'
-import { docSetFromObject } from './docSetHelpers'
+import { docSetFromObject, docSetToObject } from './docSetHelpers'
 
 const valueEncoding = 'utf-8'
 
@@ -59,13 +59,13 @@ export class Cevitxe<T> extends EventEmitter {
 
     this.feed = await createStorageFeed(discoveryKey, this.databaseName)
 
-    const state: any = creating
+    const docSet: A.DocSet<any> = creating
       ? setInitialState(this.feed, this.initialState) // ceating a new document, starting with default state
       : this.feed.length > 0
       ? await getStateFromStorage(this.feed) // rehydrating state from storage
       : setInitialState(this.feed, {}) // joining a peer's feed, starting with an empty doc
 
-    const docSet = docSetFromObject(state)
+    const state = docSetToObject(docSet)
 
     docSet.registerHandler((key, doc) => {
       log('change', key)
@@ -142,7 +142,7 @@ export class Cevitxe<T> extends EventEmitter {
   }
 }
 
-const getStateFromStorage = async <T>(feed: Feed<string>): Promise<Doc<T>> => {
+const getStateFromStorage = async (feed: Feed<string>): Promise<A.DocSet<any>> => {
   log('getting change sets from storage')
 
   // read full contents of the feed in one batch
@@ -159,19 +159,24 @@ const getStateFromStorage = async <T>(feed: Feed<string>): Promise<Doc<T>> => {
   })
 
   log('done rehydrating')
-  return state
+  return docSet
 }
 
 const setInitialState = <T>(feed: Feed<string>, initialState: T) => {
   log('nothing in storage; initializing %o', initialState)
 
-  const state = A.from(initialState)
-
-  // send initialization changes to the feed for persistence
-  const changeSet = A.getChanges(A.init(), state)
-  feed.append(JSON.stringify(changeSet))
-
-  return state
+  const docSet = docSetFromObject(initialState)
+  let changes = []
+  // @ts-ignore
+  for (let docId of docSet.docIds) {
+    const nextDoc = docSet.getDoc(docId)
+    changes.push({
+      docId,
+      changes: A.getChanges(A.init(), nextDoc),
+    })
+  }
+  feed.append(JSON.stringify(changes))
+  return docSet
 }
 
 const createStorageFeed = async (discoveryKey: string, databaseName: string) => {
