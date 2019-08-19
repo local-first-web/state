@@ -1,7 +1,7 @@
 import { adaptReducer } from './adaptReducer'
 import { ProxyReducer } from './types'
 import { docSetFromObject } from './docSetHelpers'
-import { DELETE_COLLECTION, DELETE_ITEM } from './constants'
+import { collection } from './collection'
 
 describe('adaptReducer', () => {
   describe('should return a working reducer', () => {
@@ -25,56 +25,51 @@ describe('adaptReducer', () => {
     const proxyReducer: ProxyReducer = (({ type, payload }) => {
       switch (type) {
         case 'ADD_TEACHER': {
-          return {
-            teachers: s => (s[payload.id] = true),
-            [payload.id]: s => (s = Object.assign(s, payload)),
-          }
+          return collection('teachers').addItem(payload)
         }
         case 'REMOVE_TEACHER': {
-          return {
-            teachers: s => delete s[payload.id],
-            [payload.id]: DELETE_ITEM,
-          }
+          return collection('teachers').removeItem(payload.id)
         }
         case 'UPDATE_TEACHER': {
-          return {
-            [payload.id]: s => (s = Object.assign(s, payload)),
-          }
+          return collection('teachers').updateItem(payload)
+        }
         }
         default:
           return null
       }
     }) as ProxyReducer
 
-    const state = { teachers: {} }
+    const teachersCollKey = '__col_teachers'
+    const state = { [teachersCollKey]: {} }
     const docSet = docSetFromObject(state)
     const reducer = adaptReducer(proxyReducer, docSet)
 
     const teacher1 = { id: 'abcxyz', first: 'Herb', last: 'Caudill' }
+    const teacher1Key = `${teachersCollKey}_${teacher1.id}`
     const action = { type: 'ADD_TEACHER', payload: teacher1 }
     const state1 = reducer(state, action)
     it('should not change the original state', () => {
-      expect(state).toEqual({ teachers: {} })
+      expect(state).toEqual({ [teachersCollKey]: {} })
     })
     it('should add an item', () => {
       expect(state1).toEqual({
-        abcxyz: { id: 'abcxyz', first: 'Herb', last: 'Caudill' },
-        teachers: { abcxyz: true },
+        [teacher1Key]: { id: 'abcxyz', first: 'Herb', last: 'Caudill' },
+        [teachersCollKey]: { [teacher1Key]: true },
       })
     })
     it('should update an item', () => {
       const action = { type: 'UPDATE_TEACHER', payload: { ...teacher1, first: 'Herbert' } }
       const newState = reducer(state, action)
       expect(newState).toEqual({
-        abcxyz: { id: 'abcxyz', first: 'Herbert', last: 'Caudill' },
-        teachers: { abcxyz: true },
+        [teacher1Key]: { id: 'abcxyz', first: 'Herbert', last: 'Caudill' },
+        [teachersCollKey]: { [teacher1Key]: true },
       })
     })
     it('should remove an item', () => {
       const action = { type: 'REMOVE_TEACHER', payload: teacher1 }
       const newState = reducer(state, action)
       expect(newState).toEqual({
-        teachers: {},
+        [teachersCollKey]: {},
       })
     })
   })
