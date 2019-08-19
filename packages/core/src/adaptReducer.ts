@@ -4,6 +4,8 @@ import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
 import { ReducerConverter } from './types'
 import { docSetToObject } from './docSetHelpers'
 
+import { DELETE } from './constants'
+
 const log = debug('cevitxe:adaptReducer')
 
 // This function is used when wiring up the store. It takes a proxyReducer and turns it
@@ -32,11 +34,19 @@ const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
   if (!functionMap || !state) return state // no matching function - return the unmodified state
   let docId: string
   for (docId in functionMap) {
-    const fn = functionMap[docId] as ChangeFn<any>
+    const fn = functionMap[docId] as ChangeFn<any> | typeof DELETE
+
+    // TODO
+    // is fn a function?
+    // then do this:
+
     // apply changes to the corresponding doc in the docset
     const oldDoc = docSet.getDoc(docId) || A.init() // create a new doc if one doesn't exist
     const newDoc = A.change(oldDoc, fn)
     docSet.setDoc(docId, newDoc)
+
+    // is fn the DELETE symbol?
+    // then delete
   }
   // return the new state of the docSet
   return docSetToObject(docSet)

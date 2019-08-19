@@ -32,15 +32,17 @@ import { Loading } from './Loading'
 const log = debug('cevitxe:grid')
 
 const Grid = () => {
-
-
   const dispatch = useDispatch()
 
-  const ready = useSelector((state: State) => !!state && !!state.index && !!state.schema)
+  const ready = useSelector((state: State) => {
+    const result = !!state && !!state.rowIndex && !!state.schema
+    console.log('ready', state)
+    return result
+  })
 
   const collection = useSelector((state: State) => {
     if (!ready) return []
-    return Object.keys(state.index).map((d: string) => state[d])
+    return Object.keys(state.rowIndex).map((d: string) => state[d])
   })
 
   const columns = useSelector((state: State) => {

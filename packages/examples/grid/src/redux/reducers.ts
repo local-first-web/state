@@ -1,13 +1,37 @@
-import * as actions from './actions'
-import { ProxyReducer, ChangeMap } from 'cevitxe'
-import { JSONSchema7 } from 'json-schema'
+import { ChangeMap, DELETE, ProxyReducer } from 'cevitxe'
 import { inferSchema } from 'inferSchema'
+import { JSONSchema7 } from 'json-schema'
+import * as actions from './actions'
+// const add = (id: string, item: any) => {}
 
-const add = (id: string, item: any) => {}
-const remove = (id: string) => {}
+// const remove = (id: string) => {}
+//     case actions.COLLECTION_LOAD:
+//       return s => {
+//         s.list = Object.keys(payload.collection)
+//         s.map = payload.collection
+//       }
+
+//     case actions.COLLECTION_CLEAR:
+//       return s => {
+//         s.list = []
+//         s.map = {}
+//       }
 
 export const proxyReducer: ProxyReducer = ({ type, payload, state }) => {
   switch (type) {
+    case actions.COLLECTION_LOAD: {
+      const newKeys = {} as any
+      const newRowIndex = {} as any
+      for (const key in payload.collection) {
+        newKeys[key] = (s: any) => Object.assign(s, payload.collection[key])
+        newRowIndex[key] = true
+      }
+      return {
+        ...newKeys,
+        rowIndex: s => Object.assign(s, newRowIndex),
+      }
+    }
+
     case actions.ITEM_ADD:
       return {
         rowIndex: s => (s[payload.id] = true),
@@ -16,7 +40,7 @@ export const proxyReducer: ProxyReducer = ({ type, payload, state }) => {
     case actions.ITEM_REMOVE:
       return {
         rowIndex: s => delete s[payload.id],
-        [payload.id]: s => undefined, // TODO: Figure out the right way to delete items
+        [payload.id]: DELETE,
       }
     case actions.ITEM_UPDATE:
       return {
@@ -24,11 +48,11 @@ export const proxyReducer: ProxyReducer = ({ type, payload, state }) => {
       }
     case actions.SCHEMA_LOAD:
       return {
-        schema: () => payload.schema,
+        schema: s => Object.assign(s, payload.schema),
       }
     case actions.SCHEMA_INFER:
       return {
-        schema: () => inferSchema(payload.sampleData),
+        schema: s => Object.assign(s, inferSchema(payload.sampleData)),
       }
     case actions.FIELD_ADD:
       return {

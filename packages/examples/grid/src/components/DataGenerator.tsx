@@ -71,6 +71,7 @@ export function DataGenerator() {
         <div css={menu(menuOpen)}>
           {[100, 1000, 10000, 100000].map(rows => (
             <button
+              key={rows}
               css={styles.menuItem}
               type="button"
               onClick={() => {
