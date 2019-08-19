@@ -9,4 +9,5 @@ export const MSG_INVALID_KEYS =
 
 export const DEFAULT_SIGNAL_SERVERS = ['ws://localhost:8080'] // default public signaling server
 
-export const DELETE = Symbol('delete')
+export const DELETE_COLLECTION = Symbol('DELETE_COLLECTION')
+export const DELETE_ITEM = Symbol('DELETE_ITEM')

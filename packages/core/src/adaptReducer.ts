@@ -4,7 +4,7 @@ import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
 import { ReducerConverter } from './types'
 import { docSetToObject } from './docSetHelpers'
 
-import { DELETE } from './constants'
+import { DELETE_COLLECTION, DELETE_ITEM } from './constants'
 
 const log = debug('cevitxe:adaptReducer')
 
@@ -35,7 +35,8 @@ const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
   let docId: string
   for (docId in functionMap) {
     const fn = functionMap[docId] as ChangeFn<any> | symbol
-    if (fn === DELETE) {
+    if (fn === DELETE_COLLECTION) {
+    } else if (fn === DELETE_ITEM) {
       docSet.removeDoc(docId)
     } else if (typeof fn === 'function') {
       // apply changes to the corresponding doc in the docset

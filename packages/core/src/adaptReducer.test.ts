@@ -1,7 +1,7 @@
 import { adaptReducer } from './adaptReducer'
 import { ProxyReducer } from './types'
 import { docSetFromObject } from './docSetHelpers'
-import { DELETE } from './constants'
+import { DELETE_COLLECTION, DELETE_ITEM } from './constants'
 
 describe('adaptReducer', () => {
   describe('should return a working reducer', () => {
@@ -33,7 +33,7 @@ describe('adaptReducer', () => {
         case 'REMOVE_TEACHER': {
           return {
             teachers: s => delete s[payload.id],
-            [payload.id]: DELETE,
+            [payload.id]: DELETE_ITEM,
           }
         }
         case 'UPDATE_TEACHER': {
