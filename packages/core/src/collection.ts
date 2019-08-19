@@ -27,5 +27,7 @@ export const deleteCollectionItems = (docSet: DocSet<any>, key: string) => {
   const collectionIndexDoc = docSet.getDoc(key)
   for (const docId in collectionIndexDoc) {
     docSet.removeDoc(docId)
+    delete collectionIndexDoc[docId]
   }
+  docSet.setDoc(key, collectionIndexDoc)
 }

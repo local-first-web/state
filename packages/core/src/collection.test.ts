@@ -1,5 +1,5 @@
-import { collection } from './collection'
-import { DELETE_COLLECTION, DELETE_ITEM } from './constants'
+import { collection, deleteCollectionItems } from './collection'
+import { docSetFromObject, docSetToObject } from './docSetHelpers'
 
 describe('collection', () => {
   const teachersKey = 'teachers'
@@ -16,4 +16,25 @@ describe('collection', () => {
   //       [`__col_${teachersKey}`]: (s: any) => Object.assign(s, {}),
   //     })
   //   })
+})
+
+describe('deleteCollectionItems', () => {
+  const docSet = docSetFromObject({
+    teachers: {
+      abc: true,
+      def: true,
+    },
+    abc: { id: 'abc' },
+    def: { id: 'def' },
+    schools: { xyz: true },
+    xyz: { id: 'xyz', type: 'school' },
+  })
+  it('should remove all items listed in key doc', () => {
+    deleteCollectionItems(docSet, 'teachers')
+    expect(docSetToObject(docSet)).toEqual({
+      schools: { xyz: true },
+      teachers: {},
+      xyz: { id: 'xyz', type: 'school' },
+    })
+  })
 })
