@@ -1,4 +1,5 @@
-import A, { Doc } from 'automerge'
+import A from 'automerge'
+import { DocSet } from './lib/automerge'
 import { Client, newid, Peer } from 'cevitxe-signal-client'
 import debug from 'debug'
 import { EventEmitter } from 'events'
@@ -59,7 +60,7 @@ export class Cevitxe<T> extends EventEmitter {
 
     this.feed = await createStorageFeed(discoveryKey, this.databaseName)
 
-    const docSet: A.DocSet<any> = creating
+    const docSet: DocSet<any> = creating
       ? setInitialState(this.feed, this.initialState) // ceating a new document, starting with default state
       : this.feed.length > 0
       ? await getStateFromStorage(this.feed) // rehydrating state from storage
@@ -142,7 +143,7 @@ export class Cevitxe<T> extends EventEmitter {
   }
 }
 
-const getStateFromStorage = async (feed: Feed<string>): Promise<A.DocSet<any>> => {
+const getStateFromStorage = async (feed: Feed<string>): Promise<DocSet<any>> => {
   log('getting change sets from storage')
 
   // read full contents of the feed in one batch
@@ -151,7 +152,7 @@ const getStateFromStorage = async (feed: Feed<string>): Promise<A.DocSet<any>> =
   const feedEntries = data.map(changes => JSON.parse(changes))
 
   log('rehydrating from stored change sets %o', feedEntries)
-  let docSet = new A.DocSet()
+  let docSet = new DocSet()
   feedEntries.forEach(entry => {
     entry.forEach((changeSet: any) => {
       docSet.applyChanges(changeSet.docId, changeSet.changes)

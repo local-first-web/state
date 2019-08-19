@@ -1,4 +1,5 @@
 import A from 'automerge'
+import { DocSet } from './lib/automerge'
 import debug from 'debug'
 import { MiddlewareFactory, ProxyReducer } from './types'
 
@@ -10,7 +11,7 @@ interface DocMap {
 
 export const getMiddleware: MiddlewareFactory = <T>(
   feed: Feed<string>,
-  docSet: A.DocSet<any>,
+  docSet: DocSet<any>,
   proxyReducer: ProxyReducer,
   discoveryKey?: string
 ) => {

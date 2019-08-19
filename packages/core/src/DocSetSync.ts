@@ -1,4 +1,5 @@
 ﻿import A from 'automerge'
+import { DocSet } from './lib/automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
 import { lessOrEqual } from './lib/lessOrEqual'
@@ -46,7 +47,7 @@ const log = debug('cevitxe:docsetsync')
  * > class; if you're familiar with that class, this one plays exactly the same role.
  */
 export class DocSetSync {
-  public docSet: A.DocSet<any>
+  public docSet: DocSet<any>
   private send: (msg: A.Message) => void
   private clock: Clocks
 
@@ -55,7 +56,7 @@ export class DocSetSync {
    * @param send Callback function, called when the local document changes. Should send the given
    * message to the remote peer.
    */
-  constructor(docSet: A.DocSet<any>, send: (msg: A.Message) => void) {
+  constructor(docSet: DocSet<any>, send: (msg: A.Message) => void) {
     this.docSet = docSet
     this.send = send
     this.clock = { ours: Map(), theirs: Map() }
@@ -93,7 +94,7 @@ export class DocSetSync {
     else if (weHaveDoc) this.maybeSendChanges(docId)
     // If no changes and we don't have the document, treat it as an advertisement and request it
     else this.advertise(docId)
- 
+
     // Return the current state of the document
     return this.docSet.getDoc(docId)
   }

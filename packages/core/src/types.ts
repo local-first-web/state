@@ -1,11 +1,12 @@
 import { Map } from 'immutable'
 import A from 'automerge'
+import { DocSet } from './lib/automerge'
 import { AnyAction, Middleware, Reducer, Store } from 'redux'
 import { DocSetSync } from './DocSetSync'
 
 // DEPRECATED
 export type ProxyReducer = (action: AnyAction) => ChangeMap | null
-export type ReducerConverter = (proxyReducer: ProxyReducer, docSet: A.DocSet<any>) => Reducer
+export type ReducerConverter = (proxyReducer: ProxyReducer, docSet: DocSet<any>) => Reducer
 
 export interface ChangeMap {
   [docId: string]: A.ChangeFn<any>
@@ -30,7 +31,7 @@ export interface CreateStoreResult {
 // TODO: sort out the type for feed after building, can't get it to pick up the Feed type from the ambient hypercore types
 export type MiddlewareFactory = <T>(
   feed: any,
-  docSet: A.DocSet<any>,
+  docSet: DocSet<any>,
   proxyReducer: ProxyReducer,
   discoveryKey?: string
 ) => Middleware // feed: Feed<string>
