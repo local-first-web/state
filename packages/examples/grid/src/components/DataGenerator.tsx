@@ -7,48 +7,46 @@ import { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { clearCollection, loadCollection, loadSchema } from 'src/redux/actions'
 import uuid from 'uuid'
+import { JSONSchema7 } from 'json-schema'
 
 const log = debug('cevitxe:grid:datagenerator')
 
 export function DataGenerator() {
   const dispatch = useDispatch()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [generationProgress, setGenerationProgress] = useState(0)
+  const [progress, setProgress] = useState(0)
 
   const toggleMenu = () => setTimeout(() => setMenuOpen(!menuOpen))
   const hideMenu = () => setTimeout(() => setMenuOpen(false), 500)
+  const schema = {
+    type: 'object',
+    properties: {
+      name: {},
+      email: { format: 'email' },
+      age: { type: 'number' },
+      street: {},
+      city: {},
+      state: {},
+      zip: {},
+      gender: {},
+      latitude: {},
+      longitude: {},
+      paragraph: {},
+    },
+  } as JSONSchema7
 
-  const generate = (rows: number) => {
-    setGenerationProgress(0)
+  const generate = async (rows: number) => {
+    setProgress(0)
     dispatch(clearCollection())
-    dispatch(
-      loadSchema({
-        type: 'object',
-        properties: {
-          name: {},
-          email: { format: 'email' },
-          age: { type: 'number' },
-          street: {},
-          city: {},
-          state: {},
-          zip: {},
-          gender: {},
-          latitude: {},
-          longitude: {},
-          paragraph: {},
-        },
-      })
-    )
+    dispatch(loadSchema(schema))
     const collection = {} as any
     log('generate: starting', rows)
     let i = 0
     const nextIteration = () => {
       if (i === rows) {
         log('generate: done', rows)
-        log('generate: dispatching')
         dispatch(loadCollection(collection))
-        log('generate: dispatched')
-        setGenerationProgress(0)
+        setProgress(0)
         return
       }
       const item = {
@@ -66,7 +64,7 @@ export function DataGenerator() {
         paragraph: faker.lorem.paragraph(),
       }
       collection[item.id] = item
-      setGenerationProgress(Math.ceil((i / rows) * 100))
+      setProgress(Math.ceil((i / rows) * 100))
       i++
       setTimeout(nextIteration, 0)
     }
@@ -82,7 +80,7 @@ export function DataGenerator() {
           onFocus={toggleMenu}
           onBlur={hideMenu}
           css={styles.button}
-          disabled={generationProgress > 0}
+          disabled={progress > 0}
         >
           Generate data
         </button>
@@ -102,7 +100,7 @@ export function DataGenerator() {
           ))}
         </div>
       </div>
-      {generationProgress > 0 && <label>{`Generating... ${generationProgress}%`}</label>}
+      {progress > 0 && <label>{`Generating... ${progress}%`}</label>}
     </div>
   )
 }
