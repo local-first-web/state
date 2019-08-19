@@ -71,88 +71,81 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
 
   return (
     <div css={styles.toolbar}>
-      {appStore && (
-        <Formik initialValues={{ documentId }} onSubmit={() => load(documentId)}>
-          {({ values }) => {
-            const newClick = async () => {
-              const newDocumentId = await createStore()
-              setTimeout(() => load(newDocumentId), 200)
+      <Formik initialValues={{ documentId }} onSubmit={() => load(documentId)}>
+        {({ values }) => {
+          const newClick = async () => {
+            const newDocumentId = await createStore()
+            setTimeout(() => load(newDocumentId), 200)
+          }
+
+          const inputFocus = (e: Event) => {
+            if (e && e.target) {
+              const input = e.target as HTMLInputElement
+              input.select()
             }
+            setInputHasFocus(true)
+          }
 
-            const inputFocus = (e: Event) => {
-              if (e && e.target) {
-                const input = e.target as HTMLInputElement
-                input.select()
-              }
-              setInputHasFocus(true)
-            }
+          // when the input loses focus, we need to wait a moment before hiding the menu
+          // in case the blur was caused by clicking on a menu item
+          const inputBlur = (e: Event) => setTimeout(() => setInputHasFocus(false), 100)
 
-            // when the input loses focus, we need to wait a moment before hiding the menu
-            // in case the blur was caused by clicking on a menu item
-            const inputBlur = (e: Event) => setTimeout(() => setInputHasFocus(false), 100)
-
-            const keyDown = (event: KeyboardEvent) => {
-              if (event) {
-                switch (event.which) {
-                  case codes['enter']:
-                  case codes['tab']:
-                    load(values.documentId)
-                }
+          const keyDown = (event: KeyboardEvent) => {
+            if (event) {
+              switch (event.which) {
+                case codes['enter']:
+                case codes['tab']:
+                  load(values.documentId)
               }
             }
-            return (
-              <React.Fragment>
-                <div css={styles.toolbarGroup}>
-                  <div css={styles.menuWrapper}>
-                    <Field
-                      type="text"
-                      name="documentId"
-                      css={styles.input}
-                      onFocus={inputFocus}
-                      onBlur={inputBlur}
-                      onKeyDown={keyDown}
-                    />
-                    <div css={menu(inputHasFocus)}>
-                      {cevitxe.knownDocumentIds.map(documentId => (
-                        <a
-                          key={documentId}
-                          role="button"
-                          type="button"
-                          href={url(documentId)}
-                          css={styles.menuItem}
-                        >
-                          {documentId}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <a
-                      role="button"
-                      type="button"
-                      href={url(values.documentId)}
-                      css={styles.button}
-                    >
-                      Join
-                    </a>
+          }
+          return (
+            <React.Fragment>
+              <div css={styles.toolbarGroup}>
+                <div css={styles.menuWrapper}>
+                  <Field
+                    type="text"
+                    name="documentId"
+                    css={styles.input}
+                    onFocus={inputFocus}
+                    onBlur={inputBlur}
+                    onKeyDown={keyDown}
+                  />
+                  <div css={menu(inputHasFocus)}>
+                    {cevitxe.knownDocumentIds.map(documentId => (
+                      <a
+                        key={documentId}
+                        role="button"
+                        type="button"
+                        href={url(documentId)}
+                        css={styles.menuItem}
+                      >
+                        {documentId}
+                      </a>
+                    ))}
                   </div>
                 </div>
-                <div css={styles.toolbarGroup}>
-                  <button role="button" type="button" onClick={newClick} css={styles.button}>
-                    New
-                  </button>
+                <div>
+                  <a role="button" type="button" href={url(values.documentId)} css={styles.button}>
+                    Join
+                  </a>
                 </div>
-                <div css={styles.toolbarGroup}>
-                  <label>{busy ? 'busy' : 'idle'}</label>
-                </div>
-                <div css={styles.toolbarGroup}>
-                  <label>{cevitxe.connectionCount}</label>
-                </div>
-              </React.Fragment>
-            )
-          }}
-        </Formik>
-      )}
+              </div>
+              <div css={styles.toolbarGroup}>
+                <button role="button" type="button" onClick={newClick} css={styles.button}>
+                  New
+                </button>
+              </div>
+              <div css={styles.toolbarGroup}>
+                <label>{busy ? 'busy' : 'idle'}</label>
+              </div>
+              <div css={styles.toolbarGroup}>
+                <label>{cevitxe.connectionCount}</label>
+              </div>
+            </React.Fragment>
+          )
+        }}
+      </Formik>
     </div>
   )
 }

@@ -9,6 +9,7 @@ import { Provider } from 'react-redux'
 import Redux from 'redux'
 import { cevitxe } from 'src/redux/store'
 import { App } from './App'
+import { Loading } from './Loading'
 
 const log = debug('cevitxe:grid:shell')
 
@@ -16,14 +17,16 @@ export const Shell = () => {
   const [appStore, setAppStore] = useState<Redux.Store>()
 
   const onStoreReady = (store: Redux.Store) => {
-    log('store ready', cevitxe.documentId, store.getState()._testId)
+    log('store ready', cevitxe.documentId)
     setAppStore(store)
   }
 
   return (
     <div css={styles.shell}>
       <Toolbar cevitxe={cevitxe} onStoreReady={onStoreReady} />
-      {appStore && (
+      {appStore === undefined ? (
+        <Loading />
+      ) : (
         <Provider store={appStore}>
           <DialogProvider>
             <App />
