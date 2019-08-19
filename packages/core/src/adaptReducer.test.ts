@@ -1,6 +1,7 @@
 import { adaptReducer } from './adaptReducer'
 import { ProxyReducer } from './types'
 import { docSetFromObject } from './docSetHelpers'
+import { DELETE } from './constants'
 
 describe('adaptReducer', () => {
   describe('should return a working reducer', () => {
@@ -32,7 +33,7 @@ describe('adaptReducer', () => {
         case 'REMOVE_TEACHER': {
           return {
             teachers: s => delete s[payload.id],
-            [payload.id]: s => undefined, // TODO: need to signal to a higher level that this should be deleted
+            [payload.id]: DELETE,
           }
         }
         case 'UPDATE_TEACHER': {
@@ -59,6 +60,13 @@ describe('adaptReducer', () => {
       expect(state1).toEqual({
         abcxyz: { id: 'abcxyz', first: 'Herb', last: 'Caudill' },
         teachers: { abcxyz: true },
+      })
+    })
+    it('should remove an item', () => {
+      const action = { type: 'REMOVE_TEACHER', payload: teacher1 }
+      const newState = reducer(state, action)
+      expect(newState).toEqual({
+        teachers: {},
       })
     })
   })

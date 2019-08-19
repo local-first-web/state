@@ -34,19 +34,15 @@ const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
   if (!functionMap || !state) return state // no matching function - return the unmodified state
   let docId: string
   for (docId in functionMap) {
-    const fn = functionMap[docId] as ChangeFn<any> | typeof DELETE
-
-    // TODO
-    // is fn a function?
-    // then do this:
-
-    // apply changes to the corresponding doc in the docset
-    const oldDoc = docSet.getDoc(docId) || A.init() // create a new doc if one doesn't exist
-    const newDoc = A.change(oldDoc, fn)
-    docSet.setDoc(docId, newDoc)
-
-    // is fn the DELETE symbol?
-    // then delete
+    const fn = functionMap[docId] as ChangeFn<any> | symbol
+    if (fn === DELETE) {
+      docSet.removeDoc(docId)
+    } else if (typeof fn === 'function') {
+      // apply changes to the corresponding doc in the docset
+      const oldDoc = docSet.getDoc(docId) || A.init() // create a new doc if one doesn't exist
+      const newDoc = A.change(oldDoc, fn as ChangeFn<any>)
+      docSet.setDoc(docId, newDoc)
+    }
   }
   // return the new state of the docSet
   return docSetToObject(docSet)
