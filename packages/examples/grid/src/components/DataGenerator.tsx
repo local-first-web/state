@@ -9,6 +9,8 @@ import { clearCollection, loadCollection, loadSchema } from 'src/redux/actions'
 import uuid from 'uuid'
 import { JSONSchema7 } from 'json-schema'
 
+const pause = (t: number) => new Promise(ok => setTimeout(ok, t))
+
 const log = debug('cevitxe:grid:datagenerator')
 
 export function DataGenerator() {
@@ -41,14 +43,8 @@ export function DataGenerator() {
     dispatch(loadSchema(schema))
     const collection = {} as any
     log('generate: starting', rows)
-    let i = 0
-    const nextIteration = () => {
-      if (i === rows) {
-        log('generate: done', rows)
-        dispatch(loadCollection(collection))
-        setProgress(0)
-        return
-      }
+
+    for (let i = 0; i < rows; i++) {
       const item = {
         id: uuid(),
         name: faker.name.findName(),
@@ -64,11 +60,14 @@ export function DataGenerator() {
         paragraph: faker.lorem.paragraph(),
       }
       collection[item.id] = item
-      setProgress(Math.ceil((i / rows) * 100))
-      i++
-      setTimeout(nextIteration, 0)
+      const p = Math.ceil((i / rows) * 100)
+      await pause(0)
+      setProgress(p)
     }
-    nextIteration()
+    log('generate: done', rows)
+    dispatch(loadCollection(collection))
+    await pause(0)
+    setProgress(0)
   }
 
   return (
@@ -82,7 +81,7 @@ export function DataGenerator() {
           css={styles.button}
           disabled={progress > 0}
         >
-          Generate data
+          {progress ? 'Generating...' : 'Generate data'}
         </button>
         <div css={menu(menuOpen)}>
           {[100, 1000, 10000, 100000].map(rows => (
@@ -91,6 +90,7 @@ export function DataGenerator() {
               css={styles.menuItem}
               role="button"
               type="button"
+              disabled={progress > 0}
               onClick={() => {
                 generate(rows)
               }}
@@ -100,7 +100,7 @@ export function DataGenerator() {
           ))}
         </div>
       </div>
-      {progress > 0 && <label>{`Generating... ${progress}%`}</label>}
+      {progress > 0 && <label>{`${progress}%`}</label>}
     </div>
   )
 }
