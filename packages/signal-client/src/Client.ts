@@ -6,6 +6,9 @@ import { Message } from 'cevitxe-signal-server'
 import { ClientOptions } from './types'
 import { newid } from './newid'
 
+const initialRetryDelay = 5000
+const backoffCoeff = 1.5
+
 /**
  * This is a client for `cevitxe-signal-server` that makes it easier to interact with it.
  *
@@ -40,6 +43,7 @@ export class Client extends EventEmitter {
   keys: Set<string> = new Set()
   peers: Map<string, Peer> = new Map()
   serverConnection: WebSocket
+  retryDelay: number
 
   log: Debugger
 
@@ -53,6 +57,7 @@ export class Client extends EventEmitter {
 
     this.id = id
     this.url = url
+    this.retryDelay = initialRetryDelay
     this.serverConnection = this.connectToServer() // this is a WebSocket
   }
 
@@ -64,6 +69,9 @@ export class Client extends EventEmitter {
     this.serverConnection = new WebSocket(url)
 
     const onopen = () => {
+      // successful connection - reset retry delay
+      this.retryDelay = initialRetryDelay
+
       this.sendToServer({
         type: 'Hello',
         id: this.id,
@@ -72,8 +80,11 @@ export class Client extends EventEmitter {
     }
 
     const onclose = () => {
-      this.log('signal server connection closed... reconnecting in 5s')
-      setTimeout(this.connectToServer.bind(this), 5000)
+      this.retryDelay *= backoffCoeff
+      this.log(
+        `signal server connection closed... reconnecting in ${Math.floor(this.retryDelay / 1000)}s`
+      )
+      setTimeout(() => this.connectToServer(), this.retryDelay)
     }
 
     const onmessage = ({ data }: { data: string }) => {
