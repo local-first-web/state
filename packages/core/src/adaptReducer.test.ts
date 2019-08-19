@@ -62,6 +62,14 @@ describe('adaptReducer', () => {
         teachers: { abcxyz: true },
       })
     })
+    it('should update an item', () => {
+      const action = { type: 'UPDATE_TEACHER', payload: { ...teacher1, first: 'Herbert' } }
+      const newState = reducer(state, action)
+      expect(newState).toEqual({
+        abcxyz: { id: 'abcxyz', first: 'Herbert', last: 'Caudill' },
+        teachers: { abcxyz: true },
+      })
+    })
     it('should remove an item', () => {
       const action = { type: 'REMOVE_TEACHER', payload: teacher1 }
       const newState = reducer(state, action)
