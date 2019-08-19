@@ -24,8 +24,9 @@ export const Shell = () => {
   return (
     <div css={styles.shell}>
       <Toolbar cevitxe={cevitxe} onStoreReady={onStoreReady} />
-      {!appStore && <Loading />}
-      {appStore && (
+      {appStore === undefined ? (
+        <Loading />
+      ) : (
         <Provider store={appStore}>
           <DialogProvider>
             <App />
