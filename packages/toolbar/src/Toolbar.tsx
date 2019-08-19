@@ -113,7 +113,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
                       onKeyDown={keyDown}
                     />
                     <div css={menu(inputHasFocus)}>
-                      {cevitxe.knowndiscoveryKeys.map(discoveryKey => (
+                      {cevitxe.knownDiscoveryKeys.map(discoveryKey => (
                         <a
                           key={discoveryKey}
                           role="button"
