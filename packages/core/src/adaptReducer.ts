@@ -3,6 +3,7 @@ import debug from 'debug'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
 import { ReducerConverter } from './types'
 import { docSetToObject } from './docSetHelpers'
+import { deleteCollectionItems } from './collection'
 
 import { DELETE_COLLECTION, DELETE_ITEM } from './constants'
 
@@ -36,6 +37,9 @@ const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
   for (docId in functionMap) {
     const fn = functionMap[docId] as ChangeFn<any> | symbol
     if (fn === DELETE_COLLECTION) {
+      deleteCollectionItems(docSet, docId)
+      // remove collection index
+      docSet.removeDoc(docId)
     } else if (fn === DELETE_ITEM) {
       docSet.removeDoc(docId)
     } else if (typeof fn === 'function') {
