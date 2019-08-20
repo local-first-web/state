@@ -44,6 +44,11 @@ export function collection(name: string, { idField = 'id' }: CollectionOptions =
     getAll: (reduxState: any) => {
       return Object.keys(reduxState[collectionKey]).map((d: string) => reduxState[d])
     },
+
+    count: (reduxState: any) => {
+      if (reduxState === undefined || reduxState[collectionKey] === undefined) return 0
+      return Object.keys(reduxState[collectionKey]).length
+    },
   }
 }
 

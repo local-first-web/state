@@ -4,6 +4,7 @@ import { styles } from 'cevitxe-toolbar'
 import { DataGenerator } from './DataGenerator'
 import { useSelector } from 'react-redux'
 import { rowCollectionKey } from '../redux/store'
+import { collection } from 'cevitxe'
 
 export const Toolbar = () => (
   <div css={styles.toolbar}>
@@ -15,9 +16,8 @@ export const Toolbar = () => (
 )
 
 const Rows = () => {
-    if (state === undefined || state.list === undefined) return 0
-    return state.list.length
   const rows = useSelector((state: any) => {
+    return collection('rows').count(state)
   })
   return (
     <div css={styles.toolbarGroup}>
