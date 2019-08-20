@@ -155,7 +155,11 @@ const getStateFromStorage = async (feed: Feed<string>): Promise<DocSet<any>> => 
   let docSet = new DocSet()
   feedEntries.forEach(entry => {
     entry.forEach((changeSet: any) => {
-      docSet.applyChanges(changeSet.docId, changeSet.changes)
+      if (changeSet.isDelete) {
+        docSet.removeDoc(changeSet.docId)
+      } else {
+        docSet.applyChanges(changeSet.docId, changeSet.changes)
+      }
     })
   })
 
