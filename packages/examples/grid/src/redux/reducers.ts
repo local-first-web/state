@@ -1,24 +1,19 @@
-import { ChangeMap, DELETE, ProxyReducer } from 'cevitxe'
-import { inferSchema } from 'inferSchema'
-import { JSONSchema7 } from 'json-schema'
-import * as actions from './actions'
-// const add = (id: string, item: any) => {}
-
-// const remove = (id: string) => {}
-//     case actions.COLLECTION_LOAD:
-//       return s => {
-//         s.list = Object.keys(payload.collection)
-//         s.map = payload.collection
-//       }
-
-//     case actions.COLLECTION_CLEAR:
-//       return s => {
-//         s.list = []
-//         s.map = {}
-//       }
+import { ChangeMap, collection, ProxyReducer } from 'cevitxe';
+import { inferSchema } from 'inferSchema';
+import { JSONSchema7 } from 'json-schema';
+import * as actions from './actions';
 
 export const proxyReducer: ProxyReducer = ({ type, payload, state }) => {
   switch (type) {
+    case actions.ITEM_ADD:
+      return collection('rows').add(payload)
+
+    case actions.ITEM_UPDATE:
+      return collection('rows').update(payload)
+
+    case actions.ITEM_REMOVE:
+      return collection('rows').remove(payload)
+
     case actions.COLLECTION_LOAD: {
       const newKeys = {} as any
       const newRowIndex = {} as any
@@ -32,20 +27,6 @@ export const proxyReducer: ProxyReducer = ({ type, payload, state }) => {
       }
     }
 
-    case actions.ITEM_ADD:
-      return {
-        rowIndex: s => (s[payload.id] = true),
-        [payload.id]: s => Object.assign(s, payload),
-      }
-    case actions.ITEM_REMOVE:
-      return {
-        rowIndex: s => delete s[payload.id],
-        [payload.id]: DELETE,
-      }
-    case actions.ITEM_UPDATE:
-      return {
-        [payload.id]: s => (s[payload.field] = payload.value),
-      }
     case actions.SCHEMA_LOAD:
       return {
         schema: s => Object.assign(s, payload.schema),
