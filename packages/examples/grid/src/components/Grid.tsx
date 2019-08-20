@@ -27,6 +27,7 @@ import {
   updateItem,
 } from '../redux/actions'
 import { Loading } from './Loading'
+import { collection } from 'cevitxe'
 import { rowCollectionKey, rowCollectionName } from '../redux/store'
 
 const log = debug('cevitxe:grid')
@@ -42,7 +43,7 @@ const Grid = () => {
 
   const rowCollection = useSelector((state: any) => {
     if (!ready) return []
-    return Object.keys(state.rowIndex).map((d: string) => state[d])
+    return collection(rowCollectionName).getAll(state)
   })
 
   const columns = useSelector((state: any) => {

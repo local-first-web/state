@@ -39,6 +39,11 @@ export function collection(name: string, { idField = 'id' }: CollectionOptions =
       [collectionKey]: (s: any) => delete s[item[idField]],
       [item[idField]]: DELETE_ITEM,
     }),
+
+    // Gets all items for the collection when given the redux state (an object representation of the DocSet)
+    getAll: (reduxState: any) => {
+      return Object.keys(reduxState[collectionKey]).map((d: string) => reduxState[d])
+    },
   }
 }
 
