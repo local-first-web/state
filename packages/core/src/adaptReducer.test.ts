@@ -29,11 +29,9 @@ describe('adaptReducer', () => {
         case 'UPDATE_TEACHER': {
           return collection('teachers').update(payload)
         }
-        case 'CREATE_COLLECTION': {
-          // return collection(payload.id).add()
+        case 'CLEAR_TEACHERS': {
+          return collection('teachers').drop()
         }
-        case 'REMOVE_COLLECTION': {
-          // return collection(payload.id).remove()
         }
         default:
           return null
@@ -87,20 +85,11 @@ describe('adaptReducer', () => {
       expect(newState).toEqual(emptyState)
     })
 
-    it.skip('should allow adding and removing collections', () => {
+    it('should allow dropping a collection', () => {
       const { state, reducer } = setup()
-      const newCollectionKey = 'students'
-      const addAction = { type: 'CREATE_COLLECTION', payload: { id: newCollectionKey } }
-      const addedState = reducer(state, addAction)
-      expect(addedState).toEqual({
-        [studentsCollection]: {},
-        [teachersCollection]: {},
-      })
-      const removeAction = { type: 'REMOVE_COLLECTION', payload: { id: newCollectionKey } }
-      const removedState = reducer(addedState, removeAction)
-      expect(removedState).toEqual({
-        [teachersCollection]: {},
-      })
+      const removeAction = { type: 'CLEAR_TEACHERS' }
+      const removedState = reducer(state, removeAction)
+      expect(removedState).toEqual({})
     })
   })
 })
