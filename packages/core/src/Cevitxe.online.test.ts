@@ -12,18 +12,18 @@ require('fake-indexeddb/auto')
 const log = debug('cevitxe:test')
 
 describe('Cevitxe (online)', () => {
-  interface FooState {
-    settings: {
-      foo?: number
-    }
-  }
-
-  const initialLocalState: FooState = { settings: { foo: 1 } }
-  const initialRemoteState = {}
-
   const newDiscoveryKey = () => newid(6)
 
   describe('single document', () => {
+    interface FooState {
+      settings: {
+        foo?: number
+      }
+    }
+
+    const initialLocalState: FooState = { settings: { foo: 1 } }
+    const initialRemoteState = {}
+
     const proxyReducer: ProxyReducer = ({ type, payload }) => {
       switch (type) {
         case 'SET_FOO':
