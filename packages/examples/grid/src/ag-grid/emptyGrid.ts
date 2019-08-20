@@ -1,10 +1,8 @@
 import { JSONSchema7 } from 'json-schema'
 import { range } from 'ramda'
+import { rowCollectionKey } from '../redux/store'
 
 export const emptyGrid = (rowCount: number, colCount: number = rowCount) => {
-  // copy/pasted from core/collection.ts
-  const collectionKey = (name: string) => `::${name}`
-
   const rows = range(0, rowCount).map(i => `row_${i + 1}`)
   const cols = range(0, colCount).map(i => `col_${i + 1}`)
 
@@ -23,7 +21,7 @@ export const emptyGrid = (rowCount: number, colCount: number = rowCount) => {
 
   return {
     ...rows.reduce(rowReducer, {}),
-    [collectionKey('rows')]: rows.reduce(rowIndexReducer, {}),
+    [rowCollectionKey]: rows.reduce(rowIndexReducer, {}),
     schema: { properties: cols.reduce(columnReducer, {}) },
   }
 }

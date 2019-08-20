@@ -2,17 +2,17 @@ import { ChangeMap, collection, ProxyReducer } from 'cevitxe';
 import { inferSchema } from 'inferSchema';
 import { JSONSchema7 } from 'json-schema';
 import * as actions from './actions';
+import { rowCollectionName } from './store'
 
 export const proxyReducer: ProxyReducer = ({ type, payload, state }) => {
   switch (type) {
     case actions.ITEM_ADD:
-      return collection('rows').add(payload)
+      return collection(rowCollectionName).add(payload)
 
     case actions.ITEM_UPDATE:
-      return collection('rows').update(payload)
+      return collection(rowCollectionName).update(payload)
 
     case actions.ITEM_REMOVE:
-      return collection('rows').remove(payload)
 
     case actions.COLLECTION_LOAD: {
       const newKeys = {} as any
@@ -26,6 +26,7 @@ export const proxyReducer: ProxyReducer = ({ type, payload, state }) => {
         rowIndex: s => Object.assign(s, newRowIndex),
       }
     }
+      return collection(rowCollectionName).remove(payload)
 
     case actions.SCHEMA_LOAD:
       return {

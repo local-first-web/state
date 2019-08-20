@@ -3,6 +3,7 @@ import { jsx } from '@emotion/core'
 import { styles } from 'cevitxe-toolbar'
 import { DataGenerator } from './DataGenerator'
 import { useSelector } from 'react-redux'
+import { rowCollectionKey } from '../redux/store'
 
 export const Toolbar = () => (
   <div css={styles.toolbar}>
@@ -25,8 +26,8 @@ const Rows = () => {
   )
 }
 const Loading = () => {
-    if (state === undefined || state.list === undefined) return true
   const loading = useSelector((state: any) => {
+    if (state === undefined || state[rowCollectionKey] === undefined) return true
     else return false
   })
   return loading ? (

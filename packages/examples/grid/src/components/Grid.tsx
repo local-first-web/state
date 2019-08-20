@@ -27,14 +27,15 @@ import {
   updateItem,
 } from '../redux/actions'
 import { Loading } from './Loading'
+import { rowCollectionKey, rowCollectionName } from '../redux/store'
 
 const log = debug('cevitxe:grid')
 
 const Grid = () => {
   const dispatch = useDispatch()
 
-    const result = !!state && !!state.rowIndex && !!state.schema
   const ready = useSelector((state: any) => {
+    const result = !!state && !!state[rowCollectionKey] && !!state.schema
     console.log('ready', state)
     return result
   })
@@ -61,7 +62,7 @@ const Grid = () => {
       switch ((event.event as KeyboardEvent).key) {
         case 'ArrowDown':
         case 'Enter':
-          if (event.rowIndex === collection.length - 1) {
+          if (event.rowIndex === rowCollection.length - 1) {
             const action = addItem()
             setNextRowId(action.payload.id)
             dispatch(action)
@@ -181,7 +182,7 @@ const Grid = () => {
               valueSetter,
               valueParser,
             }}
-            rowData={collection}
+            rowData={rowCollection}
             deltaRowDataMode={true}
             getRowNodeId={item => item.id}
             onCellKeyDown={handleKeyDown}

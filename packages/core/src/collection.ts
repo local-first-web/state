@@ -20,6 +20,8 @@ export function collection(name: string, { idField = 'id' }: CollectionOptions =
   const collectionKey = `::${name}`
 
   return {
+    keyName: collectionKey,
+
     drop: () => {
       return { [collectionKey]: DELETE_COLLECTION }
     },
