@@ -1,5 +1,4 @@
 import { JSONSchema7 } from 'json-schema'
-import { State } from '../redux/store'
 import { range } from 'ramda'
 
 export const emptyGrid = (rowCount: number, colCount: number = rowCount) => {
@@ -13,7 +12,7 @@ export const emptyGrid = (rowCount: number, colCount: number = rowCount) => {
     ...rowMap,
     [id]: { id },
   })
-  const rowIndexReducer = (rowIndex: State['index'], id: string) => ({
+  const rowIndexReducer = (rowIndex: any, id: string) => ({
     ...rowIndex,
     [id]: true,
   })

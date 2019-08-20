@@ -26,7 +26,6 @@ import {
   setFieldType,
   updateItem,
 } from '../redux/actions'
-import { State } from '../redux/store'
 import { Loading } from './Loading'
 
 const log = debug('cevitxe:grid')
@@ -34,18 +33,18 @@ const log = debug('cevitxe:grid')
 const Grid = () => {
   const dispatch = useDispatch()
 
-  const ready = useSelector((state: State) => {
     const result = !!state && !!state.rowIndex && !!state.schema
+  const ready = useSelector((state: any) => {
     console.log('ready', state)
     return result
   })
 
-  const collection = useSelector((state: State) => {
+  const rowCollection = useSelector((state: any) => {
     if (!ready) return []
     return Object.keys(state.rowIndex).map((d: string) => state[d])
   })
 
-  const columns = useSelector((state: State) => {
+  const columns = useSelector((state: any) => {
     if (!ready) return []
     return Object.entries(state.schema.properties || {}).map(entry =>
       colDefFromSchemaProperty(entry[0], entry[1])

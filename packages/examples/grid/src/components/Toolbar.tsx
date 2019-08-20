@@ -3,7 +3,6 @@ import { jsx } from '@emotion/core'
 import { styles } from 'cevitxe-toolbar'
 import { DataGenerator } from './DataGenerator'
 import { useSelector } from 'react-redux'
-import { State } from 'redux/store'
 
 export const Toolbar = () => (
   <div css={styles.toolbar}>
@@ -15,9 +14,9 @@ export const Toolbar = () => (
 )
 
 const Rows = () => {
-  const rows = useSelector((state: State) => {
     if (state === undefined || state.list === undefined) return 0
     return state.list.length
+  const rows = useSelector((state: any) => {
   })
   return (
     <div css={styles.toolbarGroup}>
@@ -26,8 +25,8 @@ const Rows = () => {
   )
 }
 const Loading = () => {
-  const loading = useSelector((state: State) => {
     if (state === undefined || state.list === undefined) return true
+  const loading = useSelector((state: any) => {
     else return false
   })
   return loading ? (
