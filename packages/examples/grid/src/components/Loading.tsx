@@ -8,7 +8,7 @@ export const Loading = () => {
     <div css={styles.loading}>
       <span css={styles.label}>Loading...</span>
       <span css={styles.spinner}>
-        <Spinner name="ball-clip-rotate" color="teal" />
+        <Spinner name="ball-clip-rotate" color="orange" />
       </span>
     </div>
   )
@@ -21,7 +21,6 @@ const styles = {
     top: 0,
     right: 0,
     bottom: 0,
-    background: 'rgba(150,150,150,.5)',
     textAlign: 'center',
     paddingTop: '30%',
   }),

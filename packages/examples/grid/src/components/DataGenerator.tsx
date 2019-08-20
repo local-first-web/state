@@ -3,11 +3,12 @@ import { jsx } from '@emotion/core'
 import { menu, styles } from 'cevitxe-toolbar'
 import { debug } from 'debug'
 import faker from 'faker'
-import { useState } from 'react'
+import { JSONSchema7 } from 'json-schema'
+import { Fragment, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { clearCollection, loadCollection, loadSchema } from 'src/redux/actions'
 import uuid from 'uuid'
-import { JSONSchema7 } from 'json-schema'
+import { ProgressBar } from './ProgressBar'
 
 const pause = (t: number = 0) => new Promise(ok => setTimeout(ok, t))
 
@@ -60,14 +61,17 @@ export function DataGenerator() {
         paragraph: faker.lorem.paragraph(),
       }
       collection[item.id] = item
-      const p = Math.ceil((i / rows) * 100)
-      await pause()
-      setProgress(p)
+
+      // only update progress on increases of 1%
+      if (i % (rows / 100) === 0) {
+        setProgress(Math.ceil((i / rows) * 100))
+        await pause()
+      }
     }
     log('generate: done', rows)
-    dispatch(loadCollection(collection))
-    await pause()
     setProgress(0)
+    await pause()
+    dispatch(loadCollection(collection))
   }
 
   return (
@@ -88,7 +92,6 @@ export function DataGenerator() {
             <button
               key={rows}
               css={styles.menuItem}
-              role="button"
               type="button"
               disabled={progress > 0}
               onClick={() => {
@@ -100,7 +103,12 @@ export function DataGenerator() {
           ))}
         </div>
       </div>
-      {progress > 0 && <label>{`${progress}%`}</label>}
+      {progress > 0 && (
+        <Fragment>
+          <ProgressBar percentComplete={progress} />
+          <label>{`${progress}%`}</label>
+        </Fragment>
+      )}
     </div>
   )
 }
