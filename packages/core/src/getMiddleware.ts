@@ -31,13 +31,12 @@ export const getMiddleware: MiddlewareFactory = <T>(
     // after changes
     log('%o', { discoveryKey, action })
 
+    // collect document changes for persistence
+    let changeSets = []
     if (action.type === RECEIVE_MESSAGE_FROM_PEER) {
       const { docId, changes } = action.payload.message
-      const changeSet = { docId, changes }
-      feed.append(JSON.stringify([changeSet]))
+      changeSets.push({ docId, changes })
     } else {
-      // collect document changes for persistence
-      let changeSets = []
       // @ts-ignore
       for (let docId of docSet.docIds) {
         const oldDoc = affectedDocs[docId] || A.init() // If doc didn't exist before, it's a new doc
@@ -45,9 +44,9 @@ export const getMiddleware: MiddlewareFactory = <T>(
         const changes = A.getChanges(oldDoc, newDoc)
         if (changes.length > 0) changeSets.push({ docId, changes })
       }
-      // write any changes to the feed
-      if (changeSets.length > 0) feed.append(JSON.stringify(changeSets))
     }
+    // write any changes to the feed
+    if (changeSets.length > 0) feed.append(JSON.stringify(changeSets))
 
     return newState
   }
