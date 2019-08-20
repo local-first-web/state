@@ -4,8 +4,17 @@ import { docSetFromObject, docSetToObject } from './docSetHelpers'
 describe('collection', () => {
   const teachers = 'teachers'
 
-  it('should return an object with functions', () => {
-    const expectedKeys = ['drop', 'add', 'update', 'remove']
+  it('should return an object with known keys', () => {
+    const expectedKeys = [
+      'keyName',
+      'drop',
+      'add',
+      'addManyFromMap',
+      'update',
+      'remove',
+      'getAll',
+      'count',
+    ]
     const actual = collection(teachers)
     expect(Object.keys(actual)).toEqual(expectedKeys)
   })
