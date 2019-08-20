@@ -28,6 +28,9 @@ export const proxyReducer: ProxyReducer = ({ type, payload, state }) => {
     }
       return collection(rowCollectionName).remove(payload)
 
+    case actions.COLLECTION_CLEAR:
+      return collection(rowCollectionName).drop()
+
     case actions.SCHEMA_LOAD:
       return {
         schema: s => Object.assign(s, payload.schema),
