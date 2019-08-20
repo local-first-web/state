@@ -1,7 +1,7 @@
-import { ChangeMap, collection, ProxyReducer } from 'cevitxe';
-import { inferSchema } from 'inferSchema';
-import { JSONSchema7 } from 'json-schema';
-import * as actions from './actions';
+import { ChangeMap, collection, ProxyReducer } from 'cevitxe'
+import { inferSchema } from 'inferSchema'
+import { JSONSchema7 } from 'json-schema'
+import * as actions from './actions'
 import { rowCollectionName } from './store'
 
 export const proxyReducer: ProxyReducer = ({ type, payload, state }) => {
