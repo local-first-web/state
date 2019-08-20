@@ -9,7 +9,7 @@ import { clearCollection, loadCollection, loadSchema } from 'src/redux/actions'
 import uuid from 'uuid'
 import { JSONSchema7 } from 'json-schema'
 
-const pause = (t: number) => new Promise(ok => setTimeout(ok, t))
+const pause = (t: number = 0) => new Promise(ok => setTimeout(ok, t))
 
 const log = debug('cevitxe:grid:datagenerator')
 
@@ -61,12 +61,12 @@ export function DataGenerator() {
       }
       collection[item.id] = item
       const p = Math.ceil((i / rows) * 100)
-      await pause(0)
+      await pause()
       setProgress(p)
     }
     log('generate: done', rows)
     dispatch(loadCollection(collection))
-    await pause(0)
+    await pause()
     setProgress(0)
   }
 
