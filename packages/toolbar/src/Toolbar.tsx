@@ -14,7 +14,7 @@ import { wordPair } from './wordPair'
 export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
   // Hooks
 
-  const [documentId, setDocumentId] = useQueryParam('id', StringParam)
+  const [discoveryKey, setDiscoveryKey] = useQueryParam('id', StringParam)
   const [appStore, setAppStore] = useState()
   const [inputHasFocus, setInputHasFocus] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -24,7 +24,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
   // join or create store
   useEffect(() => {
     log('setup')
-    if (documentId) joinStore(documentId)
+    if (discoveryKey) joinStore(discoveryKey)
     else createStore()
   }, []) // only runs on first render
 
@@ -33,49 +33,49 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
     if (inputHasFocus && input.current) input.current.select()
   }, [inputHasFocus])
 
-  const log = debug(`cevitxe:toolbar:${documentId}`)
+  const log = debug(`cevitxe:toolbar:${discoveryKey}`)
   log('render')
 
   // Handlers
 
   const createStore = async () => {
     setBusy(true)
-    const newDocumentId = wordPair()
-    setDocumentId(newDocumentId)
-    const newStore = await cevitxe.createStore(newDocumentId)
+    const newDiscoveryKey = wordPair()
+    setDiscoveryKey(newDiscoveryKey)
+    const newStore = await cevitxe.createStore(newDiscoveryKey)
     setAppStore(newStore)
     onStoreReady(newStore)
     setBusy(false)
-    log('created store', newDocumentId)
-    return newDocumentId
+    log('created store', newDiscoveryKey)
+    return newDiscoveryKey
   }
 
-  const joinStore = async (newDocumentId: string) => {
+  const joinStore = async (newDiscoveryKey: string) => {
     if (busy) return
     setBusy(true)
-    setDocumentId(newDocumentId)
-    const newStore = await cevitxe.joinStore(newDocumentId)
+    setDiscoveryKey(newDiscoveryKey)
+    const newStore = await cevitxe.joinStore(newDiscoveryKey)
     setAppStore(newStore)
     onStoreReady(newStore)
     setBusy(false)
-    log('joined store', newDocumentId)
+    log('joined store', newDiscoveryKey)
   }
 
-  const url = (documentId: string = '') =>
-    `${location.protocol}//${location.host}/?id=${documentId}`
+  const url = (discoveryKey: string = '') =>
+    `${location.protocol}//${location.host}/?id=${discoveryKey}`
 
-  // Loads a documentId by navigating to its URL
-  const load = (documentId: string | undefined) => {
-    if (documentId !== undefined) window.location.assign(url(documentId))
+  // Loads a discoveryKey by navigating to its URL
+  const load = (discoveryKey: string | undefined) => {
+    if (discoveryKey !== undefined) window.location.assign(url(discoveryKey))
   }
 
   return (
     <div css={styles.toolbar}>
-      <Formik initialValues={{ documentId }} onSubmit={() => load(documentId)}>
+      <Formik initialValues={{ discoveryKey }} onSubmit={() => load(discoveryKey)}>
         {({ values }) => {
           const newClick = async () => {
-            const newDocumentId = await createStore()
-            setTimeout(() => load(newDocumentId), 200)
+            const newDiscoveryKey = await createStore()
+            setTimeout(() => load(newDiscoveryKey), 200)
           }
 
           const inputFocus = (e: Event) => {
@@ -95,7 +95,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
               switch (event.which) {
                 case codes['enter']:
                 case codes['tab']:
-                  load(values.documentId)
+                  load(values.discoveryKey)
               }
             }
           }
@@ -105,28 +105,33 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
                 <div css={styles.menuWrapper}>
                   <Field
                     type="text"
-                    name="documentId"
+                    name="discoveryKey"
                     css={styles.input}
                     onFocus={inputFocus}
                     onBlur={inputBlur}
                     onKeyDown={keyDown}
                   />
                   <div css={menu(inputHasFocus)}>
-                    {cevitxe.knownDocumentIds.map(documentId => (
+                    {cevitxe.knownDiscoveryKeys.map(discoveryKey => (
                       <a
-                        key={documentId}
+                        key={discoveryKey}
                         role="button"
                         type="button"
-                        href={url(documentId)}
+                        href={url(discoveryKey)}
                         css={styles.menuItem}
                       >
-                        {documentId}
+                        {discoveryKey}
                       </a>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <a role="button" type="button" href={url(values.documentId)} css={styles.button}>
+                  <a
+                    role="button"
+                    type="button"
+                    href={url(values.discoveryKey)}
+                    css={styles.button}
+                  >
                     Join
                   </a>
                 </div>
@@ -174,8 +179,8 @@ const button: CSSObject = {
   textDecoration: 'none',
 }
 
-export const menu = (documentIdHasFocus: boolean): CSSObject => ({
-  display: documentIdHasFocus ? 'block' : 'none',
+export const menu = (discoveryKeyHasFocus: boolean): CSSObject => ({
+  display: discoveryKeyHasFocus ? 'block' : 'none',
   position: 'absolute',
   background: 'white',
   top: 30,

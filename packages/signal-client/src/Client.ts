@@ -14,7 +14,7 @@ import { newid } from './newid'
  * received.
  *
  * The client keeps track of all peers that the server connects you to, and for each peer it keeps
- * track of each key (aka documentId, aka channel) that you're working with that peer on.
+ * track of each key (aka discoveryKey, aka channel) that you're working with that peer on.
  *
  * The simplest workflow is something like this:
  *
@@ -94,7 +94,7 @@ export class Client extends EventEmitter {
     return this.serverConnection
   }
 
-  // Joining a key (documentId) lets the server know that you're interested in it, and if there are
+  // Joining a key (discoveryKey) lets the server know that you're interested in it, and if there are
   // other peers who have joined the same key, you and the remote peer will both receive an
   // introduction message, inviting you to connect.
   join(key: string) {

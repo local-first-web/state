@@ -27,14 +27,14 @@ export interface CreateStoreResult {
 export type MiddlewareFactory = <T>(
   feed: any,
   watchableDoc: A.WatchableDoc<A.Doc<T>>,
-  documentId?: string
+  discoveryKey?: string
 ) => Middleware // feed: Feed<string>
 
 // A keychain maps a discovery key (the id we share to the signal server) with a public/private
 // keypair (which we use for storage etc). The discovery key can be any string that we think is
 // going to be unique on our signal hub servers.
 export interface Keychain {
-  [documentId: string]: KeyPair
+  [discoveryKey: string]: KeyPair
 }
 
 export interface KeyPair {

@@ -11,7 +11,7 @@ import { adaptReducer } from './adaptReducer'
 import { Connection } from './Connection'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
-import { getKeys, getKnownDocumentIds } from './keys'
+import { getKeys, getKnownDiscoveryKeys } from './keys'
 import { CevitxeOptions, ProxyReducer, StateFactory } from './types'
 import { composeWithDevTools } from 'redux-devtools-extension'
 
@@ -31,7 +31,10 @@ export class Cevitxe<T> extends EventEmitter {
   public connections: { [peerId: string]: Connection }
   public databaseName: string
   public store?: Store
-  public documentId?: string = undefined
+  public discoveryKey?: string = undefined
+
+  public status: string = ''
+  public progress: number = 0
 
   constructor({
     databaseName,
@@ -49,15 +52,15 @@ export class Cevitxe<T> extends EventEmitter {
     this.connections = {}
   }
 
-  joinStore = (documentId: string) => this.makeStore(documentId, false)
+  joinStore = (discoveryKey: string) => this.makeStore(discoveryKey, false)
 
-  createStore = (documentId: string) => this.makeStore(documentId, true)
+  createStore = (discoveryKey: string) => this.makeStore(discoveryKey, true)
 
-  private makeStore = async (documentId: string, creating: boolean = false) => {
-    log = debug(`cevitxe:${creating ? 'createStore' : 'joinStore'}:${documentId}`)
-    this.documentId = documentId
+  private makeStore = async (discoveryKey: string, creating: boolean = false) => {
+    log = debug(`cevitxe:${creating ? 'createStore' : 'joinStore'}:${discoveryKey}`)
+    this.discoveryKey = discoveryKey
 
-    this.feed = await createStorageFeed(documentId, this.databaseName)
+    this.feed = await createStorageFeed(discoveryKey, this.databaseName)
 
     const state = creating
       ? setInitialState(this.feed, this.initialState) // ceating a new document, starting with default state
@@ -67,7 +70,7 @@ export class Cevitxe<T> extends EventEmitter {
 
     const watchableDoc = new A.WatchableDoc(state)
     watchableDoc.registerHandler(doc => {
-      log('change', documentId)
+      log('change', discoveryKey)
       // hook for testing
       this.emit('change', doc)
     })
@@ -75,7 +78,7 @@ export class Cevitxe<T> extends EventEmitter {
 
     // Create Redux store
     const reducer = adaptReducer(this.proxyReducer)
-    const cevitxeMiddleware = getMiddleware(this.feed, watchableDoc, this.documentId)
+    const cevitxeMiddleware = getMiddleware(this.feed, watchableDoc, this.discoveryKey)
     const enhancer = composeWithDevTools(
       Redux.applyMiddleware(...this.middlewares, cevitxeMiddleware)
     )
@@ -85,7 +88,7 @@ export class Cevitxe<T> extends EventEmitter {
     const url = this.urls[0]
     const client = new Client({ id: this.id, url })
 
-    client.join(documentId)
+    client.join(discoveryKey)
 
     // For each peer that wants to connect, create a Connection object
     client.on('peer', async (peer: Peer) => {
@@ -95,7 +98,7 @@ export class Cevitxe<T> extends EventEmitter {
 
       peer.on('close', () => this.removePeer(peer.id))
 
-      const socket = peer.get(documentId)
+      const socket = peer.get(discoveryKey)
       const connection = new Connection(watchableDoc, socket, this.store.dispatch)
       this.connections[peer.id] = connection
       log('connected to peer', peer.id)
@@ -110,8 +113,8 @@ export class Cevitxe<T> extends EventEmitter {
     return Object.keys(this.connections).length
   }
 
-  get knownDocumentIds() {
-    return getKnownDocumentIds(this.databaseName)
+  get knownDiscoveryKeys() {
+    return getKnownDiscoveryKeys(this.databaseName)
   }
 
   removePeer = (peerId: string) => {
@@ -172,10 +175,10 @@ const setInitialState = <T>(feed: Feed<string>, initialState: T | StateFactory<T
   return state
 }
 
-const createStorageFeed = async (documentId: string, databaseName: string) => {
+const createStorageFeed = async (discoveryKey: string, databaseName: string) => {
   log('creating storage feed')
-  const { key, secretKey } = getKeys(databaseName, documentId)
-  const storage = db(`cevitxe-${databaseName}-${documentId.substr(0, 12)}`)
+  const { key, secretKey } = getKeys(databaseName, discoveryKey)
+  const storage = db(`cevitxe-${databaseName}-${discoveryKey.substr(0, 12)}`)
 
   const feed: Feed<string> = hypercore(storage, key, { secretKey, valueEncoding })
   feed.on('error', (err: any) => console.error(err))

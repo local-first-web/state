@@ -90,10 +90,10 @@ joining an existing one, and managing the keys associated with documents.
 ```js
 export const App = () => {
   // if you're creating a store
-  const store = cevitxe.createStore(documentId)
+  const store = cevitxe.createStore(discoveryKey)
 
   // OR if you're joining a store
-  // const store = cevitxe.joinStore(documentId)
+  // const store = cevitxe.joinStore(discoveryKey)
 
   return (
     <Provider store={store}>
