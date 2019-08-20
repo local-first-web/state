@@ -2,39 +2,45 @@ import { collection, deleteCollectionItems } from './collection'
 import { docSetFromObject, docSetToObject } from './docSetHelpers'
 
 describe('collection', () => {
-  const teachersKey = 'teachers'
+  const teachers = 'teachers'
+
   it('should return an object with functions', () => {
-    const expectedKeys = ['add', 'remove', 'addItem', 'updateItem', 'removeItem']
-    const actual = collection(teachersKey)
+    const expectedKeys = ['drop', 'add', 'update', 'remove']
+    const actual = collection(teachers)
     expect(Object.keys(actual)).toEqual(expectedKeys)
   })
-
-  //   it('add method should new collection command', () => {
-  //     const actual = collection(teachersKey).add()
-  // This feels stupid
-  //     expect(actual).toBe({
-  //       [`__col_${teachersKey}`]: (s: any) => Object.assign(s, {}),
-  //     })
-  //   })
 })
 
 describe('deleteCollectionItems', () => {
   const docSet = docSetFromObject({
     teachers: {
-      abc: true,
-      def: true,
+      1: true,
+      2: true,
+      3: true,
     },
-    abc: { id: 'abc' },
-    def: { id: 'def' },
-    schools: { xyz: true },
-    xyz: { id: 'xyz', type: 'school' },
+    1: { id: '1', type: 'teacher' },
+    2: { id: '2', type: 'teacher' },
+    3: { id: '3', type: 'teacher' },
+
+    schools: {
+      4: true,
+      5: true,
+    },
+    4: { id: '4', type: 'school' },
+    5: { id: '4', type: 'school' },
   })
-  it('should remove all items listed in key doc', () => {
+
+  it('should remove all items listed in index', () => {
     deleteCollectionItems(docSet, 'teachers')
     expect(docSetToObject(docSet)).toEqual({
-      schools: { xyz: true },
       teachers: {},
-      xyz: { id: 'xyz', type: 'school' },
+
+      schools: {
+        4: true,
+        5: true,
+      },
+      4: { id: '4', type: 'school' },
+      5: { id: '4', type: 'school' },
     })
   })
 })
