@@ -13,23 +13,13 @@ export const proxyReducer: ProxyReducer = ({ type, payload, state }) => {
       return collection(rowCollectionName).update(payload)
 
     case actions.ITEM_REMOVE:
-
-    case actions.COLLECTION_LOAD: {
-      const newKeys = {} as any
-      const newRowIndex = {} as any
-      for (const key in payload.collection) {
-        newKeys[key] = (s: any) => Object.assign(s, payload.collection[key])
-        newRowIndex[key] = true
-      }
-      return {
-        ...newKeys,
-        rowIndex: s => Object.assign(s, newRowIndex),
-      }
-    }
       return collection(rowCollectionName).remove(payload)
 
     case actions.COLLECTION_CLEAR:
       return collection(rowCollectionName).drop()
+
+    case actions.COLLECTION_LOAD:
+      return collection(rowCollectionName).addManyFromMap(payload.collection)
 
     case actions.SCHEMA_LOAD:
       return {
