@@ -31,6 +31,19 @@ export function collection(name: string, { idField = 'id' }: CollectionOptions =
       [item[idField]]: (s: any) => Object.assign(s, item),
     }),
 
+    addManyFromMap: (map: any) => {
+      const newKeys = {} as any
+      const newRowIndex = {} as any
+      for (const key in map) {
+        newKeys[key] = (s: any) => Object.assign(s, map[key])
+        newRowIndex[key] = true
+      }
+      return {
+        ...newKeys,
+        [collectionKey]: (s: any) => Object.assign(s, newRowIndex),
+      }
+    },
+
     update: (item: any) => ({
       [item[idField]]: (s: any) => Object.assign(s, item),
     }),

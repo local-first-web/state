@@ -32,14 +32,16 @@ describe('adaptReducer', () => {
         case 'CLEAR_TEACHERS': {
           return collection('teachers').drop()
         }
+        case 'ADD_STUDENTS': {
+          return collection('students').addManyFromMap(payload.collection)
         }
         default:
           return null
       }
     }) as ProxyReducer
 
-    const teachersCollection = '::teachers'
-    const studentsCollection = '::students'
+    const teachersCollection = collection('teachers').keyName
+    const studentsCollection = collection('students').keyName
     const teacher1 = { id: 'abcxyz', first: 'Herb', last: 'Caudill' }
 
     const emptyState = { [teachersCollection]: {} }
@@ -90,6 +92,26 @@ describe('adaptReducer', () => {
       const removeAction = { type: 'CLEAR_TEACHERS' }
       const removedState = reducer(state, removeAction)
       expect(removedState).toEqual({})
+    })
+
+    it('should allow adding multiple items to a new collection', () => {
+      const { state, reducer } = setup()
+      const students = {
+        student_001: { id: 'student_001' },
+        student_002: { id: 'student_002' },
+        student_003: { id: 'student_003' },
+      }
+      const addAction = { type: 'ADD_STUDENTS', payload: { collection: students } }
+      const addedState = reducer(state, addAction)
+      expect(addedState).toEqual({
+        ...students,
+        [studentsCollection]: {
+          student_001: true,
+          student_002: true,
+          student_003: true,
+        },
+        [teachersCollection]: {},
+      })
     })
   })
 })
