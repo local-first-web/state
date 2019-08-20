@@ -5,6 +5,8 @@ import eventPromise from 'p-event'
 import { getPortPromise as getAvailablePort } from 'portfinder'
 import { Cevitxe } from './Cevitxe'
 import { ProxyReducer } from './types'
+import { pause } from './lib/pause'
+
 require('fake-indexeddb/auto')
 
 const log = debug('cevitxe:test')
@@ -82,7 +84,7 @@ describe('Cevitxe (online)', () => {
         await remoteCevitxe.close()
       }
 
-      return { close, localCevitxe, remoteCevitxe, localStore, remoteStore }
+      return { close, localCevitxe, remoteCevitxe, localStore, remoteStore, discoveryKey }
     }
 
     it('should communicate changes from one store to another', async () => {
@@ -98,7 +100,6 @@ describe('Cevitxe (online)', () => {
 
       // wait for remote peer to see change
       await eventPromise(remoteCevitxe, 'change')
-      log('remoteCevitxe sees change')
 
       // confirm that the change took locally
       const localState = localStore.getState()
@@ -109,7 +110,46 @@ describe('Cevitxe (online)', () => {
       expect(remoteState.settings.foo).toEqual(42)
 
       await close()
-      log('closed')
+    })
+
+    it('should persist changes coming from a peer', async () => {
+      const {
+        close,
+        localCevitxe,
+        remoteCevitxe,
+        localStore,
+        remoteStore,
+        discoveryKey,
+      } = await open()
+
+      // change something in the local store
+      localStore.dispatch({
+        type: 'SET_FOO',
+        payload: {
+          value: 42,
+        },
+      })
+
+      // wait for remote peer to see change
+      await eventPromise(remoteCevitxe, 'change')
+
+      // confirm that the remote store has the new value
+      const remoteState = remoteStore.getState()
+      expect(remoteState.settings.foo).toEqual(42)
+
+      // disconnect both stores
+      await pause(500) // HACK:
+      await localCevitxe.close()
+      await remoteCevitxe.close()
+
+      // Then we create a new store, which should see the state in the fake db and load it
+      const newRemoteStore = await remoteCevitxe.joinStore(discoveryKey)
+
+      // Confirm that the modified state is still there
+      const newState = newRemoteStore.getState()
+      expect(newState.settings.foo).toEqual(42)
+
+      await close()
     })
 
     describe('close', () => {

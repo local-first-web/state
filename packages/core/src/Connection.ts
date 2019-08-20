@@ -49,17 +49,18 @@ export class Connection<T = any> extends EventEmitter {
     const message = JSON.parse(data.toString())
     log('receive %o', message)
     this.emit('receive', message)
+    this.docSetSync.receive(message) // this updates the doc
     if (message.changes) {
       log('%s changes received', message.changes.length)
-      this.docSetSync.receive(message) // this updates the doc
       if (this.dispatch) {
         this.dispatch({
           type: RECEIVE_MESSAGE_FROM_PEER,
+          payload: {
+            // connection: this.docSetSync,
+            message,
+          },
         })
       }
-    } else {
-      log(`no changes, catch up with peer`)
-      this.docSetSync.receive(message) // this updates the doc
     }
   }
 
