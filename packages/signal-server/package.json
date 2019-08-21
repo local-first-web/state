@@ -10,6 +10,9 @@
     "dev": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 ts-node-dev --respawn --transpileOnly src/start.ts",
     "watch": "tsc --watch"
   },
+  "resolutions": {
+    "jest": "24.7.1"
+  },
   "dependencies": {
     "bs58": "4",
     "express": "4",
@@ -28,6 +31,7 @@
     "jest": "24",
     "kill-port": "1",
     "mock-socket": "8",
+    "portfinder": "^1.0.21",
     "prettier": "1",
     "supports-color": "7",
     "ts-jest": "24",

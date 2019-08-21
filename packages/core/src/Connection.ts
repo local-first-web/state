@@ -1,5 +1,6 @@
 import A from 'automerge'
-import { DocumentSync } from './DocumentSync'
+import { DocSet } from './lib/automerge'
+import { DocSetSync } from './DocSetSync'
 import debug from 'debug'
 import { AnyAction, Dispatch } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
@@ -14,54 +15,52 @@ const log = debug('cevitxe:connection')
  * networking stack and with the Redux store.
  */
 export class Connection<T = any> extends EventEmitter {
-  private DocumentSync: DocumentSync<T>
+  private docSetSync: DocSetSync
   private peerSocket: WebSocket | null
   private dispatch?: Dispatch<AnyAction>
-  private watchableDoc: A.WatchableDoc<A.Doc<T>, T>
+  private docSet: DocSet<any>
 
-  constructor(
-    watchableDoc: A.WatchableDoc<A.Doc<T>, T>,
-    peerSocket: WebSocket,
-    dispatch?: Dispatch<AnyAction>
-  ) {
+  constructor(docSet: DocSet<any>, peerSocket: WebSocket, dispatch?: Dispatch<AnyAction>) {
     super()
     log('new connection')
-    this.watchableDoc = watchableDoc
+    this.docSet = docSet
     this.peerSocket = peerSocket
     if (dispatch) this.dispatch = dispatch
 
     this.peerSocket.onmessage = this.receive.bind(this)
 
-    this.DocumentSync = new DocumentSync(this.watchableDoc, this.send)
-    this.DocumentSync.open()
+    // @ts-ignore
+    this.docSetSync = new DocSetSync(this.docSet, this.send)
+    this.docSetSync.open()
   }
 
-  public get state(): A.Doc<T> {
-    return this.watchableDoc.get()
+  public get state(): T {
+    const _state: Partial<T> = {}
+    let key: keyof T
+    // get rid of next line when automerge v0.13 is published
+    // @ts-ignore
+    for (key of this.docSet.docIds) {
+      _state[key] = this.docSet.getDoc(key as string)
+    }
+    return _state as T
   }
 
   receive = ({ data }: any) => {
     const message = JSON.parse(data.toString())
     log('receive %o', message)
     this.emit('receive', message)
+    this.docSetSync.receive(message) // this updates the doc
     if (message.changes) {
       log('%s changes received', message.changes.length)
       if (this.dispatch) {
         this.dispatch({
           type: RECEIVE_MESSAGE_FROM_PEER,
           payload: {
-            connection: this.DocumentSync,
+            // connection: this.docSetSync,
             message,
           },
         })
-      } else {
-        // TODO: figure out a way to pass a fake dispatcher or something for testing
-        log(`temp - only for use by testing without passing a dispatcher`)
-        this.DocumentSync.receive(message) // this updates the doc
       }
-    } else {
-      log(`no changes, catch up with peer`)
-      this.DocumentSync.receive(message) // this updates the doc
     }
   }
 

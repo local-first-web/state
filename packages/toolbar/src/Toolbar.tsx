@@ -14,7 +14,7 @@ import { wordPair } from './wordPair'
 export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
   // Hooks
 
-  const [discoveryKey, setDiscoveryKey] = useQueryParam('id', StringParam)
+  const [discoveryKey, setdiscoveryKey] = useQueryParam('id', StringParam)
   const [appStore, setAppStore] = useState()
   const [inputHasFocus, setInputHasFocus] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -41,7 +41,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
   const createStore = async () => {
     setBusy(true)
     const newDiscoveryKey = wordPair()
-    setDiscoveryKey(newDiscoveryKey)
+    setdiscoveryKey(newDiscoveryKey)
     const newStore = await cevitxe.createStore(newDiscoveryKey)
     setAppStore(newStore)
     onStoreReady(newStore)
@@ -53,7 +53,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
   const joinStore = async (newDiscoveryKey: string) => {
     if (busy) return
     setBusy(true)
-    setDiscoveryKey(newDiscoveryKey)
+    setdiscoveryKey(newDiscoveryKey)
     const newStore = await cevitxe.joinStore(newDiscoveryKey)
     setAppStore(newStore)
     onStoreReady(newStore)
@@ -130,11 +130,16 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
                     role="button"
                     type="button"
                     href={url(values.discoveryKey)}
-                    css={styles.button}
+                    css={styles.menuItem}
                   >
-                    Join
+                    {discoveryKey}
                   </a>
                 </div>
+              </div>
+              <div>
+                <a role="button" type="button" href={url(values.discoveryKey)} css={styles.button}>
+                  Join
+                </a>
               </div>
               <div css={styles.toolbarGroup}>
                 <button role="button" type="button" onClick={newClick} css={styles.button}>

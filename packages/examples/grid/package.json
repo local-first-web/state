@@ -5,9 +5,9 @@
   "private": true,
   "main": "src/index.tsx",
   "scripts": {
-    "start": "react-scripts-ts start",
+    "start": "react-scripts start",
     "test:e2e": "cypress open",
-    "build": "react-scripts-ts build"
+    "build": "react-scripts build"
   },
   "dependencies": {
     "@emotion/core": "10",
@@ -27,7 +27,6 @@
     "react-dom": "16",
     "react-redux": "7",
     "react-scripts": "3",
-    "react-scripts-ts": "3",
     "react-spinkit": "3",
     "redux": "4",
     "redux-logger": "3",
@@ -60,6 +59,18 @@
     "testPathIgnorePatterns": [
       "node_modules",
       "dist"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
     ]
   }
 }

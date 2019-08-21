@@ -1,17 +1,22 @@
 import { Map } from 'immutable'
 import A from 'automerge'
+import { DocSet } from './lib/automerge'
 import { AnyAction, Middleware, Reducer, Store } from 'redux'
-import { DocumentSync } from './DocumentSync'
+import { DocSetSync } from './DocSetSync'
 
-export type ProxyReducer<T> = (action: AnyAction) => A.ChangeFn<T> | null
-export type ReducerConverter = <T>(proxy: ProxyReducer<T>) => Reducer
-export type StateFactory<T> = () => T
+// DEPRECATED
+export type ProxyReducer = (action: AnyAction) => ChangeMap | null
+export type ReducerConverter = (proxyReducer: ProxyReducer, docSet: DocSet<any>) => Reducer
+
+export interface ChangeMap {
+  [docId: string]: A.ChangeFn<any>
+}
 
 export interface CevitxeOptions<T> {
   // Redux store
-  proxyReducer: ProxyReducer<any>
+  proxyReducer: ProxyReducer
   middlewares?: Middleware[] // TODO: accept an `enhancer` object instead
-  initialState: T | StateFactory<T>
+  initialState: T
 
   // hypercore feed options
   databaseName: string
@@ -26,7 +31,8 @@ export interface CreateStoreResult {
 // TODO: sort out the type for feed after building, can't get it to pick up the Feed type from the ambient hypercore types
 export type MiddlewareFactory = <T>(
   feed: any,
-  watchableDoc: A.WatchableDoc<A.Doc<T>>,
+  docSet: DocSet<any>,
+  proxyReducer: ProxyReducer,
   discoveryKey?: string
 ) => Middleware // feed: Feed<string>
 
@@ -43,13 +49,14 @@ export interface KeyPair {
 }
 
 export interface Message {
+  docId: string
   clock: Clock
   changes?: A.Change[]
 }
 
-export interface ReceiveMessagePayload<T> {
+export interface ReceiveMessagePayload {
   message: Message
-  connection: DocumentSync<T>
+  connection: DocSetSync
 }
 
 export type Clock = Map<string, number>

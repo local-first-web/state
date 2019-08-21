@@ -6,7 +6,7 @@ import faker from 'faker'
 import { JSONSchema7 } from 'json-schema'
 import { Fragment, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { clearCollection, loadCollection, loadSchema } from 'src/redux/actions'
+import { clearCollection, loadCollection, loadSchema } from 'redux/actions'
 import uuid from 'uuid'
 import { ProgressBar } from './ProgressBar'
 
@@ -78,7 +78,6 @@ export function DataGenerator() {
     <div css={styles.toolbarGroup}>
       <div css={styles.menuWrapper}>
         <button
-          role="button"
           type="button"
           onFocus={toggleMenu}
           onBlur={hideMenu}

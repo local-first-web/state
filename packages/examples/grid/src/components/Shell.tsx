@@ -7,7 +7,7 @@ import { DialogProvider } from 'muibox'
 import { useState } from 'react'
 import { Provider } from 'react-redux'
 import Redux from 'redux'
-import { cevitxe } from 'src/redux/store'
+import { cevitxe } from '../redux/store'
 import { App } from './App'
 import { Loading } from './Loading'
 

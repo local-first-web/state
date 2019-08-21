@@ -1,9 +1,10 @@
 import A from 'automerge'
+import { DocSet } from './lib/automerge'
 import { Server } from 'cevitxe-signal-server'
+import { newid } from 'cevitxe-signal-client'
 import { Connection } from './Connection'
 
 import { WebSocket } from 'mock-socket'
-import { newid } from 'cevitxe-signal-client'
 
 // @ts-ignore
 global.WebSocket = WebSocket
@@ -15,17 +16,20 @@ interface FooState {
   boo?: number
 }
 
+interface FooStateDoc {
+  state: FooState
+}
+
 const fakeDispatch = <T>(s: T) => s
 
 const port = 10003
 const url = `ws://localhost:${port}`
-
 const localActorId = newid()
 
 describe('Connection', () => {
-  const initialState: FooState = A.change(A.init(localActorId), doc => (doc.foo = 1))
+  const initialState: FooStateDoc = { state: { foo: 1 } }
 
-  let watchableDoc: A.WatchableDoc<A.Doc<FooState>>
+  let docSet: DocSet<any>
   let server: Server
 
   beforeAll(async () => {
@@ -34,7 +38,13 @@ describe('Connection', () => {
   })
 
   beforeEach(() => {
-    watchableDoc = new A.WatchableDoc<A.Doc<FooState>>(initialState)
+    docSet = new DocSet<any>()
+    let key: keyof FooStateDoc
+    for (key in initialState) {
+      const value = initialState[key]
+      // docSet.setDoc(key, A.change(A.init(localActorId), s => value))
+      docSet.setDoc(key, A.from(value, localActorId))
+    }
   })
 
   afterAll(async () => {
@@ -43,13 +53,13 @@ describe('Connection', () => {
 
   it('should expose its current state', () => {
     const peer = new WebSocket(url)
-    const connection = new Connection(watchableDoc, peer, fakeDispatch)
+    const connection = new Connection(docSet, peer, fakeDispatch)
     expect(connection.state).toEqual(initialState)
   })
 
   it('should send messages to the peer when local state changes', () => {
     const peer = new WebSocket(url)
-    const connection = new Connection(watchableDoc, peer, fakeDispatch)
+    const connection = new Connection(docSet, peer, fakeDispatch)
     expect(peer.send).toHaveBeenCalledWith(
       expect.stringContaining(JSON.stringify({ [localActorId]: 1 }))
     )
@@ -57,11 +67,11 @@ describe('Connection', () => {
       expect.stringContaining(JSON.stringify({ [localActorId]: 2 }))
     )
 
-    const localDoc = watchableDoc.get()
-    const updatedDoc = A.change(localDoc, 'update', doc => (doc.boo = 2))
-    watchableDoc.set(updatedDoc)
+    const localDoc = docSet.getDoc('state')
+    const updatedDoc = A.change<FooState>(localDoc, 'update', doc => (doc.boo = 2))
+    docSet.setDoc('state', updatedDoc)
 
-    expect(connection.state.boo).toBe(2)
+    expect(connection.state.state.boo).toBe(2)
     expect(peer.send).toHaveBeenCalledWith(
       expect.stringContaining(JSON.stringify({ [localActorId]: 2 }))
     )
@@ -69,7 +79,7 @@ describe('Connection', () => {
 
   it('should call close on peer when close is called', () => {
     const peer = new WebSocket(url)
-    const connection = new Connection(watchableDoc, peer, fakeDispatch)
+    const connection = new Connection(docSet, peer, fakeDispatch)
     connection.close()
     expect(peer.close).toHaveBeenCalled()
   })

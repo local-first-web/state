@@ -11,8 +11,6 @@ import { pipeSockets } from './lib/pipeSockets'
 
 const { app } = expressWs(express())
 
-const log = debug('cevitxe:signal-server')
-
 interface ListenOptions {
   silent?: boolean
 }
@@ -56,8 +54,11 @@ export class Server extends EventEmitter {
 
   private sockets: Socket[] = []
 
+  private log: debug.Debugger
+
   constructor({ port = 8080 } = {}) {
     super()
+    this.log = debug(`cevitxe:signal-server${port}`)
     this.port = port
     this.peers = {}
     this.keys = {}
@@ -68,7 +69,7 @@ export class Server extends EventEmitter {
   // DISCOVERY
 
   openIntroductionConnection(peer: WebSocket, id: string) {
-    log('introduction connection', id)
+    this.log('introduction connection', id)
     this.peers[id] = peer
 
     peer.on('message', this.receiveIntroductionRequest(id))
@@ -98,12 +99,12 @@ export class Server extends EventEmitter {
         keys, // the key(s) both are interested in
       })
       if (this.peers[A]) this.peers[A].send(message)
-      else log(`can't send connect message to unknown peer`, A)
+      else this.log(`can't send connect message to unknown peer`, A)
     }
 
     return (data: Data) => {
       const message = JSON.parse(data.toString())
-      log('received introduction request %o', message)
+      this.log('received introduction request %o', message)
 
       // honor join/leave requests
       const current = this.keys[A]
@@ -117,7 +118,7 @@ export class Server extends EventEmitter {
           // find keys that both peers are interested in
           const commonKeys = intersection(this.keys[A], this.keys[B])
           if (commonKeys.length > 0) {
-            log('notifying', A, B, commonKeys)
+            this.log('notifying', A, B, commonKeys)
             sendIntroduction(A, B, commonKeys)
             sendIntroduction(B, A, commonKeys)
           }
@@ -145,7 +146,7 @@ export class Server extends EventEmitter {
 
     if (!this.holding[BseeksA]) {
       // We haven't heard from B yet; hold this connection
-      log('holding connection for peer', AseeksB)
+      this.log('holding connection for peer', AseeksB)
 
       this.holding[AseeksB] = peerA // hold A's socket ready
       this.messages[AseeksB] = [] // hold any messages A sends to B in the meantime
@@ -162,7 +163,7 @@ export class Server extends EventEmitter {
       })
     } else {
       // We already have a connection request from B; hook them up
-      log('found peer, connecting', AseeksB)
+      this.log('found peer, connecting', AseeksB)
 
       const peerB = this.holding[BseeksA]
 
@@ -184,26 +185,27 @@ export class Server extends EventEmitter {
     return new Promise(ready => {
       // It's nice to be able to hit this server from a browser as a sanity check
       app.get('/', (req, res, next) => {
-        log('get /')
+        this.log('get /')
         res.send('<body style="font-size:10em;padding:2em;text-align:center">🐟</body>')
         res.end()
       })
 
       // Introduction request
       app.ws('/introduction/:id', (ws, { params: { id } }) => {
-        log('received introduction request', id)
+        this.log('received introduction request', id)
         this.openIntroductionConnection(ws as WebSocket, id)
       })
 
       // Connection request
       app.ws('/connect/:A/:B/:key', (ws, { params: { A, B, key } }) => {
-        log('received connection request', A, B)
+        this.log('received connection request', A, B)
         this.openConnection({ peerA: ws as WebSocket, A, B, key })
       })
 
       this.httpServer = app.listen(this.port, () => {
-        if (!silent) console.log(` 🐟  Listening at http://localhost:${this.port}  `)
-        log('listening')
+        const msg = ` 🐟  Listening at http://localhost:${this.port}  `
+        if (!silent) console.log(msg)
+        this.log(msg)
         this.emit('ready')
         ready()
       })
@@ -214,14 +216,14 @@ export class Server extends EventEmitter {
   close() {
     return new Promise(closed => {
       if (this.httpServer) {
-        log('attempting httpServer.close')
+        this.log('attempting httpServer.close')
         this.sockets.forEach(socket => socket.destroy())
         this.httpServer.close(() => {
-          log('closed')
+          this.log('closed')
           this.emit('closed')
           closed()
         })
-      } else log('nothing to close!')
+      } else this.log('nothing to close!')
     })
   }
 }

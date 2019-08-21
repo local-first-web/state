@@ -15,7 +15,9 @@ import { AgGridReact } from 'ag-grid-react'
 import { debug } from 'debug'
 import { useDialog } from 'muibox'
 import { useState } from 'react'
-import { useSelector, useStore } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { colDefFromSchemaProperty } from 'ag-grid/colDefFromSchemaProperty'
+import { deleteRowsCommand } from 'ag-grid/commands/deleteRowsCommand'
 import {
   addField,
   addItem,
@@ -24,30 +26,27 @@ import {
   setFieldType,
   updateItem,
 } from '../redux/actions'
-import { State } from '../redux/store'
-import { deleteRowsCommand } from 'src/ag-grid/commands/deleteRowsCommand'
 import { Loading } from './Loading'
-import { colDefFromSchemaProperty } from 'src/ag-grid/colDefFromSchemaProperty'
+import { collection } from 'cevitxe'
+import { rowCollectionKey, rowCollectionName } from '../redux/store'
 
 const log = debug('cevitxe:grid')
 
 const Grid = () => {
-  const store = useStore()
+  const dispatch = useDispatch()
 
-  const stateTestId = store.getState()._testId
-  log('state id', stateTestId)
-
-  const dispatch = store.dispatch
-  const getDispatch = () => store.dispatch
-
-  const ready = useSelector((state: State) => !!state && !!state.list && !!state.schema)
-
-  const collection = useSelector((state: State) => {
-    if (!ready) return []
-    return state.list.map((d: string) => state.map[d])
+  const ready = useSelector((state: any) => {
+    const result = !!state && !!state[rowCollectionKey] && !!state.schema
+    console.log('ready', state)
+    return result
   })
 
-  const columns = useSelector((state: State) => {
+  const rowCollection = useSelector((state: any) => {
+    if (!ready) return []
+    return collection(rowCollectionName).getAll(state)
+  })
+
+  const columns = useSelector((state: any) => {
     if (!ready) return []
     return Object.entries(state.schema.properties || {}).map(entry =>
       colDefFromSchemaProperty(entry[0], entry[1])
@@ -64,7 +63,7 @@ const Grid = () => {
       switch ((event.event as KeyboardEvent).key) {
         case 'ArrowDown':
         case 'Enter':
-          if (event.rowIndex === collection.length - 1) {
+          if (event.rowIndex === rowCollection.length - 1) {
             const action = addItem()
             setNextRowId(action.payload.id)
             dispatch(action)
@@ -102,9 +101,8 @@ const Grid = () => {
       case 'numericColumn':
         if (Number.isNaN(params.newValue)) return false
     }
-    log('dispatching updateItem, state id', stateTestId)
-    const _dispatch = getDispatch()
-    _dispatch(updateItem(params.data.id, params.colDef.field!, params.newValue))
+    log('dispatching updateItem')
+    dispatch(updateItem(params.data.id, params.colDef.field!, params.newValue))
     return true
   }
 
@@ -185,7 +183,7 @@ const Grid = () => {
               valueSetter,
               valueParser,
             }}
-            rowData={collection}
+            rowData={rowCollection}
             deltaRowDataMode={true}
             getRowNodeId={item => item.id}
             onCellKeyDown={handleKeyDown}

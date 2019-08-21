@@ -7,11 +7,15 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc ",
+    "build": "tsc",
     "lint": "tsc -p tsconfig.strict.json --noEmit",
     "watch": "tsc --watch",
     "test": "jest",
-    "test:debug": "node --inspect-brk=11580 node_modules\\jest\\bin\\jest.js --runInBand"
+    "test:debug": "node --inspect-brk=11580 node_modules\\jest\\bin\\jest.js --runInBand",
+    "test:log": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 yarn test --watch"
+  },
+  "resolutions": {
+    "jest": "24.7.1"
   },
   "dependencies": {
     "@types/simple-peer": "6",
@@ -20,20 +24,21 @@
     "debug": "4",
     "hypercore": "7",
     "hypercore-crypto": "1",
-    "immutable": "^4.0.0-rc.12",
+    "immutable": "4.0.0-rc.12",
     "random-access-idb": "1"
   },
   "devDependencies": {
     "@types/debug": "4",
     "@types/jest": "24",
     "@types/p-event": "3",
-    "cevitxe-signal-server": "^0.2.1",
+    "cevitxe-signal-server": "0",
     "fake-indexeddb": "2",
     "idb": "4",
     "jest": "24",
     "mock-socket": "8",
     "npm-watch": "0",
     "p-event": "4",
+    "portfinder": "^1.0.21",
     "prettier": "1",
     "redux": "4",
     "redux-devtools-extension": "2",

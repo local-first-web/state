@@ -1,7 +1,7 @@
 ﻿import { GetContextMenuItemsParams } from 'ag-grid-community'
-import { getSelectedRowIds } from 'src/ag-grid/gridUtils'
-import { removeItem } from 'src/redux/actions'
+import { removeItem } from 'redux/actions'
 import { Dispatch, AnyAction } from 'redux'
+import { getSelectedRowIds } from 'ag-grid/gridUtils';
 
 export const deleteRowsCommand = (
   dispatch: Dispatch<AnyAction>,

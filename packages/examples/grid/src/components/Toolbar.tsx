@@ -3,7 +3,8 @@ import { jsx } from '@emotion/core'
 import { styles } from 'cevitxe-toolbar'
 import { DataGenerator } from './DataGenerator'
 import { useSelector } from 'react-redux'
-import { State } from 'src/redux/store'
+import { rowCollectionKey } from '../redux/store'
+import { collection } from 'cevitxe'
 
 export const Toolbar = () => (
   <div css={styles.toolbar}>
@@ -15,9 +16,8 @@ export const Toolbar = () => (
 )
 
 const Rows = () => {
-  const rows = useSelector((state: State) => {
-    if (state === undefined || state.list === undefined) return 0
-    return state.list.length
+  const rows = useSelector((state: any) => {
+    return collection('rows').count(state)
   })
   return (
     <div css={styles.toolbarGroup}>
@@ -26,8 +26,8 @@ const Rows = () => {
   )
 }
 const Loading = () => {
-  const loading = useSelector((state: State) => {
-    if (state === undefined || state.list === undefined) return true
+  const loading = useSelector((state: any) => {
+    if (state === undefined || state[rowCollectionKey] === undefined) return true
     else return false
   })
   return loading ? (
@@ -46,7 +46,7 @@ const MemoryStats = () => {
   const { memory } = window.performance as any
 
   if (!memory) return <div />
-  const { jsHeapSizeLimit: limit, totalJSHeapSize: allocated, usedJSHeapSize: used } = memory
+  const { jsHeapSizeLimit: limit, usedJSHeapSize: used } = memory
   return (
     <div css={styles.toolbarGroup}>
       <label>

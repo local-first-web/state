@@ -1,16 +1,11 @@
-import { Cevitxe } from 'cevitxe'
-import { JSONSchema7 } from 'json-schema'
+import { Cevitxe, collection } from 'cevitxe'
 import { emptyGrid } from '../ag-grid/emptyGrid'
 import { proxyReducer } from './reducers'
 
-export interface State {
-  list: string[]
-  map: { [key: string]: any }
-  schema: JSONSchema7
-  _testId: string
-}
+export const rowCollectionName = 'rows'
+export const rowCollectionKey = collection(rowCollectionName).keyName
 
-const initialState = () => emptyGrid(3, 3)
+const initialState = emptyGrid(3, 3)
 
 const urls = process.env.REACT_APP_SIGNAL_SERVERS
   ? process.env.REACT_APP_SIGNAL_SERVERS.split(',')

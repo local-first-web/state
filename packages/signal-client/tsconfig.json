@@ -2,7 +2,7 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "alwaysStrict": true,
-    "baseUrl": "./",
+    "baseUrl": "src",
     "declaration": true,
     "downlevelIteration": true,
     "esModuleInterop": true,

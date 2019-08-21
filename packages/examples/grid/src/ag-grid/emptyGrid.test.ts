@@ -1,17 +1,41 @@
 import { emptyGrid } from './emptyGrid'
 
 describe('emptyGrid', () => {
-  it('should ', () => {
-    expect(emptyGrid(2, 2)).toEqual({
-      list: ['0', '1'],
-      map: {
-        '0': { id: '0' },
-        '1': { id: '1' },
+  it('2x2', () => {
+    expect(emptyGrid(2)).toEqual({
+      row_1: { id: 'row_1' },
+      row_2: { id: 'row_2' },
+      ['::rows']: {
+        row_1: true, //
+        row_2: true,
       },
       schema: {
         properties: {
-          '0': { description: 'Field 1' },
-          '1': { description: 'Field 2' },
+          col_1: { description: 'Field 1' },
+          col_2: { description: 'Field 2' },
+        },
+      },
+    })
+  })
+  it('5x3', () => {
+    expect(emptyGrid(5, 3)).toEqual({
+      row_1: { id: 'row_1' },
+      row_2: { id: 'row_2' },
+      row_3: { id: 'row_3' },
+      row_4: { id: 'row_4' },
+      row_5: { id: 'row_5' },
+      ['::rows']: {
+        row_1: true, //
+        row_2: true,
+        row_3: true,
+        row_4: true,
+        row_5: true,
+      },
+      schema: {
+        properties: {
+          col_1: { description: 'Field 1' },
+          col_2: { description: 'Field 2' },
+          col_3: { description: 'Field 3' },
         },
       },
     })

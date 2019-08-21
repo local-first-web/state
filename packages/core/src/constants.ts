@@ -8,3 +8,6 @@ export const MSG_INVALID_KEYS =
   'The `secretKey` should be a 64-byte hexadecimal value (128 characters). '
 
 export const DEFAULT_SIGNAL_SERVERS = ['ws://localhost:8080'] // default public signaling server
+
+export const DELETE_COLLECTION = Symbol('DELETE_COLLECTION')
+export const DELETE_ITEM = Symbol('DELETE_ITEM')
