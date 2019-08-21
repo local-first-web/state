@@ -26,6 +26,9 @@ describe('Cevitxe', () => {
       case 'UPDATE_TEACHER': {
         return collection(teachersCollection).update(payload)
       }
+      case 'DROP_TEACHERS': {
+        return collection(teachersCollection).drop()
+      }
       default:
         return null
     }
@@ -411,6 +414,39 @@ describe('Cevitxe', () => {
 
       // confirm that we no longer have a connection
       expect(Object.keys(localStoreManager.connections)).toHaveLength(0)
+    })
+
+    it.only('should sync a dropped collection', async () => {
+      const { close, localStoreManager, remoteStoreManager, localStore, remoteStore } = await open()
+
+      // waiting for remote to sync initial state
+      await eventPromise(remoteStoreManager, 'change')
+
+      // confirm that the local store has initial state
+      const localState = localStore.getState()
+      expect(localState).toEqual(initialState)
+
+      // confirm that the remote store has initial state
+      const remoteState = remoteStore.getState()
+      expect(remoteState).toEqual(initialState)
+
+      // Drop teachers locally, verify it dropped on remote
+      localStore.dispatch({ type: 'DROP_TEACHERS' })
+      await eventPromise(remoteStoreManager, 'change')
+
+      const expectedLocalState = { [teachersKey]: {} }
+      // confirm that the local store is caught up
+      const newLocalState = localStore.getState()
+      expect(newLocalState).toEqual(expectedLocalState)
+
+      // TODO: Sync docSet.removeDoc to peers
+      // Once that's enabled the local and remote stores should have identical states here
+      const expectedRemoteState = { ...expectedLocalState, [defaultTeacher.id]: defaultTeacher }
+      // confirm that the remote store is caught up
+      const newRemoteState = remoteStore.getState()
+      expect(newRemoteState).toEqual(expectedRemoteState)
+
+      await close()
     })
   })
 })
