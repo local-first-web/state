@@ -64,7 +64,7 @@ export class Connection<T = any> extends EventEmitter {
   }
 
   send = (message: Message) => {
-    log('send %o', message)
+    log('send %o', JSON.stringify(message))
     if (this.peerSocket)
       try {
         this.peerSocket.send(JSON.stringify(message))
