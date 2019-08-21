@@ -366,6 +366,40 @@ describe('Cevitxe', () => {
       await close()
     })
 
+    it('should persist deletions coming from a peer', async () => {
+      const { close, remoteCevitxe, localStore, remoteStore, discoveryKey } = await open()
+
+      // confirm that the record is there before deleting it
+      const localState = localStore.getState()
+      expect(localState[teachersKey]).toHaveProperty('abcxyz')
+
+      // delete a record in the local store
+      localStore.dispatch({ type: 'REMOVE_TEACHER', payload: { id: 'abcxyz' } })
+
+      // wait for remote peer to see change
+      await eventPromise(remoteCevitxe, 'change')
+
+      // confirm that the deletion took place locally
+      const newLocalState = localStore.getState()
+      expect(newLocalState[teachersKey]).not.toHaveProperty('abcxyz')
+
+      // confirm that the deletion took place in the remote store
+      const newRemoteState = remoteStore.getState()
+      expect(newRemoteState[teachersKey]).not.toHaveProperty('abcxyz')
+
+      // disconnect both stores
+      await close()
+
+      // reconnect
+      const newRemoteStore = await remoteCevitxe.joinStore(discoveryKey)
+
+      // Confirm that the modified state is still there
+      const newNewRemoteState = newRemoteStore.getState()
+      expect(newNewRemoteState[teachersKey]).not.toHaveProperty('abcxyz')
+
+      await close()
+    })
+
     it('should delete any connections', async () => {
       const { close, localCevitxe } = await open()
 
