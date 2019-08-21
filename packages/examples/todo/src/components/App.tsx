@@ -4,7 +4,7 @@ import Redux from 'redux'
 import { Toolbar } from 'cevitxe-toolbar'
 
 import { Todos } from '../components'
-import { cevitxe } from '../redux/store'
+import { storeManager } from '../redux/store'
 
 export function App() {
   const [appStore, setAppStore] = useState<Redux.Store>()
@@ -12,7 +12,7 @@ export function App() {
 
   return (
     <>
-      <Toolbar cevitxe={cevitxe} onStoreReady={onStoreReady} />
+      <Toolbar storeManager={storeManager} onStoreReady={onStoreReady} />
       {appStore && (
         <Provider store={appStore}>
           <Todos />

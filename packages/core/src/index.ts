@@ -1,3 +1,3 @@
-export { CevitxeOptions as CevitxeOtions, ProxyReducer, ChangeMap } from './types'
-export { Cevitxe } from './Cevitxe'
+export { StoreManagerOptions, ProxyReducer, ChangeMap } from './types'
+export { StoreManager } from './StoreManager'
 export { collection } from './collection'

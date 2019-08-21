@@ -13,7 +13,7 @@ import { Connection } from './Connection'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getKeys, getKnownDiscoveryKeys } from './keys'
-import { CevitxeOptions, ProxyReducer } from './types'
+import { StoreManagerOptions, ProxyReducer } from './types'
 import { docSetFromObject, docSetToObject } from './docSetHelpers'
 
 const valueEncoding = 'utf-8'
@@ -24,7 +24,7 @@ let log = debug('cevitxe')
 // the limit to avoid spurious warnings about emitter leaks.
 EventEmitter.defaultMaxListeners = 500
 
-export class Cevitxe<T> extends EventEmitter {
+export class StoreManager<T> extends EventEmitter {
   private proxyReducer: ProxyReducer
   private initialState: T
   private urls: string[]
@@ -44,7 +44,7 @@ export class Cevitxe<T> extends EventEmitter {
     initialState,
     urls = DEFAULT_SIGNAL_SERVERS,
     middlewares = [],
-  }: CevitxeOptions<T>) {
+  }: StoreManagerOptions<T>) {
     super()
     this.proxyReducer = proxyReducer
     this.middlewares = middlewares

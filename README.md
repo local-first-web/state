@@ -49,7 +49,7 @@ A typical app just needs one instance of Cevitxe, which can be used to manage an
 documents.
 
 ```js
-import { Cevitxe } from 'cevitxe'
+import { StoreManager } from 'cevitxe'
 import { proxyReducer } from '../reducer'
 import { ALL } from '../constants'
 

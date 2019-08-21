@@ -12,7 +12,7 @@ export interface ChangeMap {
   [docId: string]: A.ChangeFn<any>
 }
 
-export interface CevitxeOptions<T> {
+export interface StoreManagerOptions<T> {
   // Redux store
   proxyReducer: ProxyReducer
   middlewares?: Middleware[] // TODO: accept an `enhancer` object instead

@@ -7,7 +7,7 @@ import { DialogProvider } from 'muibox'
 import { useState } from 'react'
 import { Provider } from 'react-redux'
 import Redux from 'redux'
-import { cevitxe } from '../redux/store'
+import { storeManager } from '../redux/store'
 import { App } from './App'
 import { Loading } from './Loading'
 
@@ -17,13 +17,13 @@ export const Shell = () => {
   const [appStore, setAppStore] = useState<Redux.Store>()
 
   const onStoreReady = (store: Redux.Store) => {
-    log('store ready', cevitxe.discoveryKey)
+    log('store ready', storeManager.discoveryKey)
     setAppStore(store)
   }
 
   return (
     <div css={styles.shell}>
-      <Toolbar cevitxe={cevitxe} onStoreReady={onStoreReady} />
+      <Toolbar storeManager={storeManager} onStoreReady={onStoreReady} />
       {appStore === undefined ? (
         <Loading />
       ) : (

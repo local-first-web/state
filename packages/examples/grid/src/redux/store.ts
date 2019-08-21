@@ -1,4 +1,4 @@
-import { Cevitxe, collection } from 'cevitxe'
+import { StoreManager, collection } from 'cevitxe'
 import { emptyGrid } from '../ag-grid/emptyGrid'
 import { proxyReducer } from './reducers'
 
@@ -11,7 +11,7 @@ const urls = process.env.REACT_APP_SIGNAL_SERVERS
   ? process.env.REACT_APP_SIGNAL_SERVERS.split(',')
   : undefined
 
-export const cevitxe = new Cevitxe({
+export const storeManager = new StoreManager({
   databaseName: 'grid',
   proxyReducer,
   initialState,

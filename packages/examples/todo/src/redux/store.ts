@@ -1,4 +1,4 @@
-import { Cevitxe } from 'cevitxe'
+import { StoreManager } from 'cevitxe'
 import { VisibilityFilter } from '../types'
 import { logger } from './logger'
 import { proxyReducer } from './reducers'
@@ -16,7 +16,8 @@ const middlewares = [logger]
 const urls = process.env.REACT_APP_SIGNAL_SERVERS
   ? process.env.REACT_APP_SIGNAL_SERVERS.split(',')
   : undefined
-export const cevitxe = new Cevitxe({
+
+export const storeManager = new StoreManager({
   databaseName: 'todo',
   proxyReducer,
   initialState,

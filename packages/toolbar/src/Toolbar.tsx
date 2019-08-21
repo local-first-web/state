@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { CSSObject, jsx } from '@emotion/core'
-import { Cevitxe } from 'cevitxe'
+import { StoreManager } from 'cevitxe'
 import debug from 'debug'
 import { Field, Formik } from 'formik'
 import { codes } from 'keycode'
@@ -11,7 +11,7 @@ import { wordPair } from './wordPair'
 
 //TODO ToolbarProps<T>
 
-export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
+export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
   // Hooks
 
   const [discoveryKey, setdiscoveryKey] = useQueryParam('id', StringParam)
@@ -42,7 +42,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
     setBusy(true)
     const newDiscoveryKey = wordPair()
     setdiscoveryKey(newDiscoveryKey)
-    const newStore = await cevitxe.createStore(newDiscoveryKey)
+    const newStore = await storeManager.createStore(newDiscoveryKey)
     setAppStore(newStore)
     onStoreReady(newStore)
     setBusy(false)
@@ -54,7 +54,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
     if (busy) return
     setBusy(true)
     setdiscoveryKey(newDiscoveryKey)
-    const newStore = await cevitxe.joinStore(newDiscoveryKey)
+    const newStore = await storeManager.joinStore(newDiscoveryKey)
     setAppStore(newStore)
     onStoreReady(newStore)
     setBusy(false)
@@ -112,7 +112,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
                     onKeyDown={keyDown}
                   />
                   <div css={menu(inputHasFocus)}>
-                    {cevitxe.knownDiscoveryKeys.map(discoveryKey => (
+                    {storeManager.knownDiscoveryKeys.map(discoveryKey => (
                       <a
                         key={discoveryKey}
                         role="button"
@@ -150,7 +150,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
                 <label>{busy ? 'busy' : 'idle'}</label>
               </div>
               <div css={styles.toolbarGroup}>
-                <label>{cevitxe.connectionCount}</label>
+                <label>{storeManager.connectionCount}</label>
               </div>
             </React.Fragment>
           )
@@ -161,7 +161,7 @@ export const Toolbar = ({ cevitxe, onStoreReady }: ToolbarProps<any>) => {
 }
 
 export interface ToolbarProps<T> {
-  cevitxe: Cevitxe<T>
+  storeManager: StoreManager<T>
   onStoreReady: (store: Redux.Store) => void
 }
 

@@ -4,7 +4,7 @@ import { Toolbar } from 'cevitxe-toolbar'
 import { useState } from 'react'
 import { Provider } from 'react-redux'
 import Redux from 'redux'
-import { cevitxe } from 'store/store'
+import { storeManager } from 'store/store'
 import { Chat } from './Chat'
 
 export const Shell = () => {
@@ -14,7 +14,7 @@ export const Shell = () => {
 
   return (
     <div css={wrapper}>
-      <Toolbar cevitxe={cevitxe} onStoreReady={onStoreReady} />
+      <Toolbar storeManager={storeManager} onStoreReady={onStoreReady} />
       {appStore && (
         <Provider store={appStore}>
           <Chat />
