@@ -1,7 +1,7 @@
 ﻿import { GetContextMenuItemsParams } from 'ag-grid-community'
 import { removeItem } from 'redux/actions'
 import { Dispatch, AnyAction } from 'redux'
-import { getSelectedRowIds } from 'ag-grid/gridUtils';
+import { getSelectedRowIds } from 'ag-grid/gridUtils'
 
 export const deleteRowsCommand = (
   dispatch: Dispatch<AnyAction>,
@@ -13,7 +13,7 @@ export const deleteRowsCommand = (
 
   const name = `Delete ${rowIds.length} ${rowIds.length === 1 ? 'row' : 'rows'}`
 
-  const deleteRow = (rowId: string) => dispatch(removeItem(rowId))
+  const deleteRow = (rowId: string) => dispatch(removeItem({ id: rowId }))
   const action = () => rowIds.forEach(deleteRow)
 
   return { name, action }

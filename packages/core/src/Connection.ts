@@ -56,7 +56,6 @@ export class Connection<T = any> extends EventEmitter {
         this.dispatch({
           type: RECEIVE_MESSAGE_FROM_PEER,
           payload: {
-            // connection: this.docSetSync,
             message,
           },
         })

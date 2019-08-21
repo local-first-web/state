@@ -125,16 +125,6 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
                     ))}
                   </div>
                 </div>
-                <div>
-                  <a
-                    role="button"
-                    type="button"
-                    href={url(values.discoveryKey)}
-                    css={styles.menuItem}
-                  >
-                    {discoveryKey}
-                  </a>
-                </div>
               </div>
               <div>
                 <a role="button" type="button" href={url(values.discoveryKey)} css={styles.button}>

@@ -49,10 +49,10 @@ export function addItem(item: any = { id: uuid() }) {
   return { type: ITEM_ADD, payload: item }
 }
 
-export function updateItem(id: string, field: string, value: any) {
-  return { type: ITEM_UPDATE, payload: { id, field, value } }
+export function updateItem(item: any) {
+  return { type: ITEM_UPDATE, payload: item }
 }
 
-export function removeItem(id: string) {
-  return { type: ITEM_REMOVE, payload: { id } }
+export function removeItem(item: any) {
+  return { type: ITEM_REMOVE, payload: item }
 }

@@ -82,7 +82,7 @@ describe('adaptReducer', () => {
 
     it('should remove an item', () => {
       const { state, reducer } = setup(stateWithTeacher1)
-      const action = { type: 'REMOVE_TEACHER', payload: teacher1 }
+      const action = { type: 'REMOVE_TEACHER', payload: { id: teacher1.id } }
       const newState = reducer(state, action)
       expect(newState).toEqual(emptyState)
     })

@@ -48,9 +48,9 @@ export function collection(name: string, { idField = 'id' }: CollectionOptions =
       [item[idField]]: (s: any) => Object.assign(s, item),
     }),
 
-    remove: (item: any) => ({
-      [collectionKey]: (s: any) => delete s[item[idField]],
-      [item[idField]]: DELETE_ITEM,
+    remove: ({ id }: { id: string }) => ({
+      [collectionKey]: (s: any) => delete s[id],
+      [id]: DELETE_ITEM,
     }),
 
     // Gets all items for the collection when given the redux state (an object representation of the DocSet)

@@ -98,7 +98,12 @@ const Grid = () => {
         if (Number.isNaN(params.newValue)) return false
     }
     log('dispatching updateItem')
-    dispatch(updateItem(params.data.id, params.colDef.field!, params.newValue))
+
+    const update = {
+      id: params.data.id,
+      [params.colDef.field!]: params.newValue,
+    }
+    dispatch(updateItem(update))
     return true
   }
 

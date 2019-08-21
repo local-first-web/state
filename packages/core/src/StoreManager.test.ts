@@ -169,7 +169,7 @@ describe('Cevitxe', () => {
       const { close, localStoreManager, localStore, discoveryKey } = await open()
 
       // change something in the local store
-      localStore.dispatch({ type: 'REMOVE_TEACHER', payload: defaultTeacher })
+      localStore.dispatch({ type: 'REMOVE_TEACHER', payload: { id: defaultTeacher.id } })
 
       const expectedState = {
         [teachersKey]: {},
