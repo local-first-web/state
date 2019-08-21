@@ -1,5 +1,4 @@
 import A, { ChangeFn } from 'automerge'
-import { DocSet } from './lib/automerge'
 import debug from 'debug'
 import { MiddlewareFactory, ProxyReducer } from './types'
 import { RECEIVE_MESSAGE_FROM_PEER, DELETE_ITEM, DELETE_COLLECTION } from './constants'
@@ -10,25 +9,21 @@ interface DocMap {
   [key: string]: A.Doc<any>
 }
 
-export const getMiddleware: MiddlewareFactory = <T>(
-  feed: Feed<string>,
-  docSet: DocSet<any>,
-  proxyReducer: ProxyReducer
-) => {
+export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => {
   return store => next => action => {
     // before changes
+
     // detect which documents will be changed and cache them
     const affectedDocs: DocMap = {} // cache for docs that will be changed
     const removedDocs: string[] = [] // list of docs that will be removed
+
     const functionMap = proxyReducer(action)
     if (functionMap) {
       for (let docId in functionMap) {
         const fn = functionMap[docId] as ChangeFn<any> | symbol
         if (fn === DELETE_COLLECTION) {
-          const collectionIndexDoc = docSet.getDoc(docId)
-          for (const collectionItemId in collectionIndexDoc) {
-            removedDocs.push(collectionItemId)
-          }
+          const index = docSet.getDoc(docId)
+          for (const itemDocId in index) removedDocs.push(itemDocId)
           removedDocs.push(docId)
         } else if (fn === DELETE_ITEM) {
           removedDocs.push(docId)
@@ -61,6 +56,7 @@ export const getMiddleware: MiddlewareFactory = <T>(
       // for remove actions, we've made a list, so we just add a flag for each
       for (const docId of removedDocs) changeSets.push({ docId, changes: [], isDelete: true })
     }
+
     // write any changes to the feed
     if (changeSets.length) feed.append(JSON.stringify(changeSets))
 
