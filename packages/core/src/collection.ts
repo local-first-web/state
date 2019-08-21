@@ -56,7 +56,9 @@ export function collection(name: string, { idField = 'id' }: CollectionOptions =
 
     // Gets all items for the collection when given the redux state (an object representation of the DocSet)
     getAll: (reduxState: any) => {
-      return Object.keys(reduxState[collectionKey]).map((d: string) => reduxState[d])
+      return Object.keys(reduxState[collectionKey])
+        .map((d: string) => reduxState[d]) // get items by key
+        .filter((d: any) => !!d) // only return items that currently exist
     },
 
     count: (reduxState: any) => {
