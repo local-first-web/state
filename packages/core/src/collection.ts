@@ -1,3 +1,4 @@
+import A from 'automerge'
 import { DocSet } from './lib/automerge'
 import { DELETE_COLLECTION, DELETE_ITEM } from './constants'
 
@@ -66,11 +67,11 @@ export function collection(name: string, { idField = 'id' }: CollectionOptions =
 }
 
 export const deleteCollectionItems = (docSet: DocSet<any>, key: string) => {
-  const collectionIndexDoc = docSet.getDoc(key)
+  let collectionIndexDoc = docSet.getDoc(key)
 
   for (const docId in collectionIndexDoc) {
     docSet.removeDoc(docId)
-    delete collectionIndexDoc[docId]
+    collectionIndexDoc = A.change(collectionIndexDoc, (doc: any) => delete doc[docId])
   }
 
   docSet.setDoc(key, collectionIndexDoc)
