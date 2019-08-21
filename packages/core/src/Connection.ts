@@ -1,4 +1,3 @@
-import A from 'automerge'
 import { DocSet } from './lib/automerge'
 import { DocSetSync } from './DocSetSync'
 import debug from 'debug'
