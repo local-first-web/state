@@ -3,7 +3,6 @@ import { DocSet } from './lib/automerge'
 import debug from 'debug'
 import { MiddlewareFactory, ProxyReducer } from './types'
 import { RECEIVE_MESSAGE_FROM_PEER, DELETE_ITEM, DELETE_COLLECTION } from './constants'
-import { docSetToObject } from './docSetHelpers'
 
 const log = debug('cevitxe:middleware')
 
@@ -14,8 +13,7 @@ interface DocMap {
 export const getMiddleware: MiddlewareFactory = <T>(
   feed: Feed<string>,
   docSet: DocSet<any>,
-  proxyReducer: ProxyReducer,
-  discoveryKey?: string
+  proxyReducer: ProxyReducer
 ) => {
   return store => next => action => {
     // before changes
@@ -35,7 +33,7 @@ export const getMiddleware: MiddlewareFactory = <T>(
         } else if (fn === DELETE_ITEM) {
           removedDocs.push(docId)
         } else if (typeof fn === 'function') {
-          affectedDocs[docId] = docSet.getDoc(docId)
+          affectedDocs[docId] = docSet.getDoc(docId) || A.init() // If doc didn't exist before, it's a new doc
         }
       }
     }
@@ -44,30 +42,27 @@ export const getMiddleware: MiddlewareFactory = <T>(
     const newState = next(action)
 
     // after changes
-    log('%o', { discoveryKey, action })
+    log('%o', { action })
 
     // collect document changes for persistence
-    let changeSets = []
+    const changeSets = []
     if (action.type === RECEIVE_MESSAGE_FROM_PEER) {
+      // for changes coming from peer, we already have the Automerge changes, so just persist them
       const { docId, changes } = action.payload.message
       changeSets.push({ docId, changes })
     } else {
-      // insert/update actions
-      // @ts-ignore
-      for (let docId of docSet.docIds) {
-        const oldDoc = affectedDocs[docId] || A.init() // If doc didn't exist before, it's a new doc
+      // for insert/update, we generate the changes by comparing each document before & after
+      for (const docId in affectedDocs) {
+        const oldDoc = affectedDocs[docId]
         const newDoc = docSet.getDoc(docId)
         const changes = A.getChanges(oldDoc, newDoc)
         if (changes.length > 0) changeSets.push({ docId, changes })
       }
-      // remove actions
-      for (const docId of removedDocs) {
-        // Special flag to tell the feed consumer to remove this doc
-        changeSets.push({ docId, changes: [], isDelete: true })
-      }
+      // for remove actions, we've made a list, so we just add a flag for each
+      for (const docId of removedDocs) changeSets.push({ docId, changes: [], isDelete: true })
     }
     // write any changes to the feed
-    if (changeSets.length > 0) feed.append(JSON.stringify(changeSets))
+    if (changeSets.length) feed.append(JSON.stringify(changeSets))
 
     return newState
   }
