@@ -38,8 +38,12 @@ const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
     const fn = functionMap[docId] as ChangeFn<any> | symbol
     if (fn === DELETE_COLLECTION) {
       deleteCollectionItems(docSet, docId)
+      // Skipping removal of index key for now, seems to cause divergent state issues
+      // between peers when dropping and re-adding a collection with same name
+      // If we end up keeping the collection index indefinitely, this action should
+      // be renamed to [CLEAR|EMPTY|TRUNCATE]_COLLECTION or something
       // remove collection index
-      docSet.removeDoc(docId)
+      //docSet.removeDoc(docId)
     } else if (fn === DELETE_ITEM) {
       docSet.removeDoc(docId)
     } else if (typeof fn === 'function') {

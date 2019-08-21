@@ -91,7 +91,7 @@ describe('adaptReducer', () => {
       const { state, reducer } = setup()
       const removeAction = { type: 'CLEAR_TEACHERS' }
       const removedState = reducer(state, removeAction)
-      expect(removedState).toEqual({})
+      expect(removedState).toEqual({ [teachersCollection]: {} })
     })
 
     it('should allow adding multiple items to a new collection', () => {
