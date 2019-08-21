@@ -3,9 +3,7 @@ import WebSocket from 'ws'
 import { Server } from './Server'
 import { getPortPromise as getAvailablePort } from 'portfinder'
 
-const kill = require('kill-port')
 const log = debug('cevitxe:signal-server:tests')
-const _log = console.log
 
 describe('Server', () => {
   let port: number
@@ -42,7 +40,6 @@ describe('Server', () => {
 
   afterAll(() => {
     server.close()
-    console.log = _log
   })
 
   const makeIntroductionRequest = (id: string, key: string) => {
