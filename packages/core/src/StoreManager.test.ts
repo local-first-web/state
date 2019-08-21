@@ -243,7 +243,7 @@ describe('Cevitxe', () => {
       const { close, remoteStoreManager, localStore, remoteStore } = await open()
 
       // change something in the local store
-      const teacher = { id: 'abcxyz', first: 'Herb', last: 'Caudill' }
+      const teacher = { id: 'defzyx', first: 'Mike', last: 'Tyson' }
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher })
 
       // wait for remote peer to see change
@@ -251,8 +251,9 @@ describe('Cevitxe', () => {
       await eventPromise(remoteStoreManager, 'change')
 
       const expectedState = {
-        abcxyz: teacher,
-        [teachersKey]: { abcxyz: true },
+        abcxyz: defaultTeacher,
+        [teacher.id]: teacher,
+        [teachersKey]: { abcxyz: true, [teacher.id]: true },
       }
 
       // confirm that the change took locally
@@ -269,9 +270,11 @@ describe('Cevitxe', () => {
     it('should sync changes to an existing document in both directions', async () => {
       const { close, localStoreManager, remoteStoreManager, localStore, remoteStore } = await open()
 
-      // add a teacher in the local store
-      const teacher1 = { id: 'abcxyz', first: 'Herb', last: 'Caudill' }
-      localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
+      // modify the teacher in the local store
+      localStore.dispatch({
+        type: 'UPDATE_TEACHER',
+        payload: { id: 'abcxyz', first: 'Herbert' },
+      })
       await eventPromise(remoteStoreManager, 'change')
 
       // modify the teacher in the remote store
@@ -280,13 +283,6 @@ describe('Cevitxe', () => {
         payload: { id: 'abcxyz', email: 'h@hc3.me' },
       })
       await eventPromise(localStoreManager, 'change')
-
-      // modify the teacher in the local store
-      localStore.dispatch({
-        type: 'UPDATE_TEACHER',
-        payload: { id: 'abcxyz', first: 'Herbert' },
-      })
-      await eventPromise(remoteStoreManager, 'change')
 
       const expectedState = {
         abcxyz: { id: 'abcxyz', first: 'Herbert', last: 'Caudill', email: 'h@hc3.me' },
@@ -308,7 +304,7 @@ describe('Cevitxe', () => {
       const { close, localStoreManager, remoteStoreManager, localStore, remoteStore } = await open()
 
       // add a teacher in the local store
-      const teacher1 = { id: 'abcxyz', first: 'Herb', last: 'Caudill' }
+      const teacher1 = { id: 'ghijkl', first: 'Mike', last: 'Tyson' }
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
       await eventPromise(remoteStoreManager, 'change')
 
@@ -322,8 +318,9 @@ describe('Cevitxe', () => {
 
       const expectedState = {
         abcxyz: { id: 'abcxyz', first: 'Herb', last: 'Caudill' },
+        [teacher1.id]: teacher1,
         qrstuv: { id: 'qrstuv', first: 'Brent', last: 'Keller' },
-        [teachersKey]: { abcxyz: true, qrstuv: true },
+        [teachersKey]: { abcxyz: true, qrstuv: true, [teacher1.id]: true },
       }
 
       // confirm that the local store is caught up
