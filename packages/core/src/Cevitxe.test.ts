@@ -231,6 +231,7 @@ describe('Cevitxe', () => {
 
       // include a teardown function in the return values
       const close = async () => {
+        await pause(100)
         await localCevitxe.close()
         await remoteCevitxe.close()
       }
@@ -360,7 +361,7 @@ describe('Cevitxe', () => {
 
       // Confirm that the modified state is still there
       const newState = newRemoteStore.getState()
-      expect(remoteState.abcxyz.first).toEqual('Herbert')
+      expect(newState.abcxyz.first).toEqual('Herbert')
 
       await close()
     })
