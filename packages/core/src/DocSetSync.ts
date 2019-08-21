@@ -113,10 +113,6 @@ export class DocSetSync {
   }
 
   private validateDoc(docId: string, clock: Clock) {
-    // log('validateDoc', docId)
-    const doc = this.docSet.getDoc(docId)
-    // console.log('actorId', A.getActorId(doc))
-
     const ourClock = this.getClock(docId, ours)
 
     // Make sure doc has a clock (i.e. is an automerge object)
@@ -140,7 +136,6 @@ export class DocSetSync {
 
   // Send changes if we have more recent information than they do
   private maybeSendChanges(docId: string) {
-    // log('maybeSendChanges', docId)
     const theirClock = (this.getClock(docId, theirs) as unknown) as A.Clock
     if (theirClock === undefined) return
 
@@ -152,7 +147,6 @@ export class DocSetSync {
   }
 
   private sendChanges(docId: string, changes: A.Change[]) {
-    // log('sending %s changes', changes.length)
     const clock = this.getClockFromDoc(docId)
     this.send({ docId, clock: clock.toJS(), changes })
     this.updateClock(docId, ours)
@@ -167,7 +161,6 @@ export class DocSetSync {
 
   // A message with no changes and a clock is a request for changes
   private requestChanges(docId: string, clock = this.getClockFromDoc(docId)) {
-    // log('requesting changes')
     this.send({ docId, clock: clock.toJS() })
   }
 
@@ -190,7 +183,6 @@ export class DocSetSync {
   }
 
   private getClockFromDoc = (docId: string) => {
-    // log('getClockFromDoc', docId)
     const state = this.getState(docId) as any
     if (state === undefined) return
     else return state.getIn(['opSet', 'clock'])
