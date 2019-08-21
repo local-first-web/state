@@ -22,7 +22,6 @@ describe('Client', () => {
     port = await getAvailablePort({ port: 3000 })
     url = `ws://localhost:${port}`
 
-    await kill(port, 'tcp') // kill anything that's still listening on our port (e.g. previous test run didn't end cleanly)
     server = new Server({ port })
     await server.listen({ silent: true })
   })
