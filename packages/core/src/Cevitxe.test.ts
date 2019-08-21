@@ -152,7 +152,7 @@ describe('Cevitxe', () => {
       expect(localState).toEqual(expectedState)
 
       // disconnect store
-      await pause(100)
+      await pause(500)
       await localCevitxe.close()
 
       // Then we create a new store, which should see the state in the fake db and load it
@@ -180,7 +180,7 @@ describe('Cevitxe', () => {
       expect(localState).toEqual(expectedState)
 
       // disconnect store
-      await pause(100)
+      await pause(500)
       await localCevitxe.close()
 
       // Then we create a new store, which should see the state in the fake db and load it
@@ -231,7 +231,7 @@ describe('Cevitxe', () => {
 
       // include a teardown function in the return values
       const close = async () => {
-        await pause(100)
+        await pause(500)
         await localCevitxe.close()
         await remoteCevitxe.close()
       }
