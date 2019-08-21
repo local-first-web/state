@@ -372,6 +372,7 @@ describe('Cevitxe', () => {
       // confirm that the record is there before deleting it
       const localState = localStore.getState()
       expect(localState[teachersKey]).toHaveProperty('abcxyz')
+      expect(localState).toHaveProperty('abcxyz')
 
       // delete a record in the local store
       localStore.dispatch({ type: 'REMOVE_TEACHER', payload: { id: 'abcxyz' } })
@@ -382,20 +383,23 @@ describe('Cevitxe', () => {
       // confirm that the deletion took place locally
       const newLocalState = localStore.getState()
       expect(newLocalState[teachersKey]).not.toHaveProperty('abcxyz')
+      expect(newLocalState).not.toHaveProperty('abcxyz')
 
       // confirm that the deletion took place in the remote store
       const newRemoteState = remoteStore.getState()
       expect(newRemoteState[teachersKey]).not.toHaveProperty('abcxyz')
+      expect(newRemoteState).not.toHaveProperty('abcxyz')
 
       // disconnect both stores
       await close()
 
-      // reconnect
+      // reconnect remote store
       const newRemoteStore = await remoteCevitxe.joinStore(discoveryKey)
 
       // Confirm that the modified state is still there
       const newNewRemoteState = newRemoteStore.getState()
       expect(newNewRemoteState[teachersKey]).not.toHaveProperty('abcxyz')
+      expect(newNewRemoteState).not.toHaveProperty('abcxyz')
 
       await close()
     })
