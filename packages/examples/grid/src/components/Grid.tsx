@@ -35,11 +35,7 @@ const log = debug('cevitxe:grid')
 const Grid = () => {
   const dispatch = useDispatch()
 
-  const ready = useSelector((state: any) => {
-    const result = !!state && !!state[rowCollectionKey] && !!state.schema
-    console.log('ready', state)
-    return result
-  })
+  const ready = useSelector((state: any) => !!state && !!state[rowCollectionKey] && !!state.schema)
 
   const rowCollection = useSelector((state: any) => {
     if (!ready) return []
