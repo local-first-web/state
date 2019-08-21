@@ -52,6 +52,7 @@ export class Connection<T = any> extends EventEmitter {
     if (message.changes) {
       log('%s changes received', message.changes.length)
       if (this.dispatch) {
+        // dispatch the changes from the peer for middleware to write them to local feed
         this.dispatch({
           type: RECEIVE_MESSAGE_FROM_PEER,
           payload: {
