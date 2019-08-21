@@ -20,18 +20,14 @@ describe('Server', () => {
   let testId: number = 0
 
   beforeAll(async () => {
-    // prevent server from logging 'listening on port...' during tests
-    console.log = () => {}
-
     // find a port and set things up
-    port = await getAvailablePort({ port: 3000 })
+    port = await getAvailablePort({ port: 3100 })
     url = `ws://localhost:${port}`
     introductionUrl = `${url}/introduction`
     connectUrl = `${url}/connect`
 
-    await kill(port, 'tcp') // kill anything that's still listening on our port (e.g. previous test run didn't end cleanly)
     server = new Server({ port })
-    server.listen()
+    server.listen({ silent: true })
   })
 
   beforeEach(() => {
