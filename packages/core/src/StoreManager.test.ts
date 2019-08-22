@@ -416,7 +416,7 @@ describe('Cevitxe', () => {
       expect(Object.keys(localStoreManager.connections)).toHaveLength(0)
     })
 
-    it.only('should sync a dropped collection', async () => {
+    it('should sync a dropped collection', async () => {
       const { close, localStoreManager, remoteStoreManager, localStore, remoteStore } = await open()
 
       // waiting for remote to sync initial state
@@ -434,17 +434,21 @@ describe('Cevitxe', () => {
       localStore.dispatch({ type: 'DROP_TEACHERS' })
       await eventPromise(remoteStoreManager, 'change')
 
-      const expectedLocalState = { [teachersKey]: {} }
+      const expectedState = { [teachersKey]: {} }
       // confirm that the local store is caught up
       const newLocalState = localStore.getState()
-      expect(newLocalState).toEqual(expectedLocalState)
+      expect(newLocalState).toEqual(expectedState)
 
-      // TODO: Sync docSet.removeDoc to peers
-      // Once that's enabled the local and remote stores should have identical states here
-      const expectedRemoteState = { ...expectedLocalState, [defaultTeacher.id]: defaultTeacher }
+      const remoteStateWithOrphanedDoc = { ...expectedState, [defaultTeacher.id]: defaultTeacher }
+
       // confirm that the remote store is caught up
       const newRemoteState = remoteStore.getState()
-      expect(newRemoteState).toEqual(expectedRemoteState)
+
+      // TODO: Sync docSet.removeDoc to peers
+      // Once that's enabled, the local and remote stores should have identical states here, and
+      // this assertion can be replaced with the one currently commented out
+      expect(newRemoteState).toEqual(remoteStateWithOrphanedDoc)
+      // expect(newRemoteState).toEqual(expectedState)
 
       await close()
     })
