@@ -418,7 +418,7 @@ describe('Cevitxe', () => {
       expect(Object.keys(localStoreManager.connections)).toHaveLength(0)
     })
 
-    it.only('should sync a dropped collection', async () => {
+    it('should sync a dropped collection', async () => {
       const { close, localStoreManager, remoteStoreManager, localStore, remoteStore } = await open()
 
       // waiting for remote to sync initial state
@@ -436,13 +436,12 @@ describe('Cevitxe', () => {
       localStore.dispatch({ type: 'DROP_TEACHERS' })
       await eventPromise(remoteStoreManager, 'change')
 
-      const expectedLocalState = { [teachersKey]: {} }
+      const expectedLocalState = { [teachersKey]: { [defaultTeacher.id]: false } }
       // confirm that the local store is caught up
       const newLocalState = localStore.getState()
       expect(newLocalState).toEqual(expectedLocalState)
 
-      // TODO: Sync docSet.removeDoc to peers
-      // Once that's enabled the local and remote stores should have identical states here
+      // deletes are not immediately detected on the remote, they'll need to be cleaned up later using `purgeDeletedCollectionItems`
       const expectedRemoteState = { ...expectedLocalState, [defaultTeacher.id]: defaultTeacher }
       // confirm that the remote store is caught up
       const newRemoteState = remoteStore.getState()

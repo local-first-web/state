@@ -68,13 +68,14 @@ export function collection(name: string, { idField = 'id' }: CollectionOptions =
   }
 }
 
-export const deleteCollectionItems = (docSet: DocSet<any>, key: string) => {
-  let collectionIndexDoc = docSet.getDoc(key)
-
+// mark all docs in the given index as deleted, removing referenced docs from the local docSet
+export const deleteCollectionItems = (docSet: DocSet<any>, collectionKey: string) => {
+  let collectionIndexDoc = docSet.getDoc(collectionKey)
   for (const docId in collectionIndexDoc) {
+    // mark doc as deleted in index
+    collectionIndexDoc = A.change(collectionIndexDoc, (doc: any) => (doc[docId] = false))
+    // remove the referenced doc
     docSet.removeDoc(docId)
-    collectionIndexDoc = A.change(collectionIndexDoc, (doc: any) => delete doc[docId])
   }
-
-  docSet.setDoc(key, collectionIndexDoc)
+  docSet.setDoc(collectionKey, collectionIndexDoc)
 }

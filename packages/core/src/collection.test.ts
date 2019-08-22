@@ -42,7 +42,11 @@ describe('deleteCollectionItems', () => {
   it('should remove all items listed in index', () => {
     deleteCollectionItems(docSet, 'teachers')
     expect(docSetToObject(docSet)).toEqual({
-      teachers: {},
+      teachers: {
+        1: false,
+        2: false,
+        3: false,
+      },
 
       schools: {
         4: true,
