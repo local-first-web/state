@@ -20,6 +20,41 @@ describe('collection', () => {
   })
 })
 
+describe('selectors', () => {
+  const name = 'teachers'
+  const teachersCollection = collection(name)
+
+  const reduxState = {
+    [teachersCollection.keyName]: {
+      1: true,
+      2: false,
+      3: true,
+    },
+    1: { id: '1', type: 'teacher' },
+    2: { id: '2', type: 'teacher' },
+    3: { id: '3', type: 'teacher' },
+  }
+
+  describe('getAll', () => {
+    it('should only return non-deleted items for the collection', () => {
+      const actual = teachersCollection.getAll(reduxState)
+      expect(actual).toEqual([reduxState[1], reduxState[3]])
+    })
+
+    it('should return empty array if state is undefined', () => {
+      const actual = teachersCollection.getAll(undefined)
+      expect(actual).toEqual([])
+    })
+
+    it('should return empty array if collection index does not exist', () => {
+      const state = { ...reduxState }
+      delete state[teachersCollection.keyName]
+      const actual = teachersCollection.getAll(state)
+      expect(actual).toEqual([])
+    })
+  })
+})
+
 describe('deleteCollectionItems', () => {
   const docSet = docSetFromObject({
     teachers: {

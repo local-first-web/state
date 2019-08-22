@@ -20,6 +20,12 @@ interface CollectionOptions {
 export function collection(name: string, { idField = 'id' }: CollectionOptions = {}) {
   const collectionKey = `::${name}`
 
+  // helpers
+  const nonDeletedKeys = (reduxState: any): string[] => {
+    if (!reduxState || !reduxState[collectionKey]) return []
+    return Object.keys(reduxState[collectionKey]).filter((d: any) => reduxState[collectionKey][d])
+  }
+
   return {
     keyName: collectionKey,
 
@@ -56,9 +62,7 @@ export function collection(name: string, { idField = 'id' }: CollectionOptions =
 
     // Gets all items for the collection when given the redux state (an object representation of the DocSet)
     getAll: (reduxState: any) => {
-      return Object.keys(reduxState[collectionKey])
-        .map((d: string) => reduxState[d]) // get items by key
-        .filter((d: any) => !!d) // only return items that currently exist
+      return nonDeletedKeys(reduxState).map((d: string) => reduxState[d]) // get non-deleted items by key
     },
 
     count: (reduxState: any) => {
