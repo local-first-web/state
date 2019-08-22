@@ -53,6 +53,25 @@ describe('selectors', () => {
       expect(actual).toEqual([])
     })
   })
+
+  describe('count', () => {
+    it('should return the number of non-deleted items for the collection', () => {
+      const actual = teachersCollection.count(reduxState)
+      expect(actual).toEqual(2)
+    })
+
+    it('should return zero if state is undefined', () => {
+      const actual = teachersCollection.count(undefined)
+      expect(actual).toEqual(0)
+    })
+
+    it('should return zero if collection index does not exist', () => {
+      const state = { ...reduxState }
+      delete state[teachersCollection.keyName]
+      const actual = teachersCollection.count(state)
+      expect(actual).toEqual(0)
+    })
+  })
 })
 
 describe('deleteCollectionItems', () => {
