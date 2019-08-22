@@ -1,4 +1,4 @@
-import { collection, deleteCollectionItems } from './collection'
+import { collection, deleteCollectionItems, purgeDeletedCollectionItems } from './collection'
 import { docSetFromObject, docSetToObject } from './docSetHelpers'
 
 describe('collection', () => {
@@ -54,6 +54,45 @@ describe('deleteCollectionItems', () => {
       },
       4: { id: '4', type: 'school' },
       5: { id: '4', type: 'school' },
+    })
+  })
+})
+
+describe('purgeDeletedCollectionItems', () => {
+  const docSet = docSetFromObject({
+    teachers: {
+      1: true,
+      2: false,
+      3: false,
+    },
+    1: { id: '1', type: 'teacher' },
+    2: { id: '2', type: 'teacher' },
+    3: { id: '3', type: 'teacher' },
+
+    schools: {
+      4: true,
+      5: true,
+    },
+    4: { id: '4', type: 'school' },
+    5: { id: '5', type: 'school' },
+  })
+
+  it('should remove all docs marked as deleted in the index', () => {
+    purgeDeletedCollectionItems(docSet, 'teachers')
+    expect(docSetToObject(docSet)).toEqual({
+      teachers: {
+        1: true,
+        2: false,
+        3: false,
+      },
+      1: { id: '1', type: 'teacher' },
+
+      schools: {
+        4: true,
+        5: true,
+      },
+      4: { id: '4', type: 'school' },
+      5: { id: '5', type: 'school' },
     })
   })
 })

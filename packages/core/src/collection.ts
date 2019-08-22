@@ -79,3 +79,14 @@ export const deleteCollectionItems = (docSet: DocSet<any>, collectionKey: string
   }
   docSet.setDoc(collectionKey, collectionIndexDoc)
 }
+
+// remove any docs that are marked as deleted in a collection but still exist in the docSet
+export const purgeDeletedCollectionItems = (docSet: DocSet<any>, collectionKey: string) => {
+  let collectionIndexDoc = docSet.getDoc(collectionKey)
+  const deletedDocIds = Object.keys(collectionIndexDoc).filter(x => !collectionIndexDoc[x])
+  for (const docId of deletedDocIds) {
+    // remove "deleted" doc if it still exists
+    const doc = docSet.getDoc(docId)
+    if (doc) docSet.removeDoc(docId)
+  }
+}
