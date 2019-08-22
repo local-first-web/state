@@ -84,7 +84,9 @@ describe('adaptReducer', () => {
       const { state, reducer } = setup(stateWithTeacher1)
       const action = { type: 'REMOVE_TEACHER', payload: { id: teacher1.id } }
       const newState = reducer(state, action)
-      expect(newState).toEqual(emptyState)
+      expect(newState).toEqual({
+        [teachersCollection]: { [teacher1.id]: false },
+      })
     })
 
     it('should allow dropping a collection', () => {

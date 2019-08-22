@@ -50,7 +50,7 @@ export function collection(name: string, { idField = 'id' }: CollectionOptions =
     }),
 
     remove: ({ id }: { id: string }) => ({
-      [collectionKey]: (s: any) => delete s[id],
+      [collectionKey]: (s: any) => (s[id] = false),
       [id]: DELETE_ITEM,
     }),
 
