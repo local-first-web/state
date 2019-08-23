@@ -175,7 +175,7 @@ describe('Cevitxe', () => {
       localStore.dispatch({ type: 'REMOVE_TEACHER', payload: { id: defaultTeacher.id } })
 
       const expectedState = {
-        [teachersKey]: {},
+        [teachersKey]: { [defaultTeacher.id]: false },
       }
 
       // confirm that the change took locally
@@ -371,7 +371,7 @@ describe('Cevitxe', () => {
 
       // confirm that the record is there before deleting it
       const localState = localStore.getState()
-      expect(localState[teachersKey]).toHaveProperty('abcxyz')
+      expect(localState[teachersKey][defaultTeacher.id]).toEqual(true)
       expect(localState).toHaveProperty('abcxyz')
 
       // delete a record in the local store
@@ -382,12 +382,13 @@ describe('Cevitxe', () => {
 
       // confirm that the deletion took place locally
       const newLocalState = localStore.getState()
-      expect(newLocalState[teachersKey]).not.toHaveProperty('abcxyz')
+      expect(newLocalState[teachersKey][defaultTeacher.id]).toEqual(false)
       expect(newLocalState).not.toHaveProperty('abcxyz')
 
       // confirm that the deletion took place in the remote store
       const newRemoteState = remoteStore.getState()
-      expect(newRemoteState[teachersKey]).not.toHaveProperty('abcxyz')
+      expect(newRemoteState[teachersKey][defaultTeacher.id]).toEqual(false)
+      // TODO: this seems to remove the remote doc but I don't know how
       expect(newRemoteState).not.toHaveProperty('abcxyz')
 
       // disconnect both stores
@@ -398,7 +399,8 @@ describe('Cevitxe', () => {
 
       // Confirm that the modified state is still there
       const newNewRemoteState = newRemoteStore.getState()
-      expect(newNewRemoteState[teachersKey]).not.toHaveProperty('abcxyz')
+      expect(newNewRemoteState[teachersKey][defaultTeacher.id]).toEqual(false)
+      // TODO: this seems to remove the remote doc but I don't know how
       expect(newNewRemoteState).not.toHaveProperty('abcxyz')
 
       await close()
@@ -443,11 +445,11 @@ describe('Cevitxe', () => {
 
       // confirm that the remote store is caught up
       const newRemoteState = remoteStore.getState()
-
-      // TODO: Sync docSet.removeDoc to peers
-      // Once that's enabled, the local and remote stores should have identical states here, and
-      // this assertion can be replaced with the one currently commented out
       expect(newRemoteState).toEqual(remoteStateWithOrphanedDoc)
+
+      // TODO: Sync docSet.removeDoc to peers deletes are not immediately detected on the remote,
+      // they'll need to be cleaned up later using `purgeDeletedCollectionItems` Once that happens,
+      // the local and remote stores should have identical states here, and this assertion will pass
       // expect(newRemoteState).toEqual(expectedState)
 
       await close()
