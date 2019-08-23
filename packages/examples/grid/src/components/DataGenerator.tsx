@@ -10,7 +10,7 @@ import { clearCollection, loadCollection, loadSchema } from 'redux/actions'
 import uuid from 'uuid'
 import { ProgressBar } from './ProgressBar'
 
-const pause = (t: number = 0) => new Promise(ok => setTimeout(ok, t))
+const nextFrame = () => new Promise(ok => requestAnimationFrame(ok))
 
 const log = debug('cevitxe:grid:datagenerator')
 
@@ -65,12 +65,12 @@ export function DataGenerator() {
       // only update progress on increases of 1%
       if (i % (rows / 100) === 0) {
         setProgress(Math.ceil((i / rows) * 100))
-        await pause()
+        await nextFrame()
       }
     }
     log('generate: done', rows)
     setProgress(0)
-    await pause()
+    await nextFrame()
     dispatch(loadCollection(collection))
   }
 
@@ -87,7 +87,7 @@ export function DataGenerator() {
           {progress ? 'Generating...' : 'Generate data'}
         </button>
         <div css={menu(menuOpen)}>
-          {[5, 100, 1000, 10000, 100000].map(rows => (
+          {[10, 100, 1000, 10000, 20000, 40000, 60000, 80000].map(rows => (
             <button
               key={rows}
               css={styles.menuItem}

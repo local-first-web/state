@@ -7,7 +7,7 @@ import { rowCollectionKey } from '../redux/store'
 import { collection } from 'cevitxe'
 
 export const Toolbar = () => (
-  <div css={styles.toolbar}>
+  <div css={{...styles.toolbar, zIndex: 2}}>
     <DataGenerator />
     <Loading />
     <Rows />
