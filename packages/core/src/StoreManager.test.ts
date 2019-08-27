@@ -16,18 +16,16 @@ describe('Cevitxe', () => {
   const teachersKey = collection(teachersCollection).keyName
 
   const proxyReducer = (({ type, payload }) => {
+    const { add, remove, update, drop } = collection(teachersCollection).reducers
     switch (type) {
-      case 'ADD_TEACHER': {
-        return collection(teachersCollection).add(payload)
-      }
-      case 'REMOVE_TEACHER': {
-        return collection(teachersCollection).remove(payload)
-      }
-      case 'UPDATE_TEACHER': {
-        return collection(teachersCollection).update(payload)
-      }
+      case 'ADD_TEACHER':
+        return add(payload)
+      case 'REMOVE_TEACHER':
+        return remove(payload)
+      case 'UPDATE_TEACHER':
+        return update(payload)
       case 'DROP_TEACHERS': {
-        return collection(teachersCollection).drop()
+        return drop()
       }
       default:
         return null
@@ -436,7 +434,8 @@ describe('Cevitxe', () => {
       localStore.dispatch({ type: 'DROP_TEACHERS' })
       await eventPromise(remoteStoreManager, 'change')
 
-      const expectedState = { [teachersKey]: {} }
+      const expectedState = { [teachersKey]: { [defaultTeacher.id]: false } }
+
       // confirm that the local store is caught up
       const newLocalState = localStore.getState()
       expect(newLocalState).toEqual(expectedState)
