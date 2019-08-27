@@ -19,22 +19,19 @@ describe('adaptReducer', () => {
 
   describe('should handle collections', () => {
     const proxyReducer: ProxyReducer = (({ type, payload }) => {
+      const teachers = collection('teachers').reducers
+      const students = collection('students').reducers
       switch (type) {
-        case 'ADD_TEACHER': {
-          return collection('teachers').add(payload)
-        }
-        case 'REMOVE_TEACHER': {
-          return collection('teachers').remove(payload)
-        }
-        case 'UPDATE_TEACHER': {
-          return collection('teachers').update(payload)
-        }
-        case 'CLEAR_TEACHERS': {
-          return collection('teachers').drop()
-        }
-        case 'ADD_STUDENTS': {
-          return collection('students').addManyFromMap(payload.collection)
-        }
+        case 'ADD_TEACHER':
+          return teachers.add(payload)
+        case 'REMOVE_TEACHER':
+          return teachers.remove(payload)
+        case 'UPDATE_TEACHER':
+          return teachers.update(payload)
+        case 'CLEAR_TEACHERS':
+          return teachers.drop()
+        case 'ADD_STUDENTS':
+          return students.addManyFromMap(payload.collection)
         default:
           return null
       }
