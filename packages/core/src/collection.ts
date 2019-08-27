@@ -29,36 +29,38 @@ export function collection(name: string, { idField = 'id' }: CollectionOptions =
   return {
     keyName: collectionKey,
 
-    drop: () => {
-      return { [collectionKey]: DELETE_COLLECTION }
+    reducers: {
+      drop: () => {
+        return { [collectionKey]: DELETE_COLLECTION }
+      },
+
+      add: (item: any) => ({
+        [collectionKey]: (s: any) => Object.assign(s, { [item[idField]]: true }),
+        [item[idField]]: (s: any) => Object.assign(s, item),
+      }),
+
+      addManyFromMap: (map: any) => {
+        const newKeys = {} as any
+        const newRowIndex = {} as any
+        for (const key in map) {
+          newKeys[key] = (s: any) => Object.assign(s, map[key])
+          newRowIndex[key] = true
+        }
+        return {
+          ...newKeys,
+          [collectionKey]: (s: any) => Object.assign(s, newRowIndex),
+        }
+      },
+
+      update: (item: any) => ({
+        [item[idField]]: (s: any) => Object.assign(s, item),
+      }),
+
+      remove: ({ id }: { id: string }) => ({
+        [collectionKey]: (s: any) => (s[id] = false),
+        [id]: DELETE_ITEM,
+      }),
     },
-
-    add: (item: any) => ({
-      [collectionKey]: (s: any) => Object.assign(s, { [item[idField]]: true }),
-      [item[idField]]: (s: any) => Object.assign(s, item),
-    }),
-
-    addManyFromMap: (map: any) => {
-      const newKeys = {} as any
-      const newRowIndex = {} as any
-      for (const key in map) {
-        newKeys[key] = (s: any) => Object.assign(s, map[key])
-        newRowIndex[key] = true
-      }
-      return {
-        ...newKeys,
-        [collectionKey]: (s: any) => Object.assign(s, newRowIndex),
-      }
-    },
-
-    update: (item: any) => ({
-      [item[idField]]: (s: any) => Object.assign(s, item),
-    }),
-
-    remove: ({ id }: { id: string }) => ({
-      [collectionKey]: (s: any) => (s[id] = false),
-      [id]: DELETE_ITEM,
-    }),
 
     // Gets all items for the collection when given the redux state (an object representation of the DocSet)
     getAll: (reduxState: any) => {
