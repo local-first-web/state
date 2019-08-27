@@ -1,25 +1,6 @@
 import { collection, deleteCollectionItems, purgeDeletedCollectionItems } from './collection'
 import { docSetFromObject, docSetToObject } from './docSetHelpers'
 
-describe('collection', () => {
-  const teachers = 'teachers'
-
-  it('should return an object with known keys', () => {
-    const expectedKeys = [
-      'keyName',
-      'drop',
-      'add',
-      'addManyFromMap',
-      'update',
-      'remove',
-      'getAll',
-      'count',
-    ]
-    const actual = collection(teachers)
-    expect(Object.keys(actual)).toEqual(expectedKeys)
-  })
-})
-
 describe('selectors', () => {
   const name = 'teachers'
   const teachersCollection = collection(name)
