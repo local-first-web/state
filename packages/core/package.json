@@ -1,7 +1,7 @@
 {
   "name": "cevitxe",
   "description": "CRDT-based distributed state management for Redux",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": false,
   "license": "MIT",
   "main": "dist/index.js",
@@ -20,7 +20,7 @@
   "dependencies": {
     "@types/simple-peer": "6",
     "automerge": "0",
-    "cevitxe-signal-client": "^0.2.2",
+    "cevitxe-signal-client": "^0.2.3",
     "debug": "4",
     "hypercore": "7",
     "hypercore-crypto": "1",
@@ -31,7 +31,7 @@
     "@types/debug": "4",
     "@types/jest": "24",
     "@types/p-event": "3",
-    "cevitxe-signal-server": "^0.2.2",
+    "cevitxe-signal-server": "^0.2.3",
     "fake-indexeddb": "2",
     "idb": "4",
     "jest": "24",

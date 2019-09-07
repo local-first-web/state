@@ -1,6 +1,6 @@
 {
   "name": "cevitxe-signal-server",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "main": "src/index.ts",
   "license": "MIT",
   "scripts": {
