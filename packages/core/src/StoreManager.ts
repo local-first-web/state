@@ -20,8 +20,7 @@ const valueEncoding = 'utf-8'
 
 let log = debug('cevitxe')
 
-// It's normal for a document with a lot of participants to have a lot of connections, so increase
-// the limit to avoid spurious warnings about emitter leaks.
+// It's normal for a document with a lot of participants to have a lot of connections
 EventEmitter.defaultMaxListeners = 500
 
 export class StoreManager<T> extends EventEmitter {
