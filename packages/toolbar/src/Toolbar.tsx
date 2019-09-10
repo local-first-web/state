@@ -19,7 +19,7 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
 
   const input = useRef<HTMLInputElement>() as React.RefObject<HTMLInputElement>
 
-  // join or create store
+  // join or create store on load
   useEffect(() => {
     log('setup')
     if (discoveryKey) joinStore(discoveryKey)
@@ -34,8 +34,7 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
   const log = debug(`cevitxe:toolbar:${discoveryKey}`)
   log('render')
 
-  // Handlers
-
+  // 'new' button click
   const createStore = async () => {
     setBusy(true)
     setStatus('creating store')
@@ -50,6 +49,7 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
     return newDiscoveryKey
   }
 
+  // 'join' button click
   const joinStore = async (newDiscoveryKey: string) => {
     if (busy) return
     setBusy(true)
@@ -63,10 +63,11 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
     log('joined store', newDiscoveryKey)
   }
 
+  // build url including discovery key
   const url = (discoveryKey: string = '') =>
     `${location.protocol}//${location.host}/?id=${discoveryKey}`
 
-  // Loads a discoveryKey by navigating to its URL
+  // load a discoveryKey by navigating to its URL
   const load = (discoveryKey: string | undefined) => {
     if (discoveryKey !== undefined) window.location.assign(url(discoveryKey))
   }
@@ -92,6 +93,7 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
           // in case the blur was caused by clicking on a menu item
           const inputBlur = (e: Event) => setTimeout(() => setInputHasFocus(false), 100)
 
+          // handle `enter` or `tab` keypress
           const keyDown = (event: KeyboardEvent) => {
             if (event) {
               switch (event.which) {
@@ -101,10 +103,13 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
               }
             }
           }
+
           return (
             <React.Fragment>
+              {/* Discovery key */}
               <div css={styles.toolbarGroup}>
                 <div css={styles.menuWrapper}>
+                  {/* Input */}
                   <Field
                     type="text"
                     name="discoveryKey"
@@ -113,6 +118,8 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
                     onBlur={inputBlur}
                     onKeyDown={keyDown}
                   />
+
+                  {/* Dropdown */}
                   <div css={menu(inputHasFocus)}>
                     {storeManager.knownDiscoveryKeys.map(discoveryKey => (
                       <a
@@ -128,19 +135,27 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
                   </div>
                 </div>
               </div>
+
+              {/* Join button */}
               <div>
                 <a role="button" type="button" href={url(values.discoveryKey)} css={styles.button}>
                   Join
                 </a>
               </div>
+
+              {/* New button */}
               <div css={styles.toolbarGroup}>
                 <button role="button" type="button" onClick={newClick} css={styles.button}>
                   New
                 </button>
               </div>
+
+              {/* Status */}
               <div css={styles.toolbarGroup}>
                 <label>{status}</label>
               </div>
+
+              {/* Connection count */}
               <div css={styles.toolbarGroup}>
                 <label>{storeManager.connectionCount}</label>
               </div>
