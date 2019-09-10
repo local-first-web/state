@@ -9,13 +9,10 @@ import Redux from 'redux'
 import { StringParam, useQueryParam } from 'use-query-params'
 import { wordPair } from './wordPair'
 
-//TODO ToolbarProps<T>
-
 export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
   // Hooks
-
   const [discoveryKey, setdiscoveryKey] = useQueryParam('id', StringParam)
-  const [appStore, setAppStore] = useState()
+  const [, setAppStore] = useState()
   const [inputHasFocus, setInputHasFocus] = useState(false)
   const [busy, setBusy] = useState(false)
 
