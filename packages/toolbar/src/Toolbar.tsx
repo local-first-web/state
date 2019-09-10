@@ -15,6 +15,7 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
   const [, setAppStore] = useState()
   const [inputHasFocus, setInputHasFocus] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [status, setStatus] = useState('idle')
 
   const input = useRef<HTMLInputElement>() as React.RefObject<HTMLInputElement>
 
@@ -37,12 +38,14 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
 
   const createStore = async () => {
     setBusy(true)
+    setStatus('creating store')
     const newDiscoveryKey = wordPair()
     setdiscoveryKey(newDiscoveryKey)
     const newStore = await storeManager.createStore(newDiscoveryKey)
     setAppStore(newStore)
     onStoreReady(newStore)
     setBusy(false)
+    setStatus('idle')
     log('created store', newDiscoveryKey)
     return newDiscoveryKey
   }
@@ -50,11 +53,13 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
   const joinStore = async (newDiscoveryKey: string) => {
     if (busy) return
     setBusy(true)
+    setStatus('joining store')
     setdiscoveryKey(newDiscoveryKey)
     const newStore = await storeManager.joinStore(newDiscoveryKey)
     setAppStore(newStore)
     onStoreReady(newStore)
     setBusy(false)
+    setStatus('idle')
     log('joined store', newDiscoveryKey)
   }
 
@@ -134,7 +139,7 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
                 </button>
               </div>
               <div css={styles.toolbarGroup}>
-                <label>{busy ? 'busy' : 'idle'}</label>
+                <label>{status}</label>
               </div>
               <div css={styles.toolbarGroup}>
                 <label>{storeManager.connectionCount}</label>
