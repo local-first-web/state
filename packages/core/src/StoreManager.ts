@@ -15,6 +15,7 @@ import { getMiddleware } from './getMiddleware'
 import { getKeys, getKnownDiscoveryKeys } from './keys'
 import { StoreManagerOptions, ProxyReducer } from './types'
 import { docSetFromObject, docSetToObject } from './docSetHelpers'
+import { exposeWorker } from 'lib/useWorker'
 
 const valueEncoding = 'utf-8'
 
