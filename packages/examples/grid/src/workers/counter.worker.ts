@@ -1,5 +1,4 @@
-﻿/* eslint-disable */
-declare const self: Worker
+﻿declare const self: Worker
 
 const startCounter = (event: any) => {
   console.log({ data: event.data, self })

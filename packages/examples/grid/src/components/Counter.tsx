@@ -18,6 +18,7 @@ export const Counter = () => {
     const initialValue = progress
     worker.postMessage(initialValue)
   }
+
   return (
     <div css={styles.toolbarGroup}>
       <button type="button" css={styles.button} disabled={progress > 0} onClick={startCounter}>
