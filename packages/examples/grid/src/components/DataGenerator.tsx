@@ -30,6 +30,7 @@ export function DataGenerator() {
 
     generator.onmessage = async event => {
       const { progress: reportedProgress, result } = event.data
+
       if (reportedProgress) {
         // only update progress on increases of 1%
         // if (reportedProgress % 10 === 0) {
