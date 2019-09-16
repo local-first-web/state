@@ -10,8 +10,8 @@ interface CollectionOptions {
  * The collection function returns helpers for CRUD operations, hiding some of the messiness of
  * multi-document state from the developer.
  *
- * Each method (`add`, `remove`, etc.) returns a dictionary of ProxyReducer functions for modifying
- * the collection index and/or the individual item.
+ * Each of the reducers (`add`, `remove`, etc.) returns a dictionary of ProxyReducer functions for
+ * modifying the collection index and/or the individual item.
  *
  * @param name The name of the collection.
  * @param idField The property of an object containing a unique identifier, normally a uuid.
