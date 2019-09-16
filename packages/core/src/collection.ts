@@ -35,7 +35,9 @@ export function collection(name: string, { idField = 'id' }: CollectionOptions =
       },
 
       add: (item: any) => ({
+        // add id to index
         [collectionKey]: (s: any) => Object.assign(s, { [item[idField]]: true }),
+        // add item to root
         [item[idField]]: (s: any) => Object.assign(s, item),
       }),
 
@@ -57,7 +59,9 @@ export function collection(name: string, { idField = 'id' }: CollectionOptions =
       }),
 
       remove: ({ id }: { id: string }) => ({
+        // remove id from index
         [collectionKey]: (s: any) => (s[id] = false),
+        // set item value to delete symbol
         [id]: DELETE_ITEM,
       }),
     },
