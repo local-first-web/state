@@ -4,100 +4,98 @@ import { collection, deleteCollectionItems, purgeDeletedCollectionItems } from '
 import { docSetFromObject, docSetToObject } from './docSetHelpers'
 
 describe('reducers', () => {
+  const teachers = collection('teachers')
+  const students = collection('students')
+
   const proxyReducer: ProxyReducer = (({ type, payload }) => {
-    const teachers = collection('teachers').reducers
-    const students = collection('students').reducers
     switch (type) {
       case 'ADD_TEACHER':
-        return teachers.add(payload)
+        return teachers.reducers.add(payload)
       case 'REMOVE_TEACHER':
-        return teachers.remove(payload)
+        return teachers.reducers.remove(payload)
       case 'UPDATE_TEACHER':
-        return teachers.update(payload)
+        return teachers.reducers.update(payload)
       case 'CLEAR_TEACHERS':
-        return teachers.drop()
+        return teachers.reducers.drop()
       case 'ADD_STUDENTS':
-        return students.addManyFromMap(payload.collection)
+        return students.reducers.addManyFromMap(payload.collection)
       default:
         return null
     }
   }) as ProxyReducer
 
-  const teachersCollection = collection('teachers').keyName
-  const studentsCollection = collection('students').keyName
   const teacher1 = { id: 'abcxyz', first: 'Herb', last: 'Caudill' }
 
-  const emptyState = {}
-  const stateWithTeacher1 = {
-    [teacher1.id]: teacher1,
-    [teachersCollection]: { [teacher1.id]: true },
-  }
-
-  const setup = (state = emptyState) => {
-    const docSet = docSetFromObject(state)
+  const setupEmpty = () => {
+    let state = {}
+    const docSet = docSetFromObject({})
     const reducer = adaptReducer(proxyReducer, docSet)
     return { state, reducer }
   }
 
-  it('should not change the original state', () => {
-    const { state, reducer } = setup()
+  const setupWithOneTeacher = () => {
+    let state = {}
+    const docSet = docSetFromObject(state)
+    const reducer = adaptReducer(proxyReducer, docSet)
     const action = { type: 'ADD_TEACHER', payload: teacher1 }
-    const _newState = reducer(state, action) // don't need return value
-    expect(state).toEqual(emptyState)
+    state = reducer({}, action)
+    return { state, reducer }
+  }
+
+  it('should not change the original state', () => {
+    const { state, reducer } = setupEmpty()
+    const action = { type: 'ADD_TEACHER', payload: teacher1 }
+    const _ = reducer(state, action)
+    expect(state).toEqual({})
   })
 
   it('should add an item', () => {
-    const { state, reducer } = setup()
+    const { state, reducer } = setupEmpty()
     const action = { type: 'ADD_TEACHER', payload: teacher1 }
     const newState = reducer(state, action)
-    expect(newState).toEqual(stateWithTeacher1)
+    const allItems = teachers.getAll(newState)
+    expect(allItems).toEqual([teacher1])
   })
 
   it('should update an item', () => {
-    const { state, reducer } = setup(stateWithTeacher1)
+    const { state, reducer } = setupWithOneTeacher()
     const action = { type: 'UPDATE_TEACHER', payload: { id: teacher1.id, first: 'Herbert' } }
     const newState = reducer(state, action)
-    expect(newState).toEqual({
-      [teacher1.id]: { id: 'abcxyz', first: 'Herbert', last: 'Caudill' },
-      [teachersCollection]: { [teacher1.id]: true },
-    })
+    const allItems = teachers.getAll(newState)
+    expect(allItems).toEqual([{ id: 'abcxyz', first: 'Herbert', last: 'Caudill' }])
   })
 
   it('should remove an item', () => {
-    const { state, reducer } = setup(stateWithTeacher1)
+    const { state, reducer } = setupWithOneTeacher()
     const action = { type: 'REMOVE_TEACHER', payload: { id: teacher1.id } }
     const newState = reducer(state, action)
-    expect(newState).toEqual({
-      [teachersCollection]: { [teacher1.id]: false },
-    })
+    const allItems = teachers.getAll(newState)
+    expect(allItems).toHaveLength(0)
   })
 
   it('should allow dropping a collection', () => {
-    const { state, reducer } = setup(stateWithTeacher1)
+    const { state, reducer } = setupWithOneTeacher()
     const action = { type: 'CLEAR_TEACHERS' }
     const newState = reducer(state, action)
-    expect(newState).toEqual({
-      [teachersCollection]: { [teacher1.id]: false },
-    })
+    const allItems = teachers.getAll(newState)
+    expect(allItems).toHaveLength(0)
   })
 
   it('should allow adding multiple items to a new collection', () => {
-    const { state, reducer } = setup()
-    const students = {
-      student_001: { id: 'student_001' },
-      student_002: { id: 'student_002' },
-      student_003: { id: 'student_003' },
-    }
-    const addAction = { type: 'ADD_STUDENTS', payload: { collection: students } }
-    const addedState = reducer(state, addAction)
-    expect(addedState).toEqual({
-      ...students,
-      [studentsCollection]: {
-        student_001: true,
-        student_002: true,
-        student_003: true,
+    const { state, reducer } = setupEmpty()
+    const addAction = {
+      type: 'ADD_STUDENTS',
+      payload: {
+        collection: {
+          student_001: { id: 'student_001' },
+          student_002: { id: 'student_002' },
+          student_003: { id: 'student_003' },
+        },
       },
-    })
+    }
+    const newState = reducer(state, addAction)
+    const allItems = students.getAll(newState)
+    expect(allItems).toEqual([{ id: 'student_001' }, { id: 'student_002' }, { id: 'student_003' }])
   })
 })
 
