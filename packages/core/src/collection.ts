@@ -24,64 +24,55 @@ const DELETED = '::DELETED'
  * Optional; defaults to 'id'.
  */
 export function collection(name: string, { idField = 'id' }: CollectionOptions = {}) {
-  const collectionKey = `::${name}`
+  const keyName = `::${name}`
 
-  const itemKey = (id: string) => `${collectionKey}::${id}`
+  const itemKey = (id: string) => `${keyName}::${id}`
 
-  const nonDeletedKeys = (state: State): string[] => {
+  const getKeys = (state: State): string[] => {
     return Object.keys(state || {})
-      .filter((key: string) => key.startsWith(`${collectionKey}::`))
+      .filter((key: string) => key.startsWith(`${keyName}::`))
       .filter((key: any) => !state[key][DELETED])
   }
 
-  return {
-    keyName: collectionKey,
+  // Gets all items for the collection when given the redux state (an object representation of the DocSet)
+  const getAll = (state: any) => getKeys(state).map((d: string) => state[d])
 
-    reducers: {
-      drop: () => {},
+  const count = (state: any) => getKeys(state).length
 
-      add: (item: any) => {
-        const key = itemKey(item[idField])
-        return {
-          // add item to root
-          [key]: (s: any) => Object.assign(s, item),
-        }
-      },
-
-      addMany: (items: any[]) => {
-        const newKeys = {} as any
-        const newRowIndex = {} as any
-        for (const item of items) {
-          if (!item.hasOwnProperty(idField))
-            throw new Error(
-              `Item doesn't have a property called '${idField}' (${JSON.stringify(item)}).`
-            )
-          const key = itemKey(item[idField])
-          newKeys[key] = (s: any) => Object.assign(s, item)
-          newRowIndex[key] = true
-        }
-        return {
-          ...newKeys,
-        }
-      },
-
-      update: (item: any) => ({
-        [itemKey(item[idField])]: (s: any) => Object.assign(s, item),
-      }),
-
-      remove: ({ id }: { id: string }) => {
-        const key = itemKey(id)
-        return {
-          // set deleted flag on item
-          [key]: (s: any) => (s[DELETED] = true),
-        }
-      },
+  const reducers = {
+    drop: () => {
+      // return { [collectionKey]: DELETE_COLLECTION }
     },
 
-    // Gets all items for the collection when given the redux state (an object representation of the DocSet)
-    getAll: (state: any) => nonDeletedKeys(state).map((d: string) => state[d]),
+    add: (item: any) => ({
+      [itemKey(item[idField])]: (s: any) => Object.assign(s, item),
+    }),
 
-    count: (state: any) => nonDeletedKeys(state).length,
+    addMany: (items: any[]) => {
+      const changeFunctions = {} as any
+      for (const item of items) {
+        if (!item[idField]) throw new Error(`Item doesn't have a property called '${idField}'.`)
+        const key = itemKey(item[idField])
+        changeFunctions[key] = (s: any) => Object.assign(s, item)
+      }
+      return changeFunctions
+    },
+
+    update: (item: any) => ({
+      [itemKey(item[idField])]: (s: any) => Object.assign(s, item),
+    }),
+
+    remove: ({ id }: { id: string }) => ({
+      [itemKey(id)]: (s: any) => (s[DELETED] = true),
+    }),
+  }
+
+  return {
+    keyName,
+    reducers,
+    getKeys,
+    getAll,
+    count,
   }
 }
 
