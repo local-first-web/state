@@ -89,7 +89,11 @@ describe('collections', () => {
       const { state, reducer } = setupEmpty()
       const addAction = {
         type: 'ADD_STUDENTS',
-        payload: [{ id: 'student_001' }, { id: 'student_002' }, { id: 'student_003' }],
+        payload: [
+          { id: 'student_001' }, //
+          { id: 'student_002' },
+          { id: 'student_003' },
+        ],
       }
       const newState = reducer(state, addAction)
       const allItems = students.getAll(newState)
@@ -133,9 +137,14 @@ describe('collections', () => {
       })
 
       it('should only return non-deleted items', () => {
+        // populate with three items
         const { state, reducer } = setup()
+
+        // remove one
         const action = { type: 'REMOVE_TEACHER', payload: { id: 'teacher_002' } }
         const newState = reducer(state, action)
+
+        // check the new list of items
         const allItems = teachers.getAll(newState)
         expect(allItems).toEqual([
           { id: 'teacher_001' }, //
@@ -152,13 +161,28 @@ describe('collections', () => {
     describe('count', () => {
       it('should return the number of items in the collection', () => {
         const { state } = setup()
-        const actual = teachersCollection.count(state)
-        expect(actual).toEqual(3)
+        const count = teachersCollection.count(state)
+        expect(count).toEqual(3)
+      })
+
+      it('should only count non-deleted items', () => {
+        // populate with three items
+        const { state, reducer } = setup()
+        const count = teachersCollection.count(state)
+        expect(count).toEqual(3)
+
+        // remove one
+        const action = { type: 'REMOVE_TEACHER', payload: { id: 'teacher_002' } }
+        const newState = reducer(state, action)
+
+        // check the new count
+        const newCount = teachersCollection.count(newState)
+        expect(newCount).toEqual(2)
       })
 
       it('should return zero if state is undefined', () => {
-        const actual = teachersCollection.count(undefined)
-        expect(actual).toEqual(0)
+        const count = teachersCollection.count(undefined)
+        expect(count).toEqual(0)
       })
     })
   })

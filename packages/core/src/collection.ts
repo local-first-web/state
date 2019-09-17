@@ -6,6 +6,9 @@ interface CollectionOptions {
   idField?: string
 }
 
+// NEXT:
+// Get rid of collectionKey and just use keys
+
 /**
  * The collection function returns helpers for CRUD operations, hiding some of the messiness of
  * multi-document state from the developer.
@@ -26,6 +29,8 @@ export function collection(name: string, { idField = 'id' }: CollectionOptions =
     return Object.keys(reduxState[collectionKey]).filter((d: any) => reduxState[collectionKey][d])
   }
 
+  const itemKey = (id: string) => `${collectionKey}::${id}`
+
   return {
     keyName: collectionKey,
 
@@ -34,18 +39,26 @@ export function collection(name: string, { idField = 'id' }: CollectionOptions =
         return { [collectionKey]: DELETE_COLLECTION }
       },
 
-      add: (item: any) => ({
-        // add id to index
-        [collectionKey]: (s: any) => Object.assign(s, { [item[idField]]: true }),
-        // add item to root
-        [item[idField]]: (s: any) => Object.assign(s, item),
-      }),
+      add: (item: any) => {
+        const key = itemKey(item[idField])
+        return {
+          // add id to index
+          [collectionKey]: (s: any) => Object.assign(s, { [key]: true }),
+          // add item to root
+          [key]: (s: any) => Object.assign(s, item),
+        }
+      },
 
-      addManyFromMap: (map: any) => {
+      addMany: (items: any[]) => {
         const newKeys = {} as any
         const newRowIndex = {} as any
-        for (const key in map) {
-          newKeys[key] = (s: any) => Object.assign(s, map[key])
+        for (const item of items) {
+          if (!item.hasOwnProperty(idField))
+            throw new Error(
+              `Item doesn't have a property called '${idField}' (${JSON.stringify(item)}).`
+            )
+          const key = itemKey(item[idField])
+          newKeys[key] = (s: any) => Object.assign(s, item)
           newRowIndex[key] = true
         }
         return {
@@ -55,15 +68,18 @@ export function collection(name: string, { idField = 'id' }: CollectionOptions =
       },
 
       update: (item: any) => ({
-        [item[idField]]: (s: any) => Object.assign(s, item),
+        [itemKey(item[idField])]: (s: any) => Object.assign(s, item),
       }),
 
-      remove: ({ id }: { id: string }) => ({
-        // remove id from index
-        [collectionKey]: (s: any) => (s[id] = false),
-        // set item value to delete symbol
-        [id]: DELETE_ITEM,
-      }),
+      remove: ({ id }: { id: string }) => {
+        const key = itemKey(id)
+        return {
+          // remove id from index
+          [collectionKey]: (s: any) => (s[key] = false),
+          // set item value to delete symbol
+          [key]: DELETE_ITEM,
+        }
+      },
     },
 
     // Gets all items for the collection when given the redux state (an object representation of the DocSet)
