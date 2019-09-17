@@ -1,7 +1,7 @@
 import A, { Doc } from 'automerge'
+import { DELETE_COLLECTION } from './constants'
 import { DocSet } from './lib/automerge'
-import { DELETE_COLLECTION, DELETE_ITEM } from './constants'
-import { ChangeMap } from 'types'
+import { ChangeMap } from './types'
 
 interface CollectionOptions {
   idField?: string
@@ -23,9 +23,9 @@ interface State<T> {
  * Optional; defaults to 'id'.
  */
 export function collection<T = any>(name: string, { idField = 'id' }: CollectionOptions = {}) {
-  const keyName = `::${name}`
   const DELETED = '::DELETED'
 
+  const keyName = collection.getKeyName(name)
   const itemKey = (id: string) => `${keyName}::${id}`
 
   const getKeys = (state?: State<T>): string[] => {
@@ -72,6 +72,18 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
     getAll,
     count,
   }
+}
+
+export namespace collection {
+  /**
+   * Given a collection's name (e.g. `teachers`) returns its `keyName` (e.g. `::teachers`)
+   */
+  export const getKeyName = (collectionName: string) => `::${collectionName}`
+
+  /**
+   * Given a collection's `keyName` (e.g. `::teachers`) returns the collection's name (e.g. `teachers`)
+   */
+  export const getCollectionName = (keyName: string) => keyName.replace(/^::/, '')
 }
 
 // mark all docs in the given index as deleted, removing referenced docs from the local docSet

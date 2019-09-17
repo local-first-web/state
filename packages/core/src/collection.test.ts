@@ -1,7 +1,7 @@
 import { adaptReducer } from './adaptReducer'
-import { ProxyReducer } from 'types'
 import { collection, deleteCollectionItems, purgeDeletedCollectionItems } from './collection'
 import { docSetFromObject, docSetToObject } from './docSetHelpers'
+import { ProxyReducer } from './types'
 
 describe('collections', () => {
   const teachers = collection('teachers')
@@ -83,6 +83,7 @@ describe('collections', () => {
       expect(allItems).toHaveLength(0)
     })
 
+    // TODO: This test should be moved somewhere where it will work - this is taken care of by middleware
     // it('should allow dropping a collection', () => {
     //   const { state, reducer } = setupWithOneTeacher()
     //   const action = { type: 'CLEAR_TEACHERS' }
