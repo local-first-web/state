@@ -1,16 +1,15 @@
-import A from 'automerge'
+import A, { Doc } from 'automerge'
 import { DocSet } from './lib/automerge'
 import { DELETE_COLLECTION, DELETE_ITEM } from './constants'
+import { ChangeMap } from 'types'
 
 interface CollectionOptions {
   idField?: string
 }
 
-interface State {
-  [key: string]: any
+interface State<T> {
+  [key: string]: Doc<T>
 }
-
-const DELETED = '::DELETED'
 
 /**
  * The collection function returns helpers for CRUD operations, hiding the implementation details of
@@ -23,42 +22,41 @@ const DELETED = '::DELETED'
  * @param idField The property of an object containing a unique identifier, normally a uuid.
  * Optional; defaults to 'id'.
  */
-export function collection(name: string, { idField = 'id' }: CollectionOptions = {}) {
+export function collection<T = any>(name: string, { idField = 'id' }: CollectionOptions = {}) {
   const keyName = `::${name}`
+  const DELETED = '::DELETED'
 
   const itemKey = (id: string) => `${keyName}::${id}`
 
-  const getKeys = (state: State): string[] => {
+  const getKeys = (state?: State<T>): string[] => {
     return Object.keys(state || {})
       .filter((key: string) => key.startsWith(`${keyName}::`))
-      .filter((key: any) => !state[key][DELETED])
+      .filter((key: string) => !(state as any)[key][DELETED])
   }
 
   // Gets all items for the collection when given the redux state (an object representation of the DocSet)
-  const getAll = (state: any) => getKeys(state).map((d: string) => state[d])
+  const getAll = (state: State<T> = {}) => getKeys(state).map((d: string) => state[d])
 
-  const count = (state: any) => getKeys(state).length
+  const count = (state: State<T> = {}) => getKeys(state).length
 
-  const reducers = {
+  const reducers: { [k: string]: (args?: any) => ChangeMap } = {
     drop: () => {
-      // return { [collectionKey]: DELETE_COLLECTION }
+      return { [keyName]: DELETE_COLLECTION }
     },
 
-    add: (item: any) => ({
-      [itemKey(item[idField])]: (s: any) => Object.assign(s, item),
-    }),
-
-    addMany: (items: any[]) => {
-      const changeFunctions = {} as any
+    add: (item: Doc<T> | Doc<T>[]) => {
+      const items: Doc<T>[] = Array.isArray(item) ? item : [item]
+      const changeFunctions = {} as ChangeMap
       for (const item of items) {
-        if (!item[idField]) throw new Error(`Item doesn't have a property called '${idField}'.`)
-        const key = itemKey(item[idField])
-        changeFunctions[key] = (s: any) => Object.assign(s, item)
+        if (!item.hasOwnProperty(idField))
+          throw new Error(`Item doesn't have a property called '${idField}'.`)
+        const key = itemKey((item as any)[idField])
+        changeFunctions[key] = (s: Doc<T>) => Object.assign(s, item)
       }
       return changeFunctions
     },
 
-    update: (item: any) => ({
+    update: (item: Doc<any>) => ({
       [itemKey(item[idField])]: (s: any) => Object.assign(s, item),
     }),
 

@@ -9,7 +9,7 @@ export type ProxyReducer = (action: AnyAction) => ChangeMap | null
 export type ReducerConverter = (proxyReducer: ProxyReducer, docSet: DocSet<any>) => Reducer
 
 export interface ChangeMap {
-  [docId: string]: A.ChangeFn<any>
+  [docId: string]: A.ChangeFn<any> | symbol
 }
 
 export interface StoreManagerOptions<T> {

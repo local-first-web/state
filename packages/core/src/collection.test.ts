@@ -20,8 +20,6 @@ describe('collections', () => {
         return teachers.reducers.update(payload)
       case 'CLEAR_TEACHERS':
         return teachers.reducers.drop()
-      case 'ADD_TEACHERS':
-        return teachers.reducers.addMany(payload)
 
       // students
       case 'ADD_STUDENT':
@@ -32,8 +30,6 @@ describe('collections', () => {
         return students.reducers.update(payload)
       case 'CLEAR_STUDENTS':
         return students.reducers.drop()
-      case 'ADD_STUDENTS':
-        return students.reducers.addMany(payload)
       default:
         return null
     }
@@ -98,7 +94,7 @@ describe('collections', () => {
     it('should allow adding multiple items from an array', () => {
       const { state, reducer } = setupWithOneTeacher()
       const addAction = {
-        type: 'ADD_STUDENTS',
+        type: 'ADD_STUDENT',
         payload: [
           { id: 'student_001' }, //
           { id: 'student_002' },
@@ -121,7 +117,7 @@ describe('collections', () => {
       const docSet = docSetFromObject(state)
       const reducer = adaptReducer(proxyReducer, docSet)
       const addAction = {
-        type: 'ADD_TEACHERS',
+        type: 'ADD_TEACHER',
         payload: [
           { id: 'teacher_001' }, //
           { id: 'teacher_002' },
@@ -137,7 +133,7 @@ describe('collections', () => {
       const docSet = docSetFromObject(state)
       const reducer = adaptReducer(proxyReducer, docSet)
       state = reducer(state, {
-        type: 'ADD_TEACHERS',
+        type: 'ADD_TEACHER',
         payload: [
           { id: 'teacher_001' }, //
           { id: 'teacher_002' },
@@ -145,7 +141,7 @@ describe('collections', () => {
         ],
       })
       state = reducer(state, {
-        type: 'ADD_STUDENTS',
+        type: 'ADD_STUDENT',
         payload: [
           { id: 'student_001' }, //
           { id: 'student_002' },
