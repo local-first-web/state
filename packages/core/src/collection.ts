@@ -6,11 +6,14 @@ interface CollectionOptions {
   idField?: string
 }
 
-// NEXT:
-// Get rid of collectionKey and just use keys
+interface State {
+  [key: string]: any
+}
+
+const DELETED = '::DELETED'
 
 /**
- * The collection function returns helpers for CRUD operations, hiding some of the messiness of
+ * The collection function returns helpers for CRUD operations, hiding the implementation details of
  * multi-document state from the developer.
  *
  * Each of the reducers (`add`, `remove`, etc.) returns a dictionary of ProxyReducer functions for
@@ -23,27 +26,23 @@ interface CollectionOptions {
 export function collection(name: string, { idField = 'id' }: CollectionOptions = {}) {
   const collectionKey = `::${name}`
 
-  // helpers
-  const nonDeletedKeys = (reduxState: any): string[] => {
-    if (!reduxState || !reduxState[collectionKey]) return []
-    return Object.keys(reduxState[collectionKey]).filter((d: any) => reduxState[collectionKey][d])
-  }
-
   const itemKey = (id: string) => `${collectionKey}::${id}`
+
+  const nonDeletedKeys = (state: State): string[] => {
+    return Object.keys(state || {})
+      .filter((key: string) => key.startsWith(`${collectionKey}::`))
+      .filter((key: any) => !state[key][DELETED])
+  }
 
   return {
     keyName: collectionKey,
 
     reducers: {
-      drop: () => {
-        return { [collectionKey]: DELETE_COLLECTION }
-      },
+      drop: () => {},
 
       add: (item: any) => {
         const key = itemKey(item[idField])
         return {
-          // add id to index
-          [collectionKey]: (s: any) => Object.assign(s, { [key]: true }),
           // add item to root
           [key]: (s: any) => Object.assign(s, item),
         }
@@ -63,7 +62,6 @@ export function collection(name: string, { idField = 'id' }: CollectionOptions =
         }
         return {
           ...newKeys,
-          [collectionKey]: (s: any) => Object.assign(s, newRowIndex),
         }
       },
 
@@ -74,23 +72,16 @@ export function collection(name: string, { idField = 'id' }: CollectionOptions =
       remove: ({ id }: { id: string }) => {
         const key = itemKey(id)
         return {
-          // remove id from index
-          [collectionKey]: (s: any) => (s[key] = false),
-          // set item value to delete symbol
-          [key]: DELETE_ITEM,
+          // set deleted flag on item
+          [key]: (s: any) => (s[DELETED] = true),
         }
       },
     },
 
     // Gets all items for the collection when given the redux state (an object representation of the DocSet)
-    getAll: (reduxState: any) => {
-      return nonDeletedKeys(reduxState).map((d: string) => reduxState[d]) // get non-deleted items by key
-    },
+    getAll: (state: any) => nonDeletedKeys(state).map((d: string) => state[d]),
 
-    count: (reduxState: any) => {
-      if (reduxState === undefined || reduxState[collectionKey] === undefined) return 0
-      return nonDeletedKeys(reduxState).length
-    },
+    count: (state: any) => nonDeletedKeys(state).length,
   }
 }
 
