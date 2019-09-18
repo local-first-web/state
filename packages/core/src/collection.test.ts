@@ -35,6 +35,19 @@ describe('collections', () => {
     }
   }) as ProxyReducer
 
+  describe('collection names and keyNames', () => {
+    test('round trip', () => {
+      // Collection names are prefixed to minimize the chance of collisions with other state
+      // properties. We don't care how key names are generated from collection names, just that we
+      // can go back and forth between the two
+      const { getCollectionName, getKeyName } = collection
+      const collectionName = 'widgets'
+      const keyName = '::widgets'
+      expect(getCollectionName(getKeyName(collectionName))).toEqual(collectionName)
+      expect(getKeyName(getCollectionName(keyName))).toEqual(keyName)
+    })
+  })
+
   describe('reducers', () => {
     const setupEmpty = () => {
       let state = {}
@@ -63,7 +76,7 @@ describe('collections', () => {
       const { state, reducer } = setupEmpty()
       const action = { type: 'ADD_TEACHER', payload: teacher1 }
       const newState = reducer(state, action)
-      const allItems = teachers.getAll(newState)
+      const allItems = teachers.toArray(newState)
       expect(allItems).toEqual([teacher1])
     })
 
@@ -71,7 +84,7 @@ describe('collections', () => {
       const { state, reducer } = setupWithOneTeacher()
       const action = { type: 'UPDATE_TEACHER', payload: { id: teacher1.id, first: 'Herbert' } }
       const newState = reducer(state, action)
-      const allItems = teachers.getAll(newState)
+      const allItems = teachers.toArray(newState)
       expect(allItems).toEqual([{ id: 'abcxyz', first: 'Herbert', last: 'Caudill' }])
     })
 
@@ -79,7 +92,7 @@ describe('collections', () => {
       const { state, reducer } = setupWithOneTeacher()
       const action = { type: 'REMOVE_TEACHER', payload: { id: teacher1.id } }
       const newState = reducer(state, action)
-      const allItems = teachers.getAll(newState)
+      const allItems = teachers.toArray(newState)
       expect(allItems).toHaveLength(0)
     })
 
@@ -88,7 +101,7 @@ describe('collections', () => {
     //   const { state, reducer } = setupWithOneTeacher()
     //   const action = { type: 'CLEAR_TEACHERS' }
     //   const newState = reducer(state, action)
-    //   const allItems = teachers.getAll(newState)
+    //   const allItems = teachers.toArray(newState)
     //   expect(allItems).toHaveLength(0)
     // })
 
@@ -103,7 +116,7 @@ describe('collections', () => {
         ],
       }
       const newState = reducer(state, addAction)
-      const allItems = students.getAll(newState)
+      const allItems = students.toArray(newState)
       expect(allItems).toEqual([
         { id: 'student_001' },
         { id: 'student_002' },
@@ -151,10 +164,10 @@ describe('collections', () => {
       return { state, reducer }
     }
 
-    describe('getAll', () => {
+    describe('toArray', () => {
       it('should return all the items in the collection', () => {
         const { state } = setupTeachers()
-        const allItems = teachers.getAll(state)
+        const allItems = teachers.toArray(state)
         expect(allItems).toEqual([
           { id: 'teacher_001' },
           { id: 'teacher_002' },
@@ -164,13 +177,13 @@ describe('collections', () => {
 
       it('should keep items from different collections separate', () => {
         let { state } = setupTeachersAndStudents()
-        const allTeachers = teachers.getAll(state)
+        const allTeachers = teachers.toArray(state)
         expect(allTeachers).toEqual([
           { id: 'teacher_001' },
           { id: 'teacher_002' },
           { id: 'teacher_003' },
         ])
-        const allStudents = students.getAll(state)
+        const allStudents = students.toArray(state)
         expect(allStudents).toEqual([
           { id: 'student_001' }, //
           { id: 'student_002' },
@@ -186,7 +199,7 @@ describe('collections', () => {
         const newState = reducer(state, action)
 
         // check the new list of items
-        const allItems = teachers.getAll(newState)
+        const allItems = teachers.toArray(newState)
         expect(allItems).toEqual([
           { id: 'teacher_001' }, //
           { id: 'teacher_003' },
@@ -194,8 +207,20 @@ describe('collections', () => {
       })
 
       it('should return empty array if state is undefined', () => {
-        const actual = teachers.getAll(undefined)
+        const actual = teachers.toArray(undefined)
         expect(actual).toEqual([])
+      })
+    })
+
+    describe('toMap', () => {
+      it('should return all the items in the collection', () => {
+        const { state } = setupTeachers()
+        const allItems = teachers.toMap(state)
+        expect(allItems).toEqual({
+          teacher_001: { id: 'teacher_001' },
+          teacher_002: { id: 'teacher_002' },
+          teacher_003: { id: 'teacher_003' },
+        })
       })
     })
 

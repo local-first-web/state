@@ -3,11 +3,11 @@ import { DELETE_COLLECTION } from './constants'
 import { DocSet } from './lib/automerge'
 import { ChangeMap } from './types'
 
-interface CollectionOptions {
+export interface CollectionOptions {
   idField?: string
 }
 
-interface State<T> {
+export interface State<T> {
   [key: string]: Doc<T>
 }
 
@@ -23,67 +23,116 @@ interface State<T> {
  * Optional; defaults to 'id'.
  */
 export function collection<T = any>(name: string, { idField = 'id' }: CollectionOptions = {}) {
+  /**
+   * ## Internals
+   *
+   *
+   *
+   */
   const DELETED = '::DELETED'
 
   const keyName = collection.getKeyName(name)
-  const itemKey = (id: string) => `${keyName}::${id}`
 
-  const getKeys = (state?: State<T>): string[] => {
-    return Object.keys(state || {})
+  // these are for converting individual item IDs back and forth
+  const idToKey = (id: string) => `${keyName}::${id}`
+  const keyToId = (key: string) => key.replace(`${keyName}::`, '')
+
+  // SELECTORS
+
+  /**
+   * Returns all keys for the collection when given the current redux state.
+   *
+   * @param state The plain JSON representation of the state.
+   */
+  const getKeys = (state: State<T>): string[] =>
+    Object.keys(state || {})
       .filter((key: string) => key.startsWith(`${keyName}::`))
       .filter((key: string) => !(state as any)[key][DELETED])
-  }
 
-  // Gets all items for the collection when given the redux state (an object representation of the DocSet)
-  const getAll = (state: State<T> = {}) => getKeys(state).map((d: string) => state[d])
+  /**
+   * Given the redux state, returns an array containing all items in the collection.
+   *
+   * @param state The plain JSON representation of the state.
+   */
+  const toArray = (state: State<T> = {}) => getKeys(state).map((key: string) => state[key])
 
+  /**
+   * Given the redux state, returns a map keying each item in the collection to its `id`.
+   *
+   * @param state The plain JSON representation of the state.
+   */
+  const toMap = (state: State<T> = {}) =>
+    getKeys(state).reduce((result, key) => ({ ...result, [keyToId(key)]: state[key] }), {})
+
+  /**
+   * Returns the number of items in the collection when given the redux state.
+   *
+   * @param state The plain JSON representation of the state.
+   */
   const count = (state: State<T> = {}) => getKeys(state).length
 
+  // REDUCERS
+
+  /**
+   * Marks all records in a collection for removal
+   */
+  const drop = () => {
+    return { [keyName]: DELETE_COLLECTION }
+  }
+
+  const add = (item: Doc<T> | Doc<T>[]) => {
+    const items: Doc<T>[] = Array.isArray(item) ? item : [item]
+    const changeFunctions = {} as ChangeMap
+    for (const item of items) {
+      if (!item.hasOwnProperty(idField))
+        throw new Error(`Item doesn't have a property called '${idField}'.`)
+      const key = idToKey((item as any)[idField])
+      changeFunctions[key] = (s: Doc<T>) => Object.assign(s, item)
+    }
+    return changeFunctions
+  }
+
+  const update = (item: Doc<any>) => ({
+    [idToKey(item[idField])]: (s: any) => Object.assign(s, item),
+  })
+
+  const remove = ({ id }: { id: string }) => ({
+    [idToKey(id)]: (s: any) => (s[DELETED] = true),
+  })
+
   const reducers: { [k: string]: (args?: any) => ChangeMap } = {
-    drop: () => {
-      return { [keyName]: DELETE_COLLECTION }
-    },
-
-    add: (item: Doc<T> | Doc<T>[]) => {
-      const items: Doc<T>[] = Array.isArray(item) ? item : [item]
-      const changeFunctions = {} as ChangeMap
-      for (const item of items) {
-        if (!item.hasOwnProperty(idField))
-          throw new Error(`Item doesn't have a property called '${idField}'.`)
-        const key = itemKey((item as any)[idField])
-        changeFunctions[key] = (s: Doc<T>) => Object.assign(s, item)
-      }
-      return changeFunctions
-    },
-
-    update: (item: Doc<any>) => ({
-      [itemKey(item[idField])]: (s: any) => Object.assign(s, item),
-    }),
-
-    remove: ({ id }: { id: string }) => ({
-      [itemKey(id)]: (s: any) => (s[DELETED] = true),
-    }),
+    drop,
+    add,
+    update,
+    remove,
   }
 
   return {
     keyName,
     reducers,
     getKeys,
-    getAll,
+    toArray,
+    toMap,
     count,
   }
 }
 
 export namespace collection {
   /**
-   * Given a collection's name (e.g. `teachers`) returns its `keyName` (e.g. `::teachers`)
+   * Given the collection's name, returns the `keyName` used internally for tracking the collection.
+   *
+   * @param {string} collectionName The collection name, e.g. `teachers`
+   * @return The key name used internally for the collection (e.g. `::teachers`)
    */
-  export const getKeyName = (collectionName: string) => `::${collectionName}`
+  export const getKeyName = (collectionName: string): string => `::${collectionName}`
 
   /**
-   * Given a collection's `keyName` (e.g. `::teachers`) returns the collection's name (e.g. `teachers`)
+   * Given a collection's `keyName`, returns the collection's name.
+   *
+   * @param {string} keyName The key name used internally for the collection (e.g. `::teachers`)
+   * @return The collection name, e.g. `teachers`
    */
-  export const getCollectionName = (keyName: string) => keyName.replace(/^::/, '')
+  export const getCollectionName = (keyName: string): string => keyName.replace(/^::/, '')
 }
 
 // mark all docs in the given index as deleted, removing referenced docs from the local docSet
