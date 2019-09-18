@@ -65,13 +65,9 @@ export class DocSetSync {
   // Public API
 
   open() {
-    // @ts-ignore
     log('open', Array.from(this.docSet.docIds))
-    // get rid of next line when automerge v0.13 is published
-    // @ts-ignore
-    for (let docId of this.docSet.docIds) {
+    for (let docId of this.docSet.docIds) //
       if (docId.length) this.registerDoc(docId)
-    }
     this.docSet.registerHandler(this.docChanged.bind(this))
   }
 

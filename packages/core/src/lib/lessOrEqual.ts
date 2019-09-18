@@ -1,4 +1,5 @@
-﻿import { Clock } from '../types'
+﻿import { Map } from 'immutable'
+type Clock = Map<string, number>
 
 export const lessOrEqual = (clock1: Clock, clock2: Clock) => {
   const clockIsLessOrEqual = (key: string) => clock1.get(key, 0) <= clock2.get(key, 0)

@@ -29,7 +29,7 @@ const localActorId = newid()
 describe('Connection', () => {
   const initialState: FooStateDoc = { state: { foo: 1 } }
 
-  let docSet: DocSet<any>
+  let docSet: DocSet<FooState>
   let server: Server
 
   beforeAll(async () => {

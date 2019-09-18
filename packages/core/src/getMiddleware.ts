@@ -1,7 +1,8 @@
-import A, { ChangeFn } from 'automerge'
+import A from 'automerge'
 import debug from 'debug'
-import { MiddlewareFactory, ProxyReducer } from './types'
-import { RECEIVE_MESSAGE_FROM_PEER, DELETE_ITEM, DELETE_COLLECTION } from './constants'
+import { collection } from './collection'
+import { DELETE_COLLECTION, DELETE_ITEM, RECEIVE_MESSAGE_FROM_PEER } from './constants'
+import { MiddlewareFactory } from './types'
 
 const log = debug('cevitxe:middleware')
 
@@ -11,7 +12,7 @@ interface DocMap {
 
 export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => {
   return store => next => action => {
-    // before changes
+    // BEFORE CHANGES
 
     // detect which documents will be changed and cache them
     const affectedDocs: DocMap = {} // cache for docs that will be changed
@@ -20,12 +21,12 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
     const functionMap = proxyReducer(action)
     if (functionMap) {
       for (let docId in functionMap) {
-        const fn = functionMap[docId] as ChangeFn<any> | symbol
+        const fn = functionMap[docId]
         if (fn === DELETE_COLLECTION) {
-          const index = docSet.getDoc(docId)
-          for (const itemDocId in index) removedDocs.push(itemDocId)
-          // mark collection index as changed since we're no longer removing it on collection drop
-          affectedDocs[docId] = docSet.getDoc(docId) || A.init() // If doc didn't exist before, it's a new doc
+          const name = collection.getCollectionName(docId)
+          const docIds = collection(name).getKeys(store.getState())
+          for (const itemDocId in docIds) removedDocs.push(itemDocId)
+          collection(name).deleteAll(docSet)
         } else if (fn === DELETE_ITEM) {
           removedDocs.push(docId)
         } else if (typeof fn === 'function') {
@@ -34,10 +35,12 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
       }
     }
 
-    // changes
+    // CHANGES
+
     const newState = next(action)
 
-    // after changes
+    // AFTER CHANGES
+
     log('%o', { action })
 
     // collect document changes for persistence

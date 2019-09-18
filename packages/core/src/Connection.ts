@@ -28,7 +28,6 @@ export class Connection<T = any> extends EventEmitter {
 
     this.peerSocket.onmessage = this.receive.bind(this)
 
-    // @ts-ignore
     this.docSetSync = new DocSetSync(this.docSet, this.send)
     this.docSetSync.open()
   }
@@ -36,10 +35,8 @@ export class Connection<T = any> extends EventEmitter {
   public get state(): T {
     const _state: Partial<T> = {}
     let key: keyof T
-    // get rid of next line when automerge v0.13 is published
-    // @ts-ignore
-    for (key of this.docSet.docIds) {
-      _state[key] = this.docSet.getDoc(key as string)
+    for (key of this.docSet.docIds as (keyof T)[]) {
+      _state[key] = this.docSet.getDoc(key as string) as T[keyof T]
     }
     return _state as T
   }

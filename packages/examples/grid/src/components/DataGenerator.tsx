@@ -1,18 +1,19 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
 import { menu, styles } from 'cevitxe-toolbar'
-import { debug } from 'debug'
-import faker from 'faker'
+// import { debug } from 'debug'
 import { JSONSchema7 } from 'json-schema'
 import { Fragment, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { clearCollection, loadCollection, loadSchema } from 'redux/actions'
-import uuid from 'uuid'
+import GeneratorWorker from '../workers/generator.worker'
 import { ProgressBar } from './ProgressBar'
+
+const generator = new GeneratorWorker()
 
 const nextFrame = () => new Promise(ok => requestAnimationFrame(ok))
 
-const log = debug('cevitxe:grid:datagenerator')
+// const log = debug('cevitxe:grid:datagenerator')
 
 export function DataGenerator() {
   const dispatch = useDispatch()
@@ -21,57 +22,35 @@ export function DataGenerator() {
 
   const toggleMenu = () => setTimeout(() => setMenuOpen(!menuOpen))
   const hideMenu = () => setTimeout(() => setMenuOpen(false), 500)
-  const schema = {
-    type: 'object',
-    properties: {
-      name: {},
-      email: { format: 'email' },
-      age: { type: 'number' },
-      street: {},
-      city: {},
-      state: {},
-      zip: {},
-      gender: {},
-      latitude: {},
-      longitude: {},
-      paragraph: {},
-    },
-  } as JSONSchema7
 
   const generate = async (rows: number) => {
     setProgress(0)
     dispatch(clearCollection())
     dispatch(loadSchema(schema))
-    const collection = {} as any
-    log('generate: starting', rows)
 
-    for (let i = 0; i < rows; i++) {
-      const item = {
-        id: uuid(),
-        name: faker.name.findName(),
-        email: faker.internet.email(),
-        age: faker.random.number({ min: 18, max: 100 }),
-        street: faker.address.streetAddress(),
-        city: faker.address.city(),
-        state: faker.address.state(),
-        zip: faker.address.zipCode(),
-        gender: faker.random.arrayElement(['Male', 'Female']),
-        latitude: +faker.address.latitude(),
-        longitude: +faker.address.longitude(),
-        paragraph: faker.lorem.paragraph(),
-      }
-      collection[item.id] = item
+    generator.onmessage = async event => {
+      const { progress: reportedProgress, result } = event.data
 
-      // only update progress on increases of 1%
-      if (i % (rows / 100) === 0) {
-        setProgress(Math.ceil((i / rows) * 100))
+      if (reportedProgress) {
+        // only update progress on increases of 1%
+        // if (reportedProgress % 10 === 0) {
         await nextFrame()
+        setProgress(Math.ceil((reportedProgress / rows) * 100))
+        await nextFrame()
+
+        // }
+      }
+      if (result) {
+        await nextFrame()
+        setProgress(0)
+        const collection = event.data.result
+        console.log({ collection })
+        dispatch(loadCollection(collection))
       }
     }
-    log('generate: done', rows)
-    setProgress(0)
+
     await nextFrame()
-    dispatch(loadCollection(collection))
+    generator.postMessage(rows)
   }
 
   return (
@@ -111,3 +90,20 @@ export function DataGenerator() {
     </div>
   )
 }
+
+const schema = {
+  type: 'object',
+  properties: {
+    name: {},
+    email: { format: 'email' },
+    age: { type: 'number' },
+    street: {},
+    city: {},
+    state: {},
+    zip: {},
+    gender: {},
+    latitude: {},
+    longitude: {},
+    paragraph: {},
+  },
+} as JSONSchema7

@@ -28,18 +28,17 @@ import {
 } from '../redux/actions'
 import { Loading } from './Loading'
 import { collection } from 'cevitxe'
-import { rowCollectionKey, rowCollectionName } from '../redux/store'
 
 const log = debug('cevitxe:grid')
 
 const Grid = () => {
   const dispatch = useDispatch()
 
-  const ready = useSelector((state: any) => !!state && !!state[rowCollectionKey] && !!state.schema)
+  const ready = useSelector((state: any) => !!state && !!state.schema)
 
   const rowCollection = useSelector((state: any) => {
     if (!ready) return []
-    return collection(rowCollectionName).getAll(state)
+    return collection('rows').toArray(state)
   })
 
   const columns = useSelector((state: any) => {

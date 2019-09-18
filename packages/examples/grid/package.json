@@ -5,9 +5,9 @@
   "private": true,
   "main": "src/index.tsx",
   "scripts": {
-    "start": "react-scripts start",
+    "start": "react-app-rewired start",
     "test:e2e": "cypress open",
-    "build": "react-scripts build"
+    "build": "react-app-rewired build"
   },
   "dependencies": {
     "@emotion/core": "10",
@@ -51,7 +51,9 @@
     "cypress": "3",
     "keycode": "2",
     "prettier": "1",
-    "typescript": "3"
+    "react-app-rewired": "2",
+    "typescript": "3",
+    "worker-loader": "2"
   },
   "jest": {
     "preset": "ts-jest",

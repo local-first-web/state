@@ -9,12 +9,9 @@ export const emptyGrid = (rowCount: number, colCount: number = rowCount) => {
 
   const rowReducer = (rowMap: { [id: string]: any }, id: string) => ({
     ...rowMap,
-    [id]: { id },
+    [`${rowCollectionKey}::${id}`]: { id },
   })
-  const rowIndexReducer = (rowIndex: { [id: string]: boolean }, id: string) => ({
-    ...rowIndex,
-    [id]: true,
-  })
+
   const columnReducer = (colMap: JSONSchema7['properties'], id: string, i: number) => ({
     ...colMap,
     [id]: { description: `Field ${i + 1}` },
@@ -22,7 +19,6 @@ export const emptyGrid = (rowCount: number, colCount: number = rowCount) => {
 
   return {
     ...rows.reduce(rowReducer, {}),
-    [rowCollectionKey]: rows.reduce(rowIndexReducer, {}),
     schema: { properties: cols.reduce(columnReducer, {}) },
   }
 }

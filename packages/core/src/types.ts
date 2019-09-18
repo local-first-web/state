@@ -4,12 +4,11 @@ import { DocSet } from './lib/automerge'
 import { AnyAction, Middleware, Reducer, Store } from 'redux'
 import { DocSetSync } from './DocSetSync'
 
-// DEPRECATED
 export type ProxyReducer = (action: AnyAction) => ChangeMap | null
 export type ReducerConverter = (proxyReducer: ProxyReducer, docSet: DocSet<any>) => Reducer
 
 export interface ChangeMap {
-  [docId: string]: A.ChangeFn<any>
+  [docId: string]: A.ChangeFn<any> | symbol
 }
 
 export interface StoreManagerOptions<T> {
@@ -50,7 +49,7 @@ export interface KeyPair {
 
 export interface Message {
   docId: string
-  clock: Clock
+  clock: A.Clock
   changes?: A.Change[]
 }
 
@@ -58,5 +57,3 @@ export interface ReceiveMessagePayload {
   message: Message
   connection: DocSetSync
 }
-
-export type Clock = Map<string, number>

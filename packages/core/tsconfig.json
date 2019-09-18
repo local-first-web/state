@@ -18,5 +18,5 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false
   },
-  "include": ["src", "@types"]
+  "include": ["src", "@types", "../toolbar/src/workers/counter.worker.ts"]
 }

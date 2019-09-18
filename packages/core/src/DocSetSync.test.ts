@@ -19,7 +19,6 @@ const makeConnection = (
     channel.write(discoveryKey, msg)
   }
 
-  // @ts-ignore
   const connection = new DocSetSync(docSet, send)
   channel.on('data', (peer_id, msg) => {
     if (peer_id === discoveryKey) return // ignore messages that we sent
