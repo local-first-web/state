@@ -176,7 +176,6 @@ const setInitialState = <T>(feed: Feed<string>, initialState: T) => {
 
   const docSet = docSetFromObject(initialState)
   let changes = []
-  // @ts-ignore
   for (let docId of docSet.docIds) {
     const nextDoc = docSet.getDoc(docId)
     changes.push({
