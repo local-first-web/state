@@ -52,6 +52,8 @@
     "keycode": "2",
     "prettier": "1",
     "react-app-rewired": "2",
+    "tslint-react": "4",
+    "tslint-config-prettier": "1",
     "typescript": "3",
     "worker-loader": "2"
   },
