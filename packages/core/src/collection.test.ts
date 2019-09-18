@@ -1,6 +1,6 @@
 import { adaptReducer } from './adaptReducer'
-import { collection, deleteCollectionItems, purgeDeletedCollectionItems } from './collection'
-import { docSetFromObject, docSetToObject } from './docSetHelpers'
+import { collection } from './collection'
+import { docSetFromObject } from './docSetHelpers'
 import { ProxyReducer } from './types'
 
 describe('collections', () => {
@@ -253,80 +253,80 @@ describe('collections', () => {
     })
   })
 
-  describe('deleteCollectionItems', () => {
-    const docSet = docSetFromObject({
-      teachers: {
-        1: true,
-        2: true,
-        3: true,
-      },
-      1: { id: '1', type: 'teacher' },
-      2: { id: '2', type: 'teacher' },
-      3: { id: '3', type: 'teacher' },
+  // describe('deleteCollectionItems', () => {
+  //   const docSet = docSetFromObject({
+  //     teachers: {
+  //       1: true,
+  //       2: true,
+  //       3: true,
+  //     },
+  //     1: { id: '1', type: 'teacher' },
+  //     2: { id: '2', type: 'teacher' },
+  //     3: { id: '3', type: 'teacher' },
 
-      schools: {
-        4: true,
-        5: true,
-      },
-      4: { id: '4', type: 'school' },
-      5: { id: '4', type: 'school' },
-    })
+  //     schools: {
+  //       4: true,
+  //       5: true,
+  //     },
+  //     4: { id: '4', type: 'school' },
+  //     5: { id: '4', type: 'school' },
+  //   })
 
-    it('should remove all items listed in index', () => {
-      deleteCollectionItems(docSet, 'teachers')
-      expect(docSetToObject(docSet)).toEqual({
-        teachers: {
-          1: false,
-          2: false,
-          3: false,
-        },
+  //   it('should remove all items listed in index', () => {
+  //     deleteCollectionItems(docSet, 'teachers')
+  //     expect(docSetToObject(docSet)).toEqual({
+  //       teachers: {
+  //         1: false,
+  //         2: false,
+  //         3: false,
+  //       },
 
-        schools: {
-          4: true,
-          5: true,
-        },
-        4: { id: '4', type: 'school' },
-        5: { id: '4', type: 'school' },
-      })
-    })
-  })
+  //       schools: {
+  //         4: true,
+  //         5: true,
+  //       },
+  //       4: { id: '4', type: 'school' },
+  //       5: { id: '4', type: 'school' },
+  //     })
+  //   })
+  // })
 
-  describe('purgeDeletedCollectionItems', () => {
-    const docSet = docSetFromObject({
-      teachers: {
-        1: true,
-        2: false,
-        3: false,
-      },
-      1: { id: '1', type: 'teacher' },
-      2: { id: '2', type: 'teacher' },
-      3: { id: '3', type: 'teacher' },
+  // describe('purgeDeletedCollectionItems', () => {
+  //   const docSet = docSetFromObject({
+  //     teachers: {
+  //       1: true,
+  //       2: false,
+  //       3: false,
+  //     },
+  //     1: { id: '1', type: 'teacher' },
+  //     2: { id: '2', type: 'teacher' },
+  //     3: { id: '3', type: 'teacher' },
 
-      schools: {
-        4: true,
-        5: true,
-      },
-      4: { id: '4', type: 'school' },
-      5: { id: '5', type: 'school' },
-    })
+  //     schools: {
+  //       4: true,
+  //       5: true,
+  //     },
+  //     4: { id: '4', type: 'school' },
+  //     5: { id: '5', type: 'school' },
+  //   })
 
-    it('should remove all docs marked as deleted in the index', () => {
-      purgeDeletedCollectionItems(docSet, 'teachers')
-      expect(docSetToObject(docSet)).toEqual({
-        teachers: {
-          1: true,
-          2: false,
-          3: false,
-        },
-        1: { id: '1', type: 'teacher' },
+  //   it('should remove all docs marked as deleted in the index', () => {
+  //     purgeDeletedCollectionItems(docSet, 'teachers')
+  //     expect(docSetToObject(docSet)).toEqual({
+  //       teachers: {
+  //         1: true,
+  //         2: false,
+  //         3: false,
+  //       },
+  //       1: { id: '1', type: 'teacher' },
 
-        schools: {
-          4: true,
-          5: true,
-        },
-        4: { id: '4', type: 'school' },
-        5: { id: '5', type: 'school' },
-      })
-    })
-  })
+  //       schools: {
+  //         4: true,
+  //         5: true,
+  //       },
+  //       4: { id: '4', type: 'school' },
+  //       5: { id: '5', type: 'school' },
+  //     })
+  //   })
+  // })
 })

@@ -23,11 +23,10 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
       for (let docId in functionMap) {
         const fn = functionMap[docId]
         if (fn === DELETE_COLLECTION) {
-          const collectionName = collection.getCollectionName(docId)
-          const docIds = collection(collectionName).getKeys(store.getState())
+          const name = collection.getCollectionName(docId)
+          const docIds = collection(name).getKeys(store.getState())
           for (const itemDocId in docIds) removedDocs.push(itemDocId)
-          // mark collection index as changed since we're no longer removing it on collection drop
-          // affectedDocs[docId] = docSet.getDoc(docId) || A.init() // If doc didn't exist before, it's a new doc
+          collection(name).deleteAll(docSet)
         } else if (fn === DELETE_ITEM) {
           removedDocs.push(docId)
         } else if (typeof fn === 'function') {

@@ -2,6 +2,7 @@ import A, { Doc } from 'automerge'
 import { DELETE_COLLECTION } from './constants'
 import { DocSet } from './lib/automerge'
 import { ChangeMap } from './types'
+import { docSetToObject } from './docSetHelpers'
 
 export interface CollectionOptions {
   idField?: string
@@ -23,11 +24,9 @@ export interface State<T> {
  * Optional; defaults to 'id'.
  */
 export function collection<T = any>(name: string, { idField = 'id' }: CollectionOptions = {}) {
-  /**
-   * ## Internals
-   *
-   *
-   *
+  // TODO: finish documenting internal mechanics
+  /*
+    ## Internals
    */
   const DELETED = '::DELETED'
 
@@ -37,11 +36,12 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
   const idToKey = (id: string) => `${keyName}::${id}`
   const keyToId = (key: string) => key.replace(`${keyName}::`, '')
 
+  const setDeleteFlag = (s: any) => Object.assign(s, { [DELETED]: true })
+
   // SELECTORS
 
   /**
    * Returns all keys for the collection when given the current redux state.
-   *
    * @param state The plain JSON representation of the state.
    */
   const getKeys = (state: State<T>): string[] =>
@@ -51,31 +51,34 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
 
   /**
    * Given the redux state, returns an array containing all items in the collection.
-   *
    * @param state The plain JSON representation of the state.
    */
   const toArray = (state: State<T> = {}) => getKeys(state).map((key: string) => state[key])
 
   /**
    * Given the redux state, returns a map keying each item in the collection to its `id`.
-   *
    * @param state The plain JSON representation of the state.
    */
-  const toMap = (state: State<T> = {}) =>
+  const toMap = (state: State<T> = {}): State<T> =>
     getKeys(state).reduce((result, key) => ({ ...result, [keyToId(key)]: state[key] }), {})
 
   /**
    * Returns the number of items in the collection when given the redux state.
-   *
    * @param state The plain JSON representation of the state.
    */
   const count = (state: State<T> = {}) => getKeys(state).length
 
+  const deleteAll = (docSet: DocSet<any>) => {
+    const docIds = getKeys(docSetToObject(docSet))
+    for (const docId of docIds) {
+      const doc = docSet.getDoc(docId)
+      const deletedDoc = A.change(doc, setDeleteFlag)
+      docSet.setDoc(docId, deletedDoc)
+    }
+  }
+
   // REDUCERS
 
-  /**
-   * Marks all records in a collection for removal
-   */
   const drop = () => {
     return { [keyName]: DELETE_COLLECTION }
   }
@@ -97,23 +100,22 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
   })
 
   const remove = ({ id }: { id: string }) => ({
-    [idToKey(id)]: (s: any) => (s[DELETED] = true),
+    [idToKey(id)]: setDeleteFlag,
   })
-
-  const reducers: { [k: string]: (args?: any) => ChangeMap } = {
-    drop,
-    add,
-    update,
-    remove,
-  }
 
   return {
     keyName,
-    reducers,
+    reducers: {
+      drop,
+      add,
+      update,
+      remove,
+    },
     getKeys,
     toArray,
     toMap,
     count,
+    deleteAll,
   }
 }
 
@@ -133,27 +135,4 @@ export namespace collection {
    * @return The collection name, e.g. `teachers`
    */
   export const getCollectionName = (keyName: string): string => keyName.replace(/^::/, '')
-}
-
-// mark all docs in the given index as deleted, removing referenced docs from the local docSet
-export const deleteCollectionItems = (docSet: DocSet<any>, collectionKey: string) => {
-  let collectionIndexDoc = docSet.getDoc(collectionKey)
-  for (const docId in collectionIndexDoc) {
-    // mark doc as deleted in index
-    collectionIndexDoc = A.change(collectionIndexDoc, (doc: any) => (doc[docId] = false))
-    // remove the referenced doc
-    docSet.removeDoc(docId)
-  }
-  docSet.setDoc(collectionKey, collectionIndexDoc)
-}
-
-// remove any docs that are marked as deleted in a collection but still exist in the docSet
-export const purgeDeletedCollectionItems = (docSet: DocSet<any>, collectionKey: string) => {
-  let collectionIndexDoc = docSet.getDoc(collectionKey)
-  const deletedDocIds = Object.keys(collectionIndexDoc).filter(x => !collectionIndexDoc[x])
-  for (const docId of deletedDocIds) {
-    // remove "deleted" doc if it still exists
-    const doc = docSet.getDoc(docId)
-    if (doc) docSet.removeDoc(docId)
-  }
 }

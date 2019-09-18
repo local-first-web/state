@@ -3,7 +3,7 @@ import debug from 'debug'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
 import { ReducerConverter } from './types'
 import { docSetToObject } from './docSetHelpers'
-import { deleteCollectionItems } from './collection'
+import { collection } from './collection'
 
 import { DELETE_COLLECTION, DELETE_ITEM } from './constants'
 
@@ -36,14 +36,9 @@ const convertToReduxReducer: ReducerConverter = (proxyReducer, docSet) => (
   for (docId in functionMap) {
     const fn = functionMap[docId] as ChangeFn<any> | symbol
     if (fn === DELETE_COLLECTION) {
-      deleteCollectionItems(docSet, docId)
-      // TODO: Skipping removal of index key for now, seems to cause divergent state issues between
-      // peers when dropping and re-adding a collection with same name If we end up keeping the
-      // collection index indefinitely, this action should be renamed to
-      // [CLEAR|EMPTY|TRUNCATE]_COLLECTION or something remove collection index
       // docSet.removeDoc(docId)
     } else if (fn === DELETE_ITEM) {
-      docSet.removeDoc(docId)
+      // docSet.removeDoc(docId)
     } else if (typeof fn === 'function') {
       // apply changes to the corresponding doc in the docset
       const oldDoc = docSet.getDoc(docId) || A.init() // create a new doc if one doesn't exist
