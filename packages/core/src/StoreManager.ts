@@ -65,7 +65,7 @@ export class StoreManager<T> extends EventEmitter {
     this.feed = await createStorageFeed(discoveryKey, this.databaseName)
 
     const docSet: DocSet<any> = creating
-      ? setInitialState(this.feed, this.initialState) // ceating a new document, starting with default state
+      ? setInitialState(this.feed, this.initialState) // creating a new document, starting with default state
       : this.feed.length > 0
       ? await getStateFromStorage(this.feed) // rehydrating state from storage
       : setInitialState(this.feed, {}) // joining a peer's feed, starting with an empty doc
