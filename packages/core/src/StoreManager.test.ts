@@ -24,9 +24,8 @@ describe('Cevitxe', () => {
         return remove(payload)
       case 'UPDATE_TEACHER':
         return update(payload)
-      case 'DROP_TEACHERS': {
+      case 'DROP_TEACHERS':
         return drop()
-      }
       default:
         return null
     }
