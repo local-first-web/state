@@ -10,7 +10,7 @@
     "noEmit": false,
     "outDir": "dist",
     "sourceMap": true,
-    "target": "es5",
+    "target": "es6",
     "typeRoots": ["../node_modules/@types", "node_modules/@types", "@types"],
 
     // strictness: exceptions for development (must be reversed in tsconfig.build.json)
