@@ -16,8 +16,8 @@ import { debug } from 'debug'
 import { useDialog } from 'muibox'
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { colDefFromSchemaProperty } from 'ag-grid/colDefFromSchemaProperty'
-import { deleteRowsCommand } from 'ag-grid/commands/deleteRowsCommand'
+import { buildColumnFromSchema } from '../ag-grid/buildColumnFromSchema'
+import { deleteRowsCommand } from '../ag-grid/commands/deleteRowsCommand'
 import {
   addField,
   addItem,
@@ -43,9 +43,8 @@ const Grid = () => {
 
   const columns = useSelector((state: any) => {
     if (!ready) return []
-    return Object.entries(state.schema.properties || {}).map(entry =>
-      colDefFromSchemaProperty(entry[0], entry[1])
-    )
+    const { properties = {} } = state.schema
+    return Object.entries(properties).map(([field, schema]) => buildColumnFromSchema(field, schema))
   })
 
   const dialog = useDialog()

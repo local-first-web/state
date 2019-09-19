@@ -1,6 +1,6 @@
 ﻿import { ColDef } from 'ag-grid-community'
 
-export const colDefFromSchemaProperty = (field: string, schema: any) => {
+export const buildColumnFromSchema = (field: string, schema: any) => {
   const colDef: ColDef = { field }
   if (schema.description) {
     colDef.headerName = schema.description
