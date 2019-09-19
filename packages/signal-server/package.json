@@ -4,6 +4,7 @@
   "main": "src/index.ts",
   "license": "MIT",
   "scripts": {
+    "prebuild": "rimraf dist",
     "build": "tsc",
     "start": "ts-node src/start.ts",
     "test": "jest",
@@ -33,6 +34,7 @@
     "mock-socket": "8",
     "portfinder": "^1.0.21",
     "prettier": "1",
+    "rimraf": "3",
     "supports-color": "7",
     "ts-jest": "24",
     "ts-node": "8",

@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "prebuild": "rimraf dist",
     "build": "tsc",
     "test": "jest",
     "watch": "tsc --watch"
@@ -26,6 +27,7 @@
     "cevitxe-signal-server": "^0.2.3",
     "jest": "24",
     "portfinder": "^1.0.21",
+    "rimraf": "3",
     "supports-color": "7",
     "ts-jest": "24",
     "typescript": "3"

@@ -7,6 +7,7 @@
   "main": "dist/Toolbar.js",
   "typings": "dist/Toolbar.d.ts",
   "scripts": {
+    "prebuild": "rimraf dist",
     "build": "tsc ",
     "lint": "tsc -p tsconfig.strict.json --noEmit",
     "watch": "tsc --watch",
@@ -32,6 +33,7 @@
     "@types/use-persisted-state": "^0.3.0",
     "jest": "24",
     "prettier": "1",
+    "rimraf": "3",
     "ts-jest": "24",
     "tslib": "1",
     "typescript": "3"
