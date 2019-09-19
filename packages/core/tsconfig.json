@@ -12,7 +12,7 @@
     "sourceMap": true,
     "target": "es6",
     "typeRoots": ["../node_modules/@types", "node_modules/@types", "@types"],
-
+    "module": "commonjs",
     // strictness: exceptions for development (must be reversed in tsconfig.build.json)
     "strict": true,
     "noUnusedLocals": false,

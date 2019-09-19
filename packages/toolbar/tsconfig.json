@@ -12,6 +12,7 @@
     "outDir": "dist",
     "sourceMap": true,
     "target": "es6",
+    "module": "commonjs",
 
     // strictness: exceptions for development (must be reversed in tsconfig.build.json)
     "strict": true,
