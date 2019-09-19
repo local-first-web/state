@@ -19,5 +19,5 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false
   },
-  "include": ["src", "@types", "../examples/grid/src/workers/counter.worker.ts"]
+  "include": ["src", "@types"]
 }
