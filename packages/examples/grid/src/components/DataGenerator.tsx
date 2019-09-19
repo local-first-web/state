@@ -32,24 +32,16 @@ export function DataGenerator() {
       const { progress: reportedProgress, result } = event.data
 
       if (reportedProgress) {
-        // only update progress on increases of 1%
-        // if (reportedProgress % 10 === 0) {
         await nextFrame()
         setProgress(Math.ceil((reportedProgress / rows) * 100))
-        await nextFrame()
-
-        // }
       }
       if (result) {
-        await nextFrame()
         setProgress(0)
         const collection = event.data.result
         console.log({ collection })
         dispatch(loadCollection(collection))
       }
     }
-
-    await nextFrame()
     generator.postMessage(rows)
   }
 
