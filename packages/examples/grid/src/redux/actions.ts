@@ -13,46 +13,57 @@ export const ITEM_ADD = 'ITEM_ADD'
 export const ITEM_UPDATE = 'ITEM_UPDATE'
 export const ITEM_REMOVE = 'ITEM_REMOVE'
 
-export function loadSchema(schema: JSONSchema7) {
-  return { type: SCHEMA_LOAD, payload: { schema } }
-}
+export const loadSchema = (schema: JSONSchema7) => ({
+  type: SCHEMA_LOAD,
+  payload: { schema },
+})
 
-export function inferSchema(sampleData: any) {
-  return { type: SCHEMA_INFER, payload: { sampleData } }
-}
+export const inferSchema = (sampleData: any) => ({
+  type: SCHEMA_INFER,
+  payload: { sampleData },
+})
 
-export function addField() {
-  return { type: FIELD_ADD, payload: { id: uuid() } }
-}
+export const addField = () => ({
+  type: FIELD_ADD,
+  payload: { id: uuid() },
+})
 
-export function renameField(id: string, description: string) {
-  return { type: FIELD_RENAME, payload: { id, description } }
-}
+export const renameField = (id: string, description: string) => ({
+  type: FIELD_RENAME,
+  payload: { id, description },
+})
 
-export function deleteField(id: string) {
-  return { type: FIELD_DELETE, payload: { id } }
-}
+export const deleteField = (id: string) => ({
+  type: FIELD_DELETE,
+  payload: { id },
+})
 
-export function setFieldType(id: string, type: string) {
-  return { type: FIELD_SET_TYPE, payload: { id, type } }
-}
+export const setFieldType = (id: string, type: string) => ({
+  type: FIELD_SET_TYPE,
+  payload: { id, type },
+})
 
-export function loadCollection(collection: any[]) {
-  return { type: COLLECTION_LOAD, payload: { collection } }
-}
+export const loadCollection = (collection: any[]) => ({
+  type: COLLECTION_LOAD,
+  payload: { collection },
+})
 
-export function clearCollection() {
-  return { type: COLLECTION_CLEAR, payload: {} }
-}
+export const clearCollection = () => ({
+  type: COLLECTION_CLEAR,
+  payload: {},
+})
 
-export function addItem(item: any = { id: uuid() }) {
-  return { type: ITEM_ADD, payload: item }
-}
+export const addItem = (item: any = { id: uuid() }) => ({
+  type: ITEM_ADD,
+  payload: item,
+})
 
-export function updateItem(item: any) {
-  return { type: ITEM_UPDATE, payload: item }
-}
+export const updateItem = (item: any) => ({
+  type: ITEM_UPDATE,
+  payload: item,
+})
 
-export function removeItem(item: any) {
-  return { type: ITEM_REMOVE, payload: item }
-}
+export const removeItem = (item: any) => ({
+  type: ITEM_REMOVE,
+  payload: item,
+})

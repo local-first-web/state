@@ -76,6 +76,7 @@ export const proxyReducer: ProxyReducer = ({ type, payload, state }) => {
       }
       return changes
     }
+
     default:
       return null
   }
