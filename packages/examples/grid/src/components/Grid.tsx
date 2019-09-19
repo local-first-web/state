@@ -31,7 +31,7 @@ import { collection } from 'cevitxe'
 
 const log = debug('cevitxe:grid')
 
-const Grid = () => {
+export const Grid = () => {
   const dispatch = useDispatch()
 
   const ready = useSelector((state: any) => !!state && !!state.schema)
@@ -201,11 +201,10 @@ const Grid = () => {
     </div>
   )
 }
+
 const styles = {
   grid: css({
     flexGrow: 5,
     height: '100vh',
   }),
 }
-
-export default Grid
