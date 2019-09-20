@@ -39,7 +39,7 @@ export const Grid = () => {
 
   const rowCollection = useSelector((state: any) => {
     if (!ready) return []
-    return collection('rows').toArray(state)
+    return collection('rows').selectors.getAll(state)
   })
 
   const columns = useSelector((state: any) => {

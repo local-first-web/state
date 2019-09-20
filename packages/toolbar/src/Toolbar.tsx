@@ -42,7 +42,7 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
     setdiscoveryKey(newDiscoveryKey)
     const newStore = await storeManager.createStore(newDiscoveryKey)
     setAppStore(newStore)
-    onStoreReady(newStore)
+    onStoreReady(newStore, newDiscoveryKey)
     setBusy(false)
     setStatus('idle')
     log('created store', newDiscoveryKey)
@@ -57,7 +57,7 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
     setdiscoveryKey(newDiscoveryKey)
     const newStore = await storeManager.joinStore(newDiscoveryKey)
     setAppStore(newStore)
-    onStoreReady(newStore)
+    onStoreReady(newStore, newDiscoveryKey)
     setBusy(false)
     setStatus('idle')
     log('joined store', newDiscoveryKey)
@@ -169,7 +169,7 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
 
 export interface ToolbarProps<T> {
   storeManager: StoreManager<T>
-  onStoreReady: (store: Redux.Store) => void
+  onStoreReady: (store: Redux.Store, discoveryKey: string) => void
 }
 
 const fontFamily = 'inconsolata, monospace'

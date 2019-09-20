@@ -16,8 +16,8 @@ const log = debug('cevitxe:grid:shell')
 export const Shell = () => {
   const [appStore, setAppStore] = useState<Redux.Store>()
 
-  const onStoreReady = (store: Redux.Store) => {
-    log('store ready', storeManager.discoveryKey)
+  const onStoreReady = (store: Redux.Store, discoveryKey: string) => {
+    log('store ready', discoveryKey)
     setAppStore(store)
   }
 

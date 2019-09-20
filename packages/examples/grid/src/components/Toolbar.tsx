@@ -18,7 +18,7 @@ export const Toolbar = () => (
 
 const Rows = () => {
   const rows = useSelector((state: any) => {
-    return collection('rows').count(state)
+    return collection('rows').selectors.count(state)
   })
   return (
     <div css={styles.toolbarGroup}>
