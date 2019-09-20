@@ -1,7 +1,8 @@
 import A from 'automerge'
 import { DocSet } from './lib/automerge'
+import { State } from 'types'
 
-export const docSetToObject = (docSet: DocSet<any>): any => {
+export const docSetToObject = <T = any>(docSet: DocSet<T>): State<T> => {
   const result = {} as any
   for (let docId of docSet.docIds) {
     result[docId] = docSet.getDoc(docId)
