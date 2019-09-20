@@ -14,7 +14,7 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
     const affectedDocs: State = {} // cache for docs that will be changed
     const removedDocs: string[] = [] // list of docs that will be removed
 
-    const functionMap = proxyReducer(action)
+    const functionMap = proxyReducer(store.getState(), action)
     if (functionMap) {
       for (let docId in functionMap) {
         const fn = functionMap[docId]

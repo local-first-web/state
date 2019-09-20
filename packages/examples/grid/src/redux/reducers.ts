@@ -3,8 +3,9 @@ import { inferSchema } from 'inferSchema'
 import { JSONSchema7 } from 'json-schema'
 import * as actions from './actions'
 
-export const proxyReducer: ProxyReducer = ({ type, payload, state }) => {
-  const { add, update, remove, drop } = collection('rows').reducers
+const rows = collection('rows')
+export const proxyReducer: ProxyReducer = (state, { type, payload }) => {
+  const { add, update, remove, drop } = rows.reducers
   switch (type) {
     case actions.ITEM_ADD:
       return add(payload)
@@ -47,7 +48,9 @@ export const proxyReducer: ProxyReducer = ({ type, payload, state }) => {
       const changes: ChangeMap = {
         schema: s => delete s.properties![payload.id],
       }
-      for (const id in state.index) changes[id] = d => delete d[payload.id]
+      for (const key of rows.selectors.keys(state)) {
+        changes[key] = d => delete d[payload.id]
+      }
       return changes
     }
 
@@ -56,23 +59,24 @@ export const proxyReducer: ProxyReducer = ({ type, payload, state }) => {
         schema: s => {
           const fieldSchema = s.properties![payload.id] as JSONSchema7
           fieldSchema.type = payload.type
-          //TODO: change all items
-          // Object.values(s.map).forEach(d => {
-          //   const currentValue = d[payload.id]
-          //   if (currentValue != null) {
-          //     switch (payload.type) {
-          //       case 'number':
-          //         const number = Number(currentValue)
-          //         if (Number.isNaN(number)) delete d[payload.id]
-          //         else d[payload.id] = number
-          //         break
-          //       case 'string':
-          //         d[payload.id] = String(currentValue)
-          //         break
-          //     }
-          //   }
-          // })
         },
+      }
+      for (const key of rows.selectors.keys(state)) {
+        const currentValue = state[key][payload.id]
+        if (currentValue != null) {
+          switch (payload.type) {
+            case 'number':
+              const number = Number(currentValue)
+              changes[key] = d => {
+                if (Number.isNaN(number)) delete d[payload.id]
+                else d[payload.id] = number
+              }
+              break
+            case 'string':
+              changes[key] = s => (s[payload.id] = String(currentValue))
+              break
+          }
+        }
       }
       return changes
     }

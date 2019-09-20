@@ -2,7 +2,7 @@ import A from 'automerge'
 import { AnyAction, Middleware, Reducer, Store } from 'redux'
 import { DocSetSync } from './DocSetSync'
 
-export type ProxyReducer = (action: AnyAction) => ChangeMap | null
+export type ProxyReducer = (state: any, action: AnyAction) => ChangeMap | null
 export type ReducerConverter = (proxyReducer: ProxyReducer, docSet: A.DocSet<any>) => Reducer
 
 export interface ChangeMap {

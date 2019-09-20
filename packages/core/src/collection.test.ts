@@ -9,7 +9,7 @@ describe('collections', () => {
 
   const teacher1 = { id: 'abcxyz', first: 'Herb', last: 'Caudill' }
 
-  const proxyReducer: ProxyReducer = (({ type, payload }) => {
+  const proxyReducer: ProxyReducer = ((state, { type, payload }) => {
     switch (type) {
       // teachers
       case 'ADD_TEACHER':
