@@ -1,6 +1,4 @@
-import { Map } from 'immutable'
 import A from 'automerge'
-import { DocSet } from './lib/automerge'
 import { AnyAction, Middleware, Reducer, Store } from 'redux'
 import { DocSetSync } from './DocSetSync'
 
@@ -30,7 +28,7 @@ export interface CreateStoreResult {
 // TODO: sort out the type for feed after building, can't get it to pick up the Feed type from the ambient hypercore types
 export type MiddlewareFactory = <T>(
   feed: any,
-  docSet: DocSet<any>,
+  docSet: A.DocSet<any>,
   proxyReducer: ProxyReducer,
   discoveryKey?: string
 ) => Middleware // feed: Feed<string>
@@ -56,4 +54,14 @@ export interface Message {
 export interface ReceiveMessagePayload {
   message: Message
   connection: DocSetSync
+}
+
+export interface State<T = any> {
+  [key: string]: A.Doc<T>
+}
+
+export interface ChangeSet {
+  docId: string
+  changes: A.Change[]
+  isDelete?: boolean
 }
