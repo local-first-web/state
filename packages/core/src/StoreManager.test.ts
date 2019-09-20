@@ -121,7 +121,7 @@ describe('Cevitxe', () => {
 
       // confirm that the change was made
       const state = localStore.getState()
-      const allTeachers = teachers.toMap(state) as any
+      const allTeachers = teachers.selectors.getMap(state) as any
       expect(allTeachers.abcxyz.first).toEqual('Herb')
 
       await close()
@@ -149,7 +149,7 @@ describe('Cevitxe', () => {
 
       // confirm that the change took locally
       const state0 = localStore.getState()
-      expect(teachers.toMap(state0)).toEqual({ abcxyz: teacher1, defcba: teacher2 })
+      expect(teachers.selectors.getMap(state0)).toEqual({ abcxyz: teacher1, defcba: teacher2 })
 
       // disconnect store
       await pause(500)
@@ -160,7 +160,7 @@ describe('Cevitxe', () => {
 
       // Confirm that the modified state is still there
       const state1 = newLocalState.getState()
-      expect(teachers.toMap(state1)).toEqual({ abcxyz: teacher1, defcba: teacher2 })
+      expect(teachers.selectors.getMap(state1)).toEqual({ abcxyz: teacher1, defcba: teacher2 })
 
       await close()
     })
@@ -170,14 +170,14 @@ describe('Cevitxe', () => {
       localStore.dispatch({ type: 'ADD_TEACHER', payload: [teacher1, teacher2] })
 
       const state0 = localStore.getState()
-      expect(teachers.toMap(state0)).toEqual({ abcxyz: teacher1, defcba: teacher2 })
+      expect(teachers.selectors.getMap(state0)).toEqual({ abcxyz: teacher1, defcba: teacher2 })
 
       // change something in the local store
       localStore.dispatch({ type: 'REMOVE_TEACHER', payload: teacher1 })
 
       // confirm that the change took locally
       const state1 = localStore.getState()
-      expect(teachers.toMap(state1)).toEqual({ defcba: teacher2 })
+      expect(teachers.selectors.getMap(state1)).toEqual({ defcba: teacher2 })
 
       // disconnect store
       await pause(500)
@@ -188,7 +188,7 @@ describe('Cevitxe', () => {
 
       // Confirm that the modified state is still there
       const newState = state2.getState()
-      expect(teachers.toMap(newState)).toEqual({ defcba: teacher2 })
+      expect(teachers.selectors.getMap(newState)).toEqual({ defcba: teacher2 })
 
       await close()
     })
@@ -252,11 +252,11 @@ describe('Cevitxe', () => {
 
       // confirm that the change took locally
       const localState = localStore.getState()
-      expect(teachers.toMap(localState)).toEqual(expectedState)
+      expect(teachers.selectors.getMap(localState)).toEqual(expectedState)
 
       // confirm that the remote store has the new value
       const remoteState = remoteStore.getState()
-      expect(teachers.toMap(remoteState)).toEqual(expectedState)
+      expect(teachers.selectors.getMap(remoteState)).toEqual(expectedState)
 
       await close()
     })
@@ -267,7 +267,7 @@ describe('Cevitxe', () => {
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
       await eventPromise(remoteStoreManager, 'change')
 
-      expect(teachers.toMap(localStore.getState())).toEqual({ abcxyz: teacher1 })
+      expect(teachers.selectors.getMap(localStore.getState())).toEqual({ abcxyz: teacher1 })
 
       // modify the teacher in the local store
       localStore.dispatch({
@@ -288,10 +288,10 @@ describe('Cevitxe', () => {
       }
 
       // confirm that the local store is caught up
-      expect(teachers.toMap(localStore.getState())).toEqual(expectedState)
+      expect(teachers.selectors.getMap(localStore.getState())).toEqual(expectedState)
 
       // confirm that the remote store is caught up
-      expect(teachers.toMap(remoteStore.getState())).toEqual(expectedState)
+      expect(teachers.selectors.getMap(remoteStore.getState())).toEqual(expectedState)
 
       await close()
     })
@@ -313,10 +313,10 @@ describe('Cevitxe', () => {
       }
 
       // confirm that the local store is caught up
-      expect(teachers.toMap(localStore.getState())).toEqual(expectedState)
+      expect(teachers.selectors.getMap(localStore.getState())).toEqual(expectedState)
 
       // confirm that the remote store is caught up
-      expect(teachers.toMap(remoteStore.getState())).toEqual(expectedState)
+      expect(teachers.selectors.getMap(remoteStore.getState())).toEqual(expectedState)
 
       await close()
     })
@@ -338,7 +338,7 @@ describe('Cevitxe', () => {
       await eventPromise(remoteStoreManager, 'change')
 
       // confirm that the remote store has the new value
-      expect(teachers.toMap(remoteStore.getState()).abcxyz.first).toEqual('Herbert')
+      expect(teachers.selectors.getMap(remoteStore.getState()).abcxyz.first).toEqual('Herbert')
 
       // disconnect both stores
       await close()
@@ -347,7 +347,7 @@ describe('Cevitxe', () => {
       const newRemoteStore = await remoteStoreManager.joinStore(discoveryKey)
 
       // confirm that the modified state is still there
-      expect(teachers.toMap(newRemoteStore.getState()).abcxyz.first).toEqual('Herbert')
+      expect(teachers.selectors.getMap(newRemoteStore.getState()).abcxyz.first).toEqual('Herbert')
 
       await close()
     })
@@ -360,7 +360,7 @@ describe('Cevitxe', () => {
       await eventPromise(remoteStoreManager, 'change')
 
       // confirm that the record is there before deleting it
-      expect(teachers.toMap(localStore.getState())).toHaveProperty('abcxyz')
+      expect(teachers.selectors.getMap(localStore.getState())).toHaveProperty('abcxyz')
 
       // delete a record in the local store
       localStore.dispatch({ type: 'REMOVE_TEACHER', payload: { id: 'abcxyz' } })
@@ -369,10 +369,10 @@ describe('Cevitxe', () => {
       await eventPromise(remoteStoreManager, 'change')
 
       // confirm that the deletion took place locally
-      expect(teachers.toMap(localStore.getState())).not.toHaveProperty('abcxyz')
+      expect(teachers.selectors.getMap(localStore.getState())).not.toHaveProperty('abcxyz')
 
       // confirm that the deletion took place in the remote store
-      expect(teachers.toMap(remoteStore.getState())).not.toHaveProperty('abcxyz')
+      expect(teachers.selectors.getMap(remoteStore.getState())).not.toHaveProperty('abcxyz')
 
       // disconnect both stores
       await close()
@@ -381,7 +381,7 @@ describe('Cevitxe', () => {
       const newRemoteStore = await remoteStoreManager.joinStore(discoveryKey)
 
       // Confirm that the deletion was persisted
-      expect(teachers.toMap(newRemoteStore.getState())).not.toHaveProperty('abcxyz')
+      expect(teachers.selectors.getMap(newRemoteStore.getState())).not.toHaveProperty('abcxyz')
 
       await close()
     })
@@ -406,20 +406,20 @@ describe('Cevitxe', () => {
       await eventPromise(remoteStoreManager, 'change')
 
       // confirm that the local store has initial state
-      expect(teachers.count(localStore.getState())).toBe(1)
+      expect(teachers.selectors.count(localStore.getState())).toBe(1)
 
       // confirm that the remote store has initial state
-      expect(teachers.count(remoteStore.getState())).toBe(1)
+      expect(teachers.selectors.count(remoteStore.getState())).toBe(1)
 
       // Drop teachers locally
       localStore.dispatch({ type: 'DROP_TEACHERS' })
       await eventPromise(remoteStoreManager, 'change')
 
       // confirm that the local store is caught up
-      expect(teachers.count(localStore.getState())).toBe(0)
+      expect(teachers.selectors.count(localStore.getState())).toBe(0)
 
       // confirm that the remote store is caught up
-      expect(teachers.count(remoteStore.getState())).toBe(0)
+      expect(teachers.selectors.count(remoteStore.getState())).toBe(0)
 
       await close()
     })
