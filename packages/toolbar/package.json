@@ -14,12 +14,12 @@
     "test": "jest"
   },
   "resolutions": {
-    "jest": "24.7.1"
+    "jest": "24.9.0"
   },
   "dependencies": {
     "@emotion/core": "10",
-    "cevitxe": "^0.2.3",
-    "formik": "^2.0.1-rc.12",
+    "cevitxe": "0",
+    "formik": "^2.0.1-rc.13",
     "friendly-words": "1",
     "react": "16",
     "react-dom": "16",
@@ -30,7 +30,7 @@
   "devDependencies": {
     "@types/jest": "24",
     "@types/query-string": "6",
-    "@types/use-persisted-state": "^0.3.0",
+    "@types/use-persisted-state": "0",
     "jest": "24",
     "prettier": "1",
     "rimraf": "3",

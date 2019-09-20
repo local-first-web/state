@@ -31,11 +31,11 @@
     "esm": "3"
   },
   "resolutions": {
-    "jest": "24.7.1"
+    "jest": "24.9.0"
   },
   "devDependencies": {
     "@types/jest": "24",
-    "cross-env": "5",
+    "cross-env": "6",
     "jest": "24",
     "lerna": "3",
     "npm-run-all": "4",
