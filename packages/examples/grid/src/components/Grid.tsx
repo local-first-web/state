@@ -32,6 +32,8 @@ import { collection } from 'cevitxe'
 
 const log = debug('cevitxe:grid')
 
+const rowsSelector = collection('rows').selectors.getAll
+
 export const Grid = () => {
   const dispatch = useDispatch()
 
@@ -39,7 +41,7 @@ export const Grid = () => {
 
   const rowCollection = useSelector((state: any) => {
     if (!ready) return []
-    return collection('rows').selectors.getAll(state)
+    return rowsSelector(state)
   })
 
   const columns = useSelector((state: any) => {
