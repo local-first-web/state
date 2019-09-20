@@ -76,7 +76,7 @@ describe('collections', () => {
       const { state, reducer } = setupEmpty()
       const action = { type: 'ADD_TEACHER', payload: teacher1 }
       const newState = reducer(state, action)
-      const allItems = teachers.toArray(newState)
+      const allItems = teachers.selectors.getAll(newState)
       expect(allItems).toEqual([teacher1])
     })
 
@@ -84,7 +84,7 @@ describe('collections', () => {
       const { state, reducer } = setupWithOneTeacher()
       const action = { type: 'UPDATE_TEACHER', payload: { id: teacher1.id, first: 'Herbert' } }
       const newState = reducer(state, action)
-      const allItems = teachers.toArray(newState)
+      const allItems = teachers.selectors.getAll(newState)
       expect(allItems).toEqual([{ id: 'abcxyz', first: 'Herbert', last: 'Caudill' }])
     })
 
@@ -92,7 +92,7 @@ describe('collections', () => {
       const { state, reducer } = setupWithOneTeacher()
       const action = { type: 'REMOVE_TEACHER', payload: { id: teacher1.id } }
       const newState = reducer(state, action)
-      const allItems = teachers.toArray(newState)
+      const allItems = teachers.selectors.getAll(newState)
       expect(allItems).toHaveLength(0)
     })
 
@@ -116,7 +116,7 @@ describe('collections', () => {
         ],
       }
       const newState = reducer(state, addAction)
-      const allItems = students.toArray(newState)
+      const allItems = students.selectors.getAll(newState)
       expect(allItems).toEqual([
         { id: 'student_001' },
         { id: 'student_002' },
@@ -164,10 +164,10 @@ describe('collections', () => {
       return { state, reducer }
     }
 
-    describe('toArray', () => {
+    describe('getArray', () => {
       it('should return all the items in the collection', () => {
         const { state } = setupTeachers()
-        const allItems = teachers.toArray(state)
+        const allItems = teachers.selectors.getAll(state)
         expect(allItems).toEqual([
           { id: 'teacher_001' },
           { id: 'teacher_002' },
@@ -177,13 +177,13 @@ describe('collections', () => {
 
       it('should keep items from different collections separate', () => {
         let { state } = setupTeachersAndStudents()
-        const allTeachers = teachers.toArray(state)
+        const allTeachers = teachers.selectors.getAll(state)
         expect(allTeachers).toEqual([
           { id: 'teacher_001' },
           { id: 'teacher_002' },
           { id: 'teacher_003' },
         ])
-        const allStudents = students.toArray(state)
+        const allStudents = students.selectors.getAll(state)
         expect(allStudents).toEqual([
           { id: 'student_001' }, //
           { id: 'student_002' },
@@ -199,7 +199,7 @@ describe('collections', () => {
         const newState = reducer(state, action)
 
         // check the new list of items
-        const allItems = teachers.toArray(newState)
+        const allItems = teachers.selectors.getAll(newState)
         expect(allItems).toEqual([
           { id: 'teacher_001' }, //
           { id: 'teacher_003' },
@@ -207,15 +207,15 @@ describe('collections', () => {
       })
 
       it('should return empty array if state is undefined', () => {
-        const actual = teachers.toArray(undefined)
+        const actual = teachers.selectors.getAll(undefined)
         expect(actual).toEqual([])
       })
     })
 
-    describe('toMap', () => {
+    describe('getMap', () => {
       it('should return all the items in the collection', () => {
         const { state } = setupTeachers()
-        const allItems = teachers.toMap(state)
+        const allItems = teachers.selectors.getMap(state)
         expect(allItems).toEqual({
           teacher_001: { id: 'teacher_001' },
           teacher_002: { id: 'teacher_002' },
@@ -227,14 +227,14 @@ describe('collections', () => {
     describe('count', () => {
       it('should return the number of items in the collection', () => {
         const { state } = setupTeachers()
-        const count = teachers.count(state)
+        const count = teachers.selectors.count(state)
         expect(count).toEqual(3)
       })
 
       it('should only count non-deleted items', () => {
         // populate with three items
         const { state, reducer } = setupTeachers()
-        const count = teachers.count(state)
+        const count = teachers.selectors.count(state)
         expect(count).toEqual(3)
 
         // remove one
@@ -242,12 +242,12 @@ describe('collections', () => {
         const newState = reducer(state, action)
 
         // check the new count
-        const newCount = teachers.count(newState)
+        const newCount = teachers.selectors.count(newState)
         expect(newCount).toEqual(2)
       })
 
       it('should return zero if state is undefined', () => {
-        const count = teachers.count(undefined)
+        const count = teachers.selectors.count(undefined)
         expect(count).toEqual(0)
       })
     })
