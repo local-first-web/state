@@ -1,11 +1,12 @@
 import { emptyGrid } from './emptyGrid'
 import { collection } from 'cevitxe'
 
+const rows = collection('rows').selectors.getAll
+
 describe('emptyGrid', () => {
   it('2x2', () => {
     const state = emptyGrid(2)
-    const rows = collection('rows')
-    const allRows = rows.toArray(state)
+    const allRows = rows(state)
     expect(allRows).toEqual([{ id: 'row_1' }, { id: 'row_2' }])
     expect(state.schema).toEqual({
       properties: {
@@ -17,8 +18,7 @@ describe('emptyGrid', () => {
 
   it('5x3', () => {
     const state = emptyGrid(5, 3)
-    const rows = collection('rows')
-    const allRows = rows.toArray(state)
+    const allRows = rows(state)
     expect(allRows).toEqual([
       { id: 'row_1' },
       { id: 'row_2' },
