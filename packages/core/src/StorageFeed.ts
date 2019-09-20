@@ -12,7 +12,6 @@ export class StorageFeed extends EventEmitter {
   private discoveryKey: string
   private databaseName: string
   private feed: Feed<string>
-  private isReady: boolean = false
 
   public docSet: A.DocSet<any> = new A.DocSet()
 
@@ -34,22 +33,17 @@ export class StorageFeed extends EventEmitter {
         const creating = Object.keys(initialState).length > 0
         if (!creating && this.feed.length > 0) await this.getStateFromStorage()
         else this.initialize(initialState)
-        this.isReady = true
         log('ready!')
         this.emit('ready')
         resolve(this.docSet)
       })
     )
 
-  ready = async () => {
-    log('isReady', this.isReady)
-    return new Promise(ok => this.feed.on('ready', ok))
-  }
+  ready = async () => new Promise(ok => this.feed.on('ready', ok))
 
   close = (cb: (err: Error) => void) =>
     this.feed.close(err => {
       cb(err)
-      this.isReady = false
       this.emit('close')
     })
 
