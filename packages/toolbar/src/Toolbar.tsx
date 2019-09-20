@@ -11,7 +11,7 @@ import { wordPair } from './wordPair'
 
 export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
   // Hooks
-  const [discoveryKey, setdiscoveryKey] = useQueryParam('id', StringParam)
+  const [discoveryKey, setDiscoveryKey] = useQueryParam('id', StringParam)
   const [, setAppStore] = useState()
   const [inputHasFocus, setInputHasFocus] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -39,7 +39,7 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
     setBusy(true)
     setStatus('creating store')
     const newDiscoveryKey = wordPair()
-    setdiscoveryKey(newDiscoveryKey)
+    setDiscoveryKey(newDiscoveryKey)
     const newStore = await storeManager.createStore(newDiscoveryKey)
     setAppStore(newStore)
     onStoreReady(newStore, newDiscoveryKey)
@@ -54,7 +54,7 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
     if (busy) return
     setBusy(true)
     setStatus('joining store')
-    setdiscoveryKey(newDiscoveryKey)
+    setDiscoveryKey(newDiscoveryKey)
     const newStore = await storeManager.joinStore(newDiscoveryKey)
     setAppStore(newStore)
     onStoreReady(newStore, newDiscoveryKey)
