@@ -49,7 +49,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * ```ts
    * {
    *   '::teachers::abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill' },
-   *   '::teachers::qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelsohn' },
+   *   '::teachers::qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelshon' },
    *   '::students::lmnopqrs12': {id: 'lmnopqrs12', first: 'Steve', last: 'Jobs' },
    *   '::students::qwerty1234': {id: 'qwerty1234', first: 'Steve', last: 'Wozniak' },
    * }
@@ -67,7 +67,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    *       ```ts
    *       {
    *         '::teachers::abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill', [DELETED]: true },
-   *         '::teachers::qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelsohn' },
+   *         '::teachers::qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelshon' },
    *       }
    *       ```
    *    2. The actual deletion is then performed in middleware.
@@ -81,7 +81,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * ```ts
    * {
    *   '::teachers::abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill', ['::DELETED']: true },
-   *   '::teachers::qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelsohn' },
+   *   '::teachers::qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelshon' },
    *   '::teachers': DELETE_COLLECTION
    * }
    */
