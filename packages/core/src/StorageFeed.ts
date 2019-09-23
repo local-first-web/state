@@ -32,7 +32,7 @@ export class StorageFeed extends EventEmitter {
     new Promise(resolve =>
       this.feed.on('ready', async () => {
         if (!creating && this.feed.length > 0) await this.getStateFromStorage()
-        else this.initialize(initialState)
+        else this.create(initialState)
         log('ready!')
         this.emit('ready')
         resolve(this.docSet)
@@ -49,8 +49,8 @@ export class StorageFeed extends EventEmitter {
 
   append = (data: string) => this.feed.append(data)
 
-  private initialize(initialState: any) {
-    log('initializing %o', initialState)
+  private create(initialState: any) {
+    log('creating new store %o', initialState)
     const changeSets: ChangeSet[] = []
     for (let docId in initialState) {
       const doc = A.from(initialState[docId])
