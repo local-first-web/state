@@ -2,7 +2,7 @@ import A from 'automerge'
 import debug from 'debug'
 import { collection } from './collection'
 import { DELETE_COLLECTION, DELETE_ITEM, RECEIVE_MESSAGE_FROM_PEER } from './constants'
-import { ChangeSet, MiddlewareFactory, State } from './types'
+import { ChangeSet, MiddlewareFactory, DocSetState } from './types'
 
 const log = debug('cevitxe:middleware')
 
@@ -11,7 +11,7 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
     // BEFORE CHANGES
 
     // detect which documents will be changed and cache them
-    const affectedDocs: State = {} // cache for docs that will be changed
+    const affectedDocs: DocSetState = {} // cache for docs that will be changed
     const removedDocs: string[] = [] // list of docs that will be removed
 
     const functionMap = proxyReducer(action)
@@ -21,11 +21,19 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
         if (fn === DELETE_COLLECTION) {
           const name = collection.getCollectionName(docId)
           const docIds = collection(name).selectors.keys(store.getState())
+
+          // Record each doc as removed so we can note that in the storage feed
           for (const itemDocId in docIds) removedDocs.push(itemDocId)
+
+          // Perform the delete on the docSet (we have to do this here rather than in the reducer,
+          // because we don't have access to the whole)
           collection(name).deleteAll(docSet)
         } else if (fn === DELETE_ITEM) {
+          // Record the doc as removed so we can note that in the storage feed
           removedDocs.push(docId)
         } else if (typeof fn === 'function') {
+          // Doc will be run through a change function. Cache the previous version of the doc so we
+          // can record changes for the storage feed
           const oldDoc = docSet.getDoc(docId) || A.init() // create a new doc if one doesn't exist
           affectedDocs[docId] = oldDoc
         }
