@@ -1,7 +1,7 @@
 import A from 'automerge'
 import { AnyAction, Middleware, Reducer, Store } from 'redux'
 import { DocSetSync } from './DocSetSync'
-import { StorageFeed } from 'StorageFeed'
+import { StorageFeed } from './StorageFeed'
 
 export type ProxyReducer = (state: any, action: AnyAction) => ChangeMap | null
 
@@ -28,7 +28,7 @@ export interface CreateStoreResult {
 }
 
 export type MiddlewareFactory = (
-  feed: any, //StorageFeed,
+  feed: StorageFeed,
   docSet: A.DocSet<any>,
   proxyReducer: ProxyReducer,
   discoveryKey?: string
