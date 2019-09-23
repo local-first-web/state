@@ -1,9 +1,13 @@
 import A, { ChangeFn } from 'automerge'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
-import { ReducerConverter } from './types'
 import { docSetToObject } from './docSetHelpers'
-import { Reducer } from 'react'
-import { AnyAction } from 'redux'
+import { Reducer, AnyAction } from 'redux'
+import { ProxyReducer, DocSetState } from 'types'
+
+export type ReducerConverter = (
+  proxyReducer: ProxyReducer,
+  docSet: A.DocSet<any>
+) => Reducer<DocSetState, AnyAction>
 
 /**
  * This function, used when wiring up the store, takes a `proxyReducer` and turns it into a
@@ -18,15 +22,15 @@ import { AnyAction } from 'redux'
  * @param docSet The store's docSet
  */
 export const adaptReducer: ReducerConverter = (proxyReducer, docSet) => {
-  const reducer: Reducer<any, AnyAction> = (state, { type, payload }) => {
+  const reducer: Reducer<DocSetState, AnyAction> = (state, { type, payload }): DocSetState => {
     if (type === RECEIVE_MESSAGE_FROM_PEER) {
-      // Connection has already updated our docSet
+      // Connection has already updated our docSet - nothing to do here.
     } else {
       const functionMap = proxyReducer({ type, payload })
 
-      if (!functionMap || !state) {
+      if (!functionMap) {
         // no matching function - return the unmodified state
-        return state
+        return state || {}
       }
 
       // Apply each change function to the corresponding document
