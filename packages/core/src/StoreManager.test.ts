@@ -43,7 +43,7 @@ describe('Cevitxe', () => {
   })
 
   describe('solo', () => {
-    const open = async () => {
+    const open = async ({ join = false } = {}) => {
       const port = await getAvailablePort({ port: 3000 })
       const urls = [`ws://localhost:${port}`]
       server = new Server({ port })
@@ -58,8 +58,11 @@ describe('Cevitxe', () => {
         initialState,
         urls,
       })
-      // create new store locally
-      const localStore = await localStoreManager.createStore(discoveryKey)
+
+      // get local store
+      const localStore = join
+        ? await localStoreManager.joinStore(discoveryKey)
+        : await localStoreManager.createStore(discoveryKey)
 
       // include a teardown function in the return values
       const close = async () => {
@@ -70,24 +73,23 @@ describe('Cevitxe', () => {
       return { close, localStoreManager, localStore, discoveryKey }
     }
 
-    // TODO: this is testing creating, not joining
-    // it('should join a store', async () => {
-    //   expect.assertions(5)
-    //   const { close, localStore } = await open()
+    it('should join a store', async () => {
+      expect.assertions(5)
+      const { close, localStore } = await open({ join: true })
 
-    //   // store exists
-    //   expect(localStore).not.toBeUndefined()
+      // store exists
+      expect(localStore).not.toBeUndefined()
 
-    //   // it looks like a store
-    //   expect(localStore).toHaveProperty('getState')
-    //   expect(localStore).toHaveProperty('dispatch')
-    //   expect(localStore).toHaveProperty('subscribe')
+      // it looks like a store
+      expect(localStore).toHaveProperty('getState')
+      expect(localStore).toHaveProperty('dispatch')
+      expect(localStore).toHaveProperty('subscribe')
 
-    //   // it's in empty (waiting) state
-    //   expect(localStore.getState()).toEqual(initialState)
+      // it's in empty (waiting) state
+      expect(localStore.getState()).toEqual(initialState)
 
-    //   await close()
-    // })
+      await close()
+    })
 
     it('should create a store', async () => {
       expect.assertions(5)
