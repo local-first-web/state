@@ -70,13 +70,12 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    *         '::teachers::qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelshon' },
    *       }
    *       ```
-   *    2. The actual deletion is then performed in middleware.
+   *    2. The actual deletion is then performed in middleware. (TODO!! not really happening yet 🤷‍)
    *
    * ### Dropping a collection
    *
-   * We want to be able to drop a collection in a single action from a reducer, but we don't have an
-   * index and we don't have a reference to the `DocSet` from within the reducer to get a list of
-   * documents. So instead of returning reducer functions, we return a new object keyed to the
+   * We want to be able to drop a collection in a single action from a reducer, but we don't have an index
+   * So instead of returning reducer functions, we return a new object keyed to the
    * collection name and containing just the DELETE_COLLECTION flag.
    * ```ts
    * {
@@ -85,10 +84,6 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    *   '::teachers': DELETE_COLLECTION
    * }
    */
-
-  // TODO: Review the comment above - we actually do have a reference to the `DocSet` in
-  // `AdaptReducer`, so why not perform the deletions there instead of middleware? Would be cleaner
-  // to make all changes in the reducer, and have the middleware just take care of persistence.
 
   const DELETED = '::DELETED'
 
