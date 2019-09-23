@@ -1,7 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
 import { menu, styles } from 'cevitxe-toolbar'
-// import { debug } from 'debug'
 import { JSONSchema7 } from 'json-schema'
 import { Fragment, useState } from 'react'
 import { useDispatch } from 'react-redux'
@@ -31,14 +30,13 @@ export function DataGenerator() {
     generator.onmessage = async event => {
       const { progress: reportedProgress, result } = event.data
 
+      await nextFrame()
       if (reportedProgress) {
-        await nextFrame()
         setProgress(Math.ceil((reportedProgress / rows) * 100))
       }
       if (result) {
         setProgress(0)
         const collection = event.data.result
-        console.log({ collection })
         dispatch(loadCollection(collection))
       }
     }
