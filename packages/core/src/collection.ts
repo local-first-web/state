@@ -106,10 +106,14 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * Returns all keys for the collection when given the current redux state.
    * @param state The plain JSON representation of the state.
    */
-  const keys = (state: DocSetState<T>): string[] =>
-    Object.keys(state || {})
-      .filter((key: string) => key.startsWith(`${keyName}::`))
-      .filter((key: string) => !(state as any)[key][DELETED])
+  const keys = (state: DocSetState<T>, { includeDeleted = false } = {}): string[] => {
+    const collectionItems = Object.keys(state || {}).filter((key: string) =>
+      key.startsWith(`${keyName}::`)
+    )
+    return includeDeleted
+      ? collectionItems
+      : collectionItems.filter((key: string) => !(state as any)[key][DELETED])
+  }
 
   /**
    * Given the redux state, returns an array containing all items in the collection.
@@ -131,6 +135,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
   const count = (state: DocSetState<T> = {}) => keys(state).length
 
   const removeAll = (docSet: DocSet<any>) => {
+    //TODO: filter docSet.docIds instead of converting the docSet to reuse keys
     const docIds = keys(docSetToObject(docSet))
     for (const docId of docIds) {
       const doc = docSet.getDoc(docId)

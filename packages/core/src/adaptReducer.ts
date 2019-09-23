@@ -39,6 +39,7 @@ export const adaptReducer: ReducerConverter = (proxyReducer, docSet) => {
         const fn = functionMap[docId] as ChangeFn<any> | symbol
 
         if (fn === DELETE_COLLECTION) {
+          const name = collection.getCollectionName(docId)
           collection(name).removeAll(docSet)
         } else if (typeof fn === 'function') {
           // find the corresponding document in the docSet

@@ -20,7 +20,7 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
         const fn = functionMap[docId]
         if (fn === DELETE_COLLECTION) {
           const name = collection.getCollectionName(docId)
-          const docIds = collection(name).selectors.keys(store.getState())
+          const docIds = collection(name).selectors.keys(store.getState(), { includeDeleted: true })
           // Record each doc as removed so we can note that in the storage feed
           for (const itemDocId in docIds) removedDocs.push(itemDocId)
         } else if (fn === DELETE_ITEM) {
