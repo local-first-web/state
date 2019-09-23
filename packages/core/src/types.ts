@@ -1,41 +1,44 @@
 import A from 'automerge'
 import { AnyAction, Middleware, Reducer, Store } from 'redux'
 import { DocSetSync } from './DocSetSync'
+import { StorageFeed } from 'StorageFeed'
 
 export type ProxyReducer = (action: AnyAction) => ChangeMap | null
-export type ReducerConverter = (proxyReducer: ProxyReducer, docSet: A.DocSet<any>) => Reducer
 
 export interface ChangeMap {
   [docId: string]: A.ChangeFn<any> | symbol
 }
 
 export interface StoreManagerOptions<T> {
-  // Redux store
+  /** A Cevitxe proxy reducer that returns a ChangeMap (map of change functions) for each action. */
   proxyReducer: ProxyReducer
-  middlewares?: Middleware[] // TODO: accept an `enhancer` object instead
+  /** Redux middlewares to add to the store. */
+  middlewares?: Middleware[]
+  /** The starting state of a blank document. */
   initialState: T
-
-  // hypercore feed options
+  /** A name for the storage feed, to distinguish this application's data from any other Cevitxe data stored on the same machine. */
   databaseName: string
+  /** The address(es) of one or more signal servers to try. */
   urls?: string[]
 }
 
 export interface CreateStoreResult {
-  feed: any //Feed<string>
+  feed: Feed<string>
   store: Store
 }
 
-// TODO: sort out the type for feed after building, can't get it to pick up the Feed type from the ambient hypercore types
-export type MiddlewareFactory = <T>(
-  feed: any,
+export type MiddlewareFactory = (
+  feed: StorageFeed,
   docSet: A.DocSet<any>,
   proxyReducer: ProxyReducer,
   discoveryKey?: string
-) => Middleware // feed: Feed<string>
+) => Middleware
 
-// A keychain maps a discovery key (the id we share to the signal server) with a public/private
-// keypair (which we use for storage etc). The discovery key can be any string that we think is
-// going to be unique on our signal hub servers.
+/**
+ * A keychain maps a discovery key (the id we share to the signal server) with a public/private
+ * keypair (which we use for storage etc). The discovery key can be any string that we think is
+ * going to be unique on our signal hub servers.
+ */
 export interface Keychain {
   [discoveryKey: string]: KeyPair
 }
@@ -56,12 +59,23 @@ export interface ReceiveMessagePayload {
   connection: DocSetSync
 }
 
-export interface State<T = any> {
-  [key: string]: A.Doc<T>
+/**
+ * `DocSetState` is a plain JavaScript representation of a DocSet. It is an object, each property of
+ * which is also an object; so any primitive values or arrays need to be nested a couple of levels
+ * in.
+ */
+export interface DocSetState<T = any> {
+  [docId: string]: A.Doc<T>
 }
 
+/**
+ * A `ChangeSet` is what we record in our storage feed.
+ */
 export interface ChangeSet {
+  /** The ID of the document */
   docId: string
+  /** One or more Automerge changes made to the document */
   changes: A.Change[]
+  /** Special flag marking the document for deletion */
   isDelete?: boolean
 }
