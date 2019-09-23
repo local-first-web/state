@@ -1,5 +1,4 @@
-﻿import A from 'automerge'
-import { DocSet } from './lib/automerge'
+﻿import A, { DocSet } from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
 import { lessOrEqual } from './lib/lessOrEqual'

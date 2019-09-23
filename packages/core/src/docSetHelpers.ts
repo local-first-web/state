@@ -1,5 +1,4 @@
-import A from 'automerge'
-import { DocSet } from './lib/automerge'
+import A, { DocSet } from 'automerge'
 import { DocSetState } from 'types'
 
 export const docSetToObject = <T = any>(docSet: DocSet<T>): DocSetState<T> => {

@@ -1,4 +1,4 @@
-import { DocSet } from './lib/automerge'
+import { DocSet } from 'automerge'
 import { DocSetSync } from './DocSetSync'
 import debug from 'debug'
 import { AnyAction, Dispatch } from 'redux'

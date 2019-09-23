@@ -1,7 +1,6 @@
-import A, { Doc } from 'automerge'
+import A, { Doc, DocSet } from 'automerge'
 import { DELETE_COLLECTION } from './constants'
 import { docSetToObject } from './docSetHelpers'
-import { DocSet } from './lib/automerge'
 import { ChangeMap, DocSetState } from './types'
 
 export interface CollectionOptions {

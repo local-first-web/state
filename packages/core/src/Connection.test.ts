@@ -1,5 +1,4 @@
-import A from 'automerge'
-import { DocSet } from './lib/automerge'
+import A, { DocSet } from 'automerge'
 import { Server } from 'cevitxe-signal-server'
 import { newid } from 'cevitxe-signal-client'
 import { Connection } from './Connection'
