@@ -179,7 +179,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
       getMap,
       count,
     },
-    deleteAll: removeAll,
+    removeAll,
   }
 }
 
