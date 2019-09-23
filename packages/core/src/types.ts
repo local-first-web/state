@@ -23,12 +23,12 @@ export interface StoreManagerOptions<T> {
 }
 
 export interface CreateStoreResult {
-  feed: Feed<string>
+  feed: any //Feed<string>
   store: Store
 }
 
 export type MiddlewareFactory = (
-  feed: StorageFeed,
+  feed: any, //StorageFeed,
   docSet: A.DocSet<any>,
   proxyReducer: ProxyReducer,
   discoveryKey?: string
