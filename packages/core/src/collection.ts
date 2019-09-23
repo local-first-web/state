@@ -2,7 +2,7 @@ import A, { Doc } from 'automerge'
 import { DELETE_COLLECTION } from './constants'
 import { docSetToObject } from './docSetHelpers'
 import { DocSet } from './lib/automerge'
-import { ChangeMap, State } from './types'
+import { ChangeMap, DocSetState } from './types'
 
 export interface CollectionOptions {
   idField?: string
@@ -67,19 +67,30 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    *       persisted and propagated to peers.
    *       ```ts
    *       {
-   *         '::teachers::abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill', ['::DELETED']: true },
+   *         '::teachers::abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill', [DELETED]: true },
    *         '::teachers::qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelsohn' },
    *       }
    *       ```
-   *    2. We leave the actual deletion to a manually triggered cleanup.
+   *    2. The actual deletion is then performed in middleware.
    *
    * ### Dropping a collection
    *
    * We want to be able to drop a collection in a single action from a reducer, but we don't have an
    * index and we don't have a reference to the `DocSet` from within the reducer to get a list of
-   * documents. So instead of returning reducer functions, we return a .
-   *
+   * documents. So instead of returning reducer functions, we return a new object keyed to the
+   * collection name and containing just the DELETE_COLLECTION flag.
+   * ```ts
+   * {
+   *   '::teachers::abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill', ['::DELETED']: true },
+   *   '::teachers::qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelsohn' },
+   *   '::teachers': DELETE_COLLECTION
+   * }
    */
+
+  // TODO: Review the comment above - we actually do have a reference to the `DocSet` in
+  // `AdaptReducer`, so why not perform the deletions there instead of middleware? Would be cleaner
+  // to make all changes in the reducer, and have the middleware just take care of persistence.
+
   const DELETED = '::DELETED'
 
   const keyName = collection.getKeyName(name)
@@ -96,7 +107,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * Returns all keys for the collection when given the current redux state.
    * @param state The plain JSON representation of the state.
    */
-  const keys = (state: State<T>): string[] =>
+  const keys = (state: DocSetState<T>): string[] =>
     Object.keys(state || {})
       .filter((key: string) => key.startsWith(`${keyName}::`))
       .filter((key: string) => !(state as any)[key][DELETED])
@@ -105,22 +116,22 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * Given the redux state, returns an array containing all items in the collection.
    * @param state The plain JSON representation of the state.
    */
-  const getAll = (state: State<T> = {}) => keys(state).map((key: string) => state[key])
+  const getAll = (state: DocSetState<T> = {}) => keys(state).map((key: string) => state[key])
 
   /**
    * Given the redux state, returns a map keying each item in the collection to its `id`.
    * @param state The plain JSON representation of the state.
    */
-  const getMap = (state: State<T> = {}): State<T> =>
+  const getMap = (state: DocSetState<T> = {}): DocSetState<T> =>
     keys(state).reduce((result, key) => ({ ...result, [keyToId(key)]: state[key] }), {})
 
   /**
    * Returns the number of items in the collection when given the redux state.
    * @param state The plain JSON representation of the state.
    */
-  const count = (state: State<T> = {}) => keys(state).length
+  const count = (state: DocSetState<T> = {}) => keys(state).length
 
-  const deleteAll = (docSet: DocSet<any>) => {
+  const removeAll = (docSet: DocSet<any>) => {
     const docIds = keys(docSetToObject(docSet))
     for (const docId of docIds) {
       const doc = docSet.getDoc(docId)
@@ -169,7 +180,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
       getMap,
       count,
     },
-    deleteAll,
+    deleteAll: removeAll,
   }
 }
 
