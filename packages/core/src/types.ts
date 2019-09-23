@@ -15,7 +15,7 @@ export interface StoreManagerOptions<T> {
   /** Redux middlewares to add to the store. */
   middlewares?: Middleware[]
   /** The starting state of a blank document. */
-  initialState: T
+  initialState: DocSetState<T>
   /** A name for the storage feed, to distinguish this application's data from any other Cevitxe data stored on the same machine. */
   databaseName: string
   /** The address(es) of one or more signal servers to try. */
