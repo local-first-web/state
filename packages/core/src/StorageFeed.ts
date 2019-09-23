@@ -6,7 +6,7 @@ import db from 'random-access-idb'
 import { getKeys } from './keys'
 import { ChangeSet } from './types'
 
-let log = debug('cevitxe:StorageFeed')
+let log = debug('cevitxe:storagefeed')
 
 export class StorageFeed extends EventEmitter {
   private discoveryKey: string
@@ -19,6 +19,7 @@ export class StorageFeed extends EventEmitter {
     super()
     this.discoveryKey = discoveryKey
     this.databaseName = databaseName
+
     log('creating storage feed')
     const { key, secretKey } = getKeys(this.databaseName, this.discoveryKey)
     const storage = db(`cevitxe-${this.databaseName}-${this.discoveryKey.substr(0, 12)}`)
@@ -27,10 +28,9 @@ export class StorageFeed extends EventEmitter {
     this.feed.on('error', (err: any) => console.error(err))
   }
 
-  init = (initialState: any): Promise<A.DocSet<any>> =>
+  init = (initialState: any, creating: boolean): Promise<A.DocSet<any>> =>
     new Promise(resolve =>
       this.feed.on('ready', async () => {
-        const creating = Object.keys(initialState).length > 0
         if (!creating && this.feed.length > 0) await this.getStateFromStorage()
         else this.initialize(initialState)
         log('ready!')

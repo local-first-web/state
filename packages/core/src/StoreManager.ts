@@ -62,7 +62,7 @@ export class StoreManager<T> extends EventEmitter {
 
     this.feed = new StorageFeed(discoveryKey, this.databaseName)
 
-    this.docSet = await this.feed.init(this.initialState)
+    this.docSet = await this.feed.init(this.initialState, creating)
     this.docSet.registerHandler(this.onChange)
 
     // Create Redux store
