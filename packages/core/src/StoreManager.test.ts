@@ -116,10 +116,7 @@ describe('Cevitxe', () => {
       const { close, localStore } = await open()
 
       // dispatch a change
-      localStore.dispatch({
-        type: 'ADD_TEACHER',
-        payload: teacher1,
-      })
+      localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
 
       // confirm that the change was made
       const state = localStore.getState()
@@ -130,7 +127,7 @@ describe('Cevitxe', () => {
     })
 
     it('should close a store', async () => {
-      // expect.assertions(2)
+      expect.assertions(2)
       const { close, localStoreManager } = await open()
 
       // confirm that we have a store
@@ -144,6 +141,7 @@ describe('Cevitxe', () => {
     })
 
     it('should persist state between sessions', async () => {
+      expect.assertions(2)
       const { close, localStoreManager, localStore, discoveryKey } = await open()
 
       // change something in the local store
@@ -168,6 +166,7 @@ describe('Cevitxe', () => {
     })
 
     it('should persist deletions', async () => {
+      expect.assertions(3)
       const { close, localStoreManager, localStore, discoveryKey } = await open()
       localStore.dispatch({ type: 'ADD_TEACHER', payload: [teacher1, teacher2] })
 
@@ -242,6 +241,7 @@ describe('Cevitxe', () => {
     }
 
     it('should sync a new document', async () => {
+      expect.assertions(2)
       const { close, remoteStoreManager, localStore, remoteStore } = await open()
 
       // change something in the local store
@@ -264,6 +264,7 @@ describe('Cevitxe', () => {
     })
 
     it('should sync changes to an existing document in both directions', async () => {
+      expect.assertions(3)
       const { close, localStoreManager, remoteStoreManager, localStore, remoteStore } = await open()
 
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
@@ -299,6 +300,7 @@ describe('Cevitxe', () => {
     })
 
     it('should sync new documents in both directions', async () => {
+      expect.assertions(2)
       const { close, localStoreManager, remoteStoreManager, localStore, remoteStore } = await open()
 
       // add a teacher in the local store
@@ -324,6 +326,7 @@ describe('Cevitxe', () => {
     })
 
     it('should persist changes coming from a peer', async () => {
+      expect.assertions(2)
       const { close, remoteStoreManager, localStore, remoteStore, discoveryKey } = await open()
 
       // add a teacher in the local store
@@ -355,6 +358,7 @@ describe('Cevitxe', () => {
     })
 
     it('should persist deletions coming from a peer', async () => {
+      expect.assertions(4)
       const { close, remoteStoreManager, localStore, remoteStore, discoveryKey } = await open()
 
       // add a record
@@ -389,6 +393,7 @@ describe('Cevitxe', () => {
     })
 
     it('should delete any connections', async () => {
+      expect.assertions(2)
       const { close, localStoreManager } = await open()
 
       // confirm that we have a connection
@@ -401,6 +406,7 @@ describe('Cevitxe', () => {
     })
 
     it('should sync a dropped collection', async () => {
+      expect.assertions(4)
       const { close, remoteStoreManager, localStore, remoteStore } = await open()
 
       // add a record
