@@ -32,7 +32,7 @@ describe('Cevitxe', () => {
 
   const teacher1 = { id: 'abcxyz', first: 'Herb', last: 'Caudill' }
   const teacher2 = { id: 'defcba', first: 'Brent', last: 'Keller' }
-  const initialState = { something: [] }
+  const initialState = { foo: { pizza: 1 } }
 
   const newDiscoveryKey = () => newid(6)
 
