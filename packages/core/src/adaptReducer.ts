@@ -1,8 +1,9 @@
 import A, { ChangeFn } from 'automerge'
-import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
+import { RECEIVE_MESSAGE_FROM_PEER, DELETE_COLLECTION } from './constants'
 import { docSetToObject } from './docSetHelpers'
 import { Reducer, AnyAction } from 'redux'
 import { ProxyReducer, DocSetState } from 'types'
+import { collection } from './collection'
 
 export type ReducerConverter = (
   proxyReducer: ProxyReducer,
@@ -37,10 +38,9 @@ export const adaptReducer: ReducerConverter = (proxyReducer, docSet) => {
       for (let docId in functionMap) {
         const fn = functionMap[docId] as ChangeFn<any> | symbol
 
-        if (typeof fn === 'symbol') {
-          // instead of a change function, we got a symbol (e.g. DELETE_ITEM or DELETE_COLLECTION),
-          // in which case we'll do the work in middleware
-        } else {
+        if (fn === DELETE_COLLECTION) {
+          collection(name).removeAll(docSet)
+        } else if (typeof fn === 'function') {
           // find the corresponding document in the docSet
           const oldDoc = docSet.getDoc(docId) || A.init() // create a new doc if one doesn't exist
           // run the change function to get a new document

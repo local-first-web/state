@@ -21,13 +21,8 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
         if (fn === DELETE_COLLECTION) {
           const name = collection.getCollectionName(docId)
           const docIds = collection(name).selectors.keys(store.getState())
-
           // Record each doc as removed so we can note that in the storage feed
           for (const itemDocId in docIds) removedDocs.push(itemDocId)
-
-          // Perform the delete on the docSet (we have to do this here rather than in the reducer,
-          // because we don't have access to the whole)
-          collection(name).deleteAll(docSet)
         } else if (fn === DELETE_ITEM) {
           // Record the doc as removed so we can note that in the storage feed
           removedDocs.push(docId)
@@ -76,6 +71,8 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
 
     // write any changes to the feed
     if (changeSets.length) feed.append(JSON.stringify(changeSets))
+
+    // TODO? perform removal of deleted documents from docset
 
     return newState
   }
