@@ -14,7 +14,7 @@ describe('Cevitxe', () => {
   const log = debug('cevitxe:test')
   const teachers = collection('teachers')
 
-  const proxyReducer = (({ type, payload }) => {
+  const proxyReducer = ((state, { type, payload }) => {
     const { add, remove, update, drop } = teachers.reducers
     switch (type) {
       case 'ADD_TEACHER':

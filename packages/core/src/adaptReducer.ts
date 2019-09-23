@@ -26,7 +26,7 @@ export const adaptReducer: ReducerConverter = (proxyReducer, docSet) => {
     if (type === RECEIVE_MESSAGE_FROM_PEER) {
       // Connection has already updated our docSet - nothing to do here.
     } else {
-      const functionMap = proxyReducer({ type, payload })
+      const functionMap = proxyReducer(state, { type, payload })
 
       if (!functionMap) {
         // no matching function - return the unmodified state

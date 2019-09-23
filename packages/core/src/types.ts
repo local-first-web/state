@@ -3,7 +3,7 @@ import { AnyAction, Middleware, Reducer, Store } from 'redux'
 import { DocSetSync } from './DocSetSync'
 import { StorageFeed } from 'StorageFeed'
 
-export type ProxyReducer = (action: AnyAction) => ChangeMap | null
+export type ProxyReducer = (state: any, action: AnyAction) => ChangeMap | null
 
 export interface ChangeMap {
   [docId: string]: A.ChangeFn<any> | symbol
