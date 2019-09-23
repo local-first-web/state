@@ -97,14 +97,14 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
 
   // SELECTORS
 
+  const isCollectionKey = (key: string) => key.startsWith(`${keyName}::`)
+
   /**
    * Returns all keys for the collection when given the current redux state.
    * @param state The plain JSON representation of the state.
    */
   const keys = (state: DocSetState<T>, { includeDeleted = false } = {}): string[] => {
-    const collectionItems = Object.keys(state || {}).filter((key: string) =>
-      key.startsWith(`${keyName}::`)
-    )
+    const collectionItems = Object.keys(state || {}).filter(isCollectionKey)
     return includeDeleted
       ? collectionItems
       : collectionItems.filter((key: string) => !(state as any)[key][DELETED])
@@ -130,12 +130,14 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
   const count = (state: DocSetState<T> = {}) => keys(state).length
 
   const removeAll = (docSet: DocSet<any>) => {
-    //TODO: filter docSet.docIds instead of converting the docSet to reuse keys
-    const docIds = keys(docSetToObject(docSet))
-    for (const docId of docIds) {
-      const doc = docSet.getDoc(docId)
-      const deletedDoc = A.change(doc, setDeleteFlag)
-      docSet.setDoc(docId, deletedDoc)
+    for (const docId of docSet.docIds) {
+      if (isCollectionKey(docId)) {
+        const doc = docSet.getDoc(docId)
+        if (!doc[DELETED]) {
+          const deletedDoc = A.change(doc, setDeleteFlag)
+          docSet.setDoc(docId, deletedDoc)
+        }
+      }
     }
   }
 
