@@ -103,32 +103,45 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * Returns all keys for the collection when given the current redux state.
    * @param state The plain JSON representation of the state.
    */
-  const keys = (state: DocSetState<T>, { includeDeleted = false } = {}): string[] => {
-    const collectionItems = Object.keys(state || {}).filter(isCollectionKey)
-    return includeDeleted
-      ? collectionItems
-      : collectionItems.filter((key: string) => !(state as any)[key][DELETED])
+  function* keys(state: DocSetState<T>, { includeDeleted = false } = {}) {
+    for (const key in state || {})
+      if (isCollectionKey(key) && (includeDeleted || !(state as any)[key][DELETED])) yield key
   }
 
   /**
    * Given the redux state, returns an array containing all items in the collection.
    * @param state The plain JSON representation of the state.
    */
-  const getAll = (state: DocSetState<T> = {}) => keys(state).map((key: string) => state[key])
+  const getAll = (state: DocSetState<T> = {}) => {
+    let result = []
+    for (const key of keys(state)) result.push(state[key])
+    return result
+  }
 
   /**
    * Given the redux state, returns a map keying each item in the collection to its `id`.
    * @param state The plain JSON representation of the state.
    */
-  const getMap = (state: DocSetState<T> = {}): DocSetState<T> =>
-    keys(state).reduce((result, key) => ({ ...result, [keyToId(key)]: state[key] }), {})
+  const getMap = (state: DocSetState<T> = {}): DocSetState<T> => {
+    let result = {} as any
+    for (const key of keys(state)) result[keyToId(key)] = state[key]
+    return result
+  }
 
   /**
    * Returns the number of items in the collection when given the redux state.
    * @param state The plain JSON representation of the state.
    */
-  const count = (state: DocSetState<T> = {}) => keys(state).length
+  const count = (state: DocSetState<T> = {}) => {
+    let i = 0
+    for (const _ of keys(state)) i++
+    return i
+  }
 
+  /**
+   * Marks all items in the collection as deleted. PRIVATE.
+   * @param docSet
+   */
   const removeAll = (docSet: DocSet<any>) => {
     for (const docId of docSet.docIds) {
       if (isCollectionKey(docId)) {
