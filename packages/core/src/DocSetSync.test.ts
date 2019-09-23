@@ -141,12 +141,6 @@ describe(`DocumentSync`, () => {
     }
 
     beforeEach(() => {
-      // new version of A.from that allows passing options to initialState
-      // const from = <T>(initialState: T, options: any) =>
-      //   A.change(A.init(options), 'Initialization', doc => Object.assign(doc, initialState))
-
-      // only need to do this to get a known ActorID on remote -
-      // otherwise everything works without it
       remoteDocSet = new DocSet()
       remoteDocSet.setDoc(docId, A.from({}, 'R'))
       localDocSet = new DocSet()
