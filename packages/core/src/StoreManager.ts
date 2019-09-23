@@ -11,7 +11,7 @@ import { docSetToObject } from './docSetHelpers'
 import { getMiddleware } from './getMiddleware'
 import { getKnownDiscoveryKeys } from './keys'
 import { StorageFeed } from './StorageFeed'
-import { ProxyReducer, StoreManagerOptions } from './types'
+import { ProxyReducer, StoreManagerOptions, DocSetState } from './types'
 
 let log = debug('cevitxe:StoreManager')
 
@@ -25,7 +25,7 @@ EventEmitter.defaultMaxListeners = 500
  */
 export class StoreManager<T> extends EventEmitter {
   private proxyReducer: ProxyReducer
-  private initialState: T
+  private initialState: DocSetState<T>
   private urls: string[]
   private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
 
