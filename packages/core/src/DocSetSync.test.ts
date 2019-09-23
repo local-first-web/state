@@ -10,11 +10,7 @@ export interface BirdCount {
 
 const docId = 'myDoc'
 
-const makeConnection = (
-  discoveryKey: string,
-  docSet: DocSet<BirdCount>,
-  channel: TestChannel<BirdCount>
-) => {
+const makeConnection = (discoveryKey: string, docSet: DocSet<BirdCount>, channel: TestChannel) => {
   const send = (msg: Message) => {
     channel.write(discoveryKey, msg)
   }
@@ -40,7 +36,7 @@ describe(`DocumentSync`, () => {
       remoteDocSet = new DocSet<BirdCount>()
       remoteDocSet.setDoc(docId, A.from({}, 'R'))
 
-      const channel = new TestChannel<BirdCount>()
+      const channel = new TestChannel()
       makeConnection('L', localDocSet, channel)
       makeConnection('R', remoteDocSet, channel)
     })
