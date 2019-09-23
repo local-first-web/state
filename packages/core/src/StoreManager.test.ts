@@ -32,7 +32,7 @@ describe('Cevitxe', () => {
 
   const teacher1 = { id: 'abcxyz', first: 'Herb', last: 'Caudill' }
   const teacher2 = { id: 'defcba', first: 'Brent', last: 'Keller' }
-  const initialState = {}
+  const initialState = { something: [] }
 
   const newDiscoveryKey = () => newid(6)
 
@@ -155,7 +155,7 @@ describe('Cevitxe', () => {
       await pause(500)
       await localStoreManager.close()
 
-      // Then we create a new store, which should see the state in the fake db and load it
+      // Then we join the same store, which should see the state in the fake db and load it
       const newLocalState = await localStoreManager.joinStore(discoveryKey)
 
       // Confirm that the modified state is still there
