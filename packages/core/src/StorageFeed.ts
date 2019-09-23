@@ -31,9 +31,17 @@ export class StorageFeed extends EventEmitter {
   init = (initialState: any, creating: boolean): Promise<A.DocSet<any>> =>
     new Promise(resolve =>
       this.feed.on('ready', async () => {
-        if (!creating && this.feed.length > 0) await this.getStateFromStorage()
-        else this.create(initialState)
-        log('ready!')
+        if (creating) {
+          log('creating a new document')
+          this.create(initialState)
+        } else if (this.feed.length === 0) {
+          log(`joining a peer's document for the first time`)
+          this.create({})
+        } else {
+          log('recovering an existing document from persisted state')
+          await this.getStateFromStorage()
+        }
+        log('ready')
         this.emit('ready')
         resolve(this.docSet)
       })
