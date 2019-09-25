@@ -86,7 +86,7 @@ describe('Cevitxe', () => {
       expect(localStore).toHaveProperty('subscribe')
 
       // it's in empty (waiting) state
-      expect(localStore.getState()).toEqual(initialState)
+      expect(localStore.getState()).toEqual({})
 
       await close()
     })
