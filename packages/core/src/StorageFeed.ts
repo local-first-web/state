@@ -59,14 +59,12 @@ export class StorageFeed extends EventEmitter {
 
   private create(initialState: any) {
     log('creating new store %o', initialState)
-    const changeSets: ChangeSet[] = []
     for (let docId in initialState) {
       const doc = A.from(initialState[docId])
       this.docSet.setDoc(docId, doc)
       const changes = A.getChanges(A.init(), doc)
-      changeSets.push({ docId, changes })
+      this.feed.append(JSON.stringify({ docId, changes }))
     }
-    this.feed.append(JSON.stringify(changeSets))
   }
 
   private async readAll() {
@@ -81,15 +79,12 @@ export class StorageFeed extends EventEmitter {
     // read full contents of the feed in one batch
     const feedContents = await this.readAll()
 
-    // each feed entry is the result of a single redux action, and contains one or more ChangeSets
-    const feedEntries: ChangeSet[][] = feedContents.map(s => JSON.parse(s))
+    const changeSets = feedContents.map(s => JSON.parse(s) as ChangeSet)
 
-    log('rehydrating from stored change sets %o', feedEntries)
-    feedEntries.forEach(entry => {
-      entry.forEach(({ docId, changes, isDelete }) => {
-        if (isDelete) this.docSet.removeDoc(docId)
-        else this.docSet.applyChanges(docId, changes)
-      })
+    log('rehydrating from stored change sets %o', changeSets)
+    changeSets.forEach(({ docId, changes, isDelete }) => {
+      if (isDelete) this.docSet.removeDoc(docId)
+      else this.docSet.applyChanges(docId, changes)
     })
 
     log('done rehydrating')

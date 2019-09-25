@@ -70,7 +70,7 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
     }
 
     // write any changes to the feed
-    if (changeSets.length) feed.append(JSON.stringify(changeSets))
+    for (const changeSet of changeSets) feed.append(JSON.stringify(changeSet))
 
     // TODO? perform removal of deleted documents from docset
 
