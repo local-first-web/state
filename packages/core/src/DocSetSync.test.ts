@@ -1,4 +1,4 @@
-﻿import A, { DocSet } from 'automerge'
+﻿import A from './lib/automerge'
 import { DocSetSync } from './DocSetSync'
 import { Message } from './types'
 import { TestChannel } from './lib/TestChannel'
@@ -9,7 +9,11 @@ export interface BirdCount {
 
 const docId = 'myDoc'
 
-const makeConnection = (discoveryKey: string, docSet: DocSet<BirdCount>, channel: TestChannel) => {
+const makeConnection = (
+  discoveryKey: string,
+  docSet: A.DocSet<BirdCount>,
+  channel: TestChannel
+) => {
   const send = (msg: Message) => {
     channel.write(discoveryKey, msg)
   }
@@ -26,13 +30,13 @@ const makeConnection = (discoveryKey: string, docSet: DocSet<BirdCount>, channel
 
 describe(`DocumentSync`, () => {
   describe('Changes after connecting', () => {
-    let localDocSet: DocSet<BirdCount>
-    let remoteDocSet: DocSet<BirdCount>
+    let localDocSet: A.DocSet<BirdCount>
+    let remoteDocSet: A.DocSet<BirdCount>
 
     beforeEach(() => {
-      localDocSet = new DocSet<BirdCount>()
+      localDocSet = new A.DocSet<BirdCount>()
       localDocSet.setDoc(docId, A.from({ swallows: 1 }, 'L'))
-      remoteDocSet = new DocSet<BirdCount>()
+      remoteDocSet = new A.DocSet<BirdCount>()
       remoteDocSet.setDoc(docId, A.from({}, 'R'))
 
       const channel = new TestChannel()
@@ -98,14 +102,14 @@ describe(`DocumentSync`, () => {
 
   describe('Changes before connecting', () => {
     it('should sync after the fact', () => {
-      const localDocSet = new DocSet<BirdCount>()
+      const localDocSet = new A.DocSet<BirdCount>()
       localDocSet.setDoc(docId, A.from({}, 'L'))
 
       let localDoc = localDocSet.getDoc(docId)
       localDoc = A.change(localDoc, doc => (doc.wrens = 2))
       localDocSet.setDoc(docId, localDoc)
 
-      const remoteDocSet = new DocSet<BirdCount>()
+      const remoteDocSet = new A.DocSet<BirdCount>()
       remoteDocSet.setDoc(docId, A.from({}, 'R'))
 
       const channel = new TestChannel()
@@ -123,8 +127,8 @@ describe(`DocumentSync`, () => {
   describe('Intermittent connection', () => {
     let localConnection: DocSetSync
     let remoteConnection: DocSetSync
-    let localDocSet: DocSet<BirdCount>
-    let remoteDocSet: DocSet<BirdCount>
+    let localDocSet: A.DocSet<BirdCount>
+    let remoteDocSet: A.DocSet<BirdCount>
     let channel = new TestChannel()
 
     function networkOff() {
@@ -140,9 +144,9 @@ describe(`DocumentSync`, () => {
     }
 
     beforeEach(() => {
-      remoteDocSet = new DocSet()
+      remoteDocSet = new A.DocSet()
       remoteDocSet.setDoc(docId, A.from({}, 'R'))
-      localDocSet = new DocSet()
+      localDocSet = new A.DocSet()
       localDocSet.setDoc(docId, A.from({ swallows: 1 }, 'L'))
       networkOn()
     })

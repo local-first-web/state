@@ -1,7 +1,7 @@
 import { Client, newid, Peer } from 'cevitxe-signal-client'
 import debug from 'debug'
 import { EventEmitter } from 'events'
-import * as A from 'automerge'
+import A from './lib/automerge'
 import { Middleware, Store, createStore, applyMiddleware } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
 import { adaptReducer } from './adaptReducer'

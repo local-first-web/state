@@ -3,6 +3,7 @@
     "allowSyntheticDefaultImports": true,
     "alwaysStrict": true,
     "baseUrl": "src",
+    "composite": true,
     "declaration": true,
     "esModuleInterop": true,
     "lib": ["dom", "esnext"],
@@ -18,5 +19,6 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false
   },
-  "include": ["src", "@types"]
+  "include": ["src", "@types"],
+  "references": [{ "path": "../signal-client" }]
 }

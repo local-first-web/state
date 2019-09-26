@@ -1,4 +1,4 @@
-﻿import A from 'automerge'
+﻿import A from './lib/automerge'
 import debug from 'debug'
 import { EventEmitter } from 'events'
 import hypercore from 'hypercore'

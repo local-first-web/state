@@ -8,8 +8,7 @@
     "build": "tsc",
     "start": "ts-node src/start.ts",
     "test": "jest",
-    "dev": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 ts-node-dev --respawn --transpileOnly src/start.ts",
-    "watch": "tsc --watch"
+    "dev": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 ts-node-dev --respawn --transpileOnly src/start.ts"
   },
   "resolutions": {
     "jest": "24.9.0"

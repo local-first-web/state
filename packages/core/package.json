@@ -4,8 +4,8 @@
   "version": "0.2.3",
   "private": false,
   "license": "MIT",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "typings": "dist/src/index.d.ts",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "tsc",
@@ -22,6 +22,7 @@
     "@types/simple-peer": "6",
     "automerge": "0",
     "cevitxe-signal-client": "0",
+    "cuid": "^2.1.6",
     "debug": "4",
     "hypercore": "7",
     "hypercore-crypto": "1",

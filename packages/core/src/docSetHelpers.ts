@@ -1,7 +1,7 @@
-import A, { DocSet } from 'automerge'
+import A from './lib/automerge'
 import { DocSetState } from 'types'
 
-export const docSetToObject = <T = any>(docSet: DocSet<T>): DocSetState<T> => {
+export const docSetToObject = <T = any>(docSet: A.DocSet<T>): DocSetState<T> => {
   const result = {} as any
   for (let docId of docSet.docIds) {
     result[docId] = docSet.getDoc(docId)
@@ -9,8 +9,8 @@ export const docSetToObject = <T = any>(docSet: DocSet<T>): DocSetState<T> => {
   return result
 }
 
-export const docSetFromObject = (obj: any): DocSet<any> => {
-  const docSet = new DocSet<any>()
+export const docSetFromObject = (obj: any): A.DocSet<any> => {
+  const docSet = new A.DocSet<any>()
   for (let docId of Object.getOwnPropertyNames(obj)) {
     docSet.setDoc(docId, A.from(obj[docId]))
   }

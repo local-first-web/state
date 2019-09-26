@@ -22,5 +22,6 @@
     "isolatedModules": true
   },
   "include": ["src", "@types"],
-  "exclude": ["public", "cypress"]
+  "exclude": ["public", "cypress"],
+  "references": [{ "path": "../../core" }, { "path": "../../toolbar" }]
 }

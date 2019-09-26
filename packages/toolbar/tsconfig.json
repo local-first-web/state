@@ -3,6 +3,7 @@
     "allowSyntheticDefaultImports": true,
     "alwaysStrict": true,
     "baseUrl": "src",
+    "composite": true,
     "declaration": true,
     "esModuleInterop": true,
     "jsx": "react",
@@ -19,5 +20,6 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false
   },
-  "include": ["src", "@types"]
+  "include": ["src", "@types"],
+  "references": [{ "path": "../core" }]
 }

@@ -1,9 +1,13 @@
-import A, { ChangeFn } from 'automerge'
+import A from './lib/automerge'
 import { RECEIVE_MESSAGE_FROM_PEER, DELETE_COLLECTION } from './constants'
 import { docSetToObject } from './docSetHelpers'
 import { Reducer, AnyAction } from 'redux'
 import { ProxyReducer, DocSetState } from 'types'
 import { collection } from './collection'
+import { getMemUsage } from './getMemUsage'
+import debug from 'debug'
+
+const log = debug('cevitxe:grid:adaptreducer')
 
 export type ReducerConverter = (
   proxyReducer: ProxyReducer,
@@ -34,9 +38,10 @@ export const adaptReducer: ReducerConverter = (proxyReducer, docSet) => {
         return state || {}
       }
 
+      log(`before applying changes`, getMemUsage())
       // Apply each change function to the corresponding document
       for (let docId in functionMap) {
-        const fn = functionMap[docId] as ChangeFn<any> | symbol
+        const fn = functionMap[docId] as A.ChangeFn<any> | symbol
 
         if (fn === DELETE_COLLECTION) {
           const name = collection.getCollectionName(docId)
@@ -50,6 +55,7 @@ export const adaptReducer: ReducerConverter = (proxyReducer, docSet) => {
           docSet.setDoc(docId, newDoc)
         }
       }
+      log(`after applying changes`, getMemUsage())
     }
 
     const newState = docSetToObject(docSet)

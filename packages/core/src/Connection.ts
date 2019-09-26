@@ -1,4 +1,4 @@
-import { DocSet } from 'automerge'
+import A from './lib/automerge'
 import { DocSetSync } from './DocSetSync'
 import debug from 'debug'
 import { AnyAction, Dispatch } from 'redux'
@@ -17,9 +17,9 @@ export class Connection<T = any> extends EventEmitter {
   private docSetSync: DocSetSync
   private peerSocket: WebSocket | null
   private dispatch?: Dispatch<AnyAction>
-  private docSet: DocSet<any>
+  private docSet: A.DocSet<any>
 
-  constructor(docSet: DocSet<any>, peerSocket: WebSocket, dispatch?: Dispatch<AnyAction>) {
+  constructor(docSet: A.DocSet<any>, peerSocket: WebSocket, dispatch?: Dispatch<AnyAction>) {
     super()
     log('new connection')
     this.docSet = docSet

@@ -11,15 +11,18 @@
     "dev": "run-p watch test:watch",
     "dev:log": "run-p watch test:log",
     "dev:signal-server": "yarn workspace cevitxe-signal-server dev",
-    "dev:chat": "run-p dev:signal-server watch start:chat",
-    "dev:grid": "run-p dev:signal-server watch start:grid",
-    "dev:todo": "run-p dev:signal-server watch start:todo",
+    "dev:chat": "run-p watch dev:signal-server start:chat",
+    "dev:grid": "run-p watch dev:grid:wait",
+    "dev:grid:wait": "run-s wait dev:grid:start",
+    "dev:grid:start": "run-p dev:signal-server start:grid",
+    "dev:todo": "run-p watch dev:signal-server start:todo",
     "dev:grid:e2e": "run-p dev:grid test:grid:e2e",
     "dev:todo:e2e": "run-p dev:todo test:todo:e2e",
-    "build": "lerna run build",
+    "build": "tsc -b packages/signal-server packages/toolbar packages/core",
     "lint": "lerna run lint",
     "publish": "lerna publish --yes",
-    "watch": "lerna run watch --stream --no-sort --concurrency 999",
+    "watch": "yarn build --watch",
+    "wait": "wait-on ./packages/core/dist/src/index.js",
     "test": "jest",
     "test:todo:e2e": "yarn workspace cevitxe-example-todo test:e2e",
     "test:grid:e2e": "yarn workspace cevitxe-example-grid test:e2e",
@@ -39,7 +42,8 @@
     "jest": "24",
     "lerna": "3",
     "npm-run-all": "4",
-    "ts-jest": "24"
+    "ts-jest": "24",
+    "wait-on": "^3.3.0"
   },
   "engines": {
     "yarn": "1.17.3"

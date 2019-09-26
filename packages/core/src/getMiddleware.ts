@@ -1,8 +1,9 @@
-import A from 'automerge'
+import A from './lib/automerge'
 import debug from 'debug'
 import { collection } from './collection'
 import { DELETE_COLLECTION, DELETE_ITEM, RECEIVE_MESSAGE_FROM_PEER } from './constants'
 import { ChangeSet, MiddlewareFactory, DocSetState } from './types'
+import { getMemUsage } from './getMemUsage'
 
 const log = debug('cevitxe:middleware')
 
@@ -36,10 +37,13 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
     }
 
     // CHANGES
+    log(`before changes`, getMemUsage())
 
     const newState = next(action)
 
     // AFTER CHANGES
+
+    log(`after changes`, getMemUsage())
 
     log('%o', { action })
 
@@ -69,8 +73,14 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
       }
     }
 
+    log(`before writing to feed`, getMemUsage())
     // write any changes to the feed
-    for (const changeSet of changeSets) feed.append(JSON.stringify(changeSet))
+    for (const changeSet of changeSets) {
+      const s = JSON.stringify(changeSet)
+      // log(s)
+      feed.append(s)
+    }
+    log(`after writing to feed`, getMemUsage())
 
     // TODO? perform removal of deleted documents from docset
 

@@ -1,5 +1,8 @@
 ﻿import uuid from 'uuid'
 import faker from 'faker'
+import { debug } from 'debug'
+
+const log = debug('cevitxe:generator-worker')
 
 declare const self: Worker
 

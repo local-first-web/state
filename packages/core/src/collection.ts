@@ -1,4 +1,4 @@
-import A, { Doc, DocSet } from 'automerge'
+import A from './lib/automerge'
 import { DELETE_COLLECTION } from './constants'
 import { docSetToObject } from './docSetHelpers'
 import { ChangeMap, DocSetState } from './types'
@@ -142,7 +142,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * Marks all items in the collection as deleted. PRIVATE.
    * @param docSet
    */
-  const removeAll = (docSet: DocSet<any>) => {
+  const removeAll = (docSet: A.DocSet<any>) => {
     for (const docId of docSet.docIds) {
       if (isCollectionKey(docId)) {
         const doc = docSet.getDoc(docId)
@@ -160,19 +160,19 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
     return { [keyName]: DELETE_COLLECTION }
   }
 
-  const add = (item: Doc<T> | Doc<T>[]) => {
-    const items: Doc<T>[] = Array.isArray(item) ? item : [item]
+  const add = (item: A.Doc<T> | A.Doc<T>[]) => {
+    const items: A.Doc<T>[] = Array.isArray(item) ? item : [item]
     const changeFunctions = {} as ChangeMap
     for (const item of items) {
       if (!item.hasOwnProperty(idField))
         throw new Error(`Item doesn't have a property called '${idField}'.`)
       const key = idToKey((item as any)[idField])
-      changeFunctions[key] = (s: Doc<T>) => Object.assign(s, item)
+      changeFunctions[key] = (s: A.Doc<T>) => Object.assign(s, item)
     }
     return changeFunctions
   }
 
-  const update = (item: Doc<any>) => ({
+  const update = (item: A.Doc<any>) => ({
     [idToKey(item[idField])]: (s: any) => Object.assign(s, item),
   })
 

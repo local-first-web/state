@@ -1,4 +1,4 @@
-import A, { DocSet } from 'automerge'
+import A from './lib/automerge'
 import { Server } from 'cevitxe-signal-server'
 import { newid } from 'cevitxe-signal-client'
 import { Connection } from './Connection'
@@ -28,7 +28,7 @@ const localActorId = newid()
 describe('Connection', () => {
   const initialState: FooStateDoc = { state: { foo: 1 } }
 
-  let docSet: DocSet<FooState>
+  let docSet: A.DocSet<FooState>
   let server: Server
 
   beforeAll(async () => {
@@ -37,7 +37,7 @@ describe('Connection', () => {
   })
 
   beforeEach(() => {
-    docSet = new DocSet<any>()
+    docSet = new A.DocSet<any>()
     let key: keyof FooStateDoc
     for (key in initialState) {
       const value = initialState[key]
