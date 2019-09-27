@@ -1,4 +1,4 @@
-import A from './lib/automerge'
+import A from 'automerge'
 import { AnyAction, Middleware, Reducer, Store } from 'redux'
 import { DocSetSync } from './DocSetSync'
 import { StorageFeed } from './StorageFeed'

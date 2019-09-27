@@ -1,4 +1,4 @@
-import A from './lib/automerge'
+import A from 'automerge'
 import { Server } from 'cevitxe-signal-server'
 import { newid } from 'cevitxe-signal-client'
 import { Connection } from './Connection'

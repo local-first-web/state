@@ -1,4 +1,4 @@
-import A from './lib/automerge'
+import A from 'automerge'
 import { RECEIVE_MESSAGE_FROM_PEER, DELETE_COLLECTION } from './constants'
 import { docSetToObject } from './docSetHelpers'
 import { Reducer, AnyAction } from 'redux'

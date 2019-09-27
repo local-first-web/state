@@ -1,4 +1,4 @@
-import A from './lib/automerge'
+import A from 'automerge'
 import debug from 'debug'
 import { collection } from './collection'
 import { DELETE_COLLECTION, DELETE_ITEM, RECEIVE_MESSAGE_FROM_PEER } from './constants'

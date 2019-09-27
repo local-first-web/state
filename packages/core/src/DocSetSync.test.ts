@@ -1,4 +1,4 @@
-﻿import A from './lib/automerge'
+﻿import A from 'automerge'
 import { DocSetSync } from './DocSetSync'
 import { Message } from './types'
 import { TestChannel } from './lib/TestChannel'

@@ -1,4 +1,4 @@
-import A from './lib/automerge'
+import A from 'automerge'
 import { DELETE_COLLECTION } from './constants'
 import { docSetToObject } from './docSetHelpers'
 import { ChangeMap, DocSetState } from './types'

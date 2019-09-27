@@ -1,7 +1,7 @@
 import { Client, newid, Peer } from 'cevitxe-signal-client'
 import debug from 'debug'
 import { EventEmitter } from 'events'
-import A from './lib/automerge'
+import A from 'automerge'
 import { Middleware, Store, createStore, applyMiddleware } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
 import { adaptReducer } from './adaptReducer'
@@ -12,12 +12,16 @@ import { getMiddleware } from './getMiddleware'
 import { getKnownDiscoveryKeys } from './keys'
 import { StorageFeed } from './StorageFeed'
 import { ProxyReducer, StoreManagerOptions, DocSetState } from './types'
+import cuid from 'cuid'
 
 let log = debug('cevitxe:StoreManager')
 
 // It's normal for a document with a lot of participants to have a lot of connections, so increase
 // the limit to avoid spurious warnings about emitter leaks.
 EventEmitter.defaultMaxListeners = 500
+
+// Use shorter IDs
+A.uuid.setFactory(cuid.slug)
 
 /**
  * A StoreManager generates a Redux store with persistence (via hypercore), networking (via
