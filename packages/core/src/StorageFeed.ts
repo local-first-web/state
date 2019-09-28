@@ -93,6 +93,7 @@ export class StorageFeed extends EventEmitter {
       const changes = A.getChanges(A.init(), doc)
       this.feed.append(JSON.stringify({ docId, changes }))
     }
+    this.saveSnapshot(initialState)
   }
 
   private async readAll() {
