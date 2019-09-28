@@ -15,7 +15,6 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
   const [, setAppStore] = useState()
   const [inputHasFocus, setInputHasFocus] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [status, setStatus] = useState('idle')
 
   const input = useRef<HTMLInputElement>() as React.RefObject<HTMLInputElement>
 
@@ -37,29 +36,26 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
   // 'new' button click
   const createStore = async () => {
     setBusy(true)
-    setStatus('creating store')
     const newDiscoveryKey = wordPair()
     setDiscoveryKey(newDiscoveryKey)
     const newStore = await storeManager.createStore(newDiscoveryKey)
     setAppStore(newStore)
     onStoreReady(newStore, newDiscoveryKey)
     setBusy(false)
-    setStatus('idle')
     log('created store', newDiscoveryKey)
     return newDiscoveryKey
   }
 
   // 'join' button click
-  const joinStore = async (newDiscoveryKey: string) => {
+  const joinStore = async (newDiscoveryKey?: string) => {
+    if (!newDiscoveryKey) return
     if (busy) return
     setBusy(true)
-    setStatus('joining store')
     setDiscoveryKey(newDiscoveryKey)
     const newStore = await storeManager.joinStore(newDiscoveryKey)
     setAppStore(newStore)
     onStoreReady(newStore, newDiscoveryKey)
     setBusy(false)
-    setStatus('idle')
     log('joined store', newDiscoveryKey)
   }
 
