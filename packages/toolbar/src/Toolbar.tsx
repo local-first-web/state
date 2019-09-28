@@ -150,11 +150,6 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
                 </button>
               </div>
 
-              {/* Status */}
-              <div css={styles.toolbarGroup}>
-                <label>{status}</label>
-              </div>
-
               {/* Connection count */}
               <div css={styles.toolbarGroup}>
                 <label>{storeManager.connectionCount}</label>
