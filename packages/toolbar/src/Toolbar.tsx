@@ -70,7 +70,11 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
 
   return (
     <div css={styles.toolbar}>
-      <Formik initialValues={{ discoveryKey }} onSubmit={() => load(discoveryKey)}>
+      <Formik
+        enableReinitialize
+        initialValues={{ discoveryKey }}
+        onSubmit={() => load(discoveryKey)}
+      >
         {({ values }) => {
           const newClick = async () => {
             const newDiscoveryKey = await createStore()
