@@ -38,7 +38,6 @@ export const adaptReducer: ReducerConverter = (proxyReducer, docSet) => {
         return state || {}
       }
 
-      log(`before applying changes`, getMemUsage())
       // Apply each change function to the corresponding document
       for (let docId in functionMap) {
         const fn = functionMap[docId] as A.ChangeFn<any> | symbol

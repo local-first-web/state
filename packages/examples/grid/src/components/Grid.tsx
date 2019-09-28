@@ -29,7 +29,6 @@ import {
 } from '../redux/actions'
 import { Loading } from './Loading'
 import { collection } from 'cevitxe'
-import { getMemUsage } from '../getMemUsage'
 
 const log = debug('cevitxe:grid')
 
@@ -55,10 +54,6 @@ export const Grid = () => {
 
   const [nextRowId, setNextRowId] = useState()
   const [nextColumn, setNextColumn] = useState()
-
-  useEffect(() => {
-    log(`count: ${rowCollection.length} %o`, getMemUsage())
-  }, [rowCollection])
 
   const handleKeyDown = (event: CellKeyPressEvent) => {
     if (event.event) {

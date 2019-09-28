@@ -43,8 +43,6 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
 
     // AFTER CHANGES
 
-    log(`after changes`, getMemUsage())
-
     log('%o', { action })
 
     // collect document changes for persistence
@@ -73,11 +71,12 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
       }
     }
 
+    feed.saveSnapshot(store.getState())
+
     log(`before writing to feed`, getMemUsage())
     // write any changes to the feed
     for (const changeSet of changeSets) {
       const s = JSON.stringify(changeSet)
-      // log(s)
       feed.append(s)
     }
     log(`after writing to feed`, getMemUsage())
