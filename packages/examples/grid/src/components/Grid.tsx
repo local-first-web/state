@@ -12,11 +12,11 @@ import 'ag-grid-community/dist/styles/ag-grid.css'
 import 'ag-grid-community/dist/styles/ag-theme-balham.css'
 import 'ag-grid-enterprise'
 import { AgGridReact } from 'ag-grid-react'
+import { collection } from 'cevitxe'
 import { debug } from 'debug'
 import { useDialog } from 'muibox'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-
 import { buildColumnFromSchema } from '../ag-grid/buildColumnFromSchema'
 import { deleteRowsCommand } from '../ag-grid/commands/deleteRowsCommand'
 import {
@@ -28,7 +28,6 @@ import {
   updateItem,
 } from '../redux/actions'
 import { Loading } from './Loading'
-import { collection } from 'cevitxe'
 
 const log = debug('cevitxe:grid')
 
