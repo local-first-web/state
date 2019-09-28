@@ -61,16 +61,18 @@ export class StoreManager<T> extends EventEmitter {
 
   createStore = (discoveryKey: string) => this.makeStore(discoveryKey, true)
 
-  private makeStore = async (discoveryKey: string, creating: boolean = false) => {
-    log = debug(`cevitxe:${creating ? 'createStore' : 'joinStore'}:${discoveryKey}`)
+  private makeStore = async (discoveryKey: string, isCreating: boolean = false) => {
+    log = debug(`cevitxe:${isCreating ? 'createStore' : 'joinStore'}:${discoveryKey}`)
 
     this.feed = new StorageFeed(discoveryKey, this.databaseName)
 
-    this.docSet = await this.feed.init(this.initialState, creating)
+    this.docSet = new A.DocSet<T>()
     this.docSet.registerHandler(this.onChange)
 
+    const state = await this.feed.init(this.initialState, isCreating, this.docSet)
+
     // Create Redux store
-    const state = docSetToObject(this.docSet)
+    // const state = docSetToObject(this.docSet)
     const reducer = adaptReducer(this.proxyReducer, this.docSet)
     const cevitxeMiddleware = getMiddleware(this.feed, this.docSet, this.proxyReducer)
     const enhancer = composeWithDevTools(applyMiddleware(...this.middlewares, cevitxeMiddleware))

@@ -4,11 +4,15 @@ import { EventEmitter } from 'events'
 import hypercore from 'hypercore'
 import db from 'random-access-idb'
 import { getKeys } from './keys'
-import { ChangeSet } from './types'
+import { ChangeSet, DocSetState } from './types'
+import { get, set } from 'idb-keyval'
 
 let log = debug('cevitxe:storagefeed')
 
 export class StorageFeed extends EventEmitter {
+  storageKey = (type: string) =>
+    `cevitxe::${type}::${this.databaseName}::${this.discoveryKey.substr(0, 12)}`
+
   private discoveryKey: string
   private databaseName: string
   private feed: Feed<string>
@@ -21,29 +25,34 @@ export class StorageFeed extends EventEmitter {
     this.databaseName = databaseName
 
     log('creating storage feed')
-    const { key, secretKey } = getKeys(this.databaseName, this.discoveryKey)
-    const storage = db(`cevitxe-${this.databaseName}-${this.discoveryKey.substr(0, 12)}`)
+    const { key: publicKey, secretKey } = getKeys(this.databaseName, this.discoveryKey)
+    const storage = db(this.storageKey('feed'))
 
-    this.feed = hypercore(storage, key, { secretKey, valueEncoding: 'utf-8' })
+    this.feed = hypercore(storage, publicKey, { secretKey, valueEncoding: 'utf-8' })
     this.feed.on('error', (err: any) => console.error(err))
   }
 
-  init = (initialState: any, creating: boolean): Promise<A.DocSet<any>> =>
+  init = (initialState: any, creating: boolean, docSet: A.DocSet<any>): Promise<DocSetState> =>
     new Promise(resolve =>
       this.feed.on('ready', async () => {
+        this.docSet = docSet
+        let state: DocSetState
         if (creating) {
           log('creating a new document')
-          this.create(initialState)
+          state = initialState
+          this.create(state)
         } else if (this.feed.length === 0) {
           log(`joining a peer's document for the first time`)
-          this.create({})
+          state = {}
+          this.create(state)
         } else {
+          state = await this.getSnapshot()
           log('recovering an existing document from persisted state')
-          await this.getStateFromStorage()
+          this.getStateFromStorage() // done asynchronously
         }
         log('ready')
         this.emit('ready')
-        resolve(this.docSet)
+        resolve(state)
       })
     )
 
@@ -56,6 +65,25 @@ export class StorageFeed extends EventEmitter {
     })
 
   append = (data: string) => this.feed.append(data)
+
+  saveSnapshot = async (state: DocSetState) => {
+    log('saving snapshot')
+    const snapshot = JSON.stringify(state)
+    log('snapshot size: %o KB', Math.floor(snapshot.length / 1024))
+    set(this.storageKey('snapshot'), snapshot)
+    log('saved snapshot')
+  }
+
+  getSnapshot = async () => {
+    const snapshot: string = await get(this.storageKey('snapshot'))
+    if (snapshot && snapshot.length) {
+      log('getting snapshot')
+      return JSON.parse(snapshot)
+    } else {
+      log('no snapshot found')
+      return undefined
+    }
+  }
 
   private create(initialState: any) {
     log('creating new store %o', initialState)
@@ -74,14 +102,14 @@ export class StorageFeed extends EventEmitter {
   }
 
   private async getStateFromStorage() {
-    log('getting change sets from storage')
+    log('getting changesets from storage')
 
-    // read full contents of the feed in one batch
     const feedContents = await this.readAll()
 
+    log('parsing changesets', feedContents.length)
     const changeSets = feedContents.map(s => JSON.parse(s) as ChangeSet)
 
-    log('rehydrating from stored change sets %o', changeSets)
+    log('rehydrating from stored change sets')
     changeSets.forEach(({ docId, changes, isDelete }) => {
       if (isDelete) this.docSet.removeDoc(docId)
       else this.docSet.applyChanges(docId, changes)
