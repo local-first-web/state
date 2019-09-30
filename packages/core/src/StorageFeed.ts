@@ -64,8 +64,10 @@ export class StorageFeed extends EventEmitter {
       this.emit('close')
     })
 
-  append = (data: string) => this.feed.append(data)
-
+  append = (data: string) => {
+    log('append', data)
+    this.feed.append(data)
+  }
   saveSnapshot = async (state: DocSetState) => {
     log('saving snapshot')
     const snapshot = JSON.stringify(state)
@@ -91,7 +93,7 @@ export class StorageFeed extends EventEmitter {
       const doc = A.from(initialState[docId])
       this.docSet.setDoc(docId, doc)
       const changes = A.getChanges(A.init(), doc)
-      this.feed.append(JSON.stringify({ docId, changes }))
+      this.append(JSON.stringify({ docId, changes }))
     }
     this.saveSnapshot(initialState)
   }
@@ -108,7 +110,10 @@ export class StorageFeed extends EventEmitter {
     const feedContents = await this.readAll()
 
     log('parsing changesets', feedContents.length)
-    const changeSets = feedContents.map(s => JSON.parse(s) as ChangeSet)
+    const changeSets = feedContents.map(s => {
+      log('parsing', s)
+      return JSON.parse(s) as ChangeSet
+    })
 
     log('rehydrating from stored change sets')
     changeSets.forEach(({ docId, changes, isDelete }) => {
