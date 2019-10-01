@@ -23,5 +23,4 @@ const messageHandler = (event: any) => {
 
 self.addEventListener('message', messageHandler)
 
-console.log('Counter worker wired up')
 export default {} as typeof Worker & { new (): Worker }
