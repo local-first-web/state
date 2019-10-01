@@ -1,8 +1,8 @@
 ﻿import uuid from 'uuid'
 import faker from 'faker'
-import { debug } from 'debug'
+// import { debug } from 'debug'
 
-const log = debug('cevitxe:generator-worker')
+// const log = debug('cevitxe:generator-worker')
 
 declare const self: Worker
 
@@ -25,7 +25,7 @@ self.addEventListener('message', async e => {
       paragraph: faker.lorem.paragraph(),
     }
     collection.push(item)
-    self.postMessage({ progress: i })
+    if (Number.isInteger((i / rows) * 100)) self.postMessage({ progress: i })
   }
   self.postMessage({ result: collection })
 })
