@@ -47,7 +47,7 @@
     "wait-on": "^3.3.0"
   },
   "engines": {
-    "yarn": "1.17.3"
+    "yarn": "1.19.0"
   },
   "workspaces": {
     "packages": [
