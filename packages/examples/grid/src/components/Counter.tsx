@@ -11,11 +11,9 @@ export const Counter = () => {
 
   const buttonClick = () => {
     if (!started) {
-      console.log('start counter')
       worker.postMessage('start')
       setStarted(true)
     } else {
-      console.log('stop counter')
       worker.postMessage('stop')
       setStarted(false)
     }
