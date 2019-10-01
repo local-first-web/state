@@ -7,23 +7,37 @@ import { useState } from 'react'
 const worker = new CounterWorker()
 
 export const Counter = () => {
-  const [progress, setProgress] = useState(0)
+  const [started, setStarted] = useState(false)
 
-  worker.onmessage = event => {
-    setProgress(+event.data)
-  }
-
-  const startCounter = () => {
-    console.log('startCounter')
-    const initialValue = progress
-    worker.postMessage(initialValue)
+  const buttonClick = () => {
+    if (!started) {
+      console.log('start counter')
+      worker.postMessage('start')
+      setStarted(true)
+    } else {
+      console.log('stop counter')
+      worker.postMessage('stop')
+      setStarted(false)
+    }
   }
 
   return (
     <div css={styles.toolbarGroup}>
-      <button type="button" css={styles.button} disabled={progress > 0} onClick={startCounter}>
-        Start count
+      <button type="button" css={styles.button} onClick={buttonClick}>
+        {started ? 'Stop count' : 'Start count'}
       </button>
+    </div>
+  )
+}
+
+export const CounterProgress = () => {
+  const [progress, setProgress] = useState(0)
+  worker.onmessage = event => {
+    setProgress(+event.data)
+  }
+
+  return (
+    <div css={styles.toolbarGroup}>
       <label>{progress}</label>
     </div>
   )

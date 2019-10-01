@@ -1,12 +1,27 @@
 ﻿declare const self: Worker
 
-const startCounter = (event: any) => {
-  console.log({ data: event.data, self })
-  let initial = event.data
-  setInterval(() => self.postMessage(initial++), 100)
+let interval: any = false
+let count = 0
+
+const messageHandler = (event: any) => {
+  const msg = event.data
+  if (interval) clearInterval(interval)
+  switch (msg) {
+    case 'start':
+      interval = setInterval(() => {
+        self.postMessage(count++)
+      })
+      break
+    case 'stop':
+      count = 0
+      self.postMessage(count)
+      break
+    default:
+      break
+  }
 }
 
-self.addEventListener('message', startCounter)
+self.addEventListener('message', messageHandler)
 
-console.log('WebpackWorker wired up')
+console.log('Counter worker wired up')
 export default {} as typeof Worker & { new (): Worker }
