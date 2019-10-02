@@ -1,0 +1,66 @@
+﻿## What works well
+
+- Documents can be created and edited offline.
+- Documents can be shared with remote peers using only a relay server.
+- It's fast and reliable to load documents from storage and synchronize changes with peers, even
+  with large datasets.
+- Once a dataset is loaded, our grid library (AgGrid) displays the entire dataset with excellent
+  performance.
+
+## Limitations
+
+Currently we have a hard limit on dataset size, imposed by the combination of two factors:
+
+1. Our current design requires us to load and parse the entire dataset into browser memory at once
+2. Automerge adds metadata and history to each record, which increases our memory requirements to 30
+   times the size of the underlying data.
+
+We can currently work comfortably with datasets up to about 20,000 rows; we've been able to load
+100,000 rows, but just barely. (A standard "row" has 12 fields and weighs about 1 KB).
+
+## Proposed architectural changes
+
+### Premises
+
+- The UI shouldn't have to load everything into memory
+- Slow operations should happen in a worker
+- Document history should only be loaded when a document is edited, not for display
+- Communication between the UI and the worker should happen through actions and queries (avoid
+  accessing the entire state)
+
+### Persistent storage
+
+Currently, we persist a single append-only feed of all changes to all documents. Instead:
+
+- Have one feed per document
+- Store the latest snapshot for each document
+
+This way, documents can be loaded instantly (using simple queries and indexes on the snapshot
+collection), and the feed is loaded only for edits (local or remote)
+
+### Worker
+
+All the Automerge, local storage and sync components live in the worker, thus freeing the UI context
+of all the expensive overhead of the system
+
+There will be a coarse-grained query API to query and retrieve a view of a set of rows, aggregate
+information, etc
+
+- v1: order + range / count(\*)
+- v2: filter
+- v3: \* (aggregation, projection, w/e. Might be entirely out of scope)
+
+The actions are still the ones we've defined earlier in the project.
+
+### UI
+
+Data retrieval for the grid will be changed to use a server-side model, as defined by AgGrid, where
+the worker takes the place of the server.
+
+The UI should only retrieve what's needed to be displayed on the screen at any given time.
+
+## Workplan
+
+1. Per-document storage
+2. Run store in worker
+3. Query API + paged datasets in AgGrid
