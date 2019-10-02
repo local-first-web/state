@@ -4,10 +4,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "run-p watch start:grid",
-    "start:chat": "yarn workspace cevitxe-example-chat start",
-    "start:grid": "yarn workspace cevitxe-example-grid start",
-    "start:todo": "yarn workspace cevitxe-example-todo start",
+    "start": "yarn dev:grid",
     "dev": "run-p watch test:watch",
     "dev:log": "run-p watch test:log",
     "dev:signal-server": "yarn workspace cevitxe-signal-server dev",
