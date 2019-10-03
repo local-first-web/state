@@ -2,7 +2,6 @@
 import debug from 'debug'
 import { EventEmitter } from 'events'
 // import hypercore from 'hypercore'
-// import db from 'random-access-idb'
 // import { getKeys } from './keys'
 import { ChangeSet, DocSetState } from './types'
 

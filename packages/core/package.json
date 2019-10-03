@@ -28,8 +28,7 @@
     "hypercore-crypto": "1",
     "idb": "4",
     "idb-keyval": "^3.2.0",
-    "immutable": "4.0.0-rc.12",
-    "random-access-idb": "1"
+    "immutable": "4.0.0-rc.12"
   },
   "devDependencies": {
     "@types/debug": "4",
