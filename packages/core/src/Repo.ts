@@ -1,4 +1,4 @@
-﻿import A from 'automerge'
+import A from 'automerge'
 import debug from 'debug'
 import { EventEmitter } from 'events'
 // import hypercore from 'hypercore'
@@ -132,7 +132,7 @@ export class Repo extends EventEmitter {
   async saveSnapshot(documentId: string, snapshot: any) {
     log('saveSnapshot', documentId, snapshot)
     const database = await this.openDb()
-    await database.add('snapshots', { documentId, snapshot })
+    await database.put('snapshots', { documentId, snapshot })
     database.close()
     log('end saveSnapshot')
   }
