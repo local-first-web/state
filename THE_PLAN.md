@@ -1,4 +1,6 @@
-﻿## What works well
+﻿# Where do we go from here
+
+## What works well
 
 - Documents can be created and edited offline with zero latency and no need for a server.
 - Documents can be shared with remote peers using only a tiny, generic signal/relay server.
@@ -11,6 +13,8 @@
 
 ## Limitations
 
+### Dataset size
+
 Currently we have a hard limit on dataset size, imposed by the combination of two factors:
 
 1. Our current design requires us to load and parse the entire dataset into browser memory at once
@@ -20,6 +24,14 @@ Currently we have a hard limit on dataset size, imposed by the combination of tw
 We can currently work comfortably with datasets up to about 50,000 rows (using rows containing 12
 fields of various types, about 1 KB of raw data). The most we've been able to load without running
 out of browser memory is 100,000 rows.
+
+### Consistency
+
+Actions are not transactional.
+
+Example: A changes field X from STRING to NUMBER. B sets X to a string value.
+
+This is just the way things are for distributed, auto-merged documents.
 
 ## Proposed architectural changes
 
@@ -40,6 +52,14 @@ Currently, we persist a single append-only feed of all changes to all documents.
 
 This way, documents can be loaded instantly (using simple queries and indexes on the snapshot
 collection), and the feed is loaded only for edits (local or remote)
+
+### Networking
+
+When a new document is seen from a peer, the snapshot should be retrieved first so it can be displayed
+before downloading the change history.
+
+When joining a discovery key for the first time, all the snapshots should be retrieved before getting the change history
+for any of them. This should happen in as few messages as possible to reduce lag.
 
 ### Worker
 
@@ -65,6 +85,8 @@ The UI should only retrieve what's needed to be displayed on the screen at any g
 ## Workplan
 
 1. Per-document storage
+   - Do storage ourselves instead of relying on hypercore
+   - Merge DocSet and StorageFeed into single object
 2. Run store in worker
 3. Query API + paged datasets in AgGrid
 
