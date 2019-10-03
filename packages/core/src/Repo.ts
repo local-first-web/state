@@ -3,9 +3,10 @@ import debug from 'debug'
 import { EventEmitter } from 'events'
 // import hypercore from 'hypercore'
 // import db from 'random-access-idb'
-import idb from 'idb'
 // import { getKeys } from './keys'
 import { ChangeSet, DocSetState } from './types'
+
+import * as idb from 'idb'
 
 let log = debug('cevitxe:storagefeed')
 
@@ -53,7 +54,7 @@ export class Repo extends EventEmitter {
   openDb = () => {
     const storageKey = `cevitxe::${this.databaseName}::${this.discoveryKey.substr(0, 12)}`
     return idb.openDB(storageKey, DB_VERSION, {
-      upgrade(db) {
+      upgrade(db: any) {
         // feeds
         const feeds = db.createObjectStore('feeds', {
           keyPath: 'id',
@@ -100,6 +101,7 @@ export class Repo extends EventEmitter {
     docSet: A.DocSet<any>
   ): Promise<DocSetState> => {
     const hasData = await this.hasData()
+    log('hasData', hasData)
     this.docSet = docSet
     let state: DocSetState
     if (creating) {
@@ -113,8 +115,14 @@ export class Repo extends EventEmitter {
       state = {}
       this.create(state)
     } else {
-      // TODO
-      state = {} //await this.getSnapshot()
+      const database = await this.openDb()
+      const documentIds = (await database.getAllKeysFromIndex('feeds', 'documentId')).map(docId =>
+        docId.toString()
+      )
+      state = {} as any
+      let documentId: string
+      for (documentId of documentIds) state[documentId] = await this.getSnapshot(documentId)
+      // state = await this.getSnapshot()
       log('recovering an existing document from persisted state')
       this.getStateFromStorage() // done asynchronously
     }
