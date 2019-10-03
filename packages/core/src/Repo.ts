@@ -122,7 +122,6 @@ export class Repo extends EventEmitter {
       state = {} as any
       let documentId: string
       for (documentId of documentIds) state[documentId] = await this.getSnapshot(documentId)
-      // state = await this.getSnapshot()
       log('recovering an existing document from persisted state')
       this.getStateFromStorage() // done asynchronously
     }
@@ -131,15 +130,12 @@ export class Repo extends EventEmitter {
     return state
   }
 
-  // TODO: don't need ready or close any more
-  ready = async () => {}
-  close = (cb: (err: Error) => void) => {}
-
   append = async (changeSet: ChangeSet) => {
     await this.appendChangeset(changeSet)
   }
 
   async saveSnapshot(documentId: string, snapshot: DocSetState) {
+    log('saveSnapshot', { documentId, snapshot })
     const database = await this.openDb()
     await database.add('feeds', { documentId, snapshot })
     database.close()
