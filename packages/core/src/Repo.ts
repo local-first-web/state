@@ -134,6 +134,7 @@ export class Repo extends EventEmitter {
     const database = await this.openDb()
     await database.add('snapshots', { documentId, snapshot })
     database.close()
+    log('end saveSnapshot')
   }
 
   async getSnapshot(documentId: string) {
