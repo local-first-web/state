@@ -1,21 +1,43 @@
 ﻿import A from 'automerge'
 import debug from 'debug'
 import { EventEmitter } from 'events'
-import hypercore from 'hypercore'
-import db from 'random-access-idb'
-import { getKeys } from './keys'
+// import hypercore from 'hypercore'
+// import db from 'random-access-idb'
+import idb from 'idb'
+// import { getKeys } from './keys'
 import { ChangeSet, DocSetState } from './types'
-import { get, set } from 'idb-keyval'
 
 let log = debug('cevitxe:storagefeed')
 
-export class Repo extends EventEmitter {
-  storageKey = (type: string) =>
-    `cevitxe::${type}::${this.databaseName}::${this.discoveryKey.substr(0, 12)}`
+/*
 
+### Storage schema 
+
+We use a single database with two object stores
+
+One repo = one discovery key = one db
+
+```
+cevitxe::grid::fancy-lizard (DB)
+  feeds (object store)
+    1: { id:1, documentId: abc123, changeSet: [...]}
+    2: { id:2, documentId: abc123, changeSet: [...]}
+    3: { id:3, documentId: abc123, changeSet: [...]}
+    4: { id:4, documentId: qrs567, changeSet: [...]}
+    5: { id:5, documentId: qrs567, changeSet: [...]}
+    6: { id:6, documentId: qrs567, changeSet: [...]}
+  snapshots (object store)
+    abc123: [snapshot]
+    qrs567: [snapshot]
+```
+*/
+
+const DB_VERSION = 1
+
+export class Repo extends EventEmitter {
   private discoveryKey: string
   private databaseName: string
-  private feed: Feed<string>
+  // private feed: Feed<string>
 
   public docSet: A.DocSet<any> = new A.DocSet()
 
@@ -24,103 +46,129 @@ export class Repo extends EventEmitter {
     this.discoveryKey = discoveryKey
     this.databaseName = databaseName
 
-    log('creating storage feed')
-    const { key: publicKey, secretKey } = getKeys(this.databaseName, this.discoveryKey)
-    const storage = db(this.storageKey('feed'))
-
-    this.feed = hypercore(storage, publicKey, { secretKey, valueEncoding: 'utf-8' })
-    this.feed.on('error', (err: any) => console.error(err))
+    // TODO: reimplement encryption at rest?
+    // const { key: publicKey, secretKey } = getKeys(this.databaseName, this.discoveryKey)
   }
 
-  init = (initialState: any, creating: boolean, docSet: A.DocSet<any>): Promise<DocSetState> =>
-    new Promise(resolve =>
-      this.feed.on('ready', async () => {
-        this.docSet = docSet
-        let state: DocSetState
-        if (creating) {
-          log('creating a new document')
-          state = initialState
-          this.create(state)
-        } else if (this.feed.length === 0) {
-          log(`joining a peer's document for the first time`)
-          state = {}
-          this.create(state)
-        } else {
-          state = await this.getSnapshot()
-          log('recovering an existing document from persisted state')
-          this.getStateFromStorage() // done asynchronously
-        }
-        log('ready')
-        this.emit('ready')
-        resolve(state)
-      })
-    )
+  openDb = () => {
+    const storageKey = `cevitxe::${this.databaseName}::${this.discoveryKey.substr(0, 12)}`
+    return idb.openDB(storageKey, DB_VERSION, {
+      upgrade(db) {
+        // feeds
+        const feeds = db.createObjectStore('feeds', {
+          keyPath: 'id',
+          autoIncrement: true,
+        })
+        feeds.createIndex('documentFeed', ['documentId', 'id'])
+        feeds.createIndex('documentId', 'documentId')
 
-  ready = async () => new Promise(ok => this.feed.on('ready', ok))
-
-  close = (cb: (err: Error) => void) =>
-    this.feed.close(err => {
-      cb(err)
-      this.emit('close')
+        // snapshots
+        const snapshots = db.createObjectStore('snapshots', {
+          keyPath: 'documentId',
+          autoIncrement: false,
+        })
+      },
     })
-
-  append = (data: string) => {
-    log('append', data)
-    this.feed.append(data)
-  }
-  saveSnapshot = async (state: DocSetState) => {
-    log('saving snapshot')
-    const snapshot = JSON.stringify(state)
-    log('snapshot size: %o KB', Math.floor(snapshot.length / 1024))
-    set(this.storageKey('snapshot'), snapshot)
-    log('saved snapshot')
   }
 
-  getSnapshot = async () => {
-    const snapshot: string = await get(this.storageKey('snapshot'))
-    if (snapshot && snapshot.length) {
-      log('getting snapshot')
-      return JSON.parse(snapshot)
+  async appendChangeset(changeSet: ChangeSet) {
+    const database = await this.openDb()
+    await database.add('feeds', changeSet)
+    database.close()
+  }
+
+  async getChangesets(documentId: string) {
+    const database = await this.openDb()
+    const items = await database.getAllFromIndex(
+      'feeds',
+      'documentFeed',
+      IDBKeyRange.bound([documentId], [documentId, []])
+    )
+    database.close()
+    return items
+  }
+
+  async hasData() {
+    const database = await this.openDb()
+    const count = await database.count('feeds')
+    return count > 0
+  }
+
+  init = async (
+    initialState: any,
+    creating: boolean,
+    docSet: A.DocSet<any>
+  ): Promise<DocSetState> => {
+    const hasData = await this.hasData()
+    this.docSet = docSet
+    let state: DocSetState
+    if (creating) {
+      //
+      log('creating a new document')
+      state = initialState
+      this.create(state)
+    } else if (hasData) {
+      //
+      log(`joining a peer's document for the first time`)
+      state = {}
+      this.create(state)
     } else {
-      log('no snapshot found')
-      return undefined
+      // TODO
+      state = {} //await this.getSnapshot()
+      log('recovering an existing document from persisted state')
+      this.getStateFromStorage() // done asynchronously
     }
+    log('ready')
+    this.emit('ready')
+    return state
+  }
+
+  // TODO: don't need ready or close any more
+  ready = async () => {}
+  close = (cb: (err: Error) => void) => {}
+
+  append = async (changeSet: ChangeSet) => {
+    await this.appendChangeset(changeSet)
+  }
+
+  async saveSnapshot(documentId: string, snapshot: DocSetState) {
+    const database = await this.openDb()
+    await database.add('feeds', { documentId, snapshot })
+    database.close()
+  }
+
+  async getSnapshot(documentId: string) {
+    const database = await this.openDb()
+    const snapshot = await database.get('feeds', documentId)
+    database.close()
+    return snapshot
   }
 
   private create(initialState: any) {
     log('creating new store %o', initialState)
+    // TODO: Use either docId or documentId consistently, but not both interchangeably
     for (let docId in initialState) {
       const doc = A.from(initialState[docId])
       this.docSet.setDoc(docId, doc)
       const changes = A.getChanges(A.init(), doc)
-      this.append(JSON.stringify({ docId, changes }))
+      this.append({ docId, changes })
+      this.saveSnapshot(docId, initialState)
     }
-    this.saveSnapshot(initialState)
-  }
-
-  private async readAll() {
-    return new Promise<string[]>(ok =>
-      this.feed.getBatch(0, this.feed.length, (_, data) => ok(data))
-    )
   }
 
   private async getStateFromStorage() {
     log('getting changesets from storage')
+    const database = await this.openDb()
+    const documentIds = await database.getAllKeysFromIndex('feeds', 'documentId')
 
-    const feedContents = await this.readAll()
-
-    log('parsing changesets', feedContents.length)
-    const changeSets = feedContents.map(s => {
-      log('parsing', s)
-      return JSON.parse(s) as ChangeSet
-    })
-
-    log('rehydrating from stored change sets')
-    changeSets.forEach(({ docId, changes, isDelete }) => {
-      if (isDelete) this.docSet.removeDoc(docId)
-      else this.docSet.applyChanges(docId, changes)
-    })
-
+    database.close()
+    for (const documentId in documentIds) {
+      const changeSets = await this.getChangesets(documentId)
+      changeSets.forEach(({ docId, changes, isDelete }) => {
+        if (isDelete) this.docSet.removeDoc(docId)
+        else this.docSet.applyChanges(docId, changes)
+      })
+    }
     log('done rehydrating')
   }
 }
