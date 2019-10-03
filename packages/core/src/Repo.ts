@@ -1,4 +1,4 @@
-import A from 'automerge'
+﻿import A from 'automerge'
 import debug from 'debug'
 import { EventEmitter } from 'events'
 // import hypercore from 'hypercore'
@@ -174,7 +174,7 @@ export class Repo extends EventEmitter {
       this.docSet.setDoc(docId, doc)
       const changes = A.getChanges(A.init(), doc)
       this.append({ docId, changes })
-      this.saveSnapshot(docId, initialState)
+      this.saveSnapshot(docId, initialState[docId])
     }
   }
 
