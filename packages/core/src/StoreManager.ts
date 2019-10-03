@@ -84,6 +84,7 @@ export class StoreManager<T> extends EventEmitter {
     client.on('peer', (peer: Peer) => this.addPeer(peer, discoveryKey))
 
     this.emit('ready', this.store)
+
     return this.store
   }
 
@@ -125,13 +126,6 @@ export class StoreManager<T> extends EventEmitter {
     const closeAllConnections = Object.keys(this.connections).map(peerId => this.removePeer(peerId))
     await Promise.all(closeAllConnections)
     this.connections = {}
-
-    const feed = this.feed
-    if (feed)
-      await Promise.all([
-        new Promise(ok => feed.close(ok)),
-        new Promise(ok => feed.on('close', ok)),
-      ])
 
     delete this.feed
     delete this.store

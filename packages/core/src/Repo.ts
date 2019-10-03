@@ -33,7 +33,7 @@ cevitxe::grid::fancy-lizard (DB)
 ```
 */
 
-const DB_VERSION = 1
+const DB_VERSION = 3
 
 export class Repo extends EventEmitter {
   private discoveryKey: string
@@ -54,7 +54,7 @@ export class Repo extends EventEmitter {
   openDb = () => {
     const storageKey = `cevitxe::${this.databaseName}::${this.discoveryKey.substr(0, 12)}`
     return idb.openDB(storageKey, DB_VERSION, {
-      upgrade(db: any) {
+      upgrade(db) {
         // feeds
         const feeds = db.createObjectStore('feeds', {
           keyPath: 'id',
@@ -68,6 +68,7 @@ export class Repo extends EventEmitter {
           keyPath: 'documentId',
           autoIncrement: false,
         })
+        snapshots.createIndex('documentId', 'documentId')
       },
     })
   }
@@ -109,19 +110,13 @@ export class Repo extends EventEmitter {
       log('creating a new document')
       state = initialState
       this.create(state)
-    } else if (hasData) {
+    } else if (!hasData) {
       //
       log(`joining a peer's document for the first time`)
       state = {}
       this.create(state)
     } else {
-      const database = await this.openDb()
-      const documentIds = (await database.getAllKeysFromIndex('feeds', 'documentId')).map(docId =>
-        docId.toString()
-      )
-      state = {} as any
-      let documentId: string
-      for (documentId of documentIds) state[documentId] = await this.getSnapshot(documentId)
+      state = await this.getFullSnapshot()
       log('recovering an existing document from persisted state')
       this.getStateFromStorage() // done asynchronously
     }
@@ -134,18 +129,40 @@ export class Repo extends EventEmitter {
     await this.appendChangeset(changeSet)
   }
 
-  async saveSnapshot(documentId: string, snapshot: DocSetState) {
-    log('saveSnapshot', { documentId, snapshot })
+  async saveSnapshot(documentId: string, snapshot: any) {
+    log('saveSnapshot', documentId, snapshot)
     const database = await this.openDb()
-    await database.add('feeds', { documentId, snapshot })
+    await database.add('snapshots', { documentId, snapshot })
     database.close()
   }
 
   async getSnapshot(documentId: string) {
     const database = await this.openDb()
-    const snapshot = await database.get('feeds', documentId)
+
+    const { snapshot } = await database.get('snapshots', documentId)
+
+    log('getSnapshot', documentId, snapshot)
     database.close()
     return snapshot
+  }
+
+  async getFullSnapshot() {
+    const documentIds = await this.getDocumentIds('snapshots')
+    const state = {} as any
+    let documentId: string
+    for (documentId of documentIds) {
+      state[documentId] = await this.getSnapshot(documentId)
+    }
+    log('getFullSnapshot', state)
+    return state
+  }
+
+  async getDocumentIds(objectStore: string) {
+    log('getDocumentIds', objectStore)
+    const database = await this.openDb()
+    const documentIds = await database.getAllKeysFromIndex(objectStore, 'documentId')
+    log('documentIds', documentIds)
+    return documentIds.map(docId => docId.toString())
   }
 
   private create(initialState: any) {
@@ -163,7 +180,7 @@ export class Repo extends EventEmitter {
   private async getStateFromStorage() {
     log('getting changesets from storage')
     const database = await this.openDb()
-    const documentIds = await database.getAllKeysFromIndex('feeds', 'documentId')
+    const documentIds = await this.getDocumentIds('feeds')
 
     database.close()
     for (const documentId in documentIds) {

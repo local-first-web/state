@@ -57,6 +57,7 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
       for (const docId in affectedDocs) {
         const oldDoc = affectedDocs[docId]
         const newDoc = docSet.getDoc(docId)
+        feed.saveSnapshot(docId, newDoc)
         const changes = A.getChanges(oldDoc, newDoc)
         if (changes.length > 0) changeSets.push({ docId, changes })
       }
@@ -71,13 +72,10 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
       }
     }
 
-    feed.saveSnapshot(store.getState())
-
     log(`before writing to feed`, getMemUsage())
     // write any changes to the feed
     for (const changeSet of changeSets) {
-      const s = JSON.stringify(changeSet)
-      feed.append(s)
+      feed.append(changeSet)
     }
     log(`after writing to feed`, getMemUsage())
 
