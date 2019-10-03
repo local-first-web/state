@@ -26,6 +26,7 @@
     "debug": "4",
     "hypercore": "7",
     "hypercore-crypto": "1",
+    "idb": "4",
     "idb-keyval": "^3.2.0",
     "immutable": "4.0.0-rc.12",
     "random-access-idb": "1"
@@ -35,7 +36,6 @@
     "@types/jest": "24",
     "cevitxe-signal-server": "0",
     "fake-indexeddb": "2",
-    "idb": "4",
     "jest": "24",
     "mock-socket": "8",
     "npm-watch": "0",
