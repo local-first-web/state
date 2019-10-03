@@ -21,7 +21,7 @@ let log = debug('cevitxe:StoreManager')
 EventEmitter.defaultMaxListeners = 500
 
 // Use shorter IDs
-A.uuid.setFactory(cuid.slug)
+A.uuid.setFactory(cuid)
 
 /**
  * A StoreManager generates a Redux store with persistence (via hypercore), networking (via
