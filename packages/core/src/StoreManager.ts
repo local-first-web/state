@@ -10,7 +10,7 @@ import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { docSetToObject } from './docSetHelpers'
 import { getMiddleware } from './getMiddleware'
 import { getKnownDiscoveryKeys } from './keys'
-import { StorageFeed } from './StorageFeed'
+import { Repo } from './Repo'
 import { ProxyReducer, StoreManagerOptions, DocSetState } from './types'
 import cuid from 'cuid'
 
@@ -34,7 +34,7 @@ export class StoreManager<T> extends EventEmitter {
   private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
 
   private clientId = newid()
-  private feed?: StorageFeed
+  private feed?: Repo
   private docSet?: A.DocSet<T>
 
   public connections: { [peerId: string]: Connection }
@@ -64,7 +64,7 @@ export class StoreManager<T> extends EventEmitter {
   private makeStore = async (discoveryKey: string, isCreating: boolean = false) => {
     log = debug(`cevitxe:${isCreating ? 'createStore' : 'joinStore'}:${discoveryKey}`)
 
-    this.feed = new StorageFeed(discoveryKey, this.databaseName)
+    this.feed = new Repo(discoveryKey, this.databaseName)
 
     this.docSet = new A.DocSet<T>()
     this.docSet.registerHandler(this.onChange)

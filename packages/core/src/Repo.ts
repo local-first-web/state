@@ -9,7 +9,7 @@ import { get, set } from 'idb-keyval'
 
 let log = debug('cevitxe:storagefeed')
 
-export class StorageFeed extends EventEmitter {
+export class Repo extends EventEmitter {
   storageKey = (type: string) =>
     `cevitxe::${type}::${this.databaseName}::${this.discoveryKey.substr(0, 12)}`
 
