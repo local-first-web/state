@@ -165,7 +165,7 @@ describe('Cevitxe', () => {
     })
 
     it('should persist deletions', async () => {
-      // expect.assertions(3)
+      expect.assertions(3)
       const { close, localStoreManager, localStore, discoveryKey } = await open()
       localStore.dispatch({ type: 'ADD_TEACHER', payload: [teacher1, teacher2] })
 
@@ -201,9 +201,10 @@ describe('Cevitxe', () => {
       server = new Server({ port })
       await server.listen({ silent: true })
 
+      const initialState = {}
       const discoveryKey = newDiscoveryKey()
 
-      // local cevitxe & store
+      // local storemanager & store
       const localStoreManager = new StoreManager({
         databaseName: `local-${newid()}`,
         proxyReducer,
@@ -213,11 +214,11 @@ describe('Cevitxe', () => {
       // create new store locally
       const localStore = await localStoreManager.createStore(discoveryKey)
 
-      // remote cevitxe
+      // remote storemanager & store
       const remoteStoreManager = new StoreManager({
         databaseName: `remote-${newid()}`,
         proxyReducer,
-        initialState: {},
+        initialState,
         urls,
       })
       // join store from remote peer
@@ -225,7 +226,7 @@ describe('Cevitxe', () => {
 
       // wait for both peers to see connection
       await Promise.all([
-        eventPromise(localStoreManager, 'peer'), //
+        eventPromise(localStoreManager, 'peer'),
         eventPromise(remoteStoreManager, 'peer'),
       ])
 
@@ -235,7 +236,6 @@ describe('Cevitxe', () => {
         await localStoreManager.close()
         await remoteStoreManager.close()
       }
-
       return { close, localStoreManager, remoteStoreManager, localStore, remoteStore, discoveryKey }
     }
 
@@ -325,7 +325,7 @@ describe('Cevitxe', () => {
     })
 
     it('should persist changes coming from a peer', async () => {
-      expect.assertions(2)
+      // expect.assertions(2)
       const { close, remoteStoreManager, localStore, remoteStore, discoveryKey } = await open()
 
       // add a teacher in the local store
@@ -341,16 +341,18 @@ describe('Cevitxe', () => {
       // wait for remote peer to see change
       await eventPromise(remoteStoreManager, 'change')
 
-      // confirm that the remote store has the new value
+      // confirm that both stores have the new value
       expect(teachers.selectors.getMap(remoteStore.getState()).abcxyz.first).toEqual('Herbert')
+      expect(teachers.selectors.getMap(localStore.getState()).abcxyz.first).toEqual('Herbert')
 
       // disconnect both stores
       await close()
 
-      // create a new store, which should see the state in the fake db and load it
+      // create a new store, which should see the state in the db and load it
       const newRemoteStore = await remoteStoreManager.joinStore(discoveryKey)
 
       // confirm that the modified state is still there
+      console.log('newRemoteStore.getState()', newRemoteStore.getState())
       expect(teachers.selectors.getMap(newRemoteStore.getState()).abcxyz.first).toEqual('Herbert')
 
       await close()
