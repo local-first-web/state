@@ -7,7 +7,7 @@ import { Repo } from './Repo'
 export type ProxyReducer = (state: any, action: AnyAction) => ChangeMap | null
 
 export interface ChangeMap {
-  [docId: string]: A.ChangeFn<any> | symbol
+  [documentId: string]: A.ChangeFn<any> | symbol
 }
 
 export interface StoreManagerOptions<T> {
@@ -50,7 +50,7 @@ export interface KeyPair {
 }
 
 export interface Message {
-  docId: string
+  documentId: string
   clock: A.Clock
   changes?: A.Change[]
 }
@@ -66,7 +66,7 @@ export interface ReceiveMessagePayload {
  * in.
  */
 export interface DocSetState<T = any> {
-  [docId: string]: A.Doc<T>
+  [documentId: string]: A.Doc<T>
 }
 
 /**
@@ -74,7 +74,7 @@ export interface DocSetState<T = any> {
  */
 export interface ChangeSet {
   /** The ID of the document */
-  docId: string
+  documentId: string
   /** One or more Automerge changes made to the document */
   changes: A.Change[]
   /** Special flag marking the document for deletion */

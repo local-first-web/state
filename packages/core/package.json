@@ -22,12 +22,11 @@
     "@types/simple-peer": "6",
     "automerge": "0",
     "cevitxe-signal-client": "0",
-    "cuid": "^2.1.6",
+    "cuid": "2",
     "debug": "4",
     "hypercore": "7",
     "hypercore-crypto": "1",
-    "idb": "4",
-    "idb-keyval": "^3.2.0",
+    "idb": "github:jakearchibald/idb",
     "immutable": "4.0.0-rc.12"
   },
   "devDependencies": {

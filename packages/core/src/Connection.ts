@@ -34,7 +34,7 @@ export class Connection<T = any> extends EventEmitter {
 
   public get state(): T {
     const _state: Partial<T> = {}
-    for (let key of this.docSet.docIds) {
+    for (let key of this.docSet.documentIds) {
       const doc = this.docSet.getDoc(key as string) as T[keyof T]
       _state[key as keyof T] = doc
     }

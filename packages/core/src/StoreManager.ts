@@ -96,8 +96,8 @@ export class StoreManager<T> extends EventEmitter {
     return getKnownDiscoveryKeys(this.databaseName)
   }
 
-  private onChange = (docId: string, doc: A.Doc<T>) => {
-    this.emit('change', docId, doc)
+  private onChange = (documentId: string, doc: A.Doc<T>) => {
+    this.emit('change', documentId, doc)
   }
 
   private addPeer = (peer: Peer, discoveryKey: string) => {

@@ -4,16 +4,16 @@ import { DocSet } from './DocSet'
 
 export const docSetToObject = <T = any>(docSet: DocSet<T>): DocSetState<T> => {
   const result = {} as any
-  for (let docId of docSet.docIds) {
-    result[docId] = docSet.getDoc(docId)
+  for (let documentId of docSet.documentIds) {
+    result[documentId] = docSet.getDoc(documentId)
   }
   return result
 }
 
 export const docSetFromObject = (obj: any): DocSet<any> => {
   const docSet = new DocSet<any>()
-  for (let docId of Object.getOwnPropertyNames(obj)) {
-    docSet.setDoc(docId, A.from(obj[docId]))
+  for (let documentId of Object.getOwnPropertyNames(obj)) {
+    docSet.setDoc(documentId, A.from(obj[documentId]))
   }
   return docSet
 }

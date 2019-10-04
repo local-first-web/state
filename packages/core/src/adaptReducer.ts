@@ -40,19 +40,19 @@ export const adaptReducer: ReducerConverter = (proxyReducer, docSet) => {
       }
 
       // Apply each change function to the corresponding document
-      for (let docId in functionMap) {
-        const fn = functionMap[docId] as A.ChangeFn<any> | symbol
+      for (let documentId in functionMap) {
+        const fn = functionMap[documentId] as A.ChangeFn<any> | symbol
 
         if (fn === DELETE_COLLECTION) {
-          const name = collection.getCollectionName(docId)
+          const name = collection.getCollectionName(documentId)
           collection(name).removeAll(docSet)
         } else if (typeof fn === 'function') {
           // find the corresponding document in the docSet
-          const oldDoc = docSet.getDoc(docId) || A.init() // create a new doc if one doesn't exist
+          const oldDoc = docSet.getDoc(documentId) || A.init() // create a new doc if one doesn't exist
           // run the change function to get a new document
           const newDoc = A.change(oldDoc, fn)
           // update the docSet
-          docSet.setDoc(docId, newDoc)
+          docSet.setDoc(documentId, newDoc)
         }
       }
       log(`after applying changes`, getMemUsage())

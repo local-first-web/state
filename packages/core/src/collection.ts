@@ -143,12 +143,12 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * @param docSet
    */
   const removeAll = (docSet: DocSet<any>) => {
-    for (const docId of docSet.docIds) {
-      if (isCollectionKey(docId)) {
-        const doc = docSet.getDoc(docId)
+    for (const documentId of docSet.documentIds) {
+      if (isCollectionKey(documentId)) {
+        const doc = docSet.getDoc(documentId)
         if (doc && !doc[DELETED]) {
           const deletedDoc = A.change(doc, setDeleteFlag)
-          docSet.setDoc(docId, deletedDoc)
+          docSet.setDoc(documentId, deletedDoc)
         }
       }
     }

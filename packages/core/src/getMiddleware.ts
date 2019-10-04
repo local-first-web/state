@@ -17,21 +17,19 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
 
     const functionMap = proxyReducer(store.getState(), action)
     if (functionMap) {
-      for (let docId in functionMap) {
-        const fn = functionMap[docId]
+      for (let documentId in functionMap) {
+        const fn = functionMap[documentId]
         if (fn === DELETE_COLLECTION) {
-          const name = collection.getCollectionName(docId)
-          const docIds = collection(name).selectors.keys(store.getState(), { includeDeleted: true })
+          log('DELETE_COLLECTION')
+          const name = collection.getCollectionName(documentId)
+          const documentIds = collection(name).selectors.keys(store.getState(), { includeDeleted: true })
           // Record each doc as removed so we can note that in the storage feed
-          for (const itemDocId of docIds) removedDocs.push(itemDocId)
-        } else if (fn === DELETE_ITEM) {
-          // Record the doc as removed so we can note that in the storage feed
-          removedDocs.push(docId)
+          for (const itemdocumentId of documentIds) removedDocs.push(itemdocumentId)
         } else if (typeof fn === 'function') {
           // Doc will be run through a change function. Cache the previous version of the doc so we
           // can record changes for the storage feed
-          const oldDoc = docSet.getDoc(docId) || A.init() // create a new doc if one doesn't exist
-          affectedDocs[docId] = oldDoc
+          const oldDoc = docSet.getDoc(documentId) || A.init() // create a new doc if one doesn't exist
+          affectedDocs[documentId] = oldDoc
         }
       }
     }
@@ -50,23 +48,23 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
 
     if (action.type === RECEIVE_MESSAGE_FROM_PEER) {
       // for changes coming from peer, we already have the Automerge changes, so just persist them
-      const { docId, changes } = action.payload.message
-      const newDoc = docSet.getDoc(docId)
-      feed.saveSnapshot(docId, newDoc)
-      changeSets.push({ docId, changes })
+      const { documentId, changes } = action.payload.message
+      const newDoc = docSet.getDoc(documentId)
+      feed.saveSnapshot(documentId, newDoc)
+      changeSets.push({ documentId, changes })
     } else {
       // for insert/update, we generate the changes by comparing each document before & after
-      for (const docId in affectedDocs) {
-        const oldDoc = affectedDocs[docId]
-        const newDoc = docSet.getDoc(docId)!
-        feed.saveSnapshot(docId, newDoc)
+      for (const documentId in affectedDocs) {
+        const oldDoc = affectedDocs[documentId]
+        const newDoc = docSet.getDoc(documentId)!
+        feed.saveSnapshot(documentId, newDoc)
         const changes = A.getChanges(oldDoc, newDoc)
-        if (changes.length > 0) changeSets.push({ docId, changes })
+        if (changes.length > 0) changeSets.push({ documentId, changes })
       }
       // for remove actions, we've made a list, so we just add a flag for each
-      for (const docId of removedDocs) {
+      for (const documentId of removedDocs) {
         const changeSet: ChangeSet = {
-          docId,
+          documentId,
           changes: [],
           isDelete: true,
         }

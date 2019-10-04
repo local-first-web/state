@@ -1,35 +1,34 @@
 ﻿import A from 'automerge'
 import debug from 'debug'
 import { EventEmitter } from 'events'
-import * as idb from 'idb'
+import * as idb from 'idb/with-async-ittr'
 import { DocSet } from './DocSet'
 import { ChangeSet, DocSetState } from './types'
 
-/*
-
-### Storage schema 
-
-We use a single database with two object stores
-
-One repo = one discovery key = one db
-
-```
-cevitxe::grid::fancy-lizard (DB)
-  feeds (object store)
-    1: { id:1, documentId: abc123, changeSet: [...]}
-    2: { id:2, documentId: abc123, changeSet: [...]}
-    3: { id:3, documentId: abc123, changeSet: [...]}
-    4: { id:4, documentId: qrs567, changeSet: [...]}
-    5: { id:5, documentId: qrs567, changeSet: [...]}
-    6: { id:6, documentId: qrs567, changeSet: [...]}
-  snapshots (object store)
-    abc123: [snapshot]
-    qrs567: [snapshot]
-```
-*/
-
 const DB_VERSION = 1
 
+/**
+ *
+ * ### Storage schema
+ *
+ * We use a single database with two object stores: `feeds`, containing changesets in sequential
+ * order, indexed by documentId; and `snapshots`, containing an actual
+ *
+ * One repo = one discovery key = one db
+ * ```
+ * cevitxe::grid::fancy-lizard (DB)
+ *   feeds (object store)
+ *     1: { id:1, documentId: abc123, changeSet: [...]}
+ *     2: { id:2, documentId: abc123, changeSet: [...]}
+ *     3: { id:3, documentId: abc123, changeSet: [...]}
+ *     4: { id:4, documentId: qrs567, changeSet: [...]}
+ *     5: { id:5, documentId: qrs567, changeSet: [...]}
+ *     6: { id:6, documentId: qrs567, changeSet: [...]}
+ *   snapshots (object store)
+ *     abc123: [snapshot]
+ *     qrs567: [snapshot]
+ * ```
+ */
 export class Repo extends EventEmitter {
   private discoveryKey: string
   private databaseName: string
@@ -75,7 +74,7 @@ export class Repo extends EventEmitter {
     database.close()
   }
 
-  async getChangesets(documentId: string) {
+  async getChangesets(documentId: string): Promise<ChangeSet[]> {
     const database = await this.openDb()
     const items = await database.getAllFromIndex(
       'feeds',
@@ -110,10 +109,10 @@ export class Repo extends EventEmitter {
       state = {}
       await this.create(state)
     } else {
-      state = await this.getFullSnapshot()
       this.log('recovering an existing document from persisted state')
       // TODO: do we need to wait on this?
       await this.getStateFromStorage()
+      state = await this.getFullSnapshot()
     }
     this.emit('ready')
     return state
@@ -141,6 +140,13 @@ export class Repo extends EventEmitter {
     return snapshot
   }
 
+  async removeSnapshot(documentId: string) {
+    const database = await this.openDb()
+    this.log('deleting', documentId)
+    await database.delete('snapshots', documentId)
+    database.close()
+  }
+
   async getFullSnapshot() {
     const documentIds = await this.getDocumentIds('snapshots')
     const state = {} as any
@@ -157,34 +163,41 @@ export class Repo extends EventEmitter {
     const database = await this.openDb()
     const documentIds = await database.getAllKeysFromIndex(objectStore, 'documentId')
     this.log('documentIds', documentIds)
-    return documentIds.map(docId => docId.toString())
+    return documentIds.map(documentId => documentId.toString())
   }
 
   private async create(initialState: any) {
     this.log('creating new store %o', initialState)
-    // TODO: Use either docId or documentId consistently, but not both interchangeably
-    for (let docId in initialState) {
-      const doc = A.from(initialState[docId])
-      this.docSet.setDoc(docId, doc)
-      const changes = A.getChanges(A.init(), doc)
-      await this.append({ docId, changes })
-      await this.saveSnapshot(docId, initialState[docId])
+    for (let documentId in initialState) {
+      const document = A.from(initialState[documentId])
+      this.docSet.setDoc(documentId, document)
+      const changes = A.getChanges(A.init(), document)
+      await this.append({ documentId, changes })
+      await this.saveSnapshot(documentId, initialState[documentId])
     }
   }
 
   private async getStateFromStorage() {
-    this.log('getting changesets from storage')
+    //const documentIds = await this.getDocumentIds('feeds')
     const database = await this.openDb()
-    const documentIds = await this.getDocumentIds('feeds')
-
-    database.close()
-    for (const documentId in documentIds) {
-      const changeSets = await this.getChangesets(documentId)
-      changeSets.forEach(({ docId, changes, isDelete }) => {
-        if (isDelete) this.docSet.removeDoc(docId)
-        else this.docSet.applyChanges(docId, changes)
-      })
+    const index = database.transaction('feeds').store.index('documentId')
+    this.log('index', index)
+    for await (const cursor of index.iterate(undefined, 'nextunique')) {
+      this.log(cursor)
     }
+    // this.log('getting changesets from storage', documentIds)
+    // for (const documentId of documentIds) {
+    //   this.log('documentId', documentId)
+    //   const changeSets = await this.getChangesets(documentId)
+    //   for (const { isDelete, documentId, changes } of changeSets) {
+    //     this.log('applying changeset', { isDelete, documentId, changes })
+    //     if (isDelete) {
+    //       this.log('delete', documentId)
+    //       await this.removeSnapshot(documentId)
+    //       this.docSet.removeDoc(documentId)
+    //     } else this.docSet.applyChanges(documentId, changes)
+    //   }
+    // }
     this.log('done rehydrating')
   }
 }

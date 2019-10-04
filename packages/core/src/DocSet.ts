@@ -1,5 +1,5 @@
 ﻿import A from 'automerge'
-type DocSetHandler<T> = (docId: string, doc: A.Doc<T>) => void
+type DocSetHandler<T> = (documentId: string, doc: A.Doc<T>) => void
 
 export class DocSet<T = any> {
   private docs: Map<string, A.Doc<T>>
@@ -10,32 +10,32 @@ export class DocSet<T = any> {
     this.handlers = new Set()
   }
 
-  get docIds() {
+  get documentIds() {
     return this.docs.keys()
   }
 
-  getDoc(docId: string) {
-    return this.docs.get(docId)
+  getDoc(documentId: string) {
+    return this.docs.get(documentId)
   }
 
-  removeDoc(docId: string) {
-    this.docs.delete(docId)
+  removeDoc(documentId: string) {
+    this.docs.delete(documentId)
   }
 
-  setDoc(docId: string, doc: A.Doc<T>) {
-    this.docs = this.docs.set(docId, doc)
-    this.handlers.forEach(handler => handler(docId, doc))
+  setDoc(documentId: string, doc: A.Doc<T>) {
+    this.docs = this.docs.set(documentId, doc)
+    this.handlers.forEach(handler => handler(documentId, doc))
   }
 
-  applyChanges(docId: string, changes: A.Change[]) {
+  applyChanges(documentId: string, changes: A.Change[]) {
     // @ts-ignore
-    let doc = this.docs.get(docId) || A.Frontend.init({ backend: A.Backend })
+    let doc = this.docs.get(documentId) || A.Frontend.init({ backend: A.Backend })
     const oldState = A.Frontend.getBackendState(doc)
     const [newState, patch] = A.Backend.applyChanges(oldState, changes)
     // @ts-ignore
     patch.state = newState
     doc = A.Frontend.applyPatch(doc, patch)
-    this.setDoc(docId, doc)
+    this.setDoc(documentId, doc)
     return doc
   }
 
