@@ -1,4 +1,4 @@
-﻿import A from 'automerge'
+import A from 'automerge'
 import debug from 'debug'
 import { EventEmitter } from 'events'
 // import hypercore from 'hypercore'
@@ -6,8 +6,6 @@ import { EventEmitter } from 'events'
 import { ChangeSet, DocSetState } from './types'
 
 import * as idb from 'idb'
-
-let log = debug('cevitxe:storagefeed')
 
 /*
 
@@ -40,12 +38,13 @@ export class Repo extends EventEmitter {
   // private feed: Feed<string>
 
   public docSet: A.DocSet<any> = new A.DocSet()
+  private log: debug.Debugger
 
   constructor(discoveryKey: string, databaseName: string) {
     super()
     this.discoveryKey = discoveryKey
     this.databaseName = databaseName
-
+    this.log = debug(`cevitxe:repo:${this.databaseName}`)
     // TODO: reimplement encryption at rest?
     // const { key: publicKey, secretKey } = getKeys(this.databaseName, this.discoveryKey)
   }
@@ -101,23 +100,21 @@ export class Repo extends EventEmitter {
     docSet: A.DocSet<any>
   ): Promise<DocSetState> => {
     const hasData = await this.hasData()
-    log('hasData', hasData)
+    this.log('hasData', hasData)
     this.docSet = docSet
     let state: DocSetState
     if (creating) {
-      //
-      log('creating a new document')
+      this.log('creating a new document')
       state = initialState
       this.create(state)
     } else if (!hasData) {
-      //
-      log(`joining a peer's document for the first time`)
+      this.log(`joining a peer's document for the first time`)
       state = {}
       this.create(state)
     } else {
       state = await this.getFullSnapshot()
-      log('recovering an existing document from persisted state')
-      this.getStateFromStorage() // done asynchronously
+      this.log('recovering an existing document from persisted state')
+      // TODO: do we need to wait on this?
     }
     log('ready')
     this.emit('ready')
@@ -129,11 +126,11 @@ export class Repo extends EventEmitter {
   }
 
   async saveSnapshot(documentId: string, snapshot: any) {
-    log('saveSnapshot', documentId, snapshot)
+    this.log('saveSnapshot', documentId, snapshot)
     const database = await this.openDb()
     await database.put('snapshots', { documentId, snapshot })
     database.close()
-    log('end saveSnapshot')
+    this.log('end saveSnapshot')
   }
 
   async getSnapshot(documentId: string) {
@@ -141,7 +138,7 @@ export class Repo extends EventEmitter {
 
     const { snapshot } = await database.get('snapshots', documentId)
 
-    log('getSnapshot', documentId, snapshot)
+    this.log('getSnapshot', documentId, snapshot)
     database.close()
     return snapshot
   }
@@ -153,20 +150,19 @@ export class Repo extends EventEmitter {
     for (documentId of documentIds) {
       state[documentId] = await this.getSnapshot(documentId)
     }
-    log('getFullSnapshot', state)
+    this.log('getFullSnapshot', state)
     return state
   }
 
   async getDocumentIds(objectStore: string) {
-    log('getDocumentIds', objectStore)
+    this.log('getDocumentIds', objectStore)
     const database = await this.openDb()
     const documentIds = await database.getAllKeysFromIndex(objectStore, 'documentId')
-    log('documentIds', documentIds)
+    this.log('documentIds', documentIds)
     return documentIds.map(docId => docId.toString())
   }
 
-  private create(initialState: any) {
-    log('creating new store %o', initialState)
+    this.log('creating new store %o', initialState)
     // TODO: Use either docId or documentId consistently, but not both interchangeably
     for (let docId in initialState) {
       const doc = A.from(initialState[docId])
@@ -178,7 +174,7 @@ export class Repo extends EventEmitter {
   }
 
   private async getStateFromStorage() {
-    log('getting changesets from storage')
+    this.log('getting changesets from storage')
     const database = await this.openDb()
     const documentIds = await this.getDocumentIds('feeds')
 
@@ -190,6 +186,6 @@ export class Repo extends EventEmitter {
         else this.docSet.applyChanges(docId, changes)
       })
     }
-    log('done rehydrating')
+    this.log('done rehydrating')
   }
 }
