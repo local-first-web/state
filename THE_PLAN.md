@@ -69,9 +69,9 @@ of all the expensive overhead of the system
 There will be a coarse-grained query API to query and retrieve a view of a set of rows, aggregate
 information, etc
 
-- v1: order + range / count(\*)
+- v1: order + range / count
 - v2: filter
-- v3: \* (aggregation, projection, w/e. Might be entirely out of scope)
+- v3: (aggregation, projection, w/e. Might be entirely out of scope)
 
 The actions are still the ones we've defined earlier in the project.
 
