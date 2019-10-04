@@ -26,7 +26,7 @@
     "debug": "4",
     "hypercore": "7",
     "hypercore-crypto": "1",
-    "idb": "github:jakearchibald/idb",
+    "idb": "herbcaudill/idb",
     "immutable": "4.0.0-rc.12"
   },
   "devDependencies": {

@@ -7243,9 +7243,9 @@ icss-utils@^4.1.0:
   dependencies:
     postcss "^7.0.14"
 
-"idb@github:jakearchibald/idb":
+idb@herbcaudill/idb:
   version "4.0.4"
-  resolved "https://codeload.github.com/jakearchibald/idb/tar.gz/113cd23e2e9f51d2a74db9a03945f0f285308849"
+  resolved "https://codeload.github.com/herbcaudill/idb/tar.gz/8083b0d156cf2820501d7424e641ce9f3c2ba320"
 
 identity-obj-proxy@3.0.0:
   version "3.0.0"
@@ -7291,7 +7291,7 @@ immer@1.10.0:
   resolved "https://registry.yarnpkg.com/immer/-/immer-1.10.0.tgz#bad67605ba9c810275d91e1c2a47d4582e98286d"
   integrity sha512-O3sR1/opvCDGLEVcvrGTMtLac8GJ5IwZC4puPrLuRj3l7ICKvkmA0vGuU9OW8mV9WIBRnaxp5GJh9IEAaNOoYg==
 
-immutable@4:
+immutable@4.0.0-rc.12:
   version "4.0.0-rc.12"
   resolved "https://registry.yarnpkg.com/immutable/-/immutable-4.0.0-rc.12.tgz#ca59a7e4c19ae8d9bf74a97bdf0f6e2f2a5d0217"
   integrity sha512-0M2XxkZLx/mi3t8NVwIm1g8nHoEmM9p9UBl/G9k4+hm0kBgOVdMV/B3CY5dQ8qG8qc80NN4gDV4HQv6FTJ5q7A==

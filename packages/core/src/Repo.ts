@@ -1,7 +1,7 @@
 ﻿import A from 'automerge'
 import debug from 'debug'
 import { EventEmitter } from 'events'
-import * as idb from 'idb/with-async-ittr'
+import * as idb from 'idb/with-async-ittr-cjs'
 import { DocSet } from './DocSet'
 import { ChangeSet, DocSetState } from './types'
 
