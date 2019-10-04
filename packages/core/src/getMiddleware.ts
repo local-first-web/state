@@ -51,6 +51,8 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
     if (action.type === RECEIVE_MESSAGE_FROM_PEER) {
       // for changes coming from peer, we already have the Automerge changes, so just persist them
       const { docId, changes } = action.payload.message
+      const newDoc = docSet.getDoc(docId)
+      feed.saveSnapshot(docId, newDoc)
       changeSets.push({ docId, changes })
     } else {
       // for insert/update, we generate the changes by comparing each document before & after
