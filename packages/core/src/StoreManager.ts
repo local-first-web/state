@@ -1,18 +1,18 @@
+import A from 'automerge'
 import { Client, newid, Peer } from 'cevitxe-signal-client'
+import cuid from 'cuid'
 import debug from 'debug'
 import { EventEmitter } from 'events'
-import A from 'automerge'
-import { Middleware, Store, createStore, applyMiddleware } from 'redux'
+import { applyMiddleware, createStore, Middleware, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
 import { adaptReducer } from './adaptReducer'
 import { Connection } from './Connection'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
-import { docSetToObject } from './docSetHelpers'
+import { DocSet } from './DocSet'
 import { getMiddleware } from './getMiddleware'
 import { getKnownDiscoveryKeys } from './keys'
 import { Repo } from './Repo'
-import { ProxyReducer, StoreManagerOptions, DocSetState } from './types'
-import cuid from 'cuid'
+import { DocSetState, ProxyReducer, StoreManagerOptions } from './types'
 
 let log = debug('cevitxe:StoreManager')
 
@@ -35,7 +35,7 @@ export class StoreManager<T> extends EventEmitter {
 
   private clientId = newid()
   private feed?: Repo
-  private docSet?: A.DocSet<T>
+  private docSet?: DocSet<T>
 
   public connections: { [peerId: string]: Connection }
   public databaseName: string
@@ -66,7 +66,7 @@ export class StoreManager<T> extends EventEmitter {
 
     this.feed = new Repo(discoveryKey, this.databaseName)
 
-    this.docSet = new A.DocSet<T>()
+    this.docSet = new DocSet<T>()
     this.docSet.registerHandler(this.onChange)
 
     const state = await this.feed.init(this.initialState, isCreating, this.docSet)

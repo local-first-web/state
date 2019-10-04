@@ -1,4 +1,5 @@
 ﻿import A from 'automerge'
+import { DocSet } from './DocSet'
 import { DocSetSync } from './DocSetSync'
 import { Message } from './types'
 import { TestChannel } from './lib/TestChannel'
@@ -11,7 +12,7 @@ const docId = 'myDoc'
 
 const makeConnection = (
   discoveryKey: string,
-  docSet: A.DocSet<BirdCount>,
+  docSet: DocSet<BirdCount | undefined>,
   channel: TestChannel
 ) => {
   const send = (msg: Message) => {
@@ -30,13 +31,13 @@ const makeConnection = (
 
 describe(`DocumentSync`, () => {
   describe('Changes after connecting', () => {
-    let localDocSet: A.DocSet<BirdCount>
-    let remoteDocSet: A.DocSet<BirdCount>
+    let localDocSet: DocSet<BirdCount | undefined>
+    let remoteDocSet: DocSet<BirdCount | undefined>
 
     beforeEach(() => {
-      localDocSet = new A.DocSet<BirdCount>()
+      localDocSet = new DocSet<BirdCount | undefined>()
       localDocSet.setDoc(docId, A.from({ swallows: 1 }, 'L'))
-      remoteDocSet = new A.DocSet<BirdCount>()
+      remoteDocSet = new DocSet<BirdCount | undefined>()
       remoteDocSet.setDoc(docId, A.from({}, 'R'))
 
       const channel = new TestChannel()
@@ -102,14 +103,14 @@ describe(`DocumentSync`, () => {
 
   describe('Changes before connecting', () => {
     it('should sync after the fact', () => {
-      const localDocSet = new A.DocSet<BirdCount>()
+      const localDocSet = new DocSet<BirdCount | undefined>()
       localDocSet.setDoc(docId, A.from({}, 'L'))
 
       let localDoc = localDocSet.getDoc(docId)
       localDoc = A.change(localDoc, doc => (doc.wrens = 2))
       localDocSet.setDoc(docId, localDoc)
 
-      const remoteDocSet = new A.DocSet<BirdCount>()
+      const remoteDocSet = new DocSet<BirdCount | undefined>()
       remoteDocSet.setDoc(docId, A.from({}, 'R'))
 
       const channel = new TestChannel()
@@ -127,8 +128,8 @@ describe(`DocumentSync`, () => {
   describe('Intermittent connection', () => {
     let localConnection: DocSetSync
     let remoteConnection: DocSetSync
-    let localDocSet: A.DocSet<BirdCount>
-    let remoteDocSet: A.DocSet<BirdCount>
+    let localDocSet: DocSet<BirdCount | undefined>
+    let remoteDocSet: DocSet<BirdCount | undefined>
     let channel = new TestChannel()
 
     function networkOff() {
@@ -144,9 +145,9 @@ describe(`DocumentSync`, () => {
     }
 
     beforeEach(() => {
-      remoteDocSet = new A.DocSet()
+      remoteDocSet = new DocSet()
       remoteDocSet.setDoc(docId, A.from({}, 'R'))
-      localDocSet = new A.DocSet()
+      localDocSet = new DocSet()
       localDocSet.setDoc(docId, A.from({ swallows: 1 }, 'L'))
       networkOn()
     })
@@ -155,14 +156,14 @@ describe(`DocumentSync`, () => {
       let localDoc = localDocSet.getDoc(docId)
 
       // remote peer has original state
-      expect(remoteDocSet.getDoc(docId).swallows).toEqual(1)
+      expect(remoteDocSet.getDoc(docId)!.swallows).toEqual(1)
 
       // make local changes online
       localDoc = A.change(localDoc, doc => (doc.swallows = 2))
       localDocSet.setDoc(docId, localDoc)
 
       // remote peer sees changes immediately
-      expect(remoteDocSet.getDoc(docId).swallows).toEqual(2)
+      expect(remoteDocSet.getDoc(docId)!.swallows).toEqual(2)
 
       networkOff()
 
@@ -171,12 +172,12 @@ describe(`DocumentSync`, () => {
       localDocSet.setDoc(docId, localDoc)
 
       // remote peer doesn't see changes
-      expect(remoteDocSet.getDoc(docId).swallows).toEqual(2)
+      expect(remoteDocSet.getDoc(docId)!.swallows).toEqual(2)
 
       networkOn()
 
       // as soon as we're back online, remote peer sees changes
-      expect(remoteDocSet.getDoc(docId).swallows).toEqual(3)
+      expect(remoteDocSet.getDoc(docId)!.swallows).toEqual(3)
     })
 
     it('should bidirectionally sync offline changes', () => {
@@ -243,13 +244,13 @@ describe(`DocumentSync`, () => {
       // as soon as we're back online, one of the changes is selected
       localDoc = localDocSet.getDoc(docId)
       remoteDoc = remoteDocSet.getDoc(docId)
-      const localValue = localDoc.swallows
-      const remoteValue = remoteDoc.swallows
+      const localValue = localDoc!.swallows
+      const remoteValue = remoteDoc!.swallows
       expect(localValue).toEqual(remoteValue)
 
       // we don't know the exact value, but it's one of the two, and
       // the "losing" value is stored in `conflicts`
-      const conflict = A.getConflicts(localDoc, 'swallows')
+      const conflict = A.getConflicts(localDoc!, 'swallows')
       expect(localValue === 13 || (remoteValue === 42 && conflict.L === 13)).toBe(true)
       expect(remoteValue === 42 || (localValue === 13 && conflict.R === 42)).toBe(true)
     })

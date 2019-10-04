@@ -1,4 +1,5 @@
 import A from 'automerge'
+import { DocSet } from './DocSet'
 import { Server } from 'cevitxe-signal-server'
 import { newid } from 'cevitxe-signal-client'
 import { Connection } from './Connection'
@@ -28,7 +29,7 @@ const localActorId = newid()
 describe('Connection', () => {
   const initialState: FooStateDoc = { state: { foo: 1 } }
 
-  let docSet: A.DocSet<FooState>
+  let docSet: DocSet<FooState>
   let server: Server
 
   beforeAll(async () => {
@@ -37,7 +38,7 @@ describe('Connection', () => {
   })
 
   beforeEach(() => {
-    docSet = new A.DocSet<any>()
+    docSet = new DocSet<any>()
     let key: keyof FooStateDoc
     for (key in initialState) {
       const value = initialState[key]
@@ -66,7 +67,7 @@ describe('Connection', () => {
       expect.stringContaining(JSON.stringify({ [localActorId]: 2 }))
     )
 
-    const localDoc = docSet.getDoc('state')
+    const localDoc = docSet.getDoc('state')!
     const updatedDoc = A.change<FooState>(localDoc, 'update', doc => (doc.boo = 2))
     docSet.setDoc('state', updatedDoc)
 

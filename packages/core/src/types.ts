@@ -1,5 +1,6 @@
 import A from 'automerge'
-import { AnyAction, Middleware, Reducer, Store } from 'redux'
+import { AnyAction, Middleware, Store } from 'redux'
+import { DocSet } from './DocSet'
 import { DocSetSync } from './DocSetSync'
 import { Repo } from './Repo'
 
@@ -29,7 +30,7 @@ export interface CreateStoreResult {
 
 export type MiddlewareFactory = (
   feed: Repo,
-  docSet: A.DocSet<any>,
+  docSet: DocSet<any>,
   proxyReducer: ProxyReducer,
   discoveryKey?: string
 ) => Middleware

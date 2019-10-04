@@ -1,10 +1,10 @@
-import A from 'automerge'
-import { DocSetSync } from './DocSetSync'
 import debug from 'debug'
+import { EventEmitter } from 'events'
 import { AnyAction, Dispatch } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
+import { DocSet } from './DocSet'
+import { DocSetSync } from './DocSetSync'
 import { Message } from './types'
-import { EventEmitter } from 'events'
 
 const log = debug('cevitxe:connection')
 
@@ -17,9 +17,9 @@ export class Connection<T = any> extends EventEmitter {
   private docSetSync: DocSetSync
   private peerSocket: WebSocket | null
   private dispatch?: Dispatch<AnyAction>
-  private docSet: A.DocSet<any>
+  private docSet: DocSet<any>
 
-  constructor(docSet: A.DocSet<any>, peerSocket: WebSocket, dispatch?: Dispatch<AnyAction>) {
+  constructor(docSet: DocSet<any>, peerSocket: WebSocket, dispatch?: Dispatch<AnyAction>) {
     super()
     log('new connection')
     this.docSet = docSet
@@ -34,9 +34,9 @@ export class Connection<T = any> extends EventEmitter {
 
   public get state(): T {
     const _state: Partial<T> = {}
-    let key: keyof T
-    for (key of this.docSet.docIds as (keyof T)[]) {
-      _state[key] = this.docSet.getDoc(key as string) as T[keyof T]
+    for (let key of this.docSet.docIds) {
+      const doc = this.docSet.getDoc(key as string) as T[keyof T]
+      _state[key as keyof T] = doc
     }
     return _state as T
   }

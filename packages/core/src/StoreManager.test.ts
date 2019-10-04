@@ -352,7 +352,6 @@ describe('Cevitxe', () => {
       const newRemoteStore = await remoteStoreManager.joinStore(discoveryKey)
 
       // confirm that the modified state is still there
-      console.log('newRemoteStore.getState()', newRemoteStore.getState())
       expect(teachers.selectors.getMap(newRemoteStore.getState()).abcxyz.first).toEqual('Herbert')
 
       await close()

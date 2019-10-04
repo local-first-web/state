@@ -1,11 +1,9 @@
-import A from 'automerge'
+﻿import A from 'automerge'
 import debug from 'debug'
 import { EventEmitter } from 'events'
-// import hypercore from 'hypercore'
-// import { getKeys } from './keys'
-import { ChangeSet, DocSetState } from './types'
-
 import * as idb from 'idb'
+import { DocSet } from './DocSet'
+import { ChangeSet, DocSetState } from './types'
 
 /*
 
@@ -30,14 +28,14 @@ cevitxe::grid::fancy-lizard (DB)
 ```
 */
 
-const DB_VERSION = 3
+const DB_VERSION = 1
 
 export class Repo extends EventEmitter {
   private discoveryKey: string
   private databaseName: string
   // private feed: Feed<string>
 
-  public docSet: A.DocSet<any> = new A.DocSet()
+  public docSet: DocSet<any> = new DocSet()
   private log: debug.Debugger
 
   constructor(discoveryKey: string, databaseName: string) {
@@ -97,7 +95,7 @@ export class Repo extends EventEmitter {
   init = async (
     initialState: any,
     creating: boolean,
-    docSet: A.DocSet<any>
+    docSet: DocSet<any>
   ): Promise<DocSetState> => {
     const hasData = await this.hasData()
     this.log('hasData', hasData)
@@ -106,17 +104,17 @@ export class Repo extends EventEmitter {
     if (creating) {
       this.log('creating a new document')
       state = initialState
-      this.create(state)
+      await this.create(state)
     } else if (!hasData) {
       this.log(`joining a peer's document for the first time`)
       state = {}
-      this.create(state)
+      await this.create(state)
     } else {
       state = await this.getFullSnapshot()
       this.log('recovering an existing document from persisted state')
       // TODO: do we need to wait on this?
+      await this.getStateFromStorage()
     }
-    log('ready')
     this.emit('ready')
     return state
   }
@@ -162,14 +160,15 @@ export class Repo extends EventEmitter {
     return documentIds.map(docId => docId.toString())
   }
 
+  private async create(initialState: any) {
     this.log('creating new store %o', initialState)
     // TODO: Use either docId or documentId consistently, but not both interchangeably
     for (let docId in initialState) {
       const doc = A.from(initialState[docId])
       this.docSet.setDoc(docId, doc)
       const changes = A.getChanges(A.init(), doc)
-      this.append({ docId, changes })
-      this.saveSnapshot(docId, initialState[docId])
+      await this.append({ docId, changes })
+      await this.saveSnapshot(docId, initialState[docId])
     }
   }
 

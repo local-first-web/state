@@ -1,4 +1,5 @@
 import A from 'automerge'
+import { DocSet } from './DocSet'
 import { RECEIVE_MESSAGE_FROM_PEER, DELETE_COLLECTION } from './constants'
 import { docSetToObject } from './docSetHelpers'
 import { Reducer, AnyAction } from 'redux'
@@ -11,7 +12,7 @@ const log = debug('cevitxe:grid:adaptreducer')
 
 export type ReducerConverter = (
   proxyReducer: ProxyReducer,
-  docSet: A.DocSet<any>
+  docSet: DocSet<any>
 ) => Reducer<DocSetState, AnyAction>
 
 /**

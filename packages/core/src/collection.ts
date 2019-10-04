@@ -1,6 +1,6 @@
 import A from 'automerge'
 import { DELETE_COLLECTION } from './constants'
-import { docSetToObject } from './docSetHelpers'
+import { DocSet } from './DocSet'
 import { ChangeMap, DocSetState } from './types'
 
 export interface CollectionOptions {
@@ -142,11 +142,11 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * Marks all items in the collection as deleted. PRIVATE.
    * @param docSet
    */
-  const removeAll = (docSet: A.DocSet<any>) => {
+  const removeAll = (docSet: DocSet<any>) => {
     for (const docId of docSet.docIds) {
       if (isCollectionKey(docId)) {
         const doc = docSet.getDoc(docId)
-        if (!doc[DELETED]) {
+        if (doc && !doc[DELETED]) {
           const deletedDoc = A.change(doc, setDeleteFlag)
           docSet.setDoc(docId, deletedDoc)
         }

@@ -58,7 +58,7 @@ export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => 
       // for insert/update, we generate the changes by comparing each document before & after
       for (const docId in affectedDocs) {
         const oldDoc = affectedDocs[docId]
-        const newDoc = docSet.getDoc(docId)
+        const newDoc = docSet.getDoc(docId)!
         feed.saveSnapshot(docId, newDoc)
         const changes = A.getChanges(oldDoc, newDoc)
         if (changes.length > 0) changeSets.push({ docId, changes })
