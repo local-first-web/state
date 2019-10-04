@@ -141,7 +141,7 @@ describe('Cevitxe', () => {
     })
 
     it('should persist state between sessions', async () => {
-      expect.assertions(2)
+      expect.assertions(3)
       const { close, localStoreManager, localStore, discoveryKey } = await open()
 
       // change something in the local store
@@ -156,12 +156,11 @@ describe('Cevitxe', () => {
       await localStoreManager.close()
 
       // Then we join the same store, which should see the state in the fake db and load it
-      const newLocalState = await localStoreManager.joinStore(discoveryKey)
+      const localStore1 = await localStoreManager.joinStore(discoveryKey)
 
       // Confirm that the modified state is still there
-      const state1 = newLocalState.getState()
+      const state1 = localStore1.getState()
       expect(teachers.selectors.getMap(state1)).toEqual({ abcxyz: teacher1, defcba: teacher2 })
-
       await close()
     })
 
