@@ -2,12 +2,14 @@
 
 ## What works well
 
-- Documents can be created and edited offline.
-- Documents can be shared with remote peers using only a relay server.
-- It's fast and reliable to load documents from storage and synchronize changes with peers, even
-  with large datasets.
-- Once a dataset is loaded, our grid library (AgGrid) displays the entire dataset with excellent
-  performance.
+- Documents can be created and edited offline with zero latency and no need for a server.
+- Documents can be shared with remote peers using only a tiny, generic signal/relay server.
+- Synchronization of changes across multiple peers, whether online & real-time, or offline &
+  concurrent, "just works".
+- Performance is good both for loading documents from storage and synchronizing changes with peers.
+- All data is encrypted at rest.
+- Once a dataset is loaded, browsing through the data and making changes is smooth and fast, even
+  with very large datasets.
 
 ## Limitations
 
@@ -19,8 +21,9 @@ Currently we have a hard limit on dataset size, imposed by the combination of tw
 2. Automerge adds metadata and history to each record, which increases our memory requirements to 30
    times the size of the underlying data.
 
-We can currently work comfortably with datasets up to about 20,000 rows; we've been able to load
-100,000 rows, but just barely. (A standard "row" has 12 fields and weighs about 1 KB).
+We can currently work comfortably with datasets up to about 50,000 rows (using rows containing 12
+fields of various types, about 1 KB of raw data). The most we've been able to load without running
+out of browser memory is 100,000 rows.
 
 ### Consistency
 
@@ -86,3 +89,5 @@ The UI should only retrieve what's needed to be displayed on the screen at any g
    - Merge DocSet and StorageFeed into single object
 2. Run store in worker
 3. Query API + paged datasets in AgGrid
+
+Note:

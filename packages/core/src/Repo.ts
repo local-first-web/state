@@ -2,7 +2,6 @@
 import debug from 'debug'
 import { EventEmitter } from 'events'
 // import hypercore from 'hypercore'
-// import db from 'random-access-idb'
 // import { getKeys } from './keys'
 import { ChangeSet, DocSetState } from './types'
 
@@ -132,8 +131,9 @@ export class Repo extends EventEmitter {
   async saveSnapshot(documentId: string, snapshot: any) {
     log('saveSnapshot', documentId, snapshot)
     const database = await this.openDb()
-    await database.add('snapshots', { documentId, snapshot })
+    await database.put('snapshots', { documentId, snapshot })
     database.close()
+    log('end saveSnapshot')
   }
 
   async getSnapshot(documentId: string) {
@@ -173,7 +173,7 @@ export class Repo extends EventEmitter {
       this.docSet.setDoc(docId, doc)
       const changes = A.getChanges(A.init(), doc)
       this.append({ docId, changes })
-      this.saveSnapshot(docId, initialState)
+      this.saveSnapshot(docId, initialState[docId])
     }
   }
 
