@@ -141,7 +141,7 @@ describe('Cevitxe', () => {
     })
 
     it('should persist state between sessions', async () => {
-      expect.assertions(3)
+      expect.assertions(2)
       const { close, localStoreManager, localStore, discoveryKey } = await open()
 
       // change something in the local store
