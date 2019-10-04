@@ -32,7 +32,6 @@ const DB_VERSION = 1
 export class Repo extends EventEmitter {
   private discoveryKey: string
   private databaseName: string
-  // private feed: Feed<string>
 
   public docSet: DocSet<any> = new DocSet()
   private log: debug.Debugger
@@ -55,7 +54,6 @@ export class Repo extends EventEmitter {
           keyPath: 'id',
           autoIncrement: true,
         })
-        feeds.createIndex('documentFeed', ['documentId', 'id'])
         feeds.createIndex('documentId', 'documentId')
 
         // snapshots
@@ -76,11 +74,7 @@ export class Repo extends EventEmitter {
 
   async getChangesets(documentId: string): Promise<ChangeSet[]> {
     const database = await this.openDb()
-    const items = await database.getAllFromIndex(
-      'feeds',
-      'documentFeed',
-      IDBKeyRange.bound([documentId], [documentId, []])
-    )
+    const items = await database.getAllFromIndex('feeds', 'documentId', documentId)
     database.close()
     return items
   }
@@ -132,9 +126,7 @@ export class Repo extends EventEmitter {
 
   async getSnapshot(documentId: string) {
     const database = await this.openDb()
-
     const { snapshot } = await database.get('snapshots', documentId)
-
     this.log('getSnapshot', documentId, snapshot)
     database.close()
     return snapshot
@@ -158,10 +150,13 @@ export class Repo extends EventEmitter {
     return state
   }
 
-  async getDocumentIds(objectStore: string) {
+  async getDocumentIds(objectStore: string = 'feeds') {
     this.log('getDocumentIds', objectStore)
+    const documentIds: string[] = []
     const database = await this.openDb()
-    const documentIds = await database.getAllKeysFromIndex(objectStore, 'documentId')
+    const index = database.transaction(objectStore).store.index('documentId')
+    for await (const cursor of index.iterate(undefined, 'nextunique'))
+      documentIds.push(cursor.value.documentId)
     this.log('documentIds', documentIds)
     return documentIds.map(documentId => documentId.toString())
   }
@@ -178,26 +173,21 @@ export class Repo extends EventEmitter {
   }
 
   private async getStateFromStorage() {
-    //const documentIds = await this.getDocumentIds('feeds')
-    const database = await this.openDb()
-    const index = database.transaction('feeds').store.index('documentId')
-    this.log('index', index)
-    for await (const cursor of index.iterate(undefined, 'nextunique')) {
-      this.log(cursor)
+    const documentIds = await this.getDocumentIds('feeds')
+    this.log('getting changesets from storage', documentIds)
+    for (const documentId of documentIds) {
+      const changeSets = await this.getChangesets(documentId)
+      for (const { isDelete, documentId, changes } of changeSets) {
+        this.log('applying changeset', { isDelete, documentId, changes })
+        if (isDelete) {
+          this.log('delete', documentId)
+          await this.removeSnapshot(documentId)
+          this.docSet.removeDoc(documentId)
+        } else {
+          this.docSet.applyChanges(documentId, changes)
+        }
+      }
     }
-    // this.log('getting changesets from storage', documentIds)
-    // for (const documentId of documentIds) {
-    //   this.log('documentId', documentId)
-    //   const changeSets = await this.getChangesets(documentId)
-    //   for (const { isDelete, documentId, changes } of changeSets) {
-    //     this.log('applying changeset', { isDelete, documentId, changes })
-    //     if (isDelete) {
-    //       this.log('delete', documentId)
-    //       await this.removeSnapshot(documentId)
-    //       this.docSet.removeDoc(documentId)
-    //     } else this.docSet.applyChanges(documentId, changes)
-    //   }
-    // }
     this.log('done rehydrating')
   }
 }
