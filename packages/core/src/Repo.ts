@@ -30,23 +30,38 @@ export type RepoEventHandler<T> = (documentId: string, doc: A.Doc<T>) => void
  * ```
  */
 export class Repo<T = any> extends EventEmitter {
-  private discoveryKey: string
-  private databaseName: string
-
   private log: debug.Debugger
 
-  // DocSet
-  private docs: Map<string, A.Doc<T>> // TODO: won't need this any more
+  /**
+   * The discovery key is a unique ID for this dataset, used to identify it when seeking peers with
+   * whom to synchronize. In the example apps we use randomly generated two-word names like
+   * `golden-lizard`. It could also be a UUID.
+   */
+  private discoveryKey: string
+
+  /**
+   * Name to distinguish this application's data from others that this browser might have stored;
+   * e.g. `grid` or `todos`.
+   */
+  private databaseName: string
+
+  /**
+   * In-memory map of document snapshots.
+   */
+  private state: RepoSnapshot<T>
+
+  /**
+   * Document change event listeners. Each handler fires every time a document is set or removed.
+   */
   private handlers: Set<RepoEventHandler<T>>
 
   constructor(discoveryKey: string, databaseName: string) {
     super()
     this.discoveryKey = discoveryKey
     this.databaseName = databaseName
-    this.log = debug(`cevitxe:repo:${this.databaseName}`)
+    this.log = debug(`cevitxe:repo:${databaseName}`)
 
-    // DocSet
-    this.docs = new Map()
+    this.state = {}
     this.handlers = new Set()
   }
 
@@ -60,45 +75,21 @@ export class Repo<T = any> extends EventEmitter {
   async init(initialState: any, creating: boolean): Promise<RepoSnapshot> {
     const hasData = await this.hasData()
     this.log('hasData', hasData)
-    let state: RepoSnapshot
     if (creating) {
       this.log('creating a new document')
-      state = initialState
-      await this.create(state)
+      this.state = initialState
+      await this.create()
     } else if (!hasData) {
       this.log(`joining a peer's document for the first time`)
-      state = {}
-      await this.create(state)
+      this.state = {}
+      await this.create()
     } else {
       this.log('recovering an existing document from persisted state')
       // TODO: do we need to wait on this?
-      await this.getStateFromStorage()
-      state = await this.getFullSnapshot()
+      await this.rebuildSnapshotsFromHistory()
     }
     this.emit('ready')
-    return state
-  }
-
-  /**
-   * Adds a set of changes to the append-only feed.
-   * @param changeSet
-   */
-  async appendChangeset(changeSet: ChangeSet) {
-    const database = await this.openDB()
-    await database.add('feeds', changeSet)
-    database.close()
-  }
-
-  /**
-   * Gets all changesets for a given document.
-   * @param documentId The ID of the requested document.
-   * @returns An array of changesets in order of application.
-   */
-  private async getChangesets(documentId: string): Promise<ChangeSet[]> {
-    const database = await this.openDB()
-    const items = await database.getAllFromIndex('feeds', 'documentId', documentId)
-    database.close()
-    return items
+    return this.state
   }
 
   /**
@@ -112,17 +103,40 @@ export class Repo<T = any> extends EventEmitter {
   }
 
   /**
+   * Adds a set of changes to the document's append-only history.
+   * @param changeSet
+   */
+  async appendChangeset(changeSet: ChangeSet) {
+    const database = await this.openDB()
+    await database.add('feeds', changeSet)
+    database.close()
+  }
+
+  /**
+   * Gets all stored changesets from a document's history.
+   * @param documentId The ID of the requested document.
+   * @returns An array of changesets in order of application.
+   */
+  private async getChangesets(documentId: string): Promise<ChangeSet[]> {
+    const database = await this.openDB()
+    const items = await database.getAllFromIndex('feeds', 'documentId', documentId)
+    database.close()
+    return items
+  }
+
+  /**
    * Saves the given object as a snapshot for the given `documentId`, replacing any existing
    * snapshot.
    * @param documentId
    * @param snapshot
    */
-  async saveSnapshot(documentId: string, snapshot: any) {
-    this.log('saveSnapshot', documentId, snapshot)
+  async saveSnapshot(documentId: string, document: any) {
+    this.log('saveSnapshot', documentId, document)
+    const snapshot = { ...document } // clone without Automerge metadata
+    this.state[documentId] = snapshot
     const database = await this.openDB()
     await database.put('snapshots', { documentId, snapshot })
     database.close()
-    this.log('end saveSnapshot')
   }
 
   /**
@@ -134,7 +148,7 @@ export class Repo<T = any> extends EventEmitter {
     const database = await this.openDB()
     const { snapshot } = await database.get('snapshots', documentId)
     this.log('getSnapshot', documentId, snapshot)
-    // TODO: if this doesn't exist, create it
+    this.state[documentId] = snapshot
     database.close()
     return snapshot
   }
@@ -151,25 +165,10 @@ export class Repo<T = any> extends EventEmitter {
   }
 
   /**
-   * @returns Returns a snapshot of the repo's entire state
-   */
-  async getFullSnapshot() {
-    const documentIds = await this.getDocumentIds('snapshots')
-    const state = {} as any
-    let documentId: string
-    for (documentId of documentIds) {
-      state[documentId] = await this.getSnapshot(documentId)
-    }
-    this.log('getFullSnapshot', state)
-    return state
-  }
-
-  /**
    * Gets a list of the IDs of all documents recorded in the repo.
    * @param [objectStore]
    * @returns
    */
-  // TODO: what is the real source of truth? should we even be exposing an alternative list?
   async getDocumentIds(objectStore: string = 'feeds') {
     this.log('getDocumentIds', objectStore)
     const documentIds: string[] = []
@@ -212,72 +211,106 @@ export class Repo<T = any> extends EventEmitter {
    * Creates a new repo with the given initial state
    * @param initialState
    */
-  private async create(initialState: any) {
-    this.log('creating new store %o', initialState)
-    for (let documentId in initialState) {
-      const document = A.from(initialState[documentId])
+  private async create() {
+    for (let documentId in this.state) {
+      const document = A.from(this.state[documentId])
       this.setDoc(documentId, document)
-      const changes = A.getChanges(A.init(), document)
-      await this.appendChangeset({ documentId, changes })
-      await this.saveSnapshot(documentId, initialState[documentId])
     }
   }
 
   /**
-   * Rehydrates the repo's state from storage
+   * Loads all the repo's snapshots into memory
    */
-  // TODO: We'll want to keep part of this that applies deletes, but since we're not loading into
-  // memory any more the rest will be redundant
-  private async getStateFromStorage() {
+  private async rebuildSnapshotsFromHistory() {
     const documentIds = await this.getDocumentIds('feeds')
     this.log('getting changesets from storage', documentIds)
-    for (const documentId of documentIds) {
-      const changeSets = await this.getChangesets(documentId)
-      for (const { isDelete, documentId, changes } of changeSets) {
-        this.log('applying changeset', { isDelete, documentId, changes })
-        if (isDelete) {
-          this.log('delete', documentId)
-          await this.removeSnapshot(documentId)
-          this.removeDoc(documentId)
-        } else {
-          this.applyChanges(documentId, changes)
-        }
-      }
-    }
-    this.log('done rehydrating')
+    for (const documentId of documentIds) this.getDoc(documentId)
   }
 
-  // DocSet
-
-  //-> getDocumentIDs
+  /**
+   * Returns all of the repo's document IDs from memory.
+   * Note: This does not include deleted documents
+   */
   get documentIds() {
-    return this.docs.keys()
+    return Object.keys(this.state)
   }
 
-  getDoc(documentId: string) {
-    return this.docs.get(documentId)
-  }
-
-  removeDoc(documentId: string) {
-    this.docs.delete(documentId)
-  }
-
-  setDoc(documentId: string, doc: A.Doc<T>) {
-    this.docs = this.docs.set(documentId, doc)
-    this.handlers.forEach(handler => handler(documentId, doc))
-  }
-
-  applyChanges(documentId: string, changes: A.Change[]) {
-    let doc = this.docs.get(documentId) || A.init()
-    doc = A.applyChanges(doc, changes)
-    this.setDoc(documentId, doc)
+  /**
+   * Reconstitutes an Automerge document from its change history
+   * @param documentId
+   */
+  async getDoc(documentId: string) {
+    const doc = A.init<T>()
+    const changeSets = await this.getChangesets(documentId)
+    for (const { changes, isDelete } of changeSets) //
+      if (changes) A.applyChanges(doc, changes)
+      else if (isDelete) this.removeDoc(documentId)
     return doc
   }
 
+  /**
+   * Removes a document from our in-memory state, and deletes its snapshot. (The change history of a
+   * document is never deleted, in case it's undeleted at some point.)
+   * @param documentId The ID of the document
+   */
+  removeDoc(documentId: string) {
+    delete this.state.documentId
+    this.removeSnapshot(documentId)
+  }
+
+  /**
+   * Saves the document's change history and snapshot, and updates our in-memory state.
+   * @param documentId The ID of the document
+   * @param doc The new version of the document
+   * @param changes (optional) If we're already given the changes (e.g. in `applyChanges`), we can
+   * pass them in so we don't have to recalculate them.
+   */
+  setDoc(documentId: string, doc: A.Doc<T>, changes?: A.Change[]) {
+    if (!changes) {
+      // look up old doc and generate diff
+      const oldDoc = this.getDoc(documentId)
+      changes = A.getChanges(A.init(), oldDoc)
+    }
+
+    // append changes to this document's history
+    this.appendChangeset({ documentId, changes })
+
+    // save snapshot
+    this.saveSnapshot(documentId, doc)
+
+    // call handlers
+    this.handlers.forEach(handler => handler(documentId, doc))
+  }
+
+  /**
+   * Updates a document using a set of Automerge changes (typically received from a peer).
+   * @param documentId The ID of the document
+   * @param changes A diff in the form of an array of Automerge change objects
+   * @returns The updated document
+   */
+  async applyChanges(documentId: string, changes: A.Change[]) {
+    // apply changes to document
+    let doc = await this.getDoc(documentId)
+    doc = A.applyChanges(doc, changes)
+
+    // save the new document
+    this.setDoc(documentId, doc, changes)
+
+    // return the modified document
+    return doc
+  }
+
+  /**
+   * Adds a change event listener
+   * @param handler
+   */
   registerHandler(handler: RepoEventHandler<T>) {
     this.handlers.add(handler)
   }
 
+  /**
+   * Removes a change event listener
+   */
   unregisterHandler(handler: RepoEventHandler<T>) {
     this.handlers.delete(handler)
   }
