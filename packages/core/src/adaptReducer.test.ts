@@ -1,5 +1,5 @@
 import { adaptReducer } from './adaptReducer'
-import { repoFromObject } from './docSetHelpers'
+import { repoFromObject } from './repoHelpers'
 import { ProxyReducer } from './types'
 
 describe('adaptReducer', () => {

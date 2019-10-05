@@ -14,7 +14,7 @@ const log = debug('cevitxe:connection')
  * networking stack and with the Redux store.
  */
 export class Connection<T = any> extends EventEmitter {
-  private docSetSync: RepoSync
+  private repoSync: RepoSync
   private peerSocket: WebSocket | null
   private dispatch?: Dispatch<AnyAction>
   private repo: Repo<any>
@@ -28,15 +28,15 @@ export class Connection<T = any> extends EventEmitter {
 
     this.peerSocket.onmessage = this.receive.bind(this)
 
-    this.docSetSync = new RepoSync(this.repo, this.send)
-    this.docSetSync.open()
+    this.repoSync = new RepoSync(this.repo, this.send)
+    this.repoSync.open()
   }
 
   receive = ({ data }: any) => {
     const message = JSON.parse(data.toString())
     log('receive %o', message)
     this.emit('receive', message)
-    this.docSetSync.receive(message) // this updates the doc
+    this.repoSync.receive(message) // this updates the doc
     if (message.changes) {
       log('%s changes received', message.changes.length)
       if (this.dispatch) {

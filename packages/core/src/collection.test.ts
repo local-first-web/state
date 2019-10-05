@@ -1,6 +1,6 @@
 import { adaptReducer } from './adaptReducer'
 import { collection } from './collection'
-import { repoFromObject } from './docSetHelpers'
+import { repoFromObject } from './repoHelpers'
 import { ProxyReducer } from './types'
 
 describe('collections', () => {
