@@ -72,7 +72,6 @@ export class StoreManager<T> extends EventEmitter {
     const state = await this.feed.init(this.initialState, isCreating, this.docSet)
 
     // Create Redux store
-    // const state = docSetToObject(this.docSet)
     const reducer = adaptReducer(this.proxyReducer, this.docSet)
     const cevitxeMiddleware = getMiddleware(this.feed, this.docSet, this.proxyReducer)
     const enhancer = composeWithDevTools(applyMiddleware(...this.middlewares, cevitxeMiddleware))
