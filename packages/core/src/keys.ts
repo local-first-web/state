@@ -1,6 +1,4 @@
-import { Keychain, KeyPair } from './types'
-import hypercoreCrypto from 'hypercore-crypto'
-import { MSG_INVALID_KEYS } from './constants'
+import { Keychain } from './types'
 
 const keychainId = (databaseName: string) => `cevitxe/${databaseName}/keychain`
 
@@ -9,10 +7,7 @@ const keychainId = (databaseName: string) => `cevitxe/${databaseName}/keychain`
 export const getKeys = (databaseName: string, discoveryKey: string) => {
   const keychain = getKeychain(databaseName)
   // use existing keys or generate new pair
-  const keys = keychain[discoveryKey] || keyPair()
-
-  // make sure it's a good pair
-  if (!validateKeys(keys)) throw new Error(MSG_INVALID_KEYS)
+  const keys = keychain[discoveryKey] || {} // keyPair()
 
   // put whatever we ended up with back in local storage
   keychain[discoveryKey] = keys
@@ -36,13 +31,20 @@ const saveKeychain = (databaseName: string, keychain: Keychain) => {
   localStorage.setItem(keychainId(databaseName), JSON.stringify(keychain))
 }
 
-const validateKeys = ({ key, secretKey }: Partial<KeyPair>) =>
-  key && secretKey && key.length === 64 && secretKey.length === 128
-
-const keyPair = (): KeyPair => {
-  const { publicKey, secretKey } = hypercoreCrypto.keyPair()
-  return {
-    key: publicKey.toString('hex'),
-    secretKey: secretKey.toString('hex'),
-  }
-}
+// TODO - reimplement encryption at rest?
+// const keyPair = async (): Promise<KeyPair> => {
+// const { publicKey, privateKey } = await crypto.subtle.generateKey(
+//   {
+//     name: 'RSA-OAEP',
+//     modulusLength: 4096,
+//     publicExponent: new Uint8Array([1, 0, 1]),
+//     hash: 'SHA-256',
+//   },
+//   true,
+//   ['encrypt', 'decrypt']
+// )
+// return {
+//   key: publicKey,
+//   secretKey: privateKey,
+// }
+// }

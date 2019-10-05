@@ -43,8 +43,8 @@ export interface Keychain {
 }
 
 export interface KeyPair {
-  key: string
-  secretKey: string
+  key: CryptoKey
+  secretKey: CryptoKey
 }
 
 export interface Message {
