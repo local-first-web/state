@@ -23,7 +23,7 @@ EventEmitter.defaultMaxListeners = 500
 A.uuid.setFactory(cuid)
 
 /**
- * A StoreManager generates a Redux store with persistence (via hypercore), networking (via
+ * A StoreManager generates a Redux store with persistence (via the Repo class), networking (via
  * cevitxe-signal-client), and magical synchronization with peers (via automerge)
  */
 export class StoreManager<T> extends EventEmitter {
