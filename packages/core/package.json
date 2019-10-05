@@ -24,8 +24,6 @@
     "cevitxe-signal-client": "0",
     "cuid": "2",
     "debug": "4",
-    "hypercore": "7",
-    "hypercore-crypto": "1",
     "idb": "herbcaudill/idb",
     "immutable": "4.0.0-rc.12"
   },
