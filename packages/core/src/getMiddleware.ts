@@ -77,7 +77,7 @@ export const getMiddleware: MiddlewareFactory = (repo, proxyReducer) => {
     log(`before writing to feed`, getMemUsage())
     // write any changes to the feed
     for (const changeSet of changeSets) {
-      repo.append(changeSet)
+      repo.appendChangeset(changeSet)
     }
     log(`after writing to feed`, getMemUsage())
 
