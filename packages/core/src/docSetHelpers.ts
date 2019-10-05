@@ -1,19 +1,27 @@
 import A from 'automerge'
-import { DocSetState } from 'types'
-import { DocSet } from './DocSet'
+import { RepoSnapshot } from 'types'
+import { Repo } from './Repo'
 
-export const docSetToObject = <T = any>(docSet: DocSet<T>): DocSetState<T> => {
+/**
+ * DEPRECATED
+ * Use Repo.getFullSnapshot
+ */
+export const repoToObject = <T = any>(repo: Repo<T>): RepoSnapshot<T> => {
   const result = {} as any
-  for (let documentId of docSet.documentIds) {
-    result[documentId] = docSet.getDoc(documentId)
+  for (let documentId of repo.documentIds) {
+    result[documentId] = repo.getDoc(documentId)
   }
   return result
 }
 
-export const docSetFromObject = (obj: any): DocSet<any> => {
-  const docSet = new DocSet<any>()
+/**
+ * DEPRECATED
+ * This is only used in tests
+ */
+export const repoFromObject = (obj: any): Repo<any> => {
+  const repo = new Repo<any>('test', 'test')
   for (let documentId of Object.getOwnPropertyNames(obj)) {
-    docSet.setDoc(documentId, A.from(obj[documentId]))
+    repo.setDoc(documentId, A.from(obj[documentId]))
   }
-  return docSet
+  return repo
 }

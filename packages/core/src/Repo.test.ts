@@ -1,50 +1,50 @@
 ﻿import A from 'automerge'
-import { DocSet, DocSetHandler } from './DocSet'
+import { Repo, RepoEventHandler } from './Repo'
 
-describe('DocSet', () => {
+describe('Repo', () => {
   let beforeDoc: A.Doc<any>
   let afterDoc: A.Doc<any>
-  let docSet: DocSet
+  let repo: Repo
   let changes: A.Change[]
-  let callback: DocSetHandler<any>
+  let callback: RepoEventHandler<any>
   const ID = '1'
 
   beforeEach(() => {
     beforeDoc = A.change(A.init(), doc => (doc.birds = ['goldfinch']))
     afterDoc = A.change(beforeDoc, doc => (doc.birds = ['swallows']))
     changes = A.getChanges(beforeDoc, afterDoc)
-    docSet = new DocSet()
-    docSet.setDoc(ID, beforeDoc)
+    repo = new Repo('test', 'test')
+    repo.setDoc(ID, beforeDoc)
     callback = jest.fn((documentId, doc) => {})
-    docSet.registerHandler(callback)
+    repo.registerHandler(callback)
   })
 
-  it('should have a document inside the docset', () => {
-    expect(docSet.getDoc(ID)).toEqual(beforeDoc)
+  it('should have a document inside the repo', () => {
+    expect(repo.getDoc(ID)).toEqual(beforeDoc)
   })
 
   it('should call the handler via set', () => {
-    docSet.setDoc(ID, afterDoc)
+    repo.setDoc(ID, afterDoc)
     expect(callback).toBeCalledTimes(1)
     expect(callback).toBeCalledWith(ID, afterDoc)
-    expect(docSet.getDoc(ID)).toEqual(afterDoc)
+    expect(repo.getDoc(ID)).toEqual(afterDoc)
   })
 
   it('should call the handler via applyChanges', () => {
-    docSet.applyChanges(ID, changes)
+    repo.applyChanges(ID, changes)
     expect(callback).toBeCalledTimes(1)
     expect(callback).toBeCalledWith(ID, afterDoc)
-    expect(docSet.getDoc(ID)).toEqual(afterDoc)
+    expect(repo.getDoc(ID)).toEqual(afterDoc)
   })
 
   it('should allow removing the handler', () => {
-    docSet.unregisterHandler(callback)
-    docSet.applyChanges(ID, changes)
+    repo.unregisterHandler(callback)
+    repo.applyChanges(ID, changes)
     expect(callback).not.toBeCalled()
   })
 
   it('should allow removing a document', () => {
-    docSet.removeDoc(ID)
-    expect(docSet.getDoc(ID)).toBe(undefined)
+    repo.removeDoc(ID)
+    expect(repo.getDoc(ID)).toBe(undefined)
   })
 })

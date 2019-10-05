@@ -2,11 +2,10 @@
 import debug from 'debug'
 import { EventEmitter } from 'events'
 import * as idb from 'idb/with-async-ittr-cjs'
-import { DocSet } from './DocSet'
-import { ChangeSet, DocSetState } from './types'
+import { ChangeSet, RepoSnapshot } from './types'
 
 const DB_VERSION = 1
-type DocSetHandler<T> = (documentId: string, doc: A.Doc<T>) => void
+export type RepoEventHandler<T> = (documentId: string, doc: A.Doc<T>) => void
 
 /**
  *
@@ -34,12 +33,11 @@ export class Repo<T = any> extends EventEmitter {
   private discoveryKey: string
   private databaseName: string
 
-  public docSet: DocSet<any> = new DocSet()
   private log: debug.Debugger
 
   // DocSet
   private docs: Map<string, A.Doc<T>>
-  private handlers: Set<DocSetHandler<T>>
+  private handlers: Set<RepoEventHandler<T>>
 
   constructor(discoveryKey: string, databaseName: string) {
     super()
@@ -92,15 +90,10 @@ export class Repo<T = any> extends EventEmitter {
     return count > 0
   }
 
-  init = async (
-    initialState: any,
-    creating: boolean,
-    docSet: DocSet<any>
-  ): Promise<DocSetState> => {
+  init = async (initialState: any, creating: boolean): Promise<RepoSnapshot> => {
     const hasData = await this.hasData()
     this.log('hasData', hasData)
-    this.docSet = docSet
-    let state: DocSetState
+    let state: RepoSnapshot
     if (creating) {
       this.log('creating a new document')
       state = initialState
@@ -172,7 +165,7 @@ export class Repo<T = any> extends EventEmitter {
     this.log('creating new store %o', initialState)
     for (let documentId in initialState) {
       const document = A.from(initialState[documentId])
-      this.docSet.setDoc(documentId, document)
+      this.setDoc(documentId, document)
       const changes = A.getChanges(A.init(), document)
       await this.append({ documentId, changes })
       await this.saveSnapshot(documentId, initialState[documentId])
@@ -189,9 +182,9 @@ export class Repo<T = any> extends EventEmitter {
         if (isDelete) {
           this.log('delete', documentId)
           await this.removeSnapshot(documentId)
-          this.docSet.removeDoc(documentId)
+          this.removeDoc(documentId)
         } else {
-          this.docSet.applyChanges(documentId, changes)
+          this.applyChanges(documentId, changes)
         }
       }
     }
@@ -224,11 +217,11 @@ export class Repo<T = any> extends EventEmitter {
     return doc
   }
 
-  registerHandler(handler: DocSetHandler<T>) {
+  registerHandler(handler: RepoEventHandler<T>) {
     this.handlers.add(handler)
   }
 
-  unregisterHandler(handler: DocSetHandler<T>) {
+  unregisterHandler(handler: RepoEventHandler<T>) {
     this.handlers.delete(handler)
   }
 }

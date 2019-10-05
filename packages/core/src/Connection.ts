@@ -2,33 +2,33 @@ import debug from 'debug'
 import { EventEmitter } from 'events'
 import { AnyAction, Dispatch } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
-import { DocSet } from './DocSet'
-import { DocSetSync } from './DocSetSync'
+import { Repo } from './Repo'
+import { RepoSync } from './RepoSync'
 import { Message } from './types'
 
 const log = debug('cevitxe:connection')
 
 /**
  * A `Connection` keeps one local document synchronized with one peer's replica of the same
- * document. It uses `DocumentSync` for the synchronization logic, and integrates it with Cevitxe's
+ * document. It uses `RepoSync` for the synchronization logic, and integrates it with Cevitxe's
  * networking stack and with the Redux store.
  */
 export class Connection<T = any> extends EventEmitter {
-  private docSetSync: DocSetSync
+  private docSetSync: RepoSync
   private peerSocket: WebSocket | null
   private dispatch?: Dispatch<AnyAction>
-  private docSet: DocSet<any>
+  private repo: Repo<any>
 
-  constructor(docSet: DocSet<any>, peerSocket: WebSocket, dispatch?: Dispatch<AnyAction>) {
+  constructor(repo: Repo<any>, peerSocket: WebSocket, dispatch?: Dispatch<AnyAction>) {
     super()
     log('new connection')
-    this.docSet = docSet
+    this.repo = repo
     this.peerSocket = peerSocket
     if (dispatch) this.dispatch = dispatch
 
     this.peerSocket.onmessage = this.receive.bind(this)
 
-    this.docSetSync = new DocSetSync(this.docSet, this.send) // TODAY: replace with repo
+    this.docSetSync = new RepoSync(this.repo, this.send)
     this.docSetSync.open()
   }
 

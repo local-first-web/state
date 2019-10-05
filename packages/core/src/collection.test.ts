@@ -1,6 +1,6 @@
 import { adaptReducer } from './adaptReducer'
 import { collection } from './collection'
-import { docSetFromObject } from './docSetHelpers'
+import { repoFromObject } from './docSetHelpers'
 import { ProxyReducer } from './types'
 
 describe('collections', () => {
@@ -51,15 +51,15 @@ describe('collections', () => {
   describe('reducers', () => {
     const setupEmpty = () => {
       let state = {}
-      const docSet = docSetFromObject({})
-      const reducer = adaptReducer(proxyReducer, docSet)
+      const repo = repoFromObject({})
+      const reducer = adaptReducer(proxyReducer, repo)
       return { state, reducer }
     }
 
     const setupWithOneTeacher = () => {
       let state = {}
-      const docSet = docSetFromObject(state)
-      const reducer = adaptReducer(proxyReducer, docSet)
+      const repo = repoFromObject(state)
+      const reducer = adaptReducer(proxyReducer, repo)
       const action = { type: 'ADD_TEACHER', payload: teacher1 }
       state = reducer({}, action)
       return { state, reducer }
@@ -128,8 +128,8 @@ describe('collections', () => {
   describe('selectors', () => {
     const setupTeachers = () => {
       let state = {}
-      const docSet = docSetFromObject(state)
-      const reducer = adaptReducer(proxyReducer, docSet)
+      const repo = repoFromObject(state)
+      const reducer = adaptReducer(proxyReducer, repo)
       const addAction = {
         type: 'ADD_TEACHER',
         payload: [
@@ -144,8 +144,8 @@ describe('collections', () => {
 
     const setupTeachersAndStudents = () => {
       let state = {}
-      const docSet = docSetFromObject(state)
-      const reducer = adaptReducer(proxyReducer, docSet)
+      const repo = repoFromObject(state)
+      const reducer = adaptReducer(proxyReducer, repo)
       state = reducer(state, {
         type: 'ADD_TEACHER',
         payload: [
@@ -254,7 +254,7 @@ describe('collections', () => {
   })
 
   // describe('deleteCollectionItems', () => {
-  //   const docSet = docSetFromObject({
+  //   const repo = docSetFromObject({
   //     teachers: {
   //       1: true,
   //       2: true,
@@ -273,8 +273,8 @@ describe('collections', () => {
   //   })
 
   //   it('should remove all items listed in index', () => {
-  //     deleteCollectionItems(docSet, 'teachers')
-  //     expect(docSetToObject(docSet)).toEqual({
+  //     deleteCollectionItems(repo, 'teachers')
+  //     expect(docSetToObject(repo)).toEqual({
   //       teachers: {
   //         1: false,
   //         2: false,
@@ -292,7 +292,7 @@ describe('collections', () => {
   // })
 
   // describe('purgeDeletedCollectionItems', () => {
-  //   const docSet = docSetFromObject({
+  //   const repo = docSetFromObject({
   //     teachers: {
   //       1: true,
   //       2: false,
@@ -311,8 +311,8 @@ describe('collections', () => {
   //   })
 
   //   it('should remove all docs marked as deleted in the index', () => {
-  //     purgeDeletedCollectionItems(docSet, 'teachers')
-  //     expect(docSetToObject(docSet)).toEqual({
+  //     purgeDeletedCollectionItems(repo, 'teachers')
+  //     expect(docSetToObject(repo)).toEqual({
   //       teachers: {
   //         1: true,
   //         2: false,

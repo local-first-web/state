@@ -1,7 +1,7 @@
 import A from 'automerge'
 import { DELETE_COLLECTION } from './constants'
-import { DocSet } from './DocSet'
-import { ChangeMap, DocSetState } from './types'
+import { ChangeMap, RepoSnapshot } from './types'
+import { Repo } from 'Repo'
 
 export interface CollectionOptions {
   idField?: string
@@ -16,7 +16,7 @@ export interface CollectionOptions {
  * multi-document state from the developer.
  *
  * Each of the reducers (`add`, `remove`, etc.) returns a dictionary of ProxyReducer functions or
- * flags for modifying the docset and/or one or many docs.
+ * flags for modifying the repo and/or one or many docs.
  *
  * Here's how this might be used in a reducer:
  * ```ts
@@ -44,8 +44,8 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
   /**
    * ## How collections are stored
    *
-   * Multiple collections can be stored side-by-side in a single `DocSet`, with each item as an
-   * individual root-level Automerge document. So a `DocSet` might look something like this:
+   * Multiple collections can be stored side-by-side in a single `Repo`, with each item as an
+   * individual root-level Automerge document. So a `Repo` might look something like this:
    * ```ts
    * {
    *   '::teachers::abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill' },
@@ -103,7 +103,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * Returns all keys for the collection when given the current redux state.
    * @param state The plain JSON representation of the state.
    */
-  function* keys(state: DocSetState<T>, { includeDeleted = false } = {}) {
+  function* keys(state: RepoSnapshot<T>, { includeDeleted = false } = {}) {
     for (const key in state || {})
       if (isCollectionKey(key) && (includeDeleted || !(state as any)[key][DELETED])) yield key
   }
@@ -112,7 +112,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * Given the redux state, returns an array containing all items in the collection.
    * @param state The plain JSON representation of the state.
    */
-  const getAll = (state: DocSetState<T> = {}) => {
+  const getAll = (state: RepoSnapshot<T> = {}) => {
     let result = []
     for (const key of keys(state)) result.push(state[key])
     return result
@@ -122,7 +122,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * Given the redux state, returns a map keying each item in the collection to its `id`.
    * @param state The plain JSON representation of the state.
    */
-  const getMap = (state: DocSetState<T> = {}): DocSetState<T> => {
+  const getMap = (state: RepoSnapshot<T> = {}): RepoSnapshot<T> => {
     let result = {} as any
     for (const key of keys(state)) result[keyToId(key)] = state[key]
     return result
@@ -132,7 +132,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * Returns the number of items in the collection when given the redux state.
    * @param state The plain JSON representation of the state.
    */
-  const count = (state: DocSetState<T> = {}) => {
+  const count = (state: RepoSnapshot<T> = {}) => {
     let i = 0
     for (const _ of keys(state)) i++
     return i
@@ -140,15 +140,15 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
 
   /**
    * Marks all items in the collection as deleted. PRIVATE.
-   * @param docSet
+   * @param repo
    */
-  const removeAll = (docSet: DocSet<any>) => {
-    for (const documentId of docSet.documentIds) {
+  const removeAll = (repo: Repo<any>) => {
+    for (const documentId of repo.documentIds) {
       if (isCollectionKey(documentId)) {
-        const doc = docSet.getDoc(documentId)
+        const doc = repo.getDoc(documentId)
         if (doc && !doc[DELETED]) {
           const deletedDoc = A.change(doc, setDeleteFlag)
-          docSet.setDoc(documentId, deletedDoc)
+          repo.setDoc(documentId, deletedDoc)
         }
       }
     }

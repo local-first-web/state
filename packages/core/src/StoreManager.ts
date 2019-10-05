@@ -8,11 +8,10 @@ import { composeWithDevTools } from 'redux-devtools-extension'
 import { adaptReducer } from './adaptReducer'
 import { Connection } from './Connection'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
-import { DocSet } from './DocSet'
 import { getMiddleware } from './getMiddleware'
 import { getKnownDiscoveryKeys } from './keys'
 import { Repo } from './Repo'
-import { DocSetState, ProxyReducer, StoreManagerOptions } from './types'
+import { RepoSnapshot, ProxyReducer, StoreManagerOptions } from './types'
 
 let log = debug('cevitxe:StoreManager')
 
@@ -29,13 +28,12 @@ A.uuid.setFactory(cuid)
  */
 export class StoreManager<T> extends EventEmitter {
   private proxyReducer: ProxyReducer
-  private initialState: DocSetState<T>
+  private initialState: RepoSnapshot<T>
   private urls: string[]
   private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
 
   private clientId = newid()
   private repo?: Repo
-  private docSet?: DocSet<T>
 
   public connections: { [peerId: string]: Connection }
   public databaseName: string
@@ -66,14 +64,13 @@ export class StoreManager<T> extends EventEmitter {
 
     this.repo = new Repo(discoveryKey, this.databaseName)
 
-    this.docSet = new DocSet<T>()
-    this.docSet.registerHandler(this.onChange)
+    this.repo.registerHandler(this.onChange)
 
-    const state = await this.repo.init(this.initialState, isCreating, this.docSet)
+    const state = await this.repo.init(this.initialState, isCreating)
 
     // Create Redux store
-    const reducer = adaptReducer(this.proxyReducer, this.docSet)
-    const cevitxeMiddleware = getMiddleware(this.repo, this.docSet, this.proxyReducer)
+    const reducer = adaptReducer(this.proxyReducer, this.repo)
+    const cevitxeMiddleware = getMiddleware(this.repo, this.proxyReducer)
     const enhancer = composeWithDevTools(applyMiddleware(...this.middlewares, cevitxeMiddleware))
     this.store = createStore(reducer, state, enhancer)
 
@@ -100,12 +97,12 @@ export class StoreManager<T> extends EventEmitter {
   }
 
   private addPeer = (peer: Peer, discoveryKey: string) => {
-    if (!this.store || !this.docSet) return
+    if (!this.store || !this.repo) return
     log('connecting to peer', peer.id)
 
     // For each peer that wants to connect, create a Connection object
     const socket = peer.get(discoveryKey)
-    const connection = new Connection(this.docSet, socket, this.store.dispatch)
+    const connection = new Connection(this.repo, socket, this.store.dispatch)
     this.connections[peer.id] = connection
     this.emit('peer', peer) // hook for testing
     log('connected to peer', peer.id)

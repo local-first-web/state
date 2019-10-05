@@ -1,7 +1,6 @@
 import A from 'automerge'
 import { AnyAction, Middleware, Store } from 'redux'
-import { DocSet } from './DocSet'
-import { DocSetSync } from './DocSetSync'
+import { RepoSync } from './RepoSync'
 import { Repo } from './Repo'
 
 export type ProxyReducer = (state: any, action: AnyAction) => ChangeMap | null
@@ -16,7 +15,7 @@ export interface StoreManagerOptions<T> {
   /** Redux middlewares to add to the store. */
   middlewares?: Middleware[]
   /** The starting state of a blank document. */
-  initialState: DocSetState<T>
+  initialState: RepoSnapshot<T>
   /** A name for the storage feed, to distinguish this application's data from any other Cevitxe data stored on the same machine. */
   databaseName: string
   /** The address(es) of one or more signal servers to try. */
@@ -30,7 +29,6 @@ export interface CreateStoreResult {
 
 export type MiddlewareFactory = (
   feed: Repo,
-  docSet: DocSet<any>,
   proxyReducer: ProxyReducer,
   discoveryKey?: string
 ) => Middleware
@@ -57,15 +55,15 @@ export interface Message {
 
 export interface ReceiveMessagePayload {
   message: Message
-  connection: DocSetSync
+  connection: RepoSync
 }
 
 /**
- * `DocSetState` is a plain JavaScript representation of a DocSet. It is an object, each property of
- * which is also an object; so any primitive values or arrays need to be nested a couple of levels
- * in.
+ * `RepoSnapshot` is a plain JavaScript representation of a repo's contents. It is an object, each
+ * property of which is also an object; so any primitive values or arrays need to be nested a couple
+ * of levels in.
  */
-export interface DocSetState<T = any> {
+export interface RepoSnapshot<T = any> {
   [documentId: string]: A.Doc<T>
 }
 

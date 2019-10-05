@@ -1,6 +1,6 @@
 ﻿import A from 'automerge'
-import { DocSet } from './DocSet'
-import { DocSetSync } from './DocSetSync'
+import { Repo } from './Repo'
+import { RepoSync } from './RepoSync'
 import { Message } from './types'
 import { TestChannel } from './lib/TestChannel'
 
@@ -12,14 +12,14 @@ const documentId = 'myDoc'
 
 const makeConnection = (
   discoveryKey: string,
-  docSet: DocSet<BirdCount | undefined>,
+  repo: Repo<BirdCount | undefined>,
   channel: TestChannel
 ) => {
   const send = (msg: Message) => {
     channel.write(discoveryKey, msg)
   }
 
-  const connection = new DocSetSync(docSet, send)
+  const connection = new RepoSync(repo, send)
   channel.on('data', (peer_id, msg) => {
     if (peer_id === discoveryKey) return // ignore messages that we sent
     connection.receive(msg)
@@ -31,13 +31,13 @@ const makeConnection = (
 
 describe(`DocumentSync`, () => {
   describe('Changes after connecting', () => {
-    let localDocSet: DocSet<BirdCount | undefined>
-    let remoteDocSet: DocSet<BirdCount | undefined>
+    let localDocSet: Repo<BirdCount | undefined>
+    let remoteDocSet: Repo<BirdCount | undefined>
 
     beforeEach(() => {
-      localDocSet = new DocSet<BirdCount | undefined>()
+      localDocSet = new Repo<BirdCount | undefined>('test', 'test')
       localDocSet.setDoc(documentId, A.from({ swallows: 1 }, 'L'))
-      remoteDocSet = new DocSet<BirdCount | undefined>()
+      remoteDocSet = new Repo<BirdCount | undefined>('test', 'test')
       remoteDocSet.setDoc(documentId, A.from({}, 'R'))
 
       const channel = new TestChannel()
@@ -103,14 +103,14 @@ describe(`DocumentSync`, () => {
 
   describe('Changes before connecting', () => {
     it('should sync after the fact', () => {
-      const localDocSet = new DocSet<BirdCount | undefined>()
+      const localDocSet = new Repo<BirdCount | undefined>('test', 'test')
       localDocSet.setDoc(documentId, A.from({}, 'L'))
 
       let localDoc = localDocSet.getDoc(documentId)
       localDoc = A.change(localDoc, doc => (doc.wrens = 2))
       localDocSet.setDoc(documentId, localDoc)
 
-      const remoteDocSet = new DocSet<BirdCount | undefined>()
+      const remoteDocSet = new Repo<BirdCount | undefined>('test', 'test')
       remoteDocSet.setDoc(documentId, A.from({}, 'R'))
 
       const channel = new TestChannel()
@@ -126,10 +126,10 @@ describe(`DocumentSync`, () => {
   })
 
   describe('Intermittent connection', () => {
-    let localConnection: DocSetSync
-    let remoteConnection: DocSetSync
-    let localDocSet: DocSet<BirdCount | undefined>
-    let remoteDocSet: DocSet<BirdCount | undefined>
+    let localConnection: RepoSync
+    let remoteConnection: RepoSync
+    let localDocSet: Repo<BirdCount | undefined>
+    let remoteDocSet: Repo<BirdCount | undefined>
     let channel = new TestChannel()
 
     function networkOff() {
@@ -145,9 +145,9 @@ describe(`DocumentSync`, () => {
     }
 
     beforeEach(() => {
-      remoteDocSet = new DocSet()
+      remoteDocSet = new Repo('test', 'test')
       remoteDocSet.setDoc(documentId, A.from({}, 'R'))
-      localDocSet = new DocSet()
+      localDocSet = new Repo('test', 'test')
       localDocSet.setDoc(documentId, A.from({ swallows: 1 }, 'L'))
       networkOn()
     })

@@ -1,19 +1,19 @@
 import A from 'automerge'
-import { DocSet } from './DocSet'
 import { RECEIVE_MESSAGE_FROM_PEER, DELETE_COLLECTION } from './constants'
-import { docSetToObject } from './docSetHelpers'
+import { repoToObject } from './docSetHelpers'
 import { Reducer, AnyAction } from 'redux'
-import { ProxyReducer, DocSetState } from 'types'
+import { ProxyReducer, RepoSnapshot } from 'types'
 import { collection } from './collection'
 import { getMemUsage } from './getMemUsage'
 import debug from 'debug'
+import { Repo } from 'Repo'
 
 const log = debug('cevitxe:grid:adaptreducer')
 
 export type ReducerConverter = (
   proxyReducer: ProxyReducer,
-  docSet: DocSet<any>
-) => Reducer<DocSetState, AnyAction>
+  repo: Repo<any>
+) => Reducer<RepoSnapshot, AnyAction>
 
 /**
  * This function, used when wiring up the store, takes a `proxyReducer` and turns it into a
@@ -25,12 +25,12 @@ export type ReducerConverter = (
  * of returning a modified state, it returns one or more change functions.
  *
  * @param proxyReducer The proxyReducer to be adapted
- * @param docSet The store's docSet
+ * @param repo The store's repo
  */
-export const adaptReducer: ReducerConverter = (proxyReducer, docSet) => {
-  const reducer: Reducer<DocSetState, AnyAction> = (state, { type, payload }): DocSetState => {
+export const adaptReducer: ReducerConverter = (proxyReducer, repo) => {
+  const reducer: Reducer<RepoSnapshot, AnyAction> = (state, { type, payload }): RepoSnapshot => {
     if (type === RECEIVE_MESSAGE_FROM_PEER) {
-      // Connection has already updated our docSet - nothing to do here.
+      // Connection has already updated our repo - nothing to do here.
     } else {
       const functionMap = proxyReducer(state, { type, payload })
 
@@ -45,20 +45,21 @@ export const adaptReducer: ReducerConverter = (proxyReducer, docSet) => {
 
         if (fn === DELETE_COLLECTION) {
           const name = collection.getCollectionName(documentId)
-          collection(name).removeAll(docSet)
+          collection(name).removeAll(repo)
         } else if (typeof fn === 'function') {
-          // find the corresponding document in the docSet
-          const oldDoc = docSet.getDoc(documentId) || A.init() // create a new doc if one doesn't exist
+          // find the corresponding document in the repo
+
+          const oldDoc = repo.getDoc(documentId) || A.init()
           // run the change function to get a new document
           const newDoc = A.change(oldDoc, fn)
-          // update the docSet
-          docSet.setDoc(documentId, newDoc)
+          // update the repo
+          repo.setDoc(documentId, newDoc)
         }
       }
       log(`after applying changes`, getMemUsage())
     }
 
-    const newState = docSetToObject(docSet)
+    const newState = repoToObject(repo) // TODO: replace with repo.getFullSnapshot or something
     return newState
   }
 

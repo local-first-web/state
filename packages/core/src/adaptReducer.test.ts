@@ -1,14 +1,13 @@
 import { adaptReducer } from './adaptReducer'
+import { repoFromObject } from './docSetHelpers'
 import { ProxyReducer } from './types'
-import { docSetFromObject } from './docSetHelpers'
-import { collection } from './collection'
 
 describe('adaptReducer', () => {
   describe('should return a working reducer', () => {
     const proxyReducer: ProxyReducer = () => ({ settings: s => (s.foo = 2) })
     const state = { settings: {} }
-    const docSet = docSetFromObject(state)
-    const reducer = adaptReducer(proxyReducer, docSet)
+    const repo = repoFromObject(state)
+    const reducer = adaptReducer(proxyReducer, repo)
 
     it('should return a function', () => expect(typeof reducer).toBe('function'))
 

@@ -1,7 +1,7 @@
 ﻿import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
-import { DocSet } from './DocSet'
+import { Repo } from './Repo'
 import { lessOrEqual } from './lib/lessOrEqual'
 import { Message } from './types'
 
@@ -12,10 +12,10 @@ type Clocks = { ours: ClockMap; theirs: ClockMap }
 const log = debug('cevitxe:docsetsync')
 
 /**
- * One instance of `DocumentSync` keeps one local document in sync with one remote peer's replica of
+ * One instance of `RepoSync` keeps one local document in sync with one remote peer's replica of
  * the same document.
  *
- * This class works with a local `DocSet`; it listens for changes to the document, and if it
+ * This class works with a local `Repo`; it listens for changes to the document, and if it
  * thinks it has changes that the remote peer doesn't know about, it generates a message to be sent
  * the peer. It also processes messages from its counterpart on the peer, and applies them to the
  * local document as needed.
@@ -31,8 +31,8 @@ const log = debug('cevitxe:docsetsync')
  *
  * In this context, networking is provided by the Cevitxe `connection` class.
  *
- * The document to be synced is managed by a `DocSet`. Whenever it is changed locally, call
- * `setDoc()` on the DocSet. The connection registers a callback on the DocSet, and it
+ * The document to be synced is managed by a `Repo`. Whenever it is changed locally, call
+ * `setDoc()` on the Repo. The connection registers a callback on the Repo, and it
  * figures out whenever there are changes that need to be sent to the remote peer.
  *
  * To do this, we keep track of two clocks: ours and theirs.
@@ -47,18 +47,18 @@ const log = debug('cevitxe:docsetsync')
  * > Note: This class began life as a vendored & refactored copy of the `Automerge.Connection`
  * > class; if you're familiar with that class, this one plays exactly the same role.
  */
-export class DocSetSync {
-  public docSet: DocSet<any>
+export class RepoSync {
+  public repo: Repo<any>
   private send: (msg: Message) => void
   private clock: Clocks
 
   /**
-   * @param docSet An `Automerge.DocSet` containing the document being synchronized.
+   * @param repo An `Automerge.Repo` containing the document being synchronized.
    * @param send Callback function, called when the local document changes. Should send the given
    * message to the remote peer.
    */
-  constructor(docSet: DocSet<any>, send: (msg: Message) => void) {
-    this.docSet = docSet
+  constructor(repo: Repo<any>, send: (msg: Message) => void) {
+    this.repo = repo
     this.send = send
     this.clock = { ours: Map(), theirs: Map() }
   }
@@ -66,15 +66,15 @@ export class DocSetSync {
   // Public API
 
   open() {
-    log('open', Array.from(this.docSet.documentIds))
-    for (let documentId of this.docSet.documentIds) //
+    log('open', Array.from(this.repo.documentIds))
+    for (let documentId of this.repo.documentIds) //
       if (documentId.length) this.registerDoc(documentId)
-    this.docSet.registerHandler(this.docChanged.bind(this))
+    this.repo.registerHandler(this.docChanged.bind(this))
   }
 
   close() {
     log('close')
-    this.docSet.unregisterHandler(this.docChanged.bind(this))
+    this.repo.unregisterHandler(this.docChanged.bind(this))
   }
 
   // Called by the network stack whenever it receives a message from a peer
@@ -91,17 +91,17 @@ export class DocSetSync {
     // Record their clock value for this document
     if (clock) this.updateClock(documentId, theirs, clock)
 
-    const weHaveDoc = this.docSet.getDoc(documentId) !== undefined
+    const weHaveDoc = this.repo.getDoc(documentId) !== undefined
 
     // If they sent changes, apply them to our document
-    if (changes) this.docSet.applyChanges(documentId, changes)
+    if (changes) this.repo.applyChanges(documentId, changes)
     // If no changes, treat it as a request for our latest changes
     else if (weHaveDoc) this.maybeSendChanges(documentId)
     // If no changes and we don't have the document, treat it as an advertisement and request it
     else this.advertise(documentId)
 
     // Return the current state of the document
-    return this.docSet.getDoc(documentId)
+    return this.repo.getDoc(documentId)
   }
 
   // Private methods
@@ -129,7 +129,7 @@ export class DocSetSync {
     }
   }
 
-  // Callback that is called by the docSet whenever a document is changed
+  // Callback that is called by the repo whenever a document is changed
   private docChanged(documentId: string) {
     log('doc changed')
     const clock = this.getClockFromDoc(documentId)
@@ -209,7 +209,7 @@ export class DocSetSync {
   }
 
   private getState(documentId: string) {
-    const doc = this.docSet.getDoc(documentId)
+    const doc = this.repo.getDoc(documentId)
     if (doc) return A.Frontend.getBackendState(doc)
   }
 }
