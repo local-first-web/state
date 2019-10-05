@@ -2,7 +2,6 @@ import A from 'automerge'
 import debug from 'debug'
 import { collection } from './collection'
 import { DELETE_COLLECTION, RECEIVE_MESSAGE_FROM_PEER } from './constants'
-import { getMemUsage } from './lib/getMemUsage'
 import { ChangeSet, RepoSnapshot, MiddlewareFactory } from './types'
 
 const log = debug('cevitxe:middleware')
@@ -37,8 +36,6 @@ export const getMiddleware: MiddlewareFactory = (repo, proxyReducer) => {
     }
 
     // CHANGES
-    log(`before changes`, getMemUsage())
-
     const newState = next(action)
 
     // AFTER CHANGES
@@ -74,12 +71,10 @@ export const getMiddleware: MiddlewareFactory = (repo, proxyReducer) => {
       }
     }
 
-    log(`before writing to feed`, getMemUsage())
     // write any changes to the feed
     for (const changeSet of changeSets) {
       repo.appendChangeset(changeSet)
     }
-    log(`after writing to feed`, getMemUsage())
 
     return newState
   }

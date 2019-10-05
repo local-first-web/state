@@ -7,7 +7,6 @@ import { useDispatch } from 'react-redux'
 import { clearCollection, loadCollection, loadSchema } from 'redux/actions'
 import GeneratorWorker from '../workers/generator.worker'
 import { ProgressBar } from './ProgressBar'
-import { getMemUsage } from '../getMemUsage'
 import debug from 'debug'
 
 const generator = new GeneratorWorker()
@@ -25,8 +24,6 @@ export function DataGenerator() {
   const hideMenu = () => setTimeout(() => setMenuOpen(false), 500)
 
   const generate = async (rows: number) => {
-    log('before generating %o', getMemUsage())
-
     setProgress(0)
     dispatch(clearCollection())
     dispatch(loadSchema(schema))
@@ -37,14 +34,11 @@ export function DataGenerator() {
       await nextFrame()
       if (reportedProgress) {
         setProgress(Math.ceil((reportedProgress / rows) * 100))
-        // log(`generated row ${reportedProgress}`, getMemUsage())
       }
       if (result) {
         setProgress(0)
         const collection = event.data.result
-        log('before dispatch %o', getMemUsage())
         dispatch(loadCollection(collection))
-        log('after dispatch %o', getMemUsage())
       }
     }
     generator.postMessage(rows)

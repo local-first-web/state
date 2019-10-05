@@ -4,7 +4,6 @@ import { repoToObject } from './repoHelpers'
 import { Reducer, AnyAction } from 'redux'
 import { ProxyReducer, RepoSnapshot } from 'types'
 import { collection } from './collection'
-import { getMemUsage } from './lib/getMemUsage'
 import debug from 'debug'
 import { Repo } from 'Repo'
 
@@ -56,7 +55,6 @@ export const adaptReducer: ReducerConverter = (proxyReducer, repo) => {
           repo.setDoc(documentId, newDoc)
         }
       }
-      log(`after applying changes`, getMemUsage())
     }
 
     const newState = repoToObject(repo) // TODO: replace with repo.getFullSnapshot or something
