@@ -1,7 +1,7 @@
 import A from 'automerge'
 import { DELETE_COLLECTION } from './constants'
 import { ChangeMap, RepoSnapshot } from './types'
-import { Repo } from 'Repo'
+import { Repo } from './Repo'
 
 export interface CollectionOptions {
   idField?: string
