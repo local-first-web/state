@@ -4,7 +4,7 @@ import { repoToObject } from './repoHelpers'
 import { Reducer, AnyAction } from 'redux'
 import { ProxyReducer, RepoSnapshot } from 'types'
 import { collection } from './collection'
-import { getMemUsage } from './getMemUsage'
+import { getMemUsage } from './lib/getMemUsage'
 import debug from 'debug'
 import { Repo } from 'Repo'
 

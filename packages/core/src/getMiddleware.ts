@@ -2,7 +2,7 @@ import A from 'automerge'
 import debug from 'debug'
 import { collection } from './collection'
 import { DELETE_COLLECTION, RECEIVE_MESSAGE_FROM_PEER } from './constants'
-import { getMemUsage } from './getMemUsage'
+import { getMemUsage } from './lib/getMemUsage'
 import { ChangeSet, RepoSnapshot, MiddlewareFactory } from './types'
 
 const log = debug('cevitxe:middleware')
