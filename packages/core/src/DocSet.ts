@@ -28,20 +28,9 @@ export class DocSet<T = any> {
   }
 
   applyChanges(documentId: string, changes: A.Change[]) {
-    // automerge.d.ts doesn't include `backend` as an init option
-    // @ts-ignore
-    let doc = this.docs.get(documentId) || A.Frontend.init({ backend: A.Backend })
-
-    const oldState = A.Frontend.getBackendState(doc)
-    const [newState, patch] = A.Backend.applyChanges(oldState, changes)
-
-    // automerge.d.ts doesn't have Patch.state
-    // @ts-ignore
-    patch.state = newState
-
-    doc = A.Frontend.applyPatch(doc, patch)
+    let doc = this.docs.get(documentId) || A.init()
+    doc = A.applyChanges(doc, changes)
     this.setDoc(documentId, doc)
-
     return doc
   }
 
