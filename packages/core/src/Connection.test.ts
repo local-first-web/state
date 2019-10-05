@@ -51,12 +51,6 @@ describe('Connection', () => {
     await server.close()
   })
 
-  it('should expose its current state', () => {
-    const peer = new WebSocket(url)
-    const connection = new Connection(docSet, peer, fakeDispatch)
-    expect(connection.state).toEqual(initialState)
-  })
-
   it('should send messages to the peer when local state changes', () => {
     const peer = new WebSocket(url)
     const connection = new Connection(docSet, peer, fakeDispatch)
@@ -71,7 +65,6 @@ describe('Connection', () => {
     const updatedDoc = A.change<FooState>(localDoc, 'update', doc => (doc.boo = 2))
     docSet.setDoc('state', updatedDoc)
 
-    expect(connection.state.state.boo).toBe(2)
     expect(peer.send).toHaveBeenCalledWith(
       expect.stringContaining(JSON.stringify({ [localActorId]: 2 }))
     )

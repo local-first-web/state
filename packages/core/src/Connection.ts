@@ -28,17 +28,8 @@ export class Connection<T = any> extends EventEmitter {
 
     this.peerSocket.onmessage = this.receive.bind(this)
 
-    this.docSetSync = new DocSetSync(this.docSet, this.send)
+    this.docSetSync = new DocSetSync(this.docSet, this.send) // TODAY: replace with repo
     this.docSetSync.open()
-  }
-
-  public get state(): T {
-    const _state: Partial<T> = {}
-    for (let key of this.docSet.documentIds) {
-      const doc = this.docSet.getDoc(key as string) as T[keyof T]
-      _state[key as keyof T] = doc
-    }
-    return _state as T
   }
 
   receive = ({ data }: any) => {
