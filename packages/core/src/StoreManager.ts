@@ -34,7 +34,7 @@ export class StoreManager<T> extends EventEmitter {
   private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
 
   private clientId = newid()
-  private feed?: Repo
+  private repo?: Repo
   private docSet?: DocSet<T>
 
   public connections: { [peerId: string]: Connection }
@@ -64,16 +64,16 @@ export class StoreManager<T> extends EventEmitter {
   private makeStore = async (discoveryKey: string, isCreating: boolean = false) => {
     log = debug(`cevitxe:${isCreating ? 'createStore' : 'joinStore'}:${discoveryKey}`)
 
-    this.feed = new Repo(discoveryKey, this.databaseName)
+    this.repo = new Repo(discoveryKey, this.databaseName)
 
     this.docSet = new DocSet<T>()
     this.docSet.registerHandler(this.onChange)
 
-    const state = await this.feed.init(this.initialState, isCreating, this.docSet)
+    const state = await this.repo.init(this.initialState, isCreating, this.docSet)
 
     // Create Redux store
     const reducer = adaptReducer(this.proxyReducer, this.docSet)
-    const cevitxeMiddleware = getMiddleware(this.feed, this.docSet, this.proxyReducer)
+    const cevitxeMiddleware = getMiddleware(this.repo, this.docSet, this.proxyReducer)
     const enhancer = composeWithDevTools(applyMiddleware(...this.middlewares, cevitxeMiddleware))
     this.store = createStore(reducer, state, enhancer)
 
@@ -126,7 +126,7 @@ export class StoreManager<T> extends EventEmitter {
     await Promise.all(closeAllConnections)
     this.connections = {}
 
-    delete this.feed
+    delete this.repo
     delete this.store
 
     this.emit('close')
