@@ -1,5 +1,5 @@
 ﻿import A from 'automerge'
-type DocSetHandler<T> = (documentId: string, doc: A.Doc<T>) => void
+export type DocSetHandler<T> = (documentId: string, doc: A.Doc<T>) => void
 
 export class DocSet<T = any> {
   private docs: Map<string, A.Doc<T>>
@@ -28,14 +28,20 @@ export class DocSet<T = any> {
   }
 
   applyChanges(documentId: string, changes: A.Change[]) {
+    // automerge.d.ts doesn't include `backend` as an init option
     // @ts-ignore
     let doc = this.docs.get(documentId) || A.Frontend.init({ backend: A.Backend })
+
     const oldState = A.Frontend.getBackendState(doc)
     const [newState, patch] = A.Backend.applyChanges(oldState, changes)
+
+    // automerge.d.ts doesn't have Patch.state
     // @ts-ignore
     patch.state = newState
+
     doc = A.Frontend.applyPatch(doc, patch)
     this.setDoc(documentId, doc)
+
     return doc
   }
 
