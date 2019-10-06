@@ -1,6 +1,4 @@
-﻿import { pause } from './lib/pause'
-import A from 'automerge'
-import debug from 'debug'
+﻿import A from 'automerge'
 import { TestChannel } from './lib/TestChannel'
 import { Repo } from './Repo'
 import { RepoSync } from './RepoSync'
@@ -10,7 +8,6 @@ export interface BirdCount {
   [bird: string]: number
 }
 
-const log = debug(`cevitxe:reposync:test`)
 const documentId = 'myDoc'
 
 let testSeq = 0
