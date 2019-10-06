@@ -1,13 +1,10 @@
 import A from 'automerge'
-import { RECEIVE_MESSAGE_FROM_PEER, DELETE_COLLECTION } from './constants'
-import { repoToObject } from './repoHelpers'
-import { Reducer, AnyAction } from 'redux'
-import { ProxyReducer, RepoSnapshot } from 'types'
+import { AnyAction, Reducer } from 'redux'
 import { collection } from './collection'
-import debug from 'debug'
-import { Repo } from 'Repo'
-
-const log = debug('cevitxe:grid:adaptreducer')
+import { DELETE_COLLECTION, RECEIVE_MESSAGE_FROM_PEER } from './constants'
+import { Repo } from './Repo'
+import { repoToObject } from './repoHelpers'
+import { ProxyReducer, RepoSnapshot } from './types'
 
 export type ReducerConverter = (
   proxyReducer: ProxyReducer,

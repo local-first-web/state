@@ -1,5 +1,5 @@
 import A from 'automerge'
-import { RepoSnapshot } from 'types'
+import { RepoSnapshot } from './types'
 import { Repo } from './Repo'
 
 /**
