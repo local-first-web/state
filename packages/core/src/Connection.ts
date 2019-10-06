@@ -13,7 +13,7 @@ const log = debug('cevitxe:connection')
  * document. It uses `RepoSync` for the synchronization logic, and integrates it with Cevitxe's
  * networking stack and with the Redux store.
  */
-export class Connection<T = any> extends EventEmitter {
+export class Connection extends EventEmitter {
   private repoSync: RepoSync
   private peerSocket: WebSocket | null
   private dispatch?: Dispatch<AnyAction>
@@ -29,7 +29,7 @@ export class Connection<T = any> extends EventEmitter {
     this.peerSocket.onmessage = this.receive.bind(this)
 
     this.repoSync = new RepoSync(this.repo, this.send)
-    this.repoSync.open()
+    this.repoSync.open().then(() => this.emit('ready'))
   }
 
   receive = async ({ data }: any) => {
