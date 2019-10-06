@@ -8,7 +8,7 @@
     "start:chat": "yarn workspace cevitxe-example-chat start",
     "start:grid": "yarn workspace cevitxe-example-grid start",
     "start:todo": "yarn workspace cevitxe-example-todo start",
-    "dev": "run-p watch test:watch",
+    "dev": "run-p watch test --watch",
     "dev:log": "run-p watch test:log",
     "dev:signal-server": "yarn workspace cevitxe-signal-server dev",
     "dev:chat": "run-p watch dev:signal-server start:chat",
@@ -27,8 +27,7 @@
     "test": "jest",
     "test:todo:e2e": "yarn workspace cevitxe-example-todo test:e2e",
     "test:grid:e2e": "yarn workspace cevitxe-example-grid test:e2e",
-    "test:watch": "jest --watch",
-    "test:log": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 yarn test:watch",
+    "test:log": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 yarn test",
     "purge": "scripts/purge.bat"
   },
   "dependencies": {
