@@ -1,4 +1,4 @@
-import A from 'automerge'
+﻿import A from 'automerge'
 import debug from 'debug'
 import { EventEmitter } from 'events'
 import * as idb from 'idb/with-async-ittr-cjs'
@@ -106,6 +106,7 @@ export class Repo<T = any> extends EventEmitter {
    * @param changeSet
    */
   async appendChangeset(changeSet: ChangeSet) {
+    this.log('appending changeset', changeSet)
     const database = await this.openDB()
     await database.add('feeds', changeSet)
     database.close()
@@ -244,9 +245,11 @@ export class Repo<T = any> extends EventEmitter {
   async get(documentId: string): Promise<A.Doc<T>> {
     let doc = A.init<T>()
     const changeSets = await this.getChangesets(documentId)
-    for (const { changes, isDelete } of changeSets) //
+    for (const { changes, isDelete } of changeSets) {
+      this.log('got changeset', { changes, isDelete })
       if (changes) doc = A.applyChanges(doc, changes)
-      else if (isDelete) this.remove(documentId)
+      else if (isDelete) await this.remove(documentId)
+    }
     return doc
   }
 
