@@ -29,7 +29,7 @@ export const getMiddleware: MiddlewareFactory = (repo, proxyReducer) => {
         } else if (typeof fn === 'function') {
           // Doc will be run through a change function. Cache the previous version of the doc so we
           // can record changes for the storage feed
-          const oldDoc = repo.getDoc(documentId) || A.init() // create a new doc if one doesn't exist
+          const oldDoc = repo.get(documentId) || A.init() // create a new doc if one doesn't exist
           affectedDocs[documentId] = oldDoc
         }
       }
@@ -48,14 +48,14 @@ export const getMiddleware: MiddlewareFactory = (repo, proxyReducer) => {
     if (action.type === RECEIVE_MESSAGE_FROM_PEER) {
       // for changes coming from peer, we already have the Automerge changes, so just persist them
       const { documentId, changes } = action.payload.message
-      const newDoc = repo.getDoc(documentId)
+      const newDoc = repo.get(documentId)
       repo.saveSnapshot(documentId, newDoc)
       changeSets.push({ documentId, changes })
     } else {
       // for insert/update, we generate the changes by comparing each document before & after
       for (const documentId in affectedDocs) {
         const oldDoc = affectedDocs[documentId]
-        const newDoc = repo.getDoc(documentId)!
+        const newDoc = repo.get(documentId)!
         repo.saveSnapshot(documentId, newDoc)
         const changes = A.getChanges(oldDoc, newDoc)
         if (changes.length > 0) changeSets.push({ documentId, changes })

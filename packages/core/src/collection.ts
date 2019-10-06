@@ -139,16 +139,16 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
   }
 
   /**
-   * Marks all items in the collection as deleted. PRIVATE.
+   * Marks all items in the collection as deleted. ("PRIVATE")
    * @param repo
    */
-  const removeAll = (repo: Repo<any>) => {
+  const removeAll = async (repo: Repo<any>) => {
     for (const documentId of repo.documentIds) {
       if (isCollectionKey(documentId)) {
-        const doc = repo.getDoc(documentId)
+        const doc = await repo.get(documentId)
         if (doc && !doc[DELETED]) {
           const deletedDoc = A.change(doc, setDeleteFlag)
-          repo.setDoc(documentId, deletedDoc)
+          repo.set(documentId, deletedDoc)
         }
       }
     }

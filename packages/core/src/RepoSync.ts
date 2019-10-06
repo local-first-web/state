@@ -29,7 +29,7 @@ const log = debug('cevitxe:docsetsync')
  * - `receive` (method on the connection object) should be called by the network stack when a
  *   message is received from the remote peer.
  *
- * In this context, networking is provided by the Cevitxe `connection` class.
+ * In this context, networking is provided by the Cevitxe `Connection` class.
  *
  * The document to be synced is managed by a `Repo`. Whenever it is changed locally, call
  * `setDoc()` on the Repo. The connection registers a callback on the Repo, and it
@@ -76,6 +76,9 @@ export class RepoSync {
     log('close')
     this.repo.unregisterHandler(this.docChanged.bind(this))
   }
+  weHaveDoc(documentId: string) {
+    return this.repo.state.hasOwnProperty(documentId)
+  }
 
   // Called by the network stack whenever it receives a message from a peer
   receive({
@@ -86,30 +89,28 @@ export class RepoSync {
     documentId: string
     clock: Clock
     changes?: A.Change[]
-  }) {
+  }): A.Doc<any> {
     log('receive', documentId)
     // Record their clock value for this document
     if (clock) this.updateClock(documentId, theirs, clock)
 
-    const weHaveDoc = this.repo.getDoc(documentId) !== undefined
-
     // If they sent changes, apply them to our document
     if (changes) this.repo.applyChanges(documentId, changes)
     // If no changes, treat it as a request for our latest changes
-    else if (weHaveDoc) this.maybeSendChanges(documentId)
+    else if (this.weHaveDoc(documentId)) this.maybeSendChanges(documentId)
     // If no changes and we don't have the document, treat it as an advertisement and request it
     else this.advertise(documentId)
 
     // Return the current state of the document
-    return this.repo.getDoc(documentId)
+    return this.repo.get(documentId)
   }
 
   // Private methods
 
-  private registerDoc(documentId: string) {
+  private async registerDoc(documentId: string) {
     log('registerDoc', documentId)
 
-    const clock = this.getClockFromDoc(documentId)
+    const clock = await this.getClockFromDoc(documentId)
     this.validateDoc(documentId, clock)
     // Advertise the document
     this.requestChanges(documentId, clock)
@@ -130,9 +131,9 @@ export class RepoSync {
   }
 
   // Callback that is called by the repo whenever a document is changed
-  private docChanged(documentId: string) {
+  private async docChanged(documentId: string) {
     log('doc changed')
-    const clock = this.getClockFromDoc(documentId)
+    const clock = await this.getClockFromDoc(documentId)
     this.validateDoc(documentId, clock)
     this.maybeSendChanges(documentId)
     this.maybeRequestChanges(documentId, clock)
@@ -140,33 +141,39 @@ export class RepoSync {
   }
 
   // Send changes if we have more recent information than they do
-  private maybeSendChanges(documentId: string) {
+  private async maybeSendChanges(documentId: string) {
     const theirClock = (this.getClock(documentId, theirs) as unknown) as A.Clock
     if (theirClock === undefined) return
 
-    const ourState = this.getState(documentId)
+    const ourState = await this.getState(documentId)
 
     // If we have changes they don't have, send them
     const changes = A.Backend.getMissingChanges(ourState!, theirClock)
     if (changes.length > 0) this.sendChanges(documentId, changes)
   }
 
-  private sendChanges(documentId: string, changes: A.Change[]) {
-    const clock = this.getClockFromDoc(documentId)
-    this.send({ documentId, clock: clock.toJS(), changes })
+  private async sendChanges(documentId: string, changes: A.Change[]) {
+    const clock = await this.getClockFromDoc(documentId)
+    this.send({ documentId, clock: clock.toJS() as any, changes })
     this.updateClock(documentId, ours)
   }
 
   // Request changes if we're out of date
-  private maybeRequestChanges(documentId: string, clock = this.getClockFromDoc(documentId)) {
+  private async maybeRequestChanges(
+    documentId: string,
+    clock: Clock | Promise<Clock> = this.getClockFromDoc(documentId)
+  ) {
     const ourClock = this.getClock(documentId, ours)
     // If the document is newer than what we have, request changes
-    if (!lessOrEqual(clock, ourClock)) this.requestChanges(documentId, clock)
+    if (!lessOrEqual(await clock, ourClock)) this.requestChanges(documentId, clock)
   }
 
   // A message with no changes and a clock is a request for changes
-  private requestChanges(documentId: string, clock = this.getClockFromDoc(documentId)) {
-    this.send({ documentId, clock: clock.toJS() })
+  private async requestChanges(
+    documentId: string,
+    clock: Clock | Promise<Clock> = this.getClockFromDoc(documentId)
+  ) {
+    this.send({ documentId, clock: (await clock).toJS() as any })
   }
 
   // A message with a documentId and an empty clock is an advertisement for the document
@@ -187,29 +194,26 @@ export class RepoSync {
     return this.clock[which].get(documentId, initialClockValue)
   }
 
-  private getClockFromDoc = (documentId: string) => {
-    const state = this.getState(documentId) as any
-    if (state === undefined) return
-    else return state.getIn(['opSet', 'clock'])
+  private async getClockFromDoc(documentId: string): Promise<Clock> {
+    if (!this.weHaveDoc(documentId)) return Map() as Clock
+    const state = (await this.getState(documentId)) as any
+    return state.getIn(['opSet', 'clock'])
   }
 
   // Updates the vector clock by merging in the new vector clock `clock`, setting each node's
   // sequence number has been set to the maximum for that node.
-  private updateClock(
-    documentId: string,
-    which: keyof Clocks,
-    clock = this.getClockFromDoc(documentId)
-  ) {
+  private async updateClock(documentId: string, which: keyof Clocks, clock?: Clock) {
+    if (clock === undefined) clock = await this.getClockFromDoc(documentId)
     const clockMap = this.clock[which]
     const oldClock = clockMap.get(documentId, Map() as Clock)
     // Merge the clocks, keeping the maximum sequence number for each node
     const largestWins = (x: number = 0, y: number = 0): number => Math.max(x, y)
-    const newClock = oldClock.mergeWith(largestWins, clock)
+    const newClock = oldClock.mergeWith(largestWins, clock!)
     this.clock[which] = clockMap.set(documentId, newClock)
   }
 
-  private getState(documentId: string) {
-    const doc = this.repo.getDoc(documentId)
+  private async getState(documentId: string) {
+    const doc = await this.repo.get(documentId)
     if (doc) return A.Frontend.getBackendState(doc)
   }
 }

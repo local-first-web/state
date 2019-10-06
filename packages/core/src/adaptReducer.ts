@@ -48,11 +48,11 @@ export const adaptReducer: ReducerConverter = (proxyReducer, repo) => {
         } else if (typeof fn === 'function') {
           // find the corresponding document in the repo
 
-          const oldDoc = repo.getDoc(documentId) || A.init()
+          const oldDoc = repo.get(documentId) || A.init()
           // run the change function to get a new document
           const newDoc = A.change(oldDoc, fn)
           // update the repo
-          repo.setDoc(documentId, newDoc)
+          repo.set(documentId, newDoc)
         }
       }
     }

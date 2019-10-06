@@ -48,7 +48,7 @@ export class Repo<T = any> extends EventEmitter {
   /**
    * In-memory map of document snapshots.
    */
-  private state: RepoSnapshot<T>
+  public state: RepoSnapshot<T>
 
   /**
    * Document change event listeners. Each handler fires every time a document is set or removed.
@@ -76,7 +76,7 @@ export class Repo<T = any> extends EventEmitter {
     const hasData = await this.hasData()
     this.log('hasData', hasData)
     if (creating) {
-      this.log('creating a new document')
+      this.log('creating a new repo')
       this.state = initialState
       await this.create()
     } else if (!hasData) {
@@ -84,8 +84,7 @@ export class Repo<T = any> extends EventEmitter {
       this.state = {}
       await this.create()
     } else {
-      this.log('recovering an existing document from persisted state')
-      // TODO: do we need to wait on this?
+      this.log('recovering an existing repo from persisted state')
       await this.rebuildSnapshotsFromHistory()
     }
     this.emit('ready')
@@ -146,7 +145,9 @@ export class Repo<T = any> extends EventEmitter {
    */
   async getSnapshot(documentId: string) {
     const database = await this.openDB()
-    const { snapshot } = await database.get('snapshots', documentId)
+    const snapshotRecord = await database.get('snapshots', documentId)
+    if (snapshotRecord === undefined) return undefined
+    const { snapshot } = snapshotRecord
     this.log('getSnapshot', documentId, snapshot)
     this.state[documentId] = snapshot
     database.close()
@@ -214,7 +215,7 @@ export class Repo<T = any> extends EventEmitter {
   private async create() {
     for (let documentId in this.state) {
       const document = A.from(this.state[documentId])
-      this.setDoc(documentId, document)
+      this.set(documentId, document)
     }
   }
 
@@ -224,7 +225,7 @@ export class Repo<T = any> extends EventEmitter {
   private async rebuildSnapshotsFromHistory() {
     const documentIds = await this.getDocumentIds('feeds')
     this.log('getting changesets from storage', documentIds)
-    for (const documentId of documentIds) this.getDoc(documentId)
+    for (const documentId of documentIds) this.get(documentId)
   }
 
   /**
@@ -239,23 +240,13 @@ export class Repo<T = any> extends EventEmitter {
    * Reconstitutes an Automerge document from its change history
    * @param documentId
    */
-  async getDoc(documentId: string) {
-    const doc = A.init<T>()
+  async get(documentId: string): Promise<A.Doc<T>> {
+    let doc = A.init<T>()
     const changeSets = await this.getChangesets(documentId)
     for (const { changes, isDelete } of changeSets) //
-      if (changes) A.applyChanges(doc, changes)
-      else if (isDelete) this.removeDoc(documentId)
+      if (changes) doc = A.applyChanges(doc, changes)
+      else if (isDelete) this.remove(documentId)
     return doc
-  }
-
-  /**
-   * Removes a document from our in-memory state, and deletes its snapshot. (The change history of a
-   * document is never deleted, in case it's undeleted at some point.)
-   * @param documentId The ID of the document
-   */
-  removeDoc(documentId: string) {
-    delete this.state.documentId
-    this.removeSnapshot(documentId)
   }
 
   /**
@@ -265,21 +256,39 @@ export class Repo<T = any> extends EventEmitter {
    * @param changes (optional) If we're already given the changes (e.g. in `applyChanges`), we can
    * pass them in so we don't have to recalculate them.
    */
-  setDoc(documentId: string, doc: A.Doc<T>, changes?: A.Change[]) {
+  async set(documentId: string, doc: A.Doc<T>, changes?: A.Change[]) {
     if (!changes) {
       // look up old doc and generate diff
-      const oldDoc = this.getDoc(documentId)
-      changes = A.getChanges(A.init(), oldDoc)
+      const oldDoc = await this.get(documentId)
+      changes = A.getChanges(oldDoc, doc)
     }
 
     // append changes to this document's history
-    this.appendChangeset({ documentId, changes })
+    await this.appendChangeset({ documentId, changes })
 
     // save snapshot
-    this.saveSnapshot(documentId, doc)
+    await this.saveSnapshot(documentId, doc)
 
     // call handlers
-    this.handlers.forEach(handler => handler(documentId, doc))
+    this.handlers.forEach(fn => fn(documentId, doc))
+  }
+
+  /**
+   * Updates a document using an Automerge change function (e.g. from a reducer)
+   * @param documentId The ID of the document
+   * @param changeFn An Automerge change function
+   * @returns The updated document
+   */
+  async change(documentId: string, changeFn: A.ChangeFn<T>) {
+    // apply changes to document
+    const doc = await this.get(documentId)
+    const newDoc = A.change(doc, changeFn)
+
+    // save the new document, snapshot, etc.
+    await this.set(documentId, newDoc)
+
+    // return the modified document
+    return newDoc
   }
 
   /**
@@ -290,14 +299,24 @@ export class Repo<T = any> extends EventEmitter {
    */
   async applyChanges(documentId: string, changes: A.Change[]) {
     // apply changes to document
-    let doc = await this.getDoc(documentId)
-    doc = A.applyChanges(doc, changes)
+    const doc = await this.get(documentId)
+    const newDoc = A.applyChanges(doc, changes)
 
-    // save the new document
-    this.setDoc(documentId, doc, changes)
+    // save the new document, snapshot, etc.
+    await this.set(documentId, newDoc, changes)
 
     // return the modified document
-    return doc
+    return newDoc
+  }
+
+  /**
+   * Removes a document from our in-memory state, and deletes its snapshot. (The change history of a
+   * document is never deleted, in case it's undeleted at some point.)
+   * @param documentId The ID of the document
+   */
+  async remove(documentId: string) {
+    delete this.state[documentId]
+    await this.removeSnapshot(documentId)
   }
 
   /**

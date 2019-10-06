@@ -42,7 +42,7 @@ describe('Connection', () => {
     let key: keyof FooStateDoc
     for (key in initialState) {
       const value = initialState[key]
-      repo.setDoc(key, A.from(value, localActorId))
+      repo.set(key, A.from(value, localActorId))
     }
   })
 
@@ -60,9 +60,7 @@ describe('Connection', () => {
       expect.stringContaining(JSON.stringify({ [localActorId]: 2 }))
     )
 
-    const localDoc = repo.getDoc('state')!
-    const updatedDoc = A.change<FooState>(localDoc, 'update', doc => (doc.boo = 2))
-    repo.setDoc('state', updatedDoc)
+    const updatedDoc = repo.change('state', s => (s.boo = 2))
 
     expect(peer.send).toHaveBeenCalledWith(
       expect.stringContaining(JSON.stringify({ [localActorId]: 2 }))
