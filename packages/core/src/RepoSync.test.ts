@@ -12,18 +12,15 @@ const documentId = 'myDoc'
 
 let testSeq = 0
 
-const makeConnection = async (
-  discoveryKey: string,
-  repo: Repo<BirdCount>,
-  channel: TestChannel
-) => {
+// creates a RepoSync object using a simple channel
+const makeConnection = async (key: string, repo: Repo<BirdCount>, channel: TestChannel) => {
   // hook up send
-  const send = (msg: Message) => channel.write(discoveryKey, msg)
+  const send = (msg: Message) => channel.write(key, msg)
   const sync = new RepoSync(repo, send)
 
   // hook up receive
   channel.on('data', (peer_id, msg) => {
-    if (peer_id === discoveryKey) return // ignore messages that we sent
+    if (peer_id === key) return // ignore messages that we sent
     sync.receive(msg)
   })
 
