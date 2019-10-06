@@ -1,11 +1,9 @@
-﻿import A from 'automerge'
+import A from 'automerge'
 import { Repo } from './Repo'
 import { RepoSync } from './RepoSync'
 import { Message } from './types'
 import { TestChannel } from './lib/TestChannel'
 import { pause } from './lib/pause'
-
-require('fake-indexeddb/auto')
 
 export interface BirdCount {
   [bird: string]: number

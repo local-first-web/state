@@ -8,8 +8,6 @@ import { ProxyReducer } from './types'
 import { pause } from './lib/pause'
 import { collection } from './collection'
 
-require('fake-indexeddb/auto')
-
 describe('Cevitxe', () => {
   const log = debug('cevitxe:test')
   const teachers = collection('teachers')

@@ -47,7 +47,9 @@
   },
   "jest": {
     "preset": "ts-jest",
-    "testEnvironment": "jsdom",
+    "setupFiles": [
+      "fake-indexeddb/auto"
+    ],
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/dist"

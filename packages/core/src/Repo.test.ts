@@ -2,8 +2,6 @@
 import { newid } from 'cevitxe-signal-client'
 import { Repo, RepoEventHandler } from './Repo'
 
-require('fake-indexeddb/auto')
-
 describe('Repo', () => {
   let beforeDoc: A.Doc<any>
   let afterDoc: A.Doc<any>
