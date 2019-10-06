@@ -32,11 +32,11 @@ export class Connection<T = any> extends EventEmitter {
     this.repoSync.open()
   }
 
-  receive = ({ data }: any) => {
+  receive = async ({ data }: any) => {
     const message = JSON.parse(data.toString())
     log('receive %o', message)
     this.emit('receive', message)
-    this.repoSync.receive(message) // this updates the doc
+    await this.repoSync.receive(message) // this updates the doc
     if (message.changes) {
       log('%s changes received', message.changes.length)
       if (this.dispatch) {
