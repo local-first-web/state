@@ -9,8 +9,6 @@ type Clock = Map<string, number>
 type ClockMap = Map<string, Clock>
 type Clocks = { ours: ClockMap; theirs: ClockMap }
 
-const log = debug('cevitxe:docsetsync')
-
 /**
  * One instance of `RepoSync` keeps one local document in sync with one remote peer's replica of
  * the same document.
@@ -51,6 +49,7 @@ export class RepoSync {
   public repo: Repo<any>
   private send: (msg: Message) => void
   private clock: Clocks
+  private log: debug.Debugger
 
   /**
    * @param repo An `Automerge.Repo` containing the document being synchronized.
@@ -61,27 +60,28 @@ export class RepoSync {
     this.repo = repo
     this.send = send
     this.clock = { ours: Map(), theirs: Map() }
+    this.log = debug(`cevitxe:docsetsync:${repo.databaseName}`)
   }
 
   // Public API
 
-  open() {
-    log('open', Array.from(this.repo.documentIds))
+  async open() {
+    this.repo.registerHandler(this.onDocChanged.bind(this))
     for (let documentId of this.repo.documentIds) //
-      if (documentId.length) this.registerDoc(documentId)
-    this.repo.registerHandler(this.docChanged.bind(this))
+      if (documentId.length) await this.registerDoc(documentId)
   }
 
   close() {
-    log('close')
-    this.repo.unregisterHandler(this.docChanged.bind(this))
+    this.log('close')
+    this.repo.unregisterHandler(this.onDocChanged.bind(this))
   }
+
   weHaveDoc(documentId: string) {
     return this.repo.state.hasOwnProperty(documentId)
   }
 
   // Called by the network stack whenever it receives a message from a peer
-  receive({
+  async receive({
     documentId,
     clock,
     changes,
@@ -89,17 +89,17 @@ export class RepoSync {
     documentId: string
     clock: Clock
     changes?: A.Change[]
-  }): A.Doc<any> {
-    log('receive', documentId)
+  }): Promise<A.Doc<any>> {
+    this.log('receive', documentId)
     // Record their clock value for this document
     if (clock) this.updateClock(documentId, theirs, clock)
 
     // If they sent changes, apply them to our document
-    if (changes) this.repo.applyChanges(documentId, changes)
+    if (changes) await this.repo.applyChanges(documentId, changes)
     // If no changes, treat it as a request for our latest changes
-    else if (this.weHaveDoc(documentId)) this.maybeSendChanges(documentId)
+    else if (this.weHaveDoc(documentId)) await this.maybeSendChanges(documentId)
     // If no changes and we don't have the document, treat it as an advertisement and request it
-    else this.advertise(documentId)
+    else this.requestDoc(documentId)
 
     // Return the current state of the document
     return this.repo.get(documentId)
@@ -108,17 +108,18 @@ export class RepoSync {
   // Private methods
 
   private async registerDoc(documentId: string) {
-    log('registerDoc', documentId)
+    this.log('registerDoc', documentId)
 
     const clock = await this.getClockFromDoc(documentId)
     this.validateDoc(documentId, clock)
     // Advertise the document
-    this.requestChanges(documentId, clock)
+    await this.requestChanges(documentId, clock)
     // Record the doc's initial clock
-    this.updateClock(documentId, ours, clock)
+    await this.updateClock(documentId, ours, clock)
   }
 
   private validateDoc(documentId: string, clock: Clock) {
+    this.log('validateDoc', documentId)
     const ourClock = this.getClock(documentId, ours)
 
     // Make sure doc has a clock (i.e. is an automerge object)
@@ -131,17 +132,18 @@ export class RepoSync {
   }
 
   // Callback that is called by the repo whenever a document is changed
-  private async docChanged(documentId: string) {
-    log('doc changed')
+  private async onDocChanged(documentId: string) {
+    this.log('onDocChanged', documentId)
     const clock = await this.getClockFromDoc(documentId)
     this.validateDoc(documentId, clock)
-    this.maybeSendChanges(documentId)
-    this.maybeRequestChanges(documentId, clock)
+    await this.maybeSendChanges(documentId)
+    await this.maybeRequestChanges(documentId, clock)
     this.updateClock(documentId, ours, clock)
   }
 
   // Send changes if we have more recent information than they do
   private async maybeSendChanges(documentId: string) {
+    this.log('maybeSendChanges', documentId)
     const theirClock = (this.getClock(documentId, theirs) as unknown) as A.Clock
     if (theirClock === undefined) return
 
@@ -149,10 +151,11 @@ export class RepoSync {
 
     // If we have changes they don't have, send them
     const changes = A.Backend.getMissingChanges(ourState!, theirClock)
-    if (changes.length > 0) this.sendChanges(documentId, changes)
+    if (changes.length > 0) await this.sendChanges(documentId, changes)
   }
 
   private async sendChanges(documentId: string, changes: A.Change[]) {
+    this.log('sendChanges', documentId)
     const clock = await this.getClockFromDoc(documentId)
     this.send({ documentId, clock: clock.toJS() as any, changes })
     this.updateClock(documentId, ours)
@@ -163,22 +166,23 @@ export class RepoSync {
     documentId: string,
     clock: Clock | Promise<Clock> = this.getClockFromDoc(documentId)
   ) {
+    this.log('maybeRequestChanges', documentId)
     const ourClock = this.getClock(documentId, ours)
     // If the document is newer than what we have, request changes
     if (!lessOrEqual(await clock, ourClock)) this.requestChanges(documentId, clock)
   }
 
-  // A message with no changes and a clock is a request for changes
+  // A message with no changes and a clock is either a request for changes or an advertisement
   private async requestChanges(
     documentId: string,
     clock: Clock | Promise<Clock> = this.getClockFromDoc(documentId)
   ) {
+    this.log('requestChanges', documentId)
     this.send({ documentId, clock: (await clock).toJS() as any })
   }
 
-  // A message with a documentId and an empty clock is an advertisement for the document
-  // (if we have it) or a request for the document (if we don't)
-  private advertise(documentId: string) {
+  // A message with a documentId and an empty clock is a request for the document
+  private requestDoc(documentId: string) {
     this.send({ documentId, clock: {} })
   }
 
