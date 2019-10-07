@@ -228,7 +228,7 @@ export class Repo<T = any> extends EventEmitter {
   private async create() {
     for (let documentId in this.state) {
       const document = A.from(this.state[documentId])
-      this.set(documentId, document)
+      await this.set(documentId, document)
     }
   }
 
