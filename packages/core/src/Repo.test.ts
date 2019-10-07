@@ -51,9 +51,9 @@ describe('Repo', () => {
     expect(callback).not.toBeCalled()
   })
 
-  it('should allow removing a document', async () => {
-    await repo.remove(ID)
-    expect(repo.state[ID]).toBe(undefined)
-    expect(await repo.getSnapshot(ID)).toBe(undefined)
-  })
+  // it('should allow removing a document', async () => {
+  //   await repo.remove(ID)
+  //   expect(repo.state[ID]).toBe(undefined)
+  //   expect(await repo.getSnapshot(ID)).toBe(undefined)
+  // })
 })
