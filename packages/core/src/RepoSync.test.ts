@@ -1,8 +1,9 @@
-﻿import A from 'automerge'
+import A from 'automerge'
 import { TestChannel } from './lib/TestChannel'
 import { Repo } from './Repo'
 import { RepoSync } from './RepoSync'
 import { Message } from './Message'
+import { pause as _yield } from './lib/pause'
 
 export interface BirdCount {
   [bird: string]: number
@@ -104,6 +105,28 @@ describe(`RepoSync`, () => {
         expect(await remoteRepo.get('abc')).toEqual({ wrens: 555 })
         expect(await localRepo.get('qrs')).toEqual({ orioles: 123 })
       })
+    })
+  })
+
+  describe('Request Repo', () => {
+    let localRepo: Repo<BirdCount>
+    let remoteRepo: Repo<BirdCount>
+    beforeEach(async () => {
+      localRepo = new Repo<BirdCount>('angry-cockatoo', `local-${testSeq}`)
+      await localRepo.set('doc1', A.from({ swallows: 1 }, 'L'))
+      await localRepo.set('doc2', A.from({ what: 123 }, 'L'))
+
+      remoteRepo = new Repo<BirdCount>('angry-cockatoo', `remote-${testSeq}`)
+
+      const channel = new TestChannel()
+      await makeConnection('L', localRepo, channel)
+      await makeConnection('R', remoteRepo, channel)
+      await _yield()
+    })
+
+    it('should sync up initial state', async () => {
+      const remoteDoc1 = await remoteRepo.get('doc1')
+      expect(remoteDoc1).toEqual({ swallows: 1 })
     })
   })
 
