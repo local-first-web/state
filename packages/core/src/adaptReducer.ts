@@ -43,7 +43,7 @@ export const adaptReducer: ReducerConverter = (proxyReducer, repo) => {
           collection(name).removeAll(repo)
         } else if (typeof fn === 'function') {
           // run the change function in the repo
-          repo.change(documentId, fn)
+          // repo.change(documentId, fn)
         }
       }
     }

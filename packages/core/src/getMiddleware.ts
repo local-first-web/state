@@ -30,6 +30,8 @@ export const getMiddleware: MiddlewareFactory = (repo, proxyReducer) => {
           // Doc will be run through a change function. Cache the previous version of the doc so we
           // can record changes for the storage feed
           const oldDoc = (await repo.get(documentId)) || A.init() // create a new doc if one doesn't exist
+          await repo.change(documentId, fn)
+
           affectedDocs[documentId] = oldDoc
         }
       }
