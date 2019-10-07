@@ -3,6 +3,8 @@ import { DELETE_COLLECTION } from './constants'
 import { ChangeMap, RepoSnapshot } from './types'
 import { Repo } from './Repo'
 
+export const DELETED = '::DELETED'
+
 export interface CollectionOptions {
   idField?: string
 }
@@ -84,8 +86,6 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    *   '::teachers': DELETE_COLLECTION
    * }
    */
-
-  const DELETED = '::DELETED'
 
   const keyName = collection.getKeyName(name)
 
