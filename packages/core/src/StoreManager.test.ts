@@ -3,13 +3,12 @@ import { Server } from 'cevitxe-signal-server'
 import debug from 'debug'
 import eventPromise from 'p-event'
 import { getPortPromise as getAvailablePort } from 'portfinder'
+import { collection } from './collection'
+import { pause } from './lib/pause'
 import { StoreManager } from './StoreManager'
 import { ProxyReducer } from './types'
-import { pause } from './lib/pause'
-import { collection } from './collection'
 
 describe('Cevitxe', () => {
-  const log = debug('cevitxe:test')
   const teachers = collection('teachers')
 
   const proxyReducer = ((state, { type, payload }) => {
@@ -62,7 +61,6 @@ describe('Cevitxe', () => {
 
       // include a teardown function in the return values
       const close = async () => {
-        await pause()
         await localStoreManager.close()
       }
 
@@ -237,7 +235,6 @@ describe('Cevitxe', () => {
 
       // include a teardown function in the return values
       const close = async () => {
-        await pause(500)
         await localStoreManager.close()
         await remoteStoreManager.close()
       }
@@ -252,13 +249,13 @@ describe('Cevitxe', () => {
     }
 
     it('should sync a new document', async () => {
-      const { close, remoteStoreManager, localStore, remoteStore } = await open()
+      const { close, localStore, remoteStore } = await open()
 
       // change something in the local store
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
 
       // wait for remote peer to see change
-      await eventPromise(remoteStoreManager, 'change')
+      await pause()
 
       const expectedState = { abcxyz: teacher1 }
 
@@ -347,29 +344,19 @@ describe('Cevitxe', () => {
     })
 
     it('should persist changes coming from a peer', async () => {
-      const {
-        close,
-        localStoreManager,
-        localStore,
-        remoteStoreManager,
-        remoteStore,
-        discoveryKey,
-      } = await open()
+      const { close, localStore, remoteStoreManager, remoteStore, discoveryKey } = await open()
 
       // add a teacher in the local store
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
-      await eventPromise(localStoreManager, 'change')
 
       // change something in the local store
       localStore.dispatch({
         type: 'UPDATE_TEACHER',
         payload: { id: 'abcxyz', first: 'Herbert' },
       })
-      await eventPromise(localStoreManager, 'change')
 
       // wait for remote peer to see changes
-      await eventPromise(remoteStoreManager, 'change')
-      await eventPromise(remoteStoreManager, 'change')
+      await pause()
 
       // confirm that both stores have the new value
       expect(teachers.selectors.getMap(remoteStore.getState()).abcxyz.first).toEqual('Herbert')
@@ -389,19 +376,10 @@ describe('Cevitxe', () => {
     })
 
     it('should persist deletions coming from a peer', async () => {
-      const {
-        close,
-        localStoreManager,
-        localStore,
-        remoteStoreManager,
-        remoteStore,
-        discoveryKey,
-      } = await open()
+      const { close, localStore, remoteStoreManager, remoteStore, discoveryKey } = await open()
 
       // add a record
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
-      await eventPromise(localStoreManager, 'change')
-      await eventPromise(remoteStoreManager, 'change')
 
       // confirm that the record is there before deleting it
       expect(teachers.selectors.getMap(localStore.getState())).toHaveProperty('abcxyz')
@@ -410,10 +388,7 @@ describe('Cevitxe', () => {
       localStore.dispatch({ type: 'REMOVE_TEACHER', payload: { id: 'abcxyz' } })
 
       // wait for changes to go through
-      await Promise.all([
-        eventPromise(remoteStoreManager, 'change'),
-        eventPromise(localStoreManager, 'change'),
-      ])
+      await pause()
 
       // confirm that the deletion took place locally
       expect(teachers.selectors.getMap(localStore.getState())).not.toHaveProperty('abcxyz')
@@ -448,11 +423,11 @@ describe('Cevitxe', () => {
     })
 
     it('should sync a dropped collection', async () => {
-      const { close, remoteStoreManager, localStore, remoteStore } = await open()
+      const { close, localStore, remoteStore } = await open()
 
       // add a record
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
-      await eventPromise(remoteStoreManager, 'change')
+      await pause()
 
       // confirm that the local store has initial state
       expect(teachers.selectors.count(localStore.getState())).toBe(1)
@@ -462,7 +437,7 @@ describe('Cevitxe', () => {
 
       // Drop teachers locally
       localStore.dispatch({ type: 'DROP_TEACHERS' })
-      await eventPromise(remoteStoreManager, 'change')
+      await pause()
 
       // confirm that the local store is caught up
       expect(teachers.selectors.count(localStore.getState())).toBe(0)
