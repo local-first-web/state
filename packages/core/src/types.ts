@@ -47,17 +47,6 @@ export interface KeyPair {
   secretKey: CryptoKey
 }
 
-export interface Message {
-  documentId: string
-  clock: A.Clock
-  changes?: A.Change[]
-}
-
-export interface ReceiveMessagePayload {
-  message: Message
-  connection: RepoSync
-}
-
 /**
  * `RepoSnapshot` is a plain JavaScript representation of a repo's contents. It is an object, each
  * property of which is also an object; so any primitive values or arrays need to be nested a couple

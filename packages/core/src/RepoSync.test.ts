@@ -2,7 +2,7 @@
 import { TestChannel } from './lib/TestChannel'
 import { Repo } from './Repo'
 import { RepoSync } from './RepoSync'
-import { Message } from './types'
+import { Message } from './Message'
 
 export interface BirdCount {
   [bird: string]: number

@@ -1,5 +1,5 @@
 ﻿import { EventEmitter } from 'events'
-import { Message } from '../types'
+import { Message } from '../Message'
 
 /**
  * Simplest possible communications channel, for testing.

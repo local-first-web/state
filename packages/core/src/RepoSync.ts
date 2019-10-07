@@ -3,105 +3,11 @@ import debug from 'debug'
 import { Map } from 'immutable'
 import { Repo } from './Repo'
 import { lessOrEqual } from './lib/lessOrEqual'
+import { Message, SEND_CHANGES, ADVERTISE_DOC, REQUEST_CHANGES, REQUEST_DOC } from './Message'
 
 type Clock = Map<string, number>
 type ClockMap = Map<string, Clock>
 type Clocks = { ours: ClockMap; theirs: ClockMap }
-
-const REQUEST_REPO = 'REQUEST_REPO'
-const REQUEST_DOC = 'REQUEST_DOC'
-const ADVERTISE_DOC = 'ADVERTISE_DOC'
-const REQUEST_CHANGES = 'REQUEST_CHANGES'
-const SEND_CHANGES = 'SEND_CHANGES'
-const SEND_ALL_CHANGES = 'SEND_ALL_CHANGES'
-const SEND_SNAPSHOT = 'SEND_SNAPSHOT'
-const SEND_ALL_SNAPSHOTS = 'SEND_ALL_SNAPSHOTS'
-
-/**
- * Initializing repo from the network, get everything (snapshots and changes)
- */
-interface RequestRepoMessage {
-  type: typeof REQUEST_REPO
-}
-
-/**
- * Initializing a new document from the netwrok, get everything (snapshot and changes)
- */
-interface RequestDocMessage {
-  type: typeof REQUEST_DOC
-  documentId: string
-  clock: {}
-}
-
-/**
- * Expose available changes
- */
-interface AdvertiseDocMessage {
-  type: typeof ADVERTISE_DOC
-  documentId: string
-  clock: Clock
-}
-
-/**
- * Request available changes that this client doesn't have
- */
-interface RequestChangesMessage {
-  type: typeof REQUEST_CHANGES
-  documentId: string
-  clock: Clock
-}
-
-/**
- * Send requested changes for a document
- */
-interface SendChangesMessage {
-  type: typeof SEND_CHANGES
-  documentId: string
-  clock: Clock
-  changes: A.Change[]
-}
-
-/**
- * Send all changes for all documents (for initialization)
- */
-interface SendAllMessage {
-  type: typeof SEND_ALL_CHANGES
-  changes: {
-    documentId: string
-    clock: Clock
-    changes: A.Change[]
-  }[]
-}
-
-/**
- * Send snapshot for a document
- */
-interface SendSnapshotMessage {
-  type: typeof SEND_SNAPSHOT
-  documentId: string
-  snapshot: any
-}
-
-/**
- * Send snapshots for all documents
- */
-interface SendAllSnapshotsMessage {
-  type: typeof SEND_ALL_SNAPSHOTS
-  snapshots: {
-    documentId: string
-    snapshot: any
-  }[]
-}
-
-type Message =
-  | RequestRepoMessage
-  | RequestDocMessage
-  | AdvertiseDocMessage
-  | RequestChangesMessage
-  | SendChangesMessage
-  | SendAllMessage
-  | SendSnapshotMessage
-  | SendAllSnapshotsMessage
 
 /**
  * One instance of `RepoSync` keeps one local document in sync with one remote peer's replica of
