@@ -51,14 +51,14 @@ export const getMiddleware: MiddlewareFactory = (repo, proxyReducer) => {
       // for changes coming from peer, we already have the Automerge changes, so just persist them
       const { documentId, changes } = action.payload.message
       const newDoc = await repo.get(documentId)
-      await repo.saveSnapshot(documentId, newDoc)
+      await repo.setSnapshot(documentId, newDoc)
       changeSets.push({ documentId, changes })
     } else {
       // for insert/update, we generate the changes by comparing each document before & after
       for (const documentId in affectedDocs) {
         const oldDoc = affectedDocs[documentId]
         const newDoc = await repo.get(documentId)!
-        await repo.saveSnapshot(documentId, newDoc)
+        await repo.setSnapshot(documentId, newDoc)
         const changes = A.getChanges(oldDoc, newDoc)
         if (changes.length > 0) changeSets.push({ documentId, changes })
       }

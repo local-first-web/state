@@ -17,7 +17,7 @@ describe('Repo', () => {
     repo = new Repo('jive-panda', `testdb-${newid()}`)
     await repo.set(ID, beforeDoc)
     callback = jest.fn((documentId, doc) => {})
-    repo.registerHandler(callback)
+    repo.addHandler(callback)
   })
 
   it('should have a document inside the repo', async () => {
@@ -46,7 +46,7 @@ describe('Repo', () => {
   })
 
   it('should allow removing the handler', () => {
-    repo.unregisterHandler(callback)
+    repo.removeHandler(callback)
     repo.applyChanges(ID, changes)
     expect(callback).not.toBeCalled()
   })

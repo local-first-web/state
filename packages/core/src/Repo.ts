@@ -96,152 +96,6 @@ export class Repo<T = any> extends EventEmitter {
   }
 
   /**
-   * Determines whether the repo has previously persisted data or not.
-   * @returns `true` if there is any stored data in the repo.
-   */
-  async hasData() {
-    const database = await this.openDB()
-    const count = await database.count('feeds')
-    return count > 0
-  }
-
-  /**
-   * Adds a set of changes to the document's append-only history.
-   * @param changeSet
-   */
-  async appendChangeset(changeSet: ChangeSet) {
-    this.log('appending changeset', changeSet.documentId, changeSet.changes.length)
-    const database = await this.openDB()
-    await database.add('feeds', changeSet)
-    database.close()
-  }
-
-  /**
-   * Gets all stored changesets from a document's history.
-   * @param documentId The ID of the requested document.
-   * @returns An array of changesets in order of application.
-   */
-  private async getChangesets(documentId: string): Promise<ChangeSet[]> {
-    const database = await this.openDB()
-    const changeSets = await database.getAllFromIndex('feeds', 'documentId', documentId)
-    this.log('getChangeSets', documentId, changeSets.length)
-    database.close()
-    return changeSets
-  }
-
-  /**
-   * Saves the given object as a snapshot for the given `documentId`, replacing any existing
-   * snapshot.
-   * @param documentId
-   * @param snapshot
-   */
-  async saveSnapshot(documentId: string, document: A.Doc<T>) {
-    this.log('saveSnapshot', documentId, document)
-    const snapshot = { ...document } // clone without Automerge metadata
-    this.state[documentId] = snapshot
-    const database = await this.openDB()
-    await database.put('snapshots', { documentId, snapshot })
-    database.close()
-  }
-
-  /**
-   * Returns a snapshot of the document's current state.
-   * @param documentId
-   * @returns
-   */
-  async getSnapshot(documentId: string) {
-    this.log('getSnapshot', documentId)
-    if (!this.state.hasOwnProperty(documentId)) {
-      const database = await this.openDB()
-      const snapshotRecord = await database.get('snapshots', documentId)
-      if (snapshotRecord) {
-        const { snapshot } = snapshotRecord
-        if (snapshot[DELETED]) {
-          // omit deleted documents
-        } else {
-          this.state[documentId] = snapshot
-        }
-      }
-      database.close()
-    }
-    return this.state[documentId]
-  }
-
-  // /**
-  //  * Removes any existing snapshot for a document, e.g. when the document is marked as deleted.
-  //  * @param documentId
-  //  */
-  // async removeSnapshot(documentId: string) {
-  //   const database = await this.openDB()
-  //   this.log('deleting', documentId)
-  //   await database.delete('snapshots', documentId)
-  //   database.close()
-  // }
-
-  /**
-   * Gets a list of the IDs of all documents recorded in the repo.
-   * @param [objectStore]
-   * @returns
-   */
-  async getDocumentIds(objectStore: string = 'feeds') {
-    this.log('getDocumentIds', objectStore)
-    const documentIds: string[] = []
-    const database = await this.openDB()
-    const index = database.transaction(objectStore).store.index('documentId')
-    for await (const cursor of index.iterate(undefined, 'nextunique'))
-      documentIds.push(cursor.value.documentId)
-    this.log('documentIds', documentIds)
-    return documentIds.map(documentId => documentId.toString())
-  }
-
-  // Private
-
-  /**
-   * Opens the local database and returns a reference to it.
-   * @returns An `idb` wrapper for an indexed DB.
-   */
-  private openDB() {
-    const storageKey = `cevitxe::${this.databaseName}::${this.discoveryKey.substr(0, 12)}`
-    return idb.openDB(storageKey, DB_VERSION, {
-      upgrade(db) {
-        // feeds
-        const feeds = db.createObjectStore('feeds', {
-          keyPath: 'id',
-          autoIncrement: true,
-        })
-        feeds.createIndex('documentId', 'documentId')
-
-        // snapshots
-        const snapshots = db.createObjectStore('snapshots', {
-          keyPath: 'documentId',
-          autoIncrement: false,
-        })
-        snapshots.createIndex('documentId', 'documentId')
-      },
-    })
-  }
-
-  /**
-   * Creates a new repo with the given initial state
-   * @param initialState
-   */
-  private async create() {
-    for (let documentId in this.state) {
-      const document = A.from(this.state[documentId])
-      await this.set(documentId, document)
-    }
-  }
-
-  /**
-   * Loads all the repo's snapshots into memory
-   */
-  private async rebuildSnapshotsFromHistory() {
-    const documentIds = await this.getDocumentIds('feeds')
-    this.log('getting changesets from storage', documentIds)
-    for (const documentId of documentIds) await this.getSnapshot(documentId)
-  }
-
-  /**
    * Returns all of the repo's document IDs from memory.
    * Note: This does not include deleted documents
    */
@@ -262,7 +116,7 @@ export class Repo<T = any> extends EventEmitter {
         // TODO: probably don't need this 'isDelete' thing any more
         // else if (isDelete) await this.remove(documentId)
       }
-      await this.saveSnapshot(documentId, doc)
+      await this.setSnapshot(documentId, doc)
       this.docCache.set(documentId, doc)
     }
     return this.docCache.get(documentId)
@@ -290,7 +144,7 @@ export class Repo<T = any> extends EventEmitter {
     await this.appendChangeset({ documentId, changes })
 
     // save snapshot
-    await this.saveSnapshot(documentId, doc)
+    await this.setSnapshot(documentId, doc)
 
     // call handlers
     for (const fn of this.handlers) {
@@ -334,28 +188,160 @@ export class Repo<T = any> extends EventEmitter {
     return newDoc
   }
 
-  // /**
-  //  * Removes a document from our in-memory state, and deletes its snapshot. (The change history of a
-  //  * document is never deleted, in case it's undeleted at some point.)
-  //  * @param documentId The ID of the document
-  //  */
-  // async remove(documentId: string) {
-  //   delete this.state[documentId]
-  //   await this.removeSnapshot(documentId)
-  // }
+  /**
+   * Returns a snapshot of the document's current state.
+   * @param documentId
+   * @returns
+   */
+  async getSnapshot(documentId: string) {
+    this.log('getSnapshot', documentId)
+    if (!this.state.hasOwnProperty(documentId)) {
+      const database = await this.openDB()
+      const snapshotRecord = await database.get('snapshots', documentId)
+      if (snapshotRecord) {
+        const { snapshot } = snapshotRecord
+        if (snapshot[DELETED]) {
+          // omit deleted documents
+        } else {
+          this.state[documentId] = snapshot
+        }
+      }
+      database.close()
+    }
+    return this.state[documentId]
+  }
+
+  /**
+   * Saves the given object as a snapshot for the given `documentId`, replacing any existing
+   * snapshot.
+   * @param documentId
+   * @param snapshot
+   */
+  async setSnapshot(documentId: string, document: A.Doc<T>) {
+    this.log('saveSnapshot', documentId, document)
+    const snapshot = { ...document } // clone without Automerge metadata
+    this.state[documentId] = snapshot
+    const database = await this.openDB()
+    await database.put('snapshots', { documentId, snapshot })
+    database.close()
+  }
 
   /**
    * Adds a change event listener
    * @param handler
    */
-  registerHandler(handler: RepoEventHandler<T>) {
+  addHandler(handler: RepoEventHandler<T>) {
     this.handlers.add(handler)
   }
 
   /**
    * Removes a change event listener
    */
-  unregisterHandler(handler: RepoEventHandler<T>) {
+  removeHandler(handler: RepoEventHandler<T>) {
     this.handlers.delete(handler)
+  }
+
+  // Private
+
+  /**
+   * Determines whether the repo has previously persisted data or not.
+   * @returns `true` if there is any stored data in the repo.
+   */
+  private async hasData() {
+    const database = await this.openDB()
+    const count = await database.count('feeds')
+    return count > 0
+  }
+
+  // /**
+  //  * Gets a list of the IDs of all documents recorded in the repo.
+  //  * @param [objectStore]
+  //  * @returns
+  //  */
+  // private async getDocumentIds(objectStore: string = 'feeds') {
+  //   this.log('getDocumentIds', objectStore)
+  //   const documentIds: string[] = []
+  //   const database = await this.openDB()
+  //   const index = database.transaction(objectStore).store.index('documentId')
+  //   for await (const cursor of index.iterate(undefined, 'nextunique'))
+  //     documentIds.push(cursor.value.documentId)
+  //   this.log('documentIds', documentIds)
+  //   return documentIds.map(documentId => documentId.toString())
+  // }
+
+  /**
+   * Opens the local database and returns a reference to it.
+   * @returns An `idb` wrapper for an indexed DB.
+   */
+  private openDB() {
+    const storageKey = `cevitxe::${this.databaseName}::${this.discoveryKey.substr(0, 12)}`
+    return idb.openDB(storageKey, DB_VERSION, {
+      upgrade(db) {
+        // feeds
+        const feeds = db.createObjectStore('feeds', {
+          keyPath: 'id',
+          autoIncrement: true,
+        })
+        feeds.createIndex('documentId', 'documentId')
+
+        // snapshots
+        const snapshots = db.createObjectStore('snapshots', {
+          keyPath: 'documentId',
+          autoIncrement: false,
+        })
+        snapshots.createIndex('documentId', 'documentId')
+      },
+    })
+  }
+
+  /**
+   * Creates a new repo with the given initial state
+   * @param initialState
+   */
+  private async create() {
+    for (let documentId in this.state) {
+      const document = A.from(this.state[documentId])
+      await this.set(documentId, document)
+    }
+  }
+
+  /**
+   * Loads all the repo's snapshots into memory
+   */
+  private async rebuildSnapshotsFromHistory() {
+    const database = await this.openDB()
+    const snapshots = await database.getAll('snapshots')
+    for (const { documentId, snapshot } of snapshots) {
+      if (snapshot[DELETED]) {
+        // omit deleted documents
+      } else {
+        this.state[documentId] = snapshot
+      }
+    }
+    database.close()
+  }
+
+  /**
+   * Adds a set of changes to the document's append-only history.
+   * @param changeSet
+   */
+  private async appendChangeset(changeSet: ChangeSet) {
+    this.log('appending changeset', changeSet.documentId, changeSet.changes.length)
+    const database = await this.openDB()
+    await database.add('feeds', changeSet)
+    database.close()
+  }
+
+  /**
+   * Gets all stored changesets from a document's history.
+   * @param documentId The ID of the requested document.
+   * @returns An array of changesets in order of application.
+   */
+  private async getChangesets(documentId: string): Promise<ChangeSet[]> {
+    const database = await this.openDB()
+    const changeSets = await database.getAllFromIndex('feeds', 'documentId', documentId)
+    this.log('getChangeSets', documentId, changeSets.length)
+    database.close()
+    return changeSets
   }
 }

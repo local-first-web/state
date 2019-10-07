@@ -66,14 +66,14 @@ export class RepoSync {
   // Public API
 
   async open() {
-    this.repo.registerHandler(this.onDocChanged.bind(this))
+    this.repo.addHandler(this.onDocChanged.bind(this))
     for (let documentId of this.repo.documentIds) //
       if (documentId.length) await this.registerDoc(documentId)
   }
 
   close() {
     this.log('close')
-    this.repo.unregisterHandler(this.onDocChanged.bind(this))
+    this.repo.removeHandler(this.onDocChanged.bind(this))
   }
 
   weHaveDoc(documentId: string) {

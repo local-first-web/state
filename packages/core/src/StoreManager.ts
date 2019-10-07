@@ -64,7 +64,7 @@ export class StoreManager<T> extends EventEmitter {
 
     this.repo = new Repo(discoveryKey, this.databaseName)
 
-    this.repo.registerHandler(this.onChange)
+    this.repo.addHandler(this.onChange)
 
     const state = await this.repo.init(this.initialState, isCreating)
 

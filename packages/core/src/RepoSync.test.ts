@@ -29,7 +29,7 @@ const makeConnection = async (key: string, repo: Repo<BirdCount>, channel: TestC
 }
 
 // returns a promise that resolves the next time a document is changed on the repo
-const docChanged = (repo: Repo) => new Promise(ok => repo.registerHandler(ok))
+const docChanged = (repo: Repo) => new Promise(ok => repo.addHandler(ok))
 
 describe(`RepoSync`, () => {
   beforeEach(() => (testSeq += 1))
