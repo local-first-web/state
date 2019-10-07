@@ -1,10 +1,10 @@
 import A from 'automerge'
 import { AnyAction, Reducer } from 'redux'
-import { collection } from './collection'
+import { collection, DELETED } from './collection'
 import { DELETE_COLLECTION, RECEIVE_MESSAGE_FROM_PEER } from './constants'
 import { Repo } from './Repo'
-import { repoToObject } from './repoHelpers'
 import { ProxyReducer, RepoSnapshot } from './types'
+import debug from 'debug'
 
 export type ReducerConverter = (
   proxyReducer: ProxyReducer,
@@ -24,7 +24,9 @@ export type ReducerConverter = (
  * @param repo The store's repo
  */
 export const adaptReducer: ReducerConverter = (proxyReducer, repo) => {
+  const log = debug(`cevitxe:adaptreducer:${repo.databaseName}`)
   const reducer: Reducer<RepoSnapshot, AnyAction> = (state, { type, payload }): RepoSnapshot => {
+    repo.state = { ...(state || {}) }
     if (type === RECEIVE_MESSAGE_FROM_PEER) {
       // Connection has already updated our repo - nothing to do here.
     } else {
@@ -42,12 +44,14 @@ export const adaptReducer: ReducerConverter = (proxyReducer, repo) => {
           const name = collection.getCollectionName(documentId)
           collection(name).removeAll(repo)
         } else if (typeof fn === 'function') {
-          // run the change function in the repo
-          // repo.change(documentId, fn)
+          // quickly update snapshot in memory; middleware will take care of making this official
+          const doc: A.Doc<any> = A.from(repo.state[documentId] || {})
+          const newDoc = A.change(doc, fn)
+          repo.state[documentId] = { ...newDoc } // convert to plain object
+          log('updated', documentId, newDoc)
         }
       }
     }
-
     return repo.state
   }
 

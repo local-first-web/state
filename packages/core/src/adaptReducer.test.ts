@@ -14,13 +14,11 @@ describe('adaptReducer', () => {
 
     it('should not change the original state', async () => {
       const newState = reducer(state, { type: 'DOESNTMATTER' })
-      await pause()
       expect(state).toEqual({ settings: {} })
     })
 
     it('should return a modified state', async () => {
       const newState = reducer(state, { type: 'DOESNTMATTER' })
-      await pause()
       expect(newState).toEqual({ settings: { foo: 2 } })
     })
   })
