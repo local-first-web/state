@@ -1,6 +1,7 @@
 import A from 'automerge'
 import { RepoSnapshot } from './types'
 import { Repo } from './Repo'
+import { newid } from 'cevitxe-signal-client'
 
 /**
  * DEPRECATED
@@ -19,7 +20,7 @@ export const repoToObject = <T = any>(repo: Repo<T>): RepoSnapshot<T> => {
  * This is only used in tests
  */
 export const repoFromObject = (obj: any): Repo<any> => {
-  const repo = new Repo<any>('test', 'test')
+  const repo = new Repo<any>('brilliant-test', `testdb-${newid()}`)
   for (let documentId of Object.getOwnPropertyNames(obj)) {
     repo.set(documentId, A.from(obj[documentId]))
   }
