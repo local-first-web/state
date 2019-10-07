@@ -50,7 +50,7 @@ export class Repo<T = any> extends EventEmitter {
   /**
    * In-memory map of document snapshots.
    */
-  public state: RepoSnapshot<T>
+  private state: RepoSnapshot<T>
 
   private docCache: Cache<string, any>
 
@@ -116,7 +116,7 @@ export class Repo<T = any> extends EventEmitter {
         // TODO: probably don't need this 'isDelete' thing any more
         // else if (isDelete) await this.remove(documentId)
       }
-      await this.setSnapshot(documentId, doc)
+      await this.saveSnapshot(documentId, doc)
       this.docCache.set(documentId, doc)
     }
     return this.docCache.get(documentId)
@@ -144,7 +144,7 @@ export class Repo<T = any> extends EventEmitter {
     await this.appendChangeset({ documentId, changes })
 
     // save snapshot
-    await this.setSnapshot(documentId, doc)
+    await this.saveSnapshot(documentId, doc)
 
     // call handlers
     for (const fn of this.handlers) {
@@ -189,41 +189,38 @@ export class Repo<T = any> extends EventEmitter {
   }
 
   /**
-   * Returns a snapshot of the document's current state.
+   * Gets the in-memory snapshot of a document
    * @param documentId
-   * @returns
+   * @returns Returns a plain JS object
    */
-  async getSnapshot(documentId: string) {
-    this.log('getSnapshot', documentId)
-    if (!this.state.hasOwnProperty(documentId)) {
-      const database = await this.openDB()
-      const snapshotRecord = await database.get('snapshots', documentId)
-      if (snapshotRecord) {
-        const { snapshot } = snapshotRecord
-        if (snapshot[DELETED]) {
-          // omit deleted documents
-        } else {
-          this.state[documentId] = snapshot
-        }
-      }
-      database.close()
-    }
+  getSnapshot(documentId: string) {
     return this.state[documentId]
   }
 
   /**
-   * Saves the given object as a snapshot for the given `documentId`, replacing any existing
-   * snapshot.
+   * Sets the in-memory snapshot of a document. NOTE: This does not update the document's change
+   * history or even persist the snapshot - this is just to allow synchronous updates of the state
+   * for UI purposes.
    * @param documentId
-   * @param snapshot
+   * @param document
    */
-  async setSnapshot(documentId: string, document: A.Doc<T>) {
-    this.log('setSnapshot', documentId, document)
-    const snapshot = { ...document } // clone without Automerge metadata
-    this.state[documentId] = snapshot
-    const database = await this.openDB()
-    await database.put('snapshots', { documentId, snapshot })
-    database.close()
+  setSnapshot(documentId: string, document: T) {
+    this.state[documentId] = document
+  }
+
+  /**
+   * Returns the state of the entire repo, containing snapshots of all the documents.
+   */
+  getState(): RepoSnapshot<T> {
+    return this.state
+  }
+
+  /**
+   * Sets the state of the entire repo. NOTE: This doesn't update the repo's change history or
+   * persist anything; this is only used for synchronous updates of the state for UI purposes.
+   */
+  setState(replacementState: RepoSnapshot<T>) {
+    this.state = replacementState
   }
 
   /**
@@ -327,5 +324,20 @@ export class Repo<T = any> extends EventEmitter {
     this.log('getChangeSets', documentId, changeSets.length)
     database.close()
     return changeSets
+  }
+
+  /**
+   * Saves the given object as a snapshot for the given `documentId`, replacing any existing
+   * snapshot.
+   * @param documentId
+   * @param snapshot
+   */
+  private async saveSnapshot(documentId: string, document: A.Doc<T>) {
+    this.log('setSnapshot', documentId, document)
+    const snapshot: any = { ...document } // clone without Automerge metadata
+    this.setSnapshot(documentId, snapshot)
+    const database = await this.openDB()
+    await database.put('snapshots', { documentId, snapshot })
+    database.close()
   }
 }

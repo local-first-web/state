@@ -64,7 +64,7 @@ export interface ReceiveMessagePayload {
  * of levels in.
  */
 export interface RepoSnapshot<T = any> {
-  [documentId: string]: A.Doc<T>
+  [documentId: string]: T
 }
 
 /**

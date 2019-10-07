@@ -26,16 +26,17 @@ export type ReducerConverter = (
 export const adaptReducer: ReducerConverter = (proxyReducer, repo) => {
   const log = debug(`cevitxe:adaptreducer:${repo.databaseName}`)
   const reducer: Reducer<RepoSnapshot, AnyAction> = (state, { type, payload }): RepoSnapshot => {
-    repo.state = { ...(state || {}) }
+    state = state || {}
     if (type === RECEIVE_MESSAGE_FROM_PEER) {
       // Connection has already updated our repo - nothing to do here.
+      return state
     } else {
       const functionMap = proxyReducer(state, { type, payload })
-
       if (!functionMap) {
         // no matching function - return the unmodified state
-        return state || {}
+        return state
       }
+      repo.setState({ ...state }) // clone
 
       // Apply each change function to the corresponding document
       for (let documentId in functionMap) {
@@ -45,14 +46,14 @@ export const adaptReducer: ReducerConverter = (proxyReducer, repo) => {
           collection(name).removeAll(repo)
         } else if (typeof fn === 'function') {
           // quickly update snapshot in memory; middleware will take care of making this official
-          const doc: A.Doc<any> = A.from(repo.state[documentId] || {})
+          const doc: A.Doc<any> = A.from(repo.getSnapshot(documentId) || {})
           const newDoc = A.change(doc, fn)
-          repo.state[documentId] = { ...newDoc } // convert to plain object
+          repo.setSnapshot(documentId, { ...newDoc }) // convert to plain object
           log('updated', documentId, newDoc)
         }
       }
+      return repo.getState()
     }
-    return repo.state
   }
 
   return reducer
