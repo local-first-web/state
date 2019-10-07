@@ -7,13 +7,10 @@ import { useDispatch } from 'react-redux'
 import { clearCollection, loadCollection, loadSchema } from 'redux/actions'
 import GeneratorWorker from '../workers/generator.worker'
 import { ProgressBar } from './ProgressBar'
-import debug from 'debug'
 
 const generator = new GeneratorWorker()
 
 const nextFrame = () => new Promise(ok => requestAnimationFrame(ok))
-
-const log = debug('cevitxe:grid:datagenerator')
 
 export function DataGenerator() {
   const dispatch = useDispatch()
