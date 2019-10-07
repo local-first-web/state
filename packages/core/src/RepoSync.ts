@@ -66,12 +66,13 @@ export class RepoSync {
   // Public API
 
   async open() {
-    if (this.repo.hasData()) {
-      // request single data dump
-    }
-    this.repo.addHandler(this.onDocChanged.bind(this))
+    // if (this.repo.documentIds.length === -1) {
+    //   // request entire repo
+    // } else {
     for (let documentId of this.repo.documentIds) //
       if (documentId.length) await this.registerDoc(documentId)
+    // }
+    this.repo.addHandler(this.onDocChanged.bind(this))
   }
 
   close() {
