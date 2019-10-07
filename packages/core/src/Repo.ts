@@ -3,7 +3,7 @@ import debug from 'debug'
 import { EventEmitter } from 'events'
 import * as idb from 'idb/with-async-ittr-cjs'
 import { ChangeSet, RepoSnapshot } from './types'
-
+import { DELETED } from './collection'
 import Cache from 'lru-cache'
 
 const DB_VERSION = 1
@@ -135,7 +135,7 @@ export class Repo<T = any> extends EventEmitter {
    * @param documentId
    * @param snapshot
    */
-  async saveSnapshot(documentId: string, document: any) {
+  async saveSnapshot(documentId: string, document: A.Doc<T>) {
     this.log('saveSnapshot', documentId, document)
     const snapshot = { ...document } // clone without Automerge metadata
     this.state[documentId] = snapshot
@@ -150,28 +150,33 @@ export class Repo<T = any> extends EventEmitter {
    * @returns
    */
   async getSnapshot(documentId: string) {
+    this.log('getSnapshot', documentId)
     if (!this.state.hasOwnProperty(documentId)) {
       const database = await this.openDB()
       const snapshotRecord = await database.get('snapshots', documentId)
-      if (snapshotRecord === undefined) return undefined
-      const { snapshot } = snapshotRecord
-      this.log('getSnapshot', documentId, snapshot)
-      this.state[documentId] = snapshot
+      if (snapshotRecord) {
+        const { snapshot } = snapshotRecord
+        if (snapshot[DELETED]) {
+          // omit deleted documents
+        } else {
+          this.state[documentId] = snapshot
+        }
+      }
       database.close()
     }
     return this.state[documentId]
   }
 
-  /**
-   * Removes any existing snapshot for a document, e.g. when the document is marked as deleted.
-   * @param documentId
-   */
-  async removeSnapshot(documentId: string) {
-    const database = await this.openDB()
-    this.log('deleting', documentId)
-    await database.delete('snapshots', documentId)
-    database.close()
-  }
+  // /**
+  //  * Removes any existing snapshot for a document, e.g. when the document is marked as deleted.
+  //  * @param documentId
+  //  */
+  // async removeSnapshot(documentId: string) {
+  //   const database = await this.openDB()
+  //   this.log('deleting', documentId)
+  //   await database.delete('snapshots', documentId)
+  //   database.close()
+  // }
 
   /**
    * Gets a list of the IDs of all documents recorded in the repo.
@@ -233,7 +238,7 @@ export class Repo<T = any> extends EventEmitter {
   private async rebuildSnapshotsFromHistory() {
     const documentIds = await this.getDocumentIds('feeds')
     this.log('getting changesets from storage', documentIds)
-    for (const documentId of documentIds) this.get(documentId)
+    for (const documentId of documentIds) await this.getSnapshot(documentId)
   }
 
   /**
@@ -249,18 +254,18 @@ export class Repo<T = any> extends EventEmitter {
    * @param documentId
    */
   async get(documentId: string): Promise<A.Doc<T>> {
-    if (this.docCache.has(documentId)) {
-      return this.docCache.get(documentId)
-    } else {
+    if (!this.docCache.has(documentId)) {
       let doc = A.init<T>()
       const changeSets = await this.getChangesets(documentId)
-      for (const { changes, isDelete } of changeSets) {
+      for (const { changes } of changeSets) {
         if (changes) doc = A.applyChanges(doc, changes)
-        else if (isDelete) await this.remove(documentId)
+        // TODO: probably don't need this 'isDelete' thing any more
+        // else if (isDelete) await this.remove(documentId)
       }
+      await this.saveSnapshot(documentId, doc)
       this.docCache.set(documentId, doc)
-      return doc
     }
+    return this.docCache.get(documentId)
   }
 
   /**
@@ -329,15 +334,15 @@ export class Repo<T = any> extends EventEmitter {
     return newDoc
   }
 
-  /**
-   * Removes a document from our in-memory state, and deletes its snapshot. (The change history of a
-   * document is never deleted, in case it's undeleted at some point.)
-   * @param documentId The ID of the document
-   */
-  async remove(documentId: string) {
-    delete this.state[documentId]
-    await this.removeSnapshot(documentId)
-  }
+  // /**
+  //  * Removes a document from our in-memory state, and deletes its snapshot. (The change history of a
+  //  * document is never deleted, in case it's undeleted at some point.)
+  //  * @param documentId The ID of the document
+  //  */
+  // async remove(documentId: string) {
+  //   delete this.state[documentId]
+  //   await this.removeSnapshot(documentId)
+  // }
 
   /**
    * Adds a change event listener
