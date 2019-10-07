@@ -1,10 +1,9 @@
 import { newid } from 'cevitxe-signal-client'
 import { Server } from 'cevitxe-signal-server'
-import debug from 'debug'
 import eventPromise from 'p-event'
 import { getPortPromise as getAvailablePort } from 'portfinder'
 import { collection } from './collection'
-import { pause } from './lib/pause'
+import { pause as _yield } from './lib/pause'
 import { StoreManager } from './StoreManager'
 import { ProxyReducer } from './types'
 
@@ -255,7 +254,7 @@ describe('Cevitxe', () => {
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
 
       // wait for remote peer to see change
-      await pause()
+      await _yield()
 
       const expectedState = { abcxyz: teacher1 }
 
@@ -356,7 +355,7 @@ describe('Cevitxe', () => {
       })
 
       // wait for remote peer to see changes
-      await pause()
+      await _yield()
 
       // confirm that both stores have the new value
       expect(teachers.selectors.getMap(remoteStore.getState()).abcxyz.first).toEqual('Herbert')
@@ -388,7 +387,7 @@ describe('Cevitxe', () => {
       localStore.dispatch({ type: 'REMOVE_TEACHER', payload: { id: 'abcxyz' } })
 
       // wait for changes to go through
-      await pause()
+      await _yield()
 
       // confirm that the deletion took place locally
       expect(teachers.selectors.getMap(localStore.getState())).not.toHaveProperty('abcxyz')
@@ -427,7 +426,7 @@ describe('Cevitxe', () => {
 
       // add a record
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
-      await pause()
+      await _yield()
 
       // confirm that the local store has initial state
       expect(teachers.selectors.count(localStore.getState())).toBe(1)
@@ -437,7 +436,7 @@ describe('Cevitxe', () => {
 
       // Drop teachers locally
       localStore.dispatch({ type: 'DROP_TEACHERS' })
-      await pause()
+      await _yield()
 
       // confirm that the local store is caught up
       expect(teachers.selectors.count(localStore.getState())).toBe(0)
