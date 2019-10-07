@@ -70,6 +70,16 @@ export class Repo<T = any> extends EventEmitter {
   }
 
   /**
+   * Determines whether the repo has previously persisted data or not.
+   * @returns `true` if there is any stored data in the repo.
+   */
+  async hasData() {
+    const database = await this.openDB()
+    const count = await database.count('feeds')
+    return count > 0
+  }
+
+  /**
    * Initializes the repo and returns a snapshot of its current state.
    * @param initialState The starting state to use when creating a new repo.
    * @param creating Use `true` if creating a new repo, `false` if joining an existing repo (locally
@@ -239,16 +249,6 @@ export class Repo<T = any> extends EventEmitter {
   }
 
   // PRIVATE
-
-  /**
-   * Determines whether the repo has previously persisted data or not.
-   * @returns `true` if there is any stored data in the repo.
-   */
-  private async hasData() {
-    const database = await this.openDB()
-    const count = await database.count('feeds')
-    return count > 0
-  }
 
   /**
    * Opens the local database and returns a reference to it.
