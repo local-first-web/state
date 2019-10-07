@@ -42,9 +42,10 @@ describe('Connection', () => {
     await server.listen({ silent: true })
   })
 
-  beforeEach(() => {
+  beforeEach(async () => {
     testSeq += 1
     repo = new Repo<any>('test', `test${testSeq}`)
+    await repo.open()
     let key: keyof FooStateDoc
     for (key in initialState) {
       const value = initialState[key]

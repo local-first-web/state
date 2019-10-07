@@ -39,16 +39,18 @@ describe(`RepoSync`, () => {
   beforeEach(() => (testSeq += 1))
 
   describe('Changes after connecting', () => {
-    const setup = () => {
+    const setup = async () => {
       const localRepo = new Repo<BirdCount>('angry-cockatoo', `local-${testSeq}`)
+      await localRepo.open()
       const remoteRepo = new Repo<BirdCount>('angry-cockatoo', `remote-${testSeq}`)
+      await remoteRepo.open()
       const channel = new TestChannel()
       return { localRepo, remoteRepo, channel }
     }
 
     it.only('should communicate local changes to remote', async () => {
       log('------------------- start test')
-      const { localRepo, remoteRepo, channel } = setup()
+      const { localRepo, remoteRepo, channel } = await setup()
 
       log('making connections')
       await makeConnection('L', localRepo, channel)

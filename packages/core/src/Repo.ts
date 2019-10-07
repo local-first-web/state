@@ -59,6 +59,8 @@ export class Repo<T = any> extends EventEmitter {
    */
   private handlers: Set<RepoEventHandler<T>>
 
+  private database?: idb.IDBPDatabase<unknown>
+
   constructor(discoveryKey: string, databaseName: string) {
     super()
     this.discoveryKey = discoveryKey
@@ -79,6 +81,17 @@ export class Repo<T = any> extends EventEmitter {
     return count > 0
   }
 
+  async open() {
+    this.database = await this.openDB()
+  }
+
+  close() {
+    if (this.database) {
+      this.database.close()
+      delete this.database
+    }
+  }
+
   /**
    * Initializes the repo and returns a snapshot of its current state.
    * @param initialState The starting state to use when creating a new repo.
@@ -87,6 +100,7 @@ export class Repo<T = any> extends EventEmitter {
    * @returns A snapshot of the repo's current state.
    */
   async init(initialState: any, creating: boolean): Promise<RepoSnapshot> {
+    await this.open()
     const hasData = await this.hasData()
     this.log('hasData', hasData)
     if (creating) {
@@ -119,22 +133,28 @@ export class Repo<T = any> extends EventEmitter {
    */
   async get(documentId: string): Promise<A.Doc<T>> {
     this.log('get', documentId)
-    if (!this.docCache.has(documentId)) {
-      this.log('get:cache miss', documentId)
-      let doc = A.init<T>()
-      const changeSets = await this.getChangesets(documentId)
-      for (const { changes } of changeSets) {
-        if (changes) doc = A.applyChanges(doc, changes)
-      }
-      // await this.saveSnapshot(documentId, doc)
-      this.log('get: caching', documentId, doc)
-      this.docCache.set(documentId, doc)
-    } else {
-      this.log('get:from cache', documentId)
+    // if (!this.docCache.has(documentId)) {
+    // this.log('get:cache miss', documentId)
+    const doc = await this.reconstructDoc(documentId)
+    return doc
+    // await this.saveSnapshot(documentId, doc)
+    // this.log('get: caching', documentId, doc)
+    // this.docCache.set(documentId, doc)
+    // } else {
+    // this.log('get:from cache', documentId)
+    // }
+    // const cachedDoc = this.docCache.get(documentId)
+    // this.log('get:end', documentId, cachedDoc)
+    // return cachedDoc
+  }
+
+  async reconstructDoc(documentId: string): Promise<A.Doc<T>> {
+    let doc = A.init<T>()
+    const changeSets = await this.getChangesets(documentId)
+    for (const { changes } of changeSets) {
+      if (changes) doc = A.applyChanges(doc, changes)
     }
-    const cachedDoc = this.docCache.get(documentId)
-    this.log('get:end', documentId, cachedDoc)
-    return cachedDoc
+    return doc
   }
 
   /**
@@ -144,23 +164,22 @@ export class Repo<T = any> extends EventEmitter {
    * @param changes (optional) If we're already given the changes (e.g. in `applyChanges`), we can
    * pass them in so we don't have to recalculate them.
    */
-  async set(documentId: string, doc: A.Doc<T>, changes?: A.Change[]) {
+  async set(documentId: string, doc: A.Doc<T>) {
     this.log('set', documentId, doc)
-    if (!changes) {
-      // look up old doc and generate diff
-      const oldDoc = await this.get(documentId)
-      changes = A.getChanges(oldDoc, doc)
-    }
+    // look up old doc and generate diff
+    const oldDoc = await this.reconstructDoc(documentId)
+    const changes = A.getChanges(oldDoc, doc)
 
     // cache the doc
     this.log('set: caching', documentId, doc)
     this.docCache.set(documentId, doc)
-    // expect(this.docCache.get(documentId)).toEqual(doc)
 
     // append changes to this document's history
+    this.log("set: let's append the changeset")
     if (changes.length > 0) await this.appendChangeset({ documentId, changes })
 
     // save snapshot
+    this.log("set: let's save the snapshot")
     await this.saveSnapshot(documentId, doc)
 
     // call handlers
@@ -177,8 +196,8 @@ export class Repo<T = any> extends EventEmitter {
    */
   async change(documentId: string, changeFn: A.ChangeFn<T>) {
     // apply changes to document
-    const doc = await this.get(documentId)
-    const newDoc = A.change(doc, changeFn)
+    const oldDoc = await this.reconstructDoc(documentId)
+    const newDoc = A.change(oldDoc, changeFn)
 
     // save the new document, snapshot, etc.
     await this.set(documentId, newDoc)
@@ -194,12 +213,24 @@ export class Repo<T = any> extends EventEmitter {
    * @returns The updated document
    */
   async applyChanges(documentId: string, changes: A.Change[]) {
+    this.log('apply changes')
     // apply changes to document
-    const doc = await this.get(documentId)
+    const doc = await this.reconstructDoc(documentId)
     const newDoc = A.applyChanges(doc, changes)
 
-    // save the new document, snapshot, etc.
-    await this.set(documentId, newDoc, changes)
+    // cache the doc
+    this.docCache.set(documentId, newDoc)
+
+    // append changes to this document's history
+    if (changes.length > 0) await this.appendChangeset({ documentId, changes })
+
+    // save snapshot
+    await this.saveSnapshot(documentId, newDoc)
+
+    // call handlers
+    for (const fn of this.handlers) {
+      await fn(documentId, newDoc)
+    }
 
     // return the modified document
     return newDoc
@@ -297,8 +328,7 @@ export class Repo<T = any> extends EventEmitter {
    * Loads all the repo's snapshots into memory
    */
   private async rebuildSnapshotsFromHistory() {
-    const database = await this.openDB()
-    const snapshots = await database.getAll('snapshots')
+    const snapshots = await this.database!.getAll('snapshots')
     for (const { documentId, snapshot } of snapshots) {
       if (snapshot[DELETED]) {
         // omit deleted documents
@@ -306,7 +336,6 @@ export class Repo<T = any> extends EventEmitter {
         this.state[documentId] = snapshot
       }
     }
-    database.close()
   }
 
   /**
@@ -315,9 +344,8 @@ export class Repo<T = any> extends EventEmitter {
    */
   private async appendChangeset(changeSet: ChangeSet) {
     this.log('appending changeset', changeSet.documentId, changeSet.changes.length)
-    const database = await this.openDB()
-    await database.add('feeds', changeSet)
-    database.close()
+    // console.log('appending changeset', changeSet.documentId, changeSet.changes.length)
+    await this.database!.add('feeds', changeSet)
   }
 
   /**
@@ -326,10 +354,8 @@ export class Repo<T = any> extends EventEmitter {
    * @returns An array of changesets in order of application.
    */
   private async getChangesets(documentId: string): Promise<ChangeSet[]> {
-    const database = await this.openDB()
-    const changeSets = await database.getAllFromIndex('feeds', 'documentId', documentId)
+    const changeSets = await this.database!.getAllFromIndex('feeds', 'documentId', documentId)
     this.log('getChangeSets', documentId, changeSets.length)
-    database.close()
     return changeSets
   }
 
@@ -341,10 +367,9 @@ export class Repo<T = any> extends EventEmitter {
    */
   private async saveSnapshot(documentId: string, document: A.Doc<T>) {
     this.log('saveSnapshot', documentId, document)
+    // console.log('saveSnapshot', documentId, document)
     const snapshot: any = { ...document } // clone without Automerge metadata
     this.setSnapshot(documentId, snapshot)
-    const database = await this.openDB()
-    await database.put('snapshots', { documentId, snapshot })
-    database.close()
+    await this.database!.put('snapshots', { documentId, snapshot })
   }
 }

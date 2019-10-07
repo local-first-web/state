@@ -15,6 +15,7 @@ describe('Repo', () => {
     afterDoc = A.change(beforeDoc, s => (s.birds = ['swallows']))
     changes = A.getChanges(beforeDoc, afterDoc)
     repo = new Repo('jive-panda', `testdb-${newid()}`)
+    await repo.open()
     await repo.set(ID, beforeDoc)
     callback = jest.fn((documentId, doc) => {})
     repo.addHandler(callback)
