@@ -43,19 +43,13 @@ export const adaptReducer: ReducerConverter = (proxyReducer, repo) => {
           const name = collection.getCollectionName(documentId)
           collection(name).removeAll(repo)
         } else if (typeof fn === 'function') {
-          // find the corresponding document in the repo
-
-          const oldDoc = repo.get(documentId) || A.init()
-          // run the change function to get a new document
-          const newDoc = A.change(oldDoc, fn)
-          // update the repo
-          repo.set(documentId, newDoc)
+          // run the change function in the repo
+          repo.change(documentId, fn)
         }
       }
     }
 
-    const newState = repoToObject(repo) // TODO: replace with repo.getFullSnapshot or something
-    return newState
+    return repo.state
   }
 
   return reducer
