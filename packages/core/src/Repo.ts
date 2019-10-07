@@ -118,18 +118,23 @@ export class Repo<T = any> extends EventEmitter {
    * @param documentId
    */
   async get(documentId: string): Promise<A.Doc<T>> {
+    this.log('get', documentId)
     if (!this.docCache.has(documentId)) {
+      this.log('get:cache miss', documentId)
       let doc = A.init<T>()
       const changeSets = await this.getChangesets(documentId)
       for (const { changes } of changeSets) {
         if (changes) doc = A.applyChanges(doc, changes)
-        // TODO: probably don't need this 'isDelete' thing any more
-        // else if (isDelete) await this.remove(documentId)
       }
-      await this.saveSnapshot(documentId, doc)
+      // await this.saveSnapshot(documentId, doc)
+      this.log('get: caching', documentId, doc)
       this.docCache.set(documentId, doc)
+    } else {
+      this.log('get:from cache', documentId)
     }
-    return this.docCache.get(documentId)
+    const cachedDoc = this.docCache.get(documentId)
+    this.log('get:end', documentId, cachedDoc)
+    return cachedDoc
   }
 
   /**
@@ -140,7 +145,7 @@ export class Repo<T = any> extends EventEmitter {
    * pass them in so we don't have to recalculate them.
    */
   async set(documentId: string, doc: A.Doc<T>, changes?: A.Change[]) {
-    this.log('set', documentId)
+    this.log('set', documentId, doc)
     if (!changes) {
       // look up old doc and generate diff
       const oldDoc = await this.get(documentId)
@@ -148,10 +153,12 @@ export class Repo<T = any> extends EventEmitter {
     }
 
     // cache the doc
+    this.log('set: caching', documentId, doc)
     this.docCache.set(documentId, doc)
+    // expect(this.docCache.get(documentId)).toEqual(doc)
 
     // append changes to this document's history
-    await this.appendChangeset({ documentId, changes })
+    if (changes.length > 0) await this.appendChangeset({ documentId, changes })
 
     // save snapshot
     await this.saveSnapshot(documentId, doc)
@@ -333,7 +340,7 @@ export class Repo<T = any> extends EventEmitter {
    * @param snapshot
    */
   private async saveSnapshot(documentId: string, document: A.Doc<T>) {
-    this.log('setSnapshot', documentId, document)
+    this.log('saveSnapshot', documentId, document)
     const snapshot: any = { ...document } // clone without Automerge metadata
     this.setSnapshot(documentId, snapshot)
     const database = await this.openDB()
