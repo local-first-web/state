@@ -4,7 +4,7 @@ import { AnyAction, Dispatch } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
 import { Repo } from './Repo'
 import { RepoSync } from './RepoSync'
-import { Message } from './types'
+import { Message } from './Message'
 
 const log = debug('cevitxe:connection')
 
