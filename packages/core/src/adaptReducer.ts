@@ -38,7 +38,6 @@ export const adaptReducer: ReducerConverter = (proxyReducer, repo) => {
       // Apply each change function to the corresponding document
       for (let documentId in functionMap) {
         const fn = functionMap[documentId] as A.ChangeFn<any> | symbol
-
         if (fn === DELETE_COLLECTION) {
           const name = collection.getCollectionName(documentId)
           collection(name).removeAll(repo)

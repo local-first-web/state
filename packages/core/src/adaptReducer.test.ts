@@ -1,6 +1,7 @@
 import { adaptReducer } from './adaptReducer'
 import { repoFromObject } from './repoHelpers'
 import { ProxyReducer } from './types'
+import { pause } from './lib/pause'
 
 describe('adaptReducer', () => {
   describe('should return a working reducer', () => {
@@ -11,8 +12,16 @@ describe('adaptReducer', () => {
 
     it('should return a function', () => expect(typeof reducer).toBe('function'))
 
-    const newState = reducer(state, { type: 'FOO' })
-    it('should not change the original state', () => expect(state).toEqual({ settings: {} }))
-    it('should return a modified state', () => expect(newState).toEqual({ settings: { foo: 2 } }))
+    it('should not change the original state', async () => {
+      const newState = reducer(state, { type: 'DOESNTMATTER' })
+      await pause()
+      expect(state).toEqual({ settings: {} })
+    })
+
+    it('should return a modified state', async () => {
+      const newState = reducer(state, { type: 'DOESNTMATTER' })
+      await pause()
+      expect(newState).toEqual({ settings: { foo: 2 } })
+    })
   })
 })

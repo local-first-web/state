@@ -168,7 +168,6 @@ describe('Cevitxe', () => {
       localStore.dispatch({ type: 'ADD_TEACHER', payload: [teacher1, teacher2] })
 
       // wait for both additions to take
-      await eventPromise(localStoreManager, 'change') // TODO: why do we need this?
       await eventPromise(localStoreManager, 'change')
       await eventPromise(localStoreManager, 'change')
 
@@ -179,7 +178,6 @@ describe('Cevitxe', () => {
       localStore.dispatch({ type: 'REMOVE_TEACHER', payload: teacher1 })
 
       // wait for deletion to take
-      await eventPromise(localStoreManager, 'change') // TODO: why do we need this?
       await eventPromise(localStoreManager, 'change')
 
       // confirm that the deletion took locally
