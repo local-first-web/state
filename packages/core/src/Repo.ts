@@ -218,7 +218,7 @@ export class Repo<T = any> extends EventEmitter {
    * @param snapshot
    */
   async setSnapshot(documentId: string, document: A.Doc<T>) {
-    this.log('saveSnapshot', documentId, document)
+    this.log('setSnapshot', documentId, document)
     const snapshot = { ...document } // clone without Automerge metadata
     this.state[documentId] = snapshot
     const database = await this.openDB()
@@ -241,7 +241,7 @@ export class Repo<T = any> extends EventEmitter {
     this.handlers.delete(handler)
   }
 
-  // Private
+  // PRIVATE
 
   /**
    * Determines whether the repo has previously persisted data or not.
@@ -252,22 +252,6 @@ export class Repo<T = any> extends EventEmitter {
     const count = await database.count('feeds')
     return count > 0
   }
-
-  // /**
-  //  * Gets a list of the IDs of all documents recorded in the repo.
-  //  * @param [objectStore]
-  //  * @returns
-  //  */
-  // private async getDocumentIds(objectStore: string = 'feeds') {
-  //   this.log('getDocumentIds', objectStore)
-  //   const documentIds: string[] = []
-  //   const database = await this.openDB()
-  //   const index = database.transaction(objectStore).store.index('documentId')
-  //   for await (const cursor of index.iterate(undefined, 'nextunique'))
-  //     documentIds.push(cursor.value.documentId)
-  //   this.log('documentIds', documentIds)
-  //   return documentIds.map(documentId => documentId.toString())
-  // }
 
   /**
    * Opens the local database and returns a reference to it.
