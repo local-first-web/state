@@ -3,11 +3,102 @@ import debug from 'debug'
 import { Map } from 'immutable'
 import { Repo } from './Repo'
 import { lessOrEqual } from './lib/lessOrEqual'
-import { Message } from './types'
 
 type Clock = Map<string, number>
 type ClockMap = Map<string, Clock>
 type Clocks = { ours: ClockMap; theirs: ClockMap }
+
+const REQUEST_REPO = 'REQUEST_REPO'
+const REQUEST_DOC = 'REQUEST_DOC'
+const ADVERTISE_DOC = 'ADVERTISE_DOC'
+const REQUEST_CHANGES = 'REQUEST_CHANGES'
+const SEND_CHANGES = 'SEND_CHANGES'
+const SEND_ALL_CHANGES = 'SEND_ALL_CHANGES'
+const SEND_SNAPSHOT = 'SEND_SNAPSHOT'
+const SEND_ALL_SNAPSHOTS = 'SEND_ALL_SNAPSHOTS'
+
+/**
+ * Initializing repo from the network, get everything (snapshots and changes)
+ */
+interface RequestRepoMessage {
+  type: typeof REQUEST_REPO
+}
+
+/**
+ * Initializing a new document from the netwrok, get everything (snapshot and changes)
+ */
+interface RequestDocMessage {
+  type: typeof REQUEST_DOC
+  documentId: string
+  clock: {}
+}
+
+/**
+ * Expose available changes
+ */
+interface AdvertiseDocMessage {
+  type: typeof ADVERTISE_DOC
+  documentId: string
+  clock: Clock
+}
+
+/**
+ * Request available changes that this client doesn't have
+ */
+interface RequestChangesMessage {
+  type: typeof REQUEST_CHANGES
+  documentId: string
+  clock: Clock
+}
+
+/**
+ * Send requested changes for a document
+ */
+interface SendChangesMessage {
+  type: typeof SEND_CHANGES
+  documentId: string
+  clock: Clock
+  changes: A.Change[]
+}
+
+/**
+ * Send all changes for all documents (for initialization)
+ */
+interface SendAllMessage {
+  type: typeof SEND_ALL_CHANGES
+  changes: {
+    documentId: string
+    clock: Clock
+    changes: A.Change[]
+  }[]
+}
+
+/**
+ * Send snapshot for a document
+ */
+interface SendSnapshotMessage {
+  type: typeof SEND_SNAPSHOT
+  documentId: string
+  snapshot: any
+}
+
+/**
+ * Send snapshots for all documents
+ */
+interface SendAllSnapshotsMessage {
+  type: typeof SEND_ALL_SNAPSHOTS
+  snapshots: { documentId: string; snapshot: any }[]
+}
+
+type Message =
+  | RequestRepoMessage
+  | RequestDocMessage
+  | AdvertiseDocMessage
+  | RequestChangesMessage
+  | SendChangesMessage
+  | SendAllMessage
+  | SendSnapshotMessage
+  | SendAllSnapshotsMessage
 
 /**
  * One instance of `RepoSync` keeps one local document in sync with one remote peer's replica of
@@ -66,6 +157,9 @@ export class RepoSync {
   // Public API
 
   async open() {
+    if (this.repo.hasData()) {
+      // request single data dump
+    }
     this.repo.addHandler(this.onDocChanged.bind(this))
     for (let documentId of this.repo.documentIds) //
       if (documentId.length) await this.registerDoc(documentId)
@@ -77,7 +171,7 @@ export class RepoSync {
   }
 
   weHaveDoc(documentId: string) {
-    return this.repo.state.hasOwnProperty(documentId)
+    return this.repo.getSnapshot(documentId) !== undefined
   }
 
   // Called by the network stack whenever it receives a message from a peer
@@ -113,7 +207,7 @@ export class RepoSync {
     const clock = await this.getClockFromDoc(documentId)
     this.validateDoc(documentId, clock)
     // Advertise the document
-    await this.requestChanges(documentId, clock)
+    await this.advertise(documentId, clock)
     // Record the doc's initial clock
     await this.updateClock(documentId, ours, clock)
   }
@@ -157,7 +251,12 @@ export class RepoSync {
   private async sendChanges(documentId: string, changes: A.Change[]) {
     this.log('sendChanges', documentId)
     const clock = await this.getClockFromDoc(documentId)
-    this.send({ documentId, clock: clock.toJS() as any, changes })
+    this.send({
+      type: SEND_CHANGES,
+      documentId,
+      clock: clock.toJS() as any,
+      changes,
+    })
     this.updateClock(documentId, ours)
   }
 
@@ -172,18 +271,33 @@ export class RepoSync {
     if (!lessOrEqual(await clock, ourClock)) this.requestChanges(documentId, clock)
   }
 
-  // A message with no changes and a clock is either a request for changes or an advertisement
+  private async advertise(
+    documentId: string,
+    clock: Clock | Promise<Clock> = this.getClockFromDoc(documentId)
+  ) {
+    this.log('requestChanges', documentId)
+    this.send({
+      type: ADVERTISE_DOC,
+      documentId,
+      clock: (await clock).toJS() as any,
+    })
+  }
+
   private async requestChanges(
     documentId: string,
     clock: Clock | Promise<Clock> = this.getClockFromDoc(documentId)
   ) {
     this.log('requestChanges', documentId)
-    this.send({ documentId, clock: (await clock).toJS() as any })
+    this.send({
+      type: REQUEST_CHANGES,
+      documentId,
+      clock: (await clock).toJS() as any,
+    })
   }
 
   // A message with a documentId and an empty clock is a request for the document
   private requestDoc(documentId: string) {
-    this.send({ documentId, clock: {} })
+    this.send({ type: REQUEST_DOC, documentId, clock: {} })
   }
 
   // overloads
