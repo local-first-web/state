@@ -87,7 +87,10 @@ interface SendSnapshotMessage {
  */
 interface SendAllSnapshotsMessage {
   type: typeof SEND_ALL_SNAPSHOTS
-  snapshots: { documentId: string; snapshot: any }[]
+  snapshots: {
+    documentId: string
+    snapshot: any
+  }[]
 }
 
 type Message =
