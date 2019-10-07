@@ -5,12 +5,15 @@ import { JSONSchema7 } from 'json-schema'
 import { Fragment, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { clearCollection, loadCollection, loadSchema } from 'redux/actions'
-import GeneratorWorker from '../workers/generator.worker'
+
+import { nextFrame } from '../lib/nextFrame'
+import GeneratorWorker from '../workers/dataGenerator.worker'
 import { ProgressBar } from './ProgressBar'
 
+/**
+ * The actual generation of random data is performed in a worker
+ */
 const generator = new GeneratorWorker()
-
-const nextFrame = () => new Promise(ok => requestAnimationFrame(ok))
 
 export function DataGenerator() {
   const dispatch = useDispatch()
