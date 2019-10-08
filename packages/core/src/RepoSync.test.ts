@@ -5,6 +5,7 @@ import { RepoSync } from './RepoSync'
 import { Message } from './Message'
 import { pause as _yield } from './lib/pause'
 import debug from 'debug'
+import { newid } from 'cevitxe-signal-client'
 
 const log = debug('cevitxe:test')
 
@@ -14,8 +15,6 @@ export interface BirdCount {
 
 const documentId = 'myDoc'
 
-let testSeq = 0
-
 // creates a RepoSync object using a simple channel
 const makeConnection = async (key: string, repo: Repo<BirdCount>, channel: TestChannel) => {
   // hook up send
@@ -23,10 +22,12 @@ const makeConnection = async (key: string, repo: Repo<BirdCount>, channel: TestC
   const sync = new RepoSync(repo, send)
 
   // hook up receive
-  channel.on('data', (peer_id, msg) => {
+  channel.addListener('data', (peer_id, msg) => {
     if (peer_id === key) return // ignore messages that we sent
+    log('receiving', peer_id, msg)
     sync.receive(msg)
   })
+  channel.addPeer()
 
   await sync.open()
   return sync
@@ -36,30 +37,23 @@ const makeConnection = async (key: string, repo: Repo<BirdCount>, channel: TestC
 const docChanged = (repo: Repo) => new Promise(ok => repo.addHandler(ok))
 
 describe(`RepoSync`, () => {
-  beforeEach(() => (testSeq += 1))
-
   describe('Changes after connecting', () => {
     const setup = async () => {
-      const localRepo = new Repo<BirdCount>('angry-cockatoo', `local-${testSeq}`)
+      const localRepo = new Repo<BirdCount>('angry-cockatoo', `local-${newid()}`, 'local')
       await localRepo.open()
-      const remoteRepo = new Repo<BirdCount>('angry-cockatoo', `remote-${testSeq}`)
+      const remoteRepo = new Repo<BirdCount>('angry-cockatoo', `remote-${newid()}`, 'remote')
       await remoteRepo.open()
       const channel = new TestChannel()
       return { localRepo, remoteRepo, channel }
     }
 
-    it.only('should communicate local changes to remote', async () => {
-      log('------------------- start test')
+    it('should communicate local changes to remote', async () => {
       const { localRepo, remoteRepo, channel } = await setup()
 
-      log('making connections')
-      await makeConnection('L', localRepo, channel)
       await makeConnection('R', remoteRepo, channel)
-      log('done making connections')
+      await makeConnection('L', localRepo, channel)
 
-      log('set local')
       await localRepo.set(documentId, A.from({ swallows: 1 }, 'L'))
-      log('set remote')
       await remoteRepo.set(documentId, A.from({}, 'R'))
 
       await _yield()
@@ -67,93 +61,146 @@ describe(`RepoSync`, () => {
       expect(remoteDoc).toEqual({ swallows: 1 })
     })
 
-    // it.only('should communicate remote changes to local', async () => {
-    //   expect(await localRepo.get(documentId)).toEqual({ swallows: 1 })
+    it('should communicate remote changes to local', async () => {
+      const { localRepo, remoteRepo, channel } = await setup()
 
-    //   remoteRepo.change(documentId, s => (s.swallows = 42))
-    //   await _yield()
+      await makeConnection('R', remoteRepo, channel)
+      await makeConnection('L', localRepo, channel)
 
-    //   expect(await localRepo.get(documentId)).toEqual({ swallows: 42 })
-    // })
+      await localRepo.set(documentId, A.from({ swallows: 1 }, 'L'))
+      await _yield()
 
-    // it('should sync ongoing changes both ways', async () => {
-    //   localRepo.change(documentId, s => (s.orioles = 123))
-    //   remoteRepo.change(documentId, s => (s.wrens = 555))
-    //   await Promise.all([docChanged(localRepo), docChanged(remoteRepo)])
+      expect(await localRepo.get(documentId)).toEqual({ swallows: 1 })
 
-    //   const localDoc = await localRepo.get(documentId)
-    //   const remoteDoc = await remoteRepo.get(documentId)
-    //   const expected = { swallows: 1, orioles: 123, wrens: 555 }
-    //   expect(localDoc).toEqual(expected)
-    //   expect(remoteDoc).toEqual(expected)
-    // })
+      await remoteRepo.change(documentId, s => (s.swallows = 42))
+      await _yield()
 
-    // describe('Sync new documents', () => {
-    //   it('should sync up new documents from local', async () => {
-    //     localRepo.set('xyz', A.from({ boo: 999 }, 'L'))
-    //     await docChanged(remoteRepo)
-    //     expect(await remoteRepo.get('xyz')).toEqual({ boo: 999 })
-    //   })
+      expect(await localRepo.get(documentId)).toEqual({ swallows: 42 })
+    })
 
-    //   it('should sync up new documents from remote', async () => {
-    //     remoteRepo.set('xyz', A.from({ boo: 999 }, 'R'))
-    //     await docChanged(localRepo)
-    //     expect(await localRepo.get('xyz')).toEqual({ boo: 999 })
-    //   })
+    it('should sync ongoing changes both ways', async () => {
+      const { localRepo, remoteRepo, channel } = await setup()
 
-    //   it('should concurrently exchange new documents', async () => {
-    //     await localRepo.set('abc', A.from({ wrens: 555 }, 'L'))
-    //     await remoteRepo.set('qrs', A.from({ orioles: 123 }, 'R'))
-    //     await Promise.all([docChanged(localRepo), docChanged(remoteRepo)])
-    //     expect(await remoteRepo.get('abc')).toEqual({ wrens: 555 })
-    //     expect(await localRepo.get('qrs')).toEqual({ orioles: 123 })
-    //   })
-    // })
+      await makeConnection('R', remoteRepo, channel)
+      await makeConnection('L', localRepo, channel)
+
+      await localRepo.change(documentId, s => (s.orioles = 123))
+      await remoteRepo.change(documentId, s => (s.wrens = 555))
+      await _yield()
+
+      const localDoc = await localRepo.get(documentId)
+      const remoteDoc = await remoteRepo.get(documentId)
+
+      const expected = { orioles: 123, wrens: 555 }
+
+      expect(localDoc).toEqual(expected)
+      expect(remoteDoc).toEqual(expected)
+    })
+
+    it('should sync up new documents from local', async () => {
+      const { localRepo, remoteRepo, channel } = await setup()
+
+      await makeConnection('R', remoteRepo, channel)
+      await makeConnection('L', localRepo, channel)
+
+      localRepo.set('xyz', A.from({ boo: 999 }, 'L'))
+      await docChanged(remoteRepo)
+      expect(await remoteRepo.get('xyz')).toEqual({ boo: 999 })
+    })
+
+    it('should sync up new documents from remote', async () => {
+      const { localRepo, remoteRepo, channel } = await setup()
+
+      await makeConnection('R', remoteRepo, channel)
+      await makeConnection('L', localRepo, channel)
+
+      remoteRepo.set('xyz', A.from({ boo: 999 }, 'R'))
+      await docChanged(localRepo)
+      expect(await localRepo.get('xyz')).toEqual({ boo: 999 })
+    })
+
+    it('should concurrently exchange new documents', async () => {
+      const { localRepo, remoteRepo, channel } = await setup()
+
+      await makeConnection('R', remoteRepo, channel)
+      await makeConnection('L', localRepo, channel)
+
+      await localRepo.set('abc', A.from({ wrens: 555 }, 'L'))
+      await remoteRepo.set('qrs', A.from({ orioles: 123 }, 'R'))
+      await Promise.all([docChanged(localRepo), docChanged(remoteRepo)])
+      expect(await remoteRepo.get('abc')).toEqual({ wrens: 555 })
+      expect(await localRepo.get('qrs')).toEqual({ orioles: 123 })
+    })
   })
 
-  // describe('Request Repo', () => {
-  //   let localRepo: Repo<BirdCount>
-  //   let remoteRepo: Repo<BirdCount>
-  //   beforeEach(async () => {
-  //     localRepo = new Repo<BirdCount>('angry-cockatoo', `local-${testSeq}`)
-  //     localRepo.set('doc1', A.from({ swallows: 1 }, 'L'))
-  //     localRepo.set('doc2', A.from({ vultures: 1 }, 'L'))
-
-  //     remoteRepo = new Repo<BirdCount>('angry-cockatoo', `remote-${testSeq}`)
-
-  //     const channel = new TestChannel()
-  //     makeConnection('L', localRepo, channel)
-  //     makeConnection('R', remoteRepo, channel)
-  //     await _yield()
-  //   })
-
-  //   it('should sync up initial state', async () => {
-  //     expect(await remoteRepo.get('doc1')).toEqual({ swallows: 1 })
-  //     expect(await remoteRepo.get('doc2')).toEqual({ vultures: 1 })
-  //   })
-  // })
-
   describe('Changes before connecting', () => {
-    it('should sync after the fact', async () => {
-      const localRepo = new Repo<BirdCount>('test', `local-${testSeq}`)
-      await localRepo.set(documentId, A.from({}, 'L'))
+    const setup = async () => {
+      const localRepo = new Repo<BirdCount>('miffed-bratwurst', `local-${newid()}`, 'L')
+      await localRepo.open()
+      const remoteRepo = new Repo<BirdCount>('miffed-bratwurst', `remote-${newid()}`, 'R')
+      await remoteRepo.open()
+      return { localRepo, remoteRepo }
+    }
 
-      let localDoc = await localRepo.get(documentId)
-      localDoc = A.change(localDoc, s => (s.wrens = 2))
-      await localRepo.set(documentId, localDoc)
-
-      const remoteRepo = new Repo<BirdCount>('test', `remote-${testSeq}`)
-      await remoteRepo.set(documentId, A.from({}, 'R'))
-
+    const makeConnections = async (localRepo: Repo, remoteRepo: Repo) => {
       const channel = new TestChannel()
-      await makeConnection('L', localRepo, channel)
+      await makeConnection('L', localRepo, channel) //** */
       await makeConnection('R', remoteRepo, channel)
+      await _yield()
+    }
 
-      await docChanged(remoteRepo)
+    it('should communicate local changes to remote', async () => {
+      const { localRepo, remoteRepo } = await setup()
 
-      const expected = { wrens: 2 }
+      await localRepo.set(documentId, A.from({ wrens: 2, swallows: 1, vultures: 234 }, 'L'))
+      await remoteRepo.set(documentId, A.from({ ['andean condors']: 34 }, 'R'))
+
+      await makeConnections(localRepo, remoteRepo)
+
+      const expected = { wrens: 2, swallows: 1, vultures: 234, ['andean condors']: 34 }
       expect(await remoteRepo.get(documentId)).toEqual(expected)
       expect(await localRepo.get(documentId)).toEqual(expected)
+    })
+
+    it('should sync up local documents created before connecting', async () => {
+      const { localRepo, remoteRepo } = await setup()
+
+      await localRepo.set('doc1', A.from({ wrens: 2 }, 'L'))
+      await _yield()
+
+      await makeConnections(localRepo, remoteRepo)
+
+      const expected = { wrens: 2 }
+      expect(await localRepo.get('doc1')).toEqual(expected)
+      expect(await remoteRepo.get('doc1')).toEqual(expected)
+    })
+
+    it('should sync up remote documents created before connecting', async () => {
+      const { localRepo, remoteRepo } = await setup()
+
+      await remoteRepo.set('doc1', A.from({ wrens: 2 }, 'R'))
+      await _yield()
+
+      await makeConnections(localRepo, remoteRepo)
+
+      const expected = { wrens: 2 }
+      expect(await localRepo.get('doc1')).toEqual(expected)
+      expect(await remoteRepo.get('doc1')).toEqual(expected)
+    })
+
+    it('should concurrently exchange new documents', async () => {
+      const { localRepo, remoteRepo } = await setup()
+
+      await localRepo.set('doc1', A.from({ condors: 37 }, 'L'))
+      await remoteRepo.set('doc2', A.from({ wrens: 2 }, 'R'))
+      await _yield()
+
+      await makeConnections(localRepo, remoteRepo)
+
+      expect(await localRepo.get('doc1')).toEqual({ condors: 37 })
+      expect(await remoteRepo.get('doc1')).toEqual({ condors: 37 })
+      expect(await localRepo.get('doc2')).toEqual({ wrens: 2 })
+      expect(await remoteRepo.get('doc2')).toEqual({ wrens: 2 })
     })
   })
 
@@ -163,6 +210,10 @@ describe(`RepoSync`, () => {
     let localRepo: Repo<BirdCount>
     let remoteRepo: Repo<BirdCount>
     let channel = new TestChannel()
+
+    // random actorIDs so we don't know which is sorted higher
+    const localActor = `${newid()}-local`
+    const remoteActor = `${newid()}-remote`
 
     function networkOff() {
       channel.removeAllListeners()
@@ -174,20 +225,27 @@ describe(`RepoSync`, () => {
       channel = new TestChannel()
       localConnection = await makeConnection('L', localRepo, channel)
       remoteConnection = await makeConnection('R', remoteRepo, channel)
+      await _yield()
     }
 
     beforeEach(async () => {
-      remoteRepo = new Repo('test', `remote-${testSeq}`)
-      await remoteRepo.set(documentId, A.from({}, 'R'))
-      localRepo = new Repo('test', `local-${testSeq}`)
-      await localRepo.set(documentId, A.from({ swallows: 1 }, 'L'))
-      networkOn()
-      await docChanged(remoteRepo)
+      remoteRepo = new Repo('test', `remote-${newid()}`, remoteActor)
+      await remoteRepo.open()
+      localRepo = new Repo('test', `local-${newid()}`, localActor)
+      await localRepo.open()
+
+      await remoteRepo.set(documentId, A.from<BirdCount>({}))
+      await localRepo.set(documentId, A.from<BirdCount>({ swallows: 1 }))
+
+      await networkOn()
+
+      // both peers now have the same value
+      expect(await localRepo.get(documentId)).toEqual({ swallows: 1 })
+      expect(await remoteRepo.get(documentId)).toEqual({ swallows: 1 })
     })
 
     it('should sync local changes made while offline', async () => {
       // remote peer has original state
-      await docChanged(remoteRepo)
       let remoteDoc = await remoteRepo.get(documentId)
       expect(remoteDoc.swallows).toEqual(1)
 
@@ -211,7 +269,6 @@ describe(`RepoSync`, () => {
       await networkOn()
 
       // as soon as we're back online, remote peer sees changes
-      await docChanged(remoteRepo)
       remoteDoc = await remoteRepo.get(documentId)
       expect(remoteDoc.swallows).toEqual(3)
     })
@@ -240,8 +297,7 @@ describe(`RepoSync`, () => {
         wrens: 1,
       }
 
-      await Promise.all([docChanged(localRepo), docChanged(remoteRepo)])
-
+      await _yield()
       expect(await localRepo.get(documentId)).toEqual(expected)
       expect(await remoteRepo.get(documentId)).toEqual(expected)
     })
@@ -250,36 +306,43 @@ describe(`RepoSync`, () => {
       networkOff()
 
       // local peer makes a change
-      await localRepo.change(documentId, doc => (doc.swallows = 13))
+      const localCount = 13
+      await localRepo.change(documentId, s => (s.swallows = localCount))
+      await _yield()
 
       // remote peer doesn't see local changes
       expect(await remoteRepo.get(documentId)).toEqual({ swallows: 1 })
 
       // remote peer makes a conflicting change
-      await remoteRepo.change(documentId, doc => (doc.swallows = 42))
+      const remoteCount = 42
+      await remoteRepo.change(documentId, s => (s.swallows = remoteCount))
+      await _yield()
 
       // local peer doesn't see remote changes
-      expect(await localRepo.get(documentId)).toEqual({ swallows: 13 })
+      expect(await localRepo.get(documentId)).toEqual({ swallows: localCount })
 
       await networkOn()
 
       // as soon as we're back online, one of the changes is selected
-
-      await Promise.all([docChanged(localRepo), docChanged(remoteRepo)])
-
-      let localDoc = await localRepo.get(documentId)
-      let remoteDoc = await remoteRepo.get(documentId)
+      const localDoc = await localRepo.get(documentId)
+      const remoteDoc = await remoteRepo.get(documentId)
 
       const localValue = localDoc.swallows
       const remoteValue = remoteDoc.swallows
 
+      // we don't know which value won the conflict, but:
+
+      // 1. we know both sides ended up with the same value
       expect(localValue).toEqual(remoteValue)
 
-      // we don't know the exact value, but it's one of the two, and
-      // the "losing" value is stored in `conflicts`
-      const conflict = A.getConflicts(localDoc!, 'swallows')
-      expect(localValue === 13 || (remoteValue === 42 && conflict.L === 13)).toBe(true)
-      expect(remoteValue === 42 || (localValue === 13 && conflict.R === 42)).toBe(true)
+      // 2. we know the winning value one of the two
+      expect(localValue === localCount || localValue === remoteCount).toBe(true)
+      expect(remoteValue === localCount || remoteValue === remoteCount).toBe(true)
+
+      // 3. the losing value is stored in `conflicts`
+      const conflicts = A.getConflicts(localDoc, 'swallows')
+      if (localValue === remoteCount) expect(conflicts[localActor]).toBe(localCount) // remote won, local's value stored in conflicts
+      if (localValue === localCount) expect(conflicts[remoteActor]).toBe(remoteCount) // local won, remote's value stored in conflicts
     })
   })
 })

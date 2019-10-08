@@ -226,11 +226,7 @@ describe('Cevitxe', () => {
       // join store from remote peer
       const remoteStore = await remoteStoreManager.joinStore(discoveryKey)
 
-      // wait for both peers to see connection
-      await Promise.all([
-        eventPromise(localStoreManager, 'peer'),
-        eventPromise(remoteStoreManager, 'peer'),
-      ])
+      await _yield()
 
       // include a teardown function in the return values
       const close = async () => {
@@ -347,14 +343,13 @@ describe('Cevitxe', () => {
 
       // add a teacher in the local store
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
+      await _yield()
 
       // change something in the local store
       localStore.dispatch({
         type: 'UPDATE_TEACHER',
         payload: { id: 'abcxyz', first: 'Herbert' },
       })
-
-      // wait for remote peer to see changes
       await _yield()
 
       // confirm that both stores have the new value
@@ -366,6 +361,7 @@ describe('Cevitxe', () => {
 
       // create a new store, which should see the state in the db and load it
       const newRemoteStore = await remoteStoreManager.joinStore(discoveryKey)
+      await _yield()
 
       // confirm that the modified state is still there
       expect(teachers.selectors.getMap(newRemoteStore.getState()).abcxyz.first).toEqual('Herbert')
@@ -379,14 +375,13 @@ describe('Cevitxe', () => {
 
       // add a record
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
+      await _yield()
 
       // confirm that the record is there before deleting it
       expect(teachers.selectors.getMap(localStore.getState())).toHaveProperty('abcxyz')
 
       // delete a record in the local store
       localStore.dispatch({ type: 'REMOVE_TEACHER', payload: { id: 'abcxyz' } })
-
-      // wait for changes to go through
       await _yield()
 
       // confirm that the deletion took place locally
@@ -400,6 +395,7 @@ describe('Cevitxe', () => {
 
       // reconnect remote store
       const newRemoteStore = await remoteStoreManager.joinStore(discoveryKey)
+      await _yield()
 
       // Confirm that the deletion was persisted
       expect(teachers.selectors.getMap(newRemoteStore.getState())).not.toHaveProperty('abcxyz')
