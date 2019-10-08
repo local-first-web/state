@@ -62,7 +62,7 @@ export class StoreManager<T> extends EventEmitter {
   private makeStore = async (discoveryKey: string, isCreating: boolean = false) => {
     log = debug(`cevitxe:${isCreating ? 'createStore' : 'joinStore'}:${discoveryKey}`)
 
-    this.repo = new Repo(discoveryKey, this.databaseName)
+    this.repo = new Repo(discoveryKey, this.databaseName, this.clientId)
 
     this.repo.addHandler(this.onChange)
 
