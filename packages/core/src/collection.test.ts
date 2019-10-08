@@ -63,16 +63,16 @@ describe('collections', () => {
     }
   }
   describe('reducers', () => {
-    const setupEmpty = () => {
+    const setupEmpty = async () => {
       let state = {}
-      const repo = repoFromObject(state)
+      const repo = await repoFromObject(state)
       const reducer = asyncReducer(proxyReducer, repo)
       return { state, reducer }
     }
 
     const setupWithOneTeacher = async () => {
       let state = {}
-      const repo = repoFromObject(state)
+      const repo = await repoFromObject(state)
       const reducer = asyncReducer(proxyReducer, repo)
       const action = { type: 'ADD_TEACHER', payload: teacher1 }
       state = await reducer({}, action)
@@ -80,14 +80,14 @@ describe('collections', () => {
     }
 
     it('should not change the original state', async () => {
-      const { state, reducer } = setupEmpty()
+      const { state, reducer } = await setupEmpty()
       const action = { type: 'ADD_TEACHER', payload: teacher1 }
       const _ = await reducer(state, action)
       expect(state).toEqual({})
     })
 
     it('should add an item', async () => {
-      const { state, reducer } = setupEmpty()
+      const { state, reducer } = await setupEmpty()
       const action = { type: 'ADD_TEACHER', payload: teacher1 }
       const newState = await reducer(state, action)
       const allItems = teachers.selectors.getAll(newState)
@@ -138,7 +138,7 @@ describe('collections', () => {
   describe('selectors', () => {
     const setupTeachers = async () => {
       let state = {}
-      const repo = repoFromObject(state)
+      const repo = await repoFromObject(state)
       const reducer = asyncReducer(proxyReducer, repo)
       const addAction = {
         type: 'ADD_TEACHER',
@@ -154,7 +154,7 @@ describe('collections', () => {
 
     const setupTeachersAndStudents = async () => {
       let state = {}
-      const repo = repoFromObject(state)
+      const repo = await repoFromObject(state)
       const reducer = asyncReducer(proxyReducer, repo)
       state = await reducer(state, {
         type: 'ADD_TEACHER',
