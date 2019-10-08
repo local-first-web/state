@@ -35,16 +35,13 @@ describe('Connection', () => {
   let repo: Repo<FooState>
   let server: Server
 
-  let testSeq = 0
-
   beforeAll(async () => {
     server = new Server({ port })
     await server.listen({ silent: true })
   })
 
   beforeEach(async () => {
-    testSeq += 1
-    repo = new Repo<any>('test', `test${testSeq}`)
+    repo = new Repo<any>('test', `test${newid()}`, localActorId)
     await repo.open()
     let key: keyof FooStateDoc
     for (key in initialState) {
