@@ -1,4 +1,5 @@
 ﻿import A from 'automerge'
+import { newid } from 'cevitxe-signal-client'
 import debug from 'debug'
 import { EventEmitter } from 'events'
 import * as idb from 'idb/with-async-ittr-cjs'
@@ -47,6 +48,7 @@ export class Repo<T = any> extends EventEmitter {
    */
   public databaseName: string
 
+  public clientId: string
   /**
    * In-memory map of document snapshots.
    */
@@ -61,7 +63,7 @@ export class Repo<T = any> extends EventEmitter {
 
   private database?: idb.IDBPDatabase<unknown>
 
-  constructor(discoveryKey: string, databaseName: string) {
+  constructor(discoveryKey: string, databaseName: string, clientId: string = newid()) {
     super()
     this.discoveryKey = discoveryKey
     this.databaseName = databaseName
@@ -69,6 +71,7 @@ export class Repo<T = any> extends EventEmitter {
     this.state = {}
     this.handlers = new Set()
     this.docCache = new Cache({ max: 1000 })
+    this.clientId = clientId
   }
 
   /**
@@ -76,8 +79,7 @@ export class Repo<T = any> extends EventEmitter {
    * @returns `true` if there is any stored data in the repo.
    */
   async hasData() {
-    const database = await this.openDB()
-    const count = await database.count('feeds')
+    const count = await this.database!.count('feeds')
     return count > 0
   }
 
@@ -134,22 +136,18 @@ export class Repo<T = any> extends EventEmitter {
   async get(documentId: string): Promise<A.Doc<T>> {
     this.log('get', documentId)
     // if (!this.docCache.has(documentId)) {
-    // this.log('get:cache miss', documentId)
     const doc = await this.reconstructDoc(documentId)
     return doc
     // await this.saveSnapshot(documentId, doc)
-    // this.log('get: caching', documentId, doc)
     // this.docCache.set(documentId, doc)
     // } else {
-    // this.log('get:from cache', documentId)
     // }
     // const cachedDoc = this.docCache.get(documentId)
-    // this.log('get:end', documentId, cachedDoc)
     // return cachedDoc
   }
 
   async reconstructDoc(documentId: string): Promise<A.Doc<T>> {
-    let doc = A.init<T>()
+    let doc = A.init<T>({ actorId: this.clientId })
     const changeSets = await this.getChangesets(documentId)
     for (const { changes } of changeSets) {
       if (changes) doc = A.applyChanges(doc, changes)
@@ -247,8 +245,8 @@ export class Repo<T = any> extends EventEmitter {
 
   /**
    * Sets the in-memory snapshot of a document. NOTE: This does not update the document's change
-   * history or even persist the snapshot - this is just to allow synchronous updates of the state
-   * for UI purposes.
+   * history or persist anything; this is just to allow synchronous updates of the state for UI
+   * purposes.
    * @param documentId
    * @param document
    */
@@ -327,7 +325,7 @@ export class Repo<T = any> extends EventEmitter {
   /**
    * Loads all the repo's snapshots into memory
    */
-  private async rebuildSnapshotsFromHistory() {
+  async rebuildSnapshotsFromHistory() {
     const snapshots = await this.database!.getAll('snapshots')
     for (const { documentId, snapshot } of snapshots) {
       if (snapshot[DELETED]) {
