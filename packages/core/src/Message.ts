@@ -1,53 +1,24 @@
+import { Map } from 'immutable'
 import A from 'automerge'
 
 type Clock = Map<string, number>
 
-// export const REQUEST_INDEX = 'REQUEST_INDEX'
-export const SEND_INDEX = 'SEND_INDEX'
-
-// export const SEND_SNAPSHOTS = 'SEND_SNAPSHOTS'
-// export const SEND_HISTORIES = 'SEND_HISTORIES'
-
-
-
-export const REQUEST_DOC = 'REQUEST_DOC'
-export const ADVERTISE_DOC = 'ADVERTISE_DOC'
-export const REQUEST_CHANGES = 'REQUEST_CHANGES'
-export const SEND_CHANGES = 'SEND_CHANGES'
-// export const SEND_ALL_CHANGES = 'SEND_ALL_CHANGES'
-// export const SEND_SNAPSHOT = 'SEND_SNAPSHOT'
-// export const SEND_ALL_SNAPSHOTS = 'SEND_ALL_SNAPSHOTS'
-
-// /**
-//  * Initializing repo from the network, get everything (snapshots and changes)
-//  */
-// interface RequestIndexMessage {
-//   type: typeof REQUEST_INDEX
-// }
-
 /**
- * Initializing a new document from the netwrok, get everything (snapshot and changes)
+ * Initializing a new document from the network, get everything (snapshot and changes)
  */
-interface RequestDocMessage {
+export const REQUEST_DOC = 'REQUEST_DOC'
+export interface RequestDocMessage {
   type: typeof REQUEST_DOC
   documentId: string
   clock: {}
 }
 
 /**
- * Expose available changes
+ * Advertise new document
  */
-interface AdvertiseDocMessage {
+export const ADVERTISE_DOC = 'ADVERTISE_DOC'
+export interface AdvertiseDocMessage {
   type: typeof ADVERTISE_DOC
-  documentId: string
-  clock: Clock
-}
-
-/**
- * Request available changes that this client doesn't have
- */
-interface RequestChangesMessage {
-  type: typeof REQUEST_CHANGES
   documentId: string
   clock: Clock
 }
@@ -55,51 +26,62 @@ interface RequestChangesMessage {
 /**
  * Send requested changes for a document
  */
-interface SendChangesMessage {
+export const SEND_CHANGES = 'SEND_CHANGES'
+export interface SendChangesMessage {
   type: typeof SEND_CHANGES
   documentId: string
   clock: Clock
   changes: A.Change[]
 }
 
-// /**
-//  * Send all changes for all documents (for initialization)
-//  */
-// interface SendAllMessage {
-//   type: typeof SEND_ALL_CHANGES
-//   changes: {
-//     documentId: string
-//     clock: Clock
-//     changes: A.Change[]
-//   }[]
-// }
+/**
+ * Initializing repo from the network, request everything peer has (snapshots and changes)
+ */
+export const REQUEST_ALL = 'REQUEST_ALL'
+export interface RequestAllMessage {
+  type: typeof REQUEST_ALL
+}
 
-// /**
-//  * Send snapshot for a document
-//  */
-// interface SendSnapshotMessage {
-//   type: typeof SEND_SNAPSHOT
-//   documentId: string
-//   snapshot: any
-// }
+/**
+ * Send all changes for all documents (for initialization)
+ */
+export const SEND_ALL_CHANGES = 'SEND_ALL_CHANGES'
+interface SendAllChangesMessage {
+  type: typeof SEND_ALL_CHANGES
+  changes: {
+    documentId: string
+    clock: Clock
+    changes: A.Change[]
+  }[]
+}
 
-// /**
-//  * Send snapshots for all documents
-//  */
-// interface SendAllSnapshotsMessage {
-//   type: typeof SEND_ALL_SNAPSHOTS
-//   snapshots: {
-//     documentId: string
-//     snapshot: any
-//   }[]
-// }
+/**
+ * Send snapshot for a document
+ */
+export const SEND_SNAPSHOT = 'SEND_SNAPSHOT'
+interface SendSnapshotMessage {
+  type: typeof SEND_SNAPSHOT
+  documentId: string
+  snapshot: any
+}
+
+/**
+ * Send snapshots for all documents
+ */
+export const SEND_ALL_SNAPSHOTS = 'SEND_ALL_SNAPSHOTS'
+interface SendAllSnapshotsMessage {
+  type: typeof SEND_ALL_SNAPSHOTS
+  snapshots: {
+    documentId: string
+    snapshot: any
+  }[]
+}
 
 export type Message =
-  // | RequestRepoMessage
   | RequestDocMessage
   | AdvertiseDocMessage
-  | RequestChangesMessage
   | SendChangesMessage
-  // | SendAllMessage
-  // | SendSnapshotMessage
-  // | SendAllSnapshotsMessage
+  | RequestAllMessage
+  | SendAllChangesMessage
+  | SendSnapshotMessage
+  | SendAllSnapshotsMessage
