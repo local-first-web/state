@@ -149,7 +149,7 @@ describe(`RepoSync`, () => {
       await _yield()
     }
 
-    it('should communicate local changes to remote', async () => {
+    it('should communicate prior local changes to remote', async () => {
       const { localRepo, remoteRepo } = await setup()
 
       await localRepo.set(documentId, A.from({ wrens: 2, swallows: 1, vultures: 234 }, 'L'))
@@ -175,7 +175,7 @@ describe(`RepoSync`, () => {
       expect(await remoteRepo.get('doc1')).toEqual(expected)
     })
 
-    it('should sync up remote documents created before connecting', async () => {
+    it('should sync up prior remote documents', async () => {
       const { localRepo, remoteRepo } = await setup()
 
       await remoteRepo.set('doc1', A.from({ wrens: 2 }, 'R'))
