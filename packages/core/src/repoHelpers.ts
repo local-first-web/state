@@ -19,10 +19,11 @@ export const repoToObject = <T = any>(repo: Repo<T>): RepoSnapshot<T> => {
  * DEPRECATED
  * This is only used in tests
  */
-export const repoFromObject = (obj: any): Repo<any> => {
+export const repoFromObject = async (obj: any): Promise<Repo<any>> => {
   const repo = new Repo<any>('brilliant-test', `testdb-${newid()}`)
+  await repo.open()
   for (let documentId of Object.getOwnPropertyNames(obj)) {
-    repo.set(documentId, A.from(obj[documentId]))
+    await repo.set(documentId, A.from(obj[documentId]))
   }
   return repo
 }
