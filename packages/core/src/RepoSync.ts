@@ -60,18 +60,14 @@ export class RepoSync {
     this.repo = repo
     this.send = send
     this.clock = { ours: Map(), theirs: Map() }
-    this.log = debug(`cevitxe:docsetsync:${repo.databaseName}`)
+    this.log = debug(`cevitxe:reposync:${repo.databaseName}`)
   }
 
   // Public API
 
   async open() {
-    // if (this.repo.documentIds.length === -1) {
-    //   // request entire repo
-    // } else {
-    for (let documentId of this.repo.documentIds) //
+    for (let documentId of this.repo.documentIds)
       if (documentId.length) await this.registerDoc(documentId)
-    // }
     this.repo.addHandler(this.onDocChanged.bind(this))
   }
 
@@ -185,7 +181,7 @@ export class RepoSync {
     documentId: string,
     clock: Clock | Promise<Clock> = this.getClockFromDoc(documentId)
   ) {
-    this.log('requestChanges', documentId)
+    this.log('advertise', documentId)
     this.send({
       type: ADVERTISE_DOC,
       documentId,
