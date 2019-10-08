@@ -68,8 +68,7 @@
     "projects": [
       "<rootDir>/packages/core",
       "<rootDir>/packages/signal-client",
-      "<rootDir>/packages/signal-server",
-      "<rootDir>/packages/examples/grid"
+      "<rootDir>/packages/signal-server"
     ]
   }
 }
