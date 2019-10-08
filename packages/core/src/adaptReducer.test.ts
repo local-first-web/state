@@ -1,14 +1,23 @@
 import { adaptReducer } from './adaptReducer'
 import { repoFromObject } from './repoHelpers'
 import { ProxyReducer } from './types'
-import { pause } from './lib/pause'
+import { pause as _yield } from './lib/pause'
+import { Reducer, AnyAction } from 'redux'
+import { Repo } from './Repo'
 
 describe('adaptReducer', () => {
   describe('should return a working reducer', () => {
-    const proxyReducer: ProxyReducer = () => ({ settings: s => (s.foo = 2) })
-    const state = { settings: {} }
-    const repo = repoFromObject(state)
-    const reducer = adaptReducer(proxyReducer, repo)
+    let proxyReducer: ProxyReducer
+    let state: any
+    let repo: Repo
+    let reducer: Reducer<any, AnyAction>
+
+    beforeEach(async () => {
+      proxyReducer = () => ({ settings: s => (s.foo = 2) })
+      state = { settings: {} }
+      repo = await repoFromObject(state)
+      reducer = adaptReducer(proxyReducer, repo)
+    })
 
     it('should return a function', () => expect(typeof reducer).toBe('function'))
 
