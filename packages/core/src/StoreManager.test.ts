@@ -308,7 +308,7 @@ describe('Cevitxe', () => {
     })
 
     it('should sync new documents in both directions', async () => {
-      const { close, localStoreManager, remoteStoreManager, localStore, remoteStore } = await open()
+      const { close, localStoreManager, localStore, remoteStore } = await open()
 
       // add a teacher in the local store
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
@@ -316,12 +316,8 @@ describe('Cevitxe', () => {
 
       // add a teacher in the remote store
       remoteStore.dispatch({ type: 'ADD_TEACHER', payload: teacher2 })
-      await eventPromise(remoteStoreManager, 'change')
 
-      await Promise.all([
-        eventPromise(remoteStoreManager, 'change'),
-        eventPromise(localStoreManager, 'change'),
-      ])
+      await _yield()
 
       const expectedState = {
         abcxyz: { id: 'abcxyz', first: 'Herb', last: 'Caudill' },
