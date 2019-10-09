@@ -102,7 +102,7 @@ describe('StoreManager', () => {
     })
 
     it('should dispatch a change', async () => {
-      const { close, localStoreManager, localStore } = await open()
+      const { close, localStore } = await open()
 
       // dispatch a change
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
@@ -265,7 +265,7 @@ describe('StoreManager', () => {
     })
 
     it('should sync changes to an existing document in both directions', async () => {
-      const { close, localStoreManager, remoteStoreManager, localStore, remoteStore } = await open()
+      const { close, localStore, remoteStore } = await open()
 
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
       await _yield()
@@ -302,7 +302,7 @@ describe('StoreManager', () => {
     })
 
     it('should sync new documents in both directions', async () => {
-      const { close, localStoreManager, localStore, remoteStore } = await open()
+      const { close, localStore, remoteStore } = await open()
 
       // add a teacher in the local store
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
