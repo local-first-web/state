@@ -28,8 +28,6 @@ const port = 10003
 const url = `ws://localhost:${port}`
 const localActorId = newid()
 
-const docChanged = (repo: Repo) => new Promise(ok => repo.addHandler(ok))
-
 describe('Connection', () => {
   const initialState: FooStateDoc = { state: { foo: 1 } }
 
