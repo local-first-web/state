@@ -64,6 +64,4 @@ export interface ChangeSet {
   documentId: string
   /** One or more Automerge changes made to the document */
   changes: A.Change[]
-  /** Special flag marking the document for deletion */
-  isDelete?: boolean
 }
