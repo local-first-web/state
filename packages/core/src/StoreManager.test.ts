@@ -1,6 +1,5 @@
 import { newid } from 'cevitxe-signal-client'
 import { Server } from 'cevitxe-signal-server'
-import eventPromise from 'p-event'
 import { getPortPromise as getAvailablePort } from 'portfinder'
 import { collection } from './collection'
 import { pause as _yield } from './lib/pause'
@@ -108,7 +107,7 @@ describe('Cevitxe', () => {
       // dispatch a change
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
 
-      await eventPromise(localStoreManager, 'change')
+      await _yield()
 
       // confirm that the change was made
       const state = localStore.getState()
@@ -141,7 +140,7 @@ describe('Cevitxe', () => {
       localStore.dispatch({ type: 'ADD_TEACHER', payload: [teacher1] })
 
       // wait for addition to take
-      await eventPromise(localStoreManager, 'change')
+      await _yield()
 
       // confirm that the changes took locally
       const state0 = localStore.getState()
@@ -165,8 +164,7 @@ describe('Cevitxe', () => {
       localStore.dispatch({ type: 'ADD_TEACHER', payload: [teacher1, teacher2] })
 
       // wait for both additions to take
-      await eventPromise(localStoreManager, 'change')
-      await eventPromise(localStoreManager, 'change')
+      await _yield()
 
       const state0 = localStore.getState()
       expect(teachers.selectors.getMap(state0)).toEqual({ abcxyz: teacher1, defcba: teacher2 })
@@ -175,7 +173,7 @@ describe('Cevitxe', () => {
       localStore.dispatch({ type: 'REMOVE_TEACHER', payload: teacher1 })
 
       // wait for deletion to take
-      await eventPromise(localStoreManager, 'change')
+      await _yield()
 
       // confirm that the deletion took locally
       const state1 = localStore.getState()
@@ -270,7 +268,7 @@ describe('Cevitxe', () => {
       const { close, localStoreManager, remoteStoreManager, localStore, remoteStore } = await open()
 
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
-      await eventPromise(remoteStoreManager, 'change')
+      await _yield()
 
       expect(teachers.selectors.getMap(localStore.getState())).toEqual({ abcxyz: teacher1 })
 
@@ -279,19 +277,15 @@ describe('Cevitxe', () => {
         type: 'UPDATE_TEACHER',
         payload: { id: 'abcxyz', first: 'Herbert' },
       })
-      await eventPromise(localStoreManager, 'change')
+      await _yield()
 
       // modify the teacher in the remote store
       remoteStore.dispatch({
         type: 'UPDATE_TEACHER',
         payload: { id: 'abcxyz', email: 'h@hc3.me' },
       })
-      await eventPromise(remoteStoreManager, 'change')
 
-      await Promise.all([
-        eventPromise(remoteStoreManager, 'change'),
-        eventPromise(localStoreManager, 'change'),
-      ])
+      await _yield()
 
       const expectedState = {
         abcxyz: { id: 'abcxyz', first: 'Herbert', last: 'Caudill', email: 'h@hc3.me' },
@@ -312,7 +306,7 @@ describe('Cevitxe', () => {
 
       // add a teacher in the local store
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
-      await eventPromise(localStoreManager, 'change')
+      await _yield()
 
       // add a teacher in the remote store
       remoteStore.dispatch({ type: 'ADD_TEACHER', payload: teacher2 })
