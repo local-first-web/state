@@ -65,3 +65,10 @@ export interface ChangeSet {
   /** One or more Automerge changes made to the document */
   changes: A.Change[]
 }
+
+/**
+ * `RepoHistory` is an object mapping documentIds to the corresponding document's entire change history.
+ */
+export type RepoHistory = {
+  [documentId: string]: A.Change[]
+}
