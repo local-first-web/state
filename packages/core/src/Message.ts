@@ -1,16 +1,16 @@
 import { Map } from 'immutable'
 import A from 'automerge'
+import { RepoSnapshot, RepoHistory } from './types'
 
 type Clock = Map<string, number>
 
 /**
- * Initializing a new document from the network, get everything (snapshot and changes)
+ * Request a document we don't have (snapshot and changes)
  */
 export const REQUEST_DOC = 'REQUEST_DOC'
 export interface RequestDocMessage {
   type: typeof REQUEST_DOC
   documentId: string
-  clock: {}
 }
 
 /**
@@ -45,14 +45,10 @@ export interface RequestAllMessage {
 /**
  * Send all changes for all documents (for initialization)
  */
-export const SEND_ALL_CHANGES = 'SEND_ALL_CHANGES'
-interface SendAllChangesMessage {
-  type: typeof SEND_ALL_CHANGES
-  changes: {
-    documentId: string
-    clock: Clock
-    changes: A.Change[]
-  }[]
+export const SEND_ALL_HISTORY = 'SEND_ALL_HISTORY'
+interface SendAllHistoryMessage {
+  type: typeof SEND_ALL_HISTORY
+  history: RepoHistory
 }
 
 /**
@@ -71,10 +67,7 @@ interface SendSnapshotMessage {
 export const SEND_ALL_SNAPSHOTS = 'SEND_ALL_SNAPSHOTS'
 interface SendAllSnapshotsMessage {
   type: typeof SEND_ALL_SNAPSHOTS
-  snapshots: {
-    documentId: string
-    snapshot: any
-  }[]
+  state: RepoSnapshot
 }
 
 export type Message =
@@ -82,6 +75,6 @@ export type Message =
   | AdvertiseDocMessage
   | SendChangesMessage
   | RequestAllMessage
-  | SendAllChangesMessage
+  | SendAllHistoryMessage
   | SendSnapshotMessage
   | SendAllSnapshotsMessage
