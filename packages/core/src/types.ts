@@ -5,6 +5,9 @@ import { Repo } from './Repo'
 
 export type ProxyReducer = (state: any, action: AnyAction) => ChangeMap | null
 
+/**
+ * Associates documentIds with a change function to be executed by the reducer.
+ */
 export interface ChangeMap {
   [documentId: string]: A.ChangeFn<any> | symbol
 }
