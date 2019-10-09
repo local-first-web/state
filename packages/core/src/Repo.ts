@@ -1,3 +1,4 @@
+﻿import { RepoHistory } from './types'
 import A from 'automerge'
 import { newid } from 'cevitxe-signal-client'
 import debug from 'debug'
@@ -173,11 +174,9 @@ export class Repo<T = any> extends EventEmitter {
     this.docCache.set(documentId, doc)
 
     // append changes to this document's history
-    this.log("set: let's append the changeset")
     if (changes.length > 0) await this.appendChangeset({ documentId, changes })
 
     // save snapshot
-    this.log("set: let's save the snapshot")
     await this.saveSnapshot(documentId, doc)
 
     // call handlers
@@ -271,6 +270,40 @@ export class Repo<T = any> extends EventEmitter {
   }
 
   /**
+   * Used for sending the entire current state of the repo to a new peer.
+   * @returns Returns an object mapping documentIds to an array of changes.
+   */
+  async getHistory(): Promise<RepoHistory> {
+    const history: RepoHistory = {}
+
+    const index = this.database!.transaction('feeds').store.index('documentId')
+    const changeSets = index.iterate(undefined, 'next')
+
+    for await (const cursor of changeSets) {
+      const { documentId, changes } = cursor.value as ChangeSet
+      history[documentId] = (history[documentId] || []).concat(changes)
+    }
+    return history
+  }
+
+  /**
+   * Used when receiving the entire current state of a repo from a peer.
+   */
+  async loadHistory(history: RepoHistory) {
+    // TODO: clear current changes?
+    for (const documentId in history) {
+      const changes = history[documentId]
+      await this.appendChangeset({ documentId, changes })
+    }
+  }
+
+  // private getDocumentIds(objectStore: string = 'feeds') {
+  //   this.log('getDocumentIds', objectStore)
+  //   const index = this.database!.transaction(objectStore).store.index('documentId')
+  //   return index.iterate(undefined, 'nextunique')
+  // }
+
+  /**
    * Adds a change event listener
    * @param handler
    */
@@ -326,7 +359,7 @@ export class Repo<T = any> extends EventEmitter {
   /**
    * Loads all the repo's snapshots into memory
    */
-  async rebuildSnapshotsFromHistory() {
+  private async rebuildSnapshotsFromHistory() {
     const snapshots = await this.database!.getAll('snapshots')
     for (const { documentId, snapshot } of snapshots) {
       if (snapshot[DELETED]) {
@@ -343,7 +376,6 @@ export class Repo<T = any> extends EventEmitter {
    */
   private async appendChangeset(changeSet: ChangeSet) {
     this.log('appending changeset', changeSet.documentId, changeSet.changes.length)
-    // console.log('appending changeset', changeSet.documentId, changeSet.changes.length)
     await this.database!.add('feeds', changeSet)
   }
 
@@ -366,7 +398,6 @@ export class Repo<T = any> extends EventEmitter {
    */
   private async saveSnapshot(documentId: string, document: A.Doc<T>) {
     this.log('saveSnapshot', documentId, document)
-    // console.log('saveSnapshot', documentId, document)
     const snapshot: any = { ...document } // clone without Automerge metadata
     this.setSnapshot(documentId, snapshot)
     await this.database!.put('snapshots', { documentId, snapshot })
