@@ -11,7 +11,7 @@ import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getKnownDiscoveryKeys } from './keys'
 import { Repo } from './Repo'
-import { RepoSnapshot, ProxyReducer, StoreManagerOptions } from './types'
+import { RepoSnapshot, ProxyReducer } from './types'
 
 let log = debug('cevitxe:StoreManager')
 
@@ -21,6 +21,19 @@ EventEmitter.defaultMaxListeners = 500
 
 // Use shorter IDs
 A.uuid.setFactory(cuid)
+
+interface StoreManagerOptions<T> {
+  /** A Cevitxe proxy reducer that returns a ChangeMap (map of change functions) for each action. */
+  proxyReducer: ProxyReducer
+  /** Redux middlewares to add to the store. */
+  middlewares?: Middleware[]
+  /** The starting state of a blank document. */
+  initialState: RepoSnapshot<T>
+  /** A name for the storage feed, to distinguish this application's data from any other Cevitxe data stored on the same machine. */
+  databaseName: string
+  /** The address(es) of one or more signal servers to try. */
+  urls?: string[]
+}
 
 /**
  * A StoreManager generates a Redux store with persistence (via the Repo class), networking (via
