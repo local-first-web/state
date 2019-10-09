@@ -1,12 +1,21 @@
 import debug from 'debug'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
-import { MiddlewareFactory } from './types'
+import { Repo } from './Repo'
+import { ProxyReducer } from '.'
+import { Middleware } from 'redux'
 
 const log = debug('cevitxe:middleware')
+
+export type MiddlewareFactory = (
+  feed: Repo,
+  proxyReducer: ProxyReducer,
+  discoveryKey?: string
+) => Middleware
 
 export const getMiddleware: MiddlewareFactory = (repo, proxyReducer) => {
   return store => next => async action => {
     // BEFORE CHANGES
+    // ...
 
     // CHANGES
     const newState = next(action)
@@ -28,7 +37,6 @@ export const getMiddleware: MiddlewareFactory = (repo, proxyReducer) => {
         // apply change functions via the repo
         const fn = functionMap[documentId]
         if (typeof fn === 'function') {
-          log('apply change function', documentId)
           await repo.change(documentId, fn)
         }
       }
