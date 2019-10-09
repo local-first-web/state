@@ -36,7 +36,7 @@ export const adaptReducer: ReducerConverter = (proxyReducer, repo) => {
         // no matching function - return the unmodified state
         return state
       }
-      repo.setState({ ...state }) // clone
+      repo.loadState({ ...state }) // clone
 
       // Apply each change function to the corresponding document
       for (let documentId in functionMap) {

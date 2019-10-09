@@ -1,4 +1,4 @@
-﻿import A from 'automerge'
+import A from 'automerge'
 import { newid } from 'cevitxe-signal-client'
 import debug from 'debug'
 import { EventEmitter } from 'events'
@@ -262,10 +262,11 @@ export class Repo<T = any> extends EventEmitter {
   }
 
   /**
-   * Sets the state of the entire repo. NOTE: This doesn't update the repo's change history or
-   * persist anything; this is only used for synchronous updates of the state for UI purposes.
+   * Replaces the (snapshot) state of the entire repo. NOTE: This doesn't update the repo's change
+   * history or persist anything; this is only used for synchronous updates of the state for UI
+   * purposes.
    */
-  setState(replacementState: RepoSnapshot<T>) {
+  loadState(replacementState: RepoSnapshot<T>) {
     this.state = replacementState
   }
 
