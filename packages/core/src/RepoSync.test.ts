@@ -20,6 +20,7 @@ const makeConnection = async (key: string, repo: Repo<BirdCount>, channel: TestC
   // hook up send
   const send = (msg: Message) => channel.write(key, msg)
   const sync = new RepoSync(repo, send)
+  await sync.open()
 
   // hook up receive
   channel.addListener('data', (peer_id, msg) => {
@@ -29,7 +30,6 @@ const makeConnection = async (key: string, repo: Repo<BirdCount>, channel: TestC
   })
   channel.addPeer()
 
-  await sync.open()
   return sync
 }
 
