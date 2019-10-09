@@ -117,6 +117,12 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
     }
   }
 
+  function* ids(state: RepoSnapshot<T> = {}) {
+    for (const key of keys(state)) {
+      yield keyToId(key)
+    }
+  }
+
   /**
    * Given the redux state, returns an array containing all items in the collection.
    * @param state The plain JSON representation of the state.
@@ -154,7 +160,9 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
   const markAllDeleted = async (repo: Repo<any>) => {
     for (const documentId of repo.documentIds) {
       if (isCollectionKey(documentId)) {
+        // update snapshot
         repo.change(documentId, setDeleteFlag)
+        // update underlying data (fire & forget)
         repo.removeSnapshot(documentId)
       }
     }
@@ -196,6 +204,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
     },
     selectors: {
       keys,
+      ids,
       getAll,
       getMap,
       count,
