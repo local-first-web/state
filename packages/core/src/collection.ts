@@ -155,6 +155,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
     for (const documentId of repo.documentIds) {
       if (isCollectionKey(documentId)) {
         repo.change(documentId, setDeleteFlag)
+        repo.removeSnapshot(documentId)
       }
     }
   }
