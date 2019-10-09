@@ -6,6 +6,7 @@ import { newid } from 'cevitxe-signal-client'
 import { Connection } from './Connection'
 
 import { WebSocket } from 'mock-socket'
+import { pause as _yield } from './lib/pause'
 
 // @ts-ignore adding object to global scope
 global.WebSocket = WebSocket
@@ -58,10 +59,8 @@ describe('Connection', () => {
     const peer = new WebSocket(url)
     const connection = new Connection(repo, peer, fakeDispatch)
 
-    await Promise.all([
-      eventPromise(connection, 'ready'), //
-      docChanged(repo),
-    ])
+    await eventPromise(connection, 'ready')
+    await _yield()
 
     expect(peer.send).toHaveBeenCalledWith(
       expect.stringContaining(JSON.stringify({ [localActorId]: 1 }))
@@ -72,6 +71,7 @@ describe('Connection', () => {
     )
 
     await repo.change('state', s => (s.boo = 2))
+    await _yield()
 
     expect(peer.send).toHaveBeenCalledWith(
       expect.stringContaining(JSON.stringify({ [localActorId]: 2 }))
