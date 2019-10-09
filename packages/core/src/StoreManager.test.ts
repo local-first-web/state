@@ -6,7 +6,7 @@ import { pause as _yield } from './lib/pause'
 import { StoreManager } from './StoreManager'
 import { ProxyReducer } from './types'
 
-describe('Cevitxe', () => {
+describe('StoreManager', () => {
   const teachers = collection('teachers')
 
   const proxyReducer = ((state, { type, payload }) => {
