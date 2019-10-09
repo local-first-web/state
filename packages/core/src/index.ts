@@ -1,3 +1,3 @@
-export { StoreManagerOptions, ProxyReducer, ChangeMap } from './types'
-export { StoreManager } from './StoreManager'
+export { ProxyReducer, ChangeMap } from './types'
+export { StoreManagerOptions, StoreManager } from './StoreManager'
 export { collection } from './collection'

@@ -22,7 +22,7 @@ EventEmitter.defaultMaxListeners = 500
 // Use shorter IDs
 A.uuid.setFactory(cuid)
 
-interface StoreManagerOptions<T> {
+export interface StoreManagerOptions<T> {
   /** A Cevitxe proxy reducer that returns a ChangeMap (map of change functions) for each action. */
   proxyReducer: ProxyReducer
   /** Redux middlewares to add to the store. */
