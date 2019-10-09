@@ -9,30 +9,6 @@ export interface ChangeMap {
   [documentId: string]: A.ChangeFn<any> | symbol
 }
 
-export interface StoreManagerOptions<T> {
-  /** A Cevitxe proxy reducer that returns a ChangeMap (map of change functions) for each action. */
-  proxyReducer: ProxyReducer
-  /** Redux middlewares to add to the store. */
-  middlewares?: Middleware[]
-  /** The starting state of a blank document. */
-  initialState: RepoSnapshot<T>
-  /** A name for the storage feed, to distinguish this application's data from any other Cevitxe data stored on the same machine. */
-  databaseName: string
-  /** The address(es) of one or more signal servers to try. */
-  urls?: string[]
-}
-
-export interface CreateStoreResult {
-  feed: any //Feed<string>
-  store: Store
-}
-
-export type MiddlewareFactory = (
-  feed: Repo,
-  proxyReducer: ProxyReducer,
-  discoveryKey?: string
-) => Middleware
-
 /**
  * A keychain maps a discovery key (the id we share to the signal server) with a public/private
  * keypair (which we use for storage etc). The discovery key can be any string that we think is
