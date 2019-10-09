@@ -34,7 +34,7 @@ export interface KeyPair {
  * of levels in.
  */
 export interface RepoSnapshot<T = any> {
-  [documentId: string]: T
+  [documentId: string]: T | null
 }
 
 /**

@@ -64,7 +64,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    *
    * Since we don't have an index, we need to delete documents in two steps:
    *
-   *    1. We mark them as deleted by adding a special "deleted" flag. This allows the deletion to be
+   *    1. We mark them as deleted by adding a special DELETED flag. This allows the deletion to be
    *       persisted and propagated to peers.
    *       ```ts
    *       {
@@ -72,7 +72,9 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    *         '::teachers::qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelshon' },
    *       }
    *       ```
-   *    2. The actual deletion is then performed in middleware. (TODO!! not really happening yet 🤷‍)
+   *    2. The repo then looks out for the DELETED flag and removes deleted items from the snapshot.
+   *       (We don't ever delete the underlying change history, in case the document is undeleted.)
+   *
    *
    * ### Dropping a collection
    *
@@ -97,15 +99,22 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
 
   // SELECTORS
 
-  const isCollectionKey = (key: string) => key.startsWith(`${keyName}::`)
+  /**
+   * Returns true if the given string is a key for this collection
+   * @param maybeKey
+   */
+  const isCollectionKey = (maybeKey: string) => maybeKey.startsWith(`${keyName}::`)
 
   /**
-   * Returns all keys for the collection when given the current redux state.
+   * Iterates over all keys for the collection when given the current redux state.
    * @param state The plain JSON representation of the state.
    */
-  function* keys(state: RepoSnapshot<T>, { includeDeleted = false } = {}) {
-    for (const key in state || {})
-      if (isCollectionKey(key) && (includeDeleted || !(state as any)[key][DELETED])) yield key
+  function* keys(state: RepoSnapshot<T> = {}) {
+    for (const key in state) {
+      const item = (state as any)[key]
+      const shouldInclude = item && !item[DELETED]
+      if (isCollectionKey(key) && shouldInclude) yield key
+    }
   }
 
   /**
@@ -142,14 +151,10 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * Marks all items in the collection as deleted. ("PRIVATE")
    * @param repo
    */
-  const removeAll = async (repo: Repo<any>) => {
+  const markAllDeleted = async (repo: Repo<any>) => {
     for (const documentId of repo.documentIds) {
       if (isCollectionKey(documentId)) {
-        const doc = await repo.get(documentId)
-        if (doc && !doc[DELETED]) {
-          const deletedDoc = A.change(doc, setDeleteFlag)
-          repo.set(documentId, deletedDoc)
-        }
+        repo.change(documentId, setDeleteFlag)
       }
     }
   }
@@ -194,7 +199,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
       getMap,
       count,
     },
-    removeAll,
+    markAllDeleted,
   }
 }
 

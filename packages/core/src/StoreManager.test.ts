@@ -375,10 +375,10 @@ describe('StoreManager', () => {
       await _yield()
 
       // confirm that the deletion took place locally
-      expect(teachers.selectors.getMap(localStore.getState())).not.toHaveProperty('abcxyz')
+      expect(teachers.selectors.getMap(localStore.getState())['abcxyz']).toBeFalsy() // null or undefined
 
       // confirm that the deletion took place in the remote store
-      expect(teachers.selectors.getMap(remoteStore.getState())).not.toHaveProperty('abcxyz')
+      expect(teachers.selectors.getMap(remoteStore.getState())['abcxyz']).toBeFalsy() // null or undefined
 
       // disconnect both stores
       await close()

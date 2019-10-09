@@ -108,12 +108,10 @@ export class Repo<T = any> extends EventEmitter {
     this.log('hasData', hasData)
     if (creating) {
       this.log('creating a new repo')
-      this.state = initialState
-      await this.create()
+      await this.createFromSnapshot(initialState)
     } else if (!hasData) {
       this.log(`joining a peer's document for the first time`)
-      this.state = {}
-      await this.create()
+      await this.createFromSnapshot({})
     } else {
       this.log('recovering an existing repo from persisted state')
       await this.rebuildSnapshotsFromHistory()
@@ -124,7 +122,6 @@ export class Repo<T = any> extends EventEmitter {
 
   /**
    * Returns all of the repo's document IDs from memory.
-   * Note: This does not include deleted documents
    */
   get documentIds() {
     return Object.keys(this.state)
@@ -243,14 +240,48 @@ export class Repo<T = any> extends EventEmitter {
   }
 
   /**
+   * Changes the snapshot of a document synchronously, without modifying the underlying Automerge
+   * changes. This is used to quickly update the UI; the change history can be updated later.
+   * @param documentId
+   * @param fn The change function (usually comes from a ProxyReducer)
+   */
+  changeSnapshot(documentId: string, fn: A.ChangeFn<T>) {
+    // create a new automerge object from the current version's snapshot
+    const oldDoc = this.getSnapshot(documentId) || {}
+    const doc: A.Doc<any> = A.from(oldDoc)
+
+    // apply the change
+    const newDoc = A.change(doc, fn)
+
+    // convert the result back to a plain object
+    const snapshot = { ...newDoc }
+
+    this.setSnapshot(documentId, snapshot)
+    this.log('changed snapshot', documentId, snapshot)
+  }
+
+  /**
    * Sets the in-memory snapshot of a document. NOTE: This does not update the document's change
    * history or persist anything; this is just to allow synchronous updates of the state for UI
    * purposes.
    * @param documentId
-   * @param document
+   * @param snapshot
    */
-  setSnapshot(documentId: string, document: T) {
-    this.state[documentId] = document
+  setSnapshot(documentId: string, snapshot: any) {
+    if (snapshot.DELETED) {
+      this.removeSnapshot(documentId)
+    } else {
+      this.state[documentId] = snapshot
+    }
+  }
+
+  /**
+   * Removes the snapshot with the given `documentId` from in-memory state.
+   * @param documentId
+   */
+  removeSnapshot(documentId: string) {
+    this.log('removeSnapshot', documentId)
+    this.state[documentId] = null
   }
 
   /**
@@ -349,10 +380,13 @@ export class Repo<T = any> extends EventEmitter {
    * Creates a new repo with the given initial state
    * @param initialState
    */
-  private async create() {
-    for (let documentId in this.state) {
-      const document = A.from(this.state[documentId])
-      await this.set(documentId, document)
+  private async createFromSnapshot(state: RepoSnapshot<T>) {
+    for (let documentId in state) {
+      const snapshot = state[documentId]
+      if (snapshot !== null) {
+        const document = A.from(snapshot)
+        await this.set(documentId, document)
+      }
     }
   }
 
@@ -362,7 +396,7 @@ export class Repo<T = any> extends EventEmitter {
   private async rebuildSnapshotsFromHistory() {
     const snapshots = await this.database!.getAll('snapshots')
     for (const { documentId, snapshot } of snapshots) {
-      if (snapshot[DELETED]) {
+      if (snapshot === null || snapshot[DELETED]) {
         // omit deleted documents
       } else {
         this.state[documentId] = snapshot
@@ -391,15 +425,19 @@ export class Repo<T = any> extends EventEmitter {
   }
 
   /**
-   * Saves the given object as a snapshot for the given `documentId`, replacing any existing
-   * snapshot.
+   * Saves the snapshot for the given `documentId`, replacing any existing snapshot.
    * @param documentId
    * @param snapshot
    */
   private async saveSnapshot(documentId: string, document: A.Doc<T>) {
-    this.log('saveSnapshot', documentId, document)
     const snapshot: any = { ...document } // clone without Automerge metadata
-    this.setSnapshot(documentId, snapshot)
-    await this.database!.put('snapshots', { documentId, snapshot })
+    if (snapshot[DELETED]) {
+      this.removeSnapshot(documentId)
+      await this.database!.delete('snapshots', documentId)
+    } else {
+      this.log('saveSnapshot', documentId, document)
+      this.setSnapshot(documentId, snapshot)
+      await this.database!.put('snapshots', { documentId, snapshot })
+    }
   }
 }

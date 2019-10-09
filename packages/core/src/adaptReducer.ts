@@ -1,10 +1,10 @@
 import A from 'automerge'
+import debug from 'debug'
 import { AnyAction, Reducer } from 'redux'
 import { collection, DELETED } from './collection'
 import { DELETE_COLLECTION, RECEIVE_MESSAGE_FROM_PEER } from './constants'
 import { Repo } from './Repo'
 import { ProxyReducer, RepoSnapshot } from './types'
-import debug from 'debug'
 
 export type ReducerConverter = (
   proxyReducer: ProxyReducer,
@@ -15,7 +15,6 @@ export type ReducerConverter = (
  * This function, used when wiring up the store, takes a `proxyReducer` and turns it into a
  * garden-variety Redux reducer.
  *
- * @remarks
  * When we initialize a `StoreManager`, we give it a `proxyReducer`, which is like a Redux reducer,
  * except it's designed to work with Automerge objects instead of plain JavaScript objects. Instead
  * of returning a modified state, it returns one or more change functions.
@@ -43,13 +42,10 @@ export const adaptReducer: ReducerConverter = (proxyReducer, repo) => {
         const fn = functionMap[documentId] as A.ChangeFn<any> | symbol
         if (fn === DELETE_COLLECTION) {
           const name = collection.getCollectionName(documentId)
-          collection(name).removeAll(repo)
+          collection(name).markAllDeleted(repo)
         } else if (typeof fn === 'function') {
           // quickly update snapshot in memory; middleware will take care of making this official
-          const doc: A.Doc<any> = A.from(repo.getSnapshot(documentId) || {})
-          const newDoc = A.change(doc, fn)
-          repo.setSnapshot(documentId, { ...newDoc }) // convert to plain object
-          log('updated', documentId, newDoc)
+          repo.changeSnapshot(documentId, fn)
         }
       }
       return repo.getState()
