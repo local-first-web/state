@@ -2,7 +2,7 @@
 import { Message } from '../Message'
 import debug from 'debug'
 
-const log = debug('cevitxe:testchannel')
+const log = debug('HIDE:cevitxe:testchannel')
 /**
  * Simplest possible communications channel, for testing.
  *
