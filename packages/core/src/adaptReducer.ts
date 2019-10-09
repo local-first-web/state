@@ -1,5 +1,5 @@
 import A from 'automerge'
-import debug from 'debug'
+// import debug from 'debug'
 import { AnyAction, Reducer } from 'redux'
 import { collection, DELETED } from './collection'
 import { DELETE_COLLECTION, RECEIVE_MESSAGE_FROM_PEER } from './constants'
@@ -23,7 +23,7 @@ export type ReducerConverter = (
  * @param repo The store's repo
  */
 export const adaptReducer: ReducerConverter = (proxyReducer, repo) => {
-  const log = debug(`cevitxe:adaptreducer:${repo.databaseName}`)
+  // const log = debug(`cevitxe:adaptreducer:${repo.databaseName}`)
   const reducer: Reducer<RepoSnapshot, AnyAction> = (state, { type, payload }): RepoSnapshot => {
     state = state || {}
     if (type === RECEIVE_MESSAGE_FROM_PEER) {
@@ -36,16 +36,18 @@ export const adaptReducer: ReducerConverter = (proxyReducer, repo) => {
         return state
       }
       repo.loadState({ ...state }) // clone
-
       // Apply each change function to the corresponding document
       for (let documentId in functionMap) {
         const fn = functionMap[documentId] as A.ChangeFn<any> | symbol
         if (fn === DELETE_COLLECTION) {
           const name = collection.getCollectionName(documentId)
+          // this updates snapshots synchronously then updates underlying data asynchronously
           collection(name).markAllDeleted(repo)
         } else if (typeof fn === 'function') {
-          // quickly update snapshot in memory; middleware will take care of making this official
+          // update snapshot synchronously
           repo.changeSnapshot(documentId, fn)
+          // update underlying data asynchronously (fire & forget)
+          repo.change(documentId, fn)
         }
       }
       return repo.getState()
