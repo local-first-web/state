@@ -1,7 +1,5 @@
 import A from 'automerge'
-import { AnyAction, Middleware, Store } from 'redux'
-import { RepoSync } from './RepoSync'
-import { Repo } from './Repo'
+import { AnyAction } from 'redux'
 
 export type ProxyReducer = (state: any, action: AnyAction) => ChangeMap | null
 
@@ -16,11 +14,15 @@ export interface ChangeMap {
  * A keychain maps a discovery key (the id we share to the signal server) with a public/private
  * keypair (which we use for storage etc). The discovery key can be any string that we think is
  * going to be unique on our signal hub servers.
+ * > Note: we're not currently encrypting anything
  */
 export interface Keychain {
   [discoveryKey: string]: KeyPair
 }
 
+/**
+ * > Note: we're not currently encrypting anything
+ */
 export interface KeyPair {
   key: CryptoKey
   secretKey: CryptoKey
