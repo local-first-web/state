@@ -1,4 +1,4 @@
-﻿import A from 'automerge'
+import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
 import { Repo } from './Repo'
@@ -18,13 +18,13 @@ type ClockMap = Map<string, Clock>
 type Clocks = { ours: ClockMap; theirs: ClockMap }
 
 /**
- * One instance of `RepoSync` keeps one local document in sync with one remote peer's replica of
- * the same document.
+ * One instance of `RepoSync` keeps one local document in sync with one remote peer's replica of the
+ * same document.
  *
- * This class works with a local `Repo`; it listens for changes to the document, and if it
- * thinks it has changes that the remote peer doesn't know about, it generates a message to be sent
- * the peer. It also processes messages from its counterpart on the peer, and applies them to the
- * local document as needed.
+ * This class works with a local `Repo`; it listens for changes to documents, and if it thinks it
+ * has changes that the remote peer doesn't know about, it generates a message to be sent the peer.
+ * It also processes messages from its counterpart on the peer, and applies them to local documents
+ * as needed.
  *
  * This class doesn't get involved in the actual transmission of the messages; it only generates
  * them for someone else to send, and processes them when someone else receives them. To integrate a
@@ -37,9 +37,9 @@ type Clocks = { ours: ClockMap; theirs: ClockMap }
  *
  * In this context, networking is provided by the Cevitxe `Connection` class.
  *
- * The document to be synced is managed by a `Repo`. Whenever it is changed locally, call
- * `setDoc()` on the Repo. The connection registers a callback on the Repo, and it
- * figures out whenever there are changes that need to be sent to the remote peer.
+ * The document to be synced is managed by a `Repo`. Whenever it is changed locally, call `setDoc()`
+ * on the Repo. The connection registers a callback on the repo, and it figures out whenever there
+ * are changes that need to be sent to the remote peer.
  *
  * To do this, we keep track of two clocks: ours and theirs.
  *
@@ -60,9 +60,9 @@ export class RepoSync {
   private log: debug.Debugger
 
   /**
-   * @param repo An `Automerge.Repo` containing the document being synchronized.
-   * @param send Callback function, called when the local document changes. Should send the given
-   * message to the remote peer.
+   * @param repo A `Repo` containing the document being synchronized.
+   * @param send Callback function, called when the local document changes. Provided by the
+   * networking stack. Should send the given message to the remote peer.
    */
   constructor(repo: Repo<any>, send: (msg: Message) => void) {
     this.repo = repo
@@ -115,7 +115,8 @@ export class RepoSync {
         // they are letting us know they have this specific version of this doc
         const { documentId, clock } = msg
         this.updateClock(documentId, theirs, clock)
-        // do we have a more recent version? if so send them the changes they're missing
+        // we have the document as well; see if we have a more recent version than they do; if so
+        // send them the changes they're missing
         if (this.weHaveDoc(documentId)) await this.maybeSendChanges(documentId)
         // we don't have this document at all; ask for it
         else this.requestDoc(documentId)
@@ -150,7 +151,15 @@ export class RepoSync {
   // Private methods
 
   /**
-   * Registers doc
+   * @param documentId
+   * @returns  Returns true if the current repo has a snapshot for the requested documentId
+   */
+  private weHaveDoc(documentId: string) {
+    return this.repo.getSnapshot(documentId) !== undefined
+  }
+
+  /**
+   * Called for each document upon initialization. Records the document's clock and advertises it.
    * @param documentId
    */
   private async registerDoc(documentId: string) {
@@ -160,7 +169,7 @@ export class RepoSync {
     // Make sure we can sync this document
     this.validateDoc(documentId, clock)
 
-    // Let peers know we have the document
+    // Let peer know we have the document
     await this.advertise(documentId, clock)
 
     // Record the doc's initial clock
@@ -175,7 +184,7 @@ export class RepoSync {
   private validateDoc(documentId: string, clock: Clock) {
     this.log('validateDoc', documentId)
 
-    // Make sure doc has a clock (i.e. is an automerge object)
+    // Make sure doc has a clock (i.e. is an Automerge object)
     if (!clock) throw new TypeError(ERR_NOCLOCK)
 
     // Make sure the document is newer than what we already have
@@ -186,7 +195,7 @@ export class RepoSync {
   }
 
   /**
-   * Event listener that fires whenever a document is modified on the repo
+   * Event listener that fires when any document is modified on the repo
    * @param documentId
    */
   private async onDocChanged(documentId: string) {
@@ -196,10 +205,10 @@ export class RepoSync {
     // make sure we can sync the new document
     this.validateDoc(documentId, clock)
 
-    // send the document to anyone who doesn't have it or has an older version
+    // send the document if peer doesn't have it or has an older version
     await this.maybeSendChanges(documentId)
 
-    // see if anyone has a newer version
+    // see if peer has a newer version
     await this.maybeRequestChanges(documentId, clock)
 
     // update our clock
@@ -207,7 +216,7 @@ export class RepoSync {
   }
 
   /**
-   * Checks whether they have more recent information than we do; if so, requests changes
+   * Checks whether peer has more recent information than we do; if so, requests changes
    * @param documentId
    * @param theirClock
    */
@@ -279,7 +288,7 @@ export class RepoSync {
   }
 
   /**
-   * Returns the clock for the requested document from our records
+   * Looks up our last recorded clock for the requested document
    * @param documentId
    * @param which
    * @returns clock
