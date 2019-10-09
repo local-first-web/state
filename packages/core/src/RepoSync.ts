@@ -1,4 +1,4 @@
-import A from 'automerge'
+﻿import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
 import { Repo } from './Repo'
@@ -9,13 +9,17 @@ import {
   REQUEST_DOC,
   REQUEST_ALL,
   ADVERTISE_DOC,
-  SEND_ALL_CHANGES,
+  SEND_ALL_HISTORY,
   SEND_ALL_SNAPSHOTS,
 } from './Message'
+import { RepoHistory, RepoSnapshot } from './types'
 
 type Clock = Map<string, number>
 type ClockMap = Map<string, Clock>
 type Clocks = { ours: ClockMap; theirs: ClockMap }
+
+const EMPTY_CLOCK: Clock = Map()
+const EMPTY_CLOCKMAP: ClockMap = Map()
 
 /**
  * One instance of `RepoSync` keeps one local document in sync with one remote peer's replica of the
@@ -67,7 +71,7 @@ export class RepoSync {
   constructor(repo: Repo<any>, send: (msg: Message) => void) {
     this.repo = repo
     this.send = send
-    this.clock = { ours: Map(), theirs: Map() }
+    this.clock = { ours: EMPTY_CLOCKMAP, theirs: EMPTY_CLOCKMAP }
     this.log = debug(`cevitxe:reposync:${repo.databaseName}`)
   }
 
@@ -77,14 +81,9 @@ export class RepoSync {
     if (this.repo.documentIds.length === 0) {
       await this.requestAll()
     } else {
-      for (let documentId of this.repo.documentIds)
-        if (documentId.length) await this.registerDoc(documentId)
+      for (let documentId of this.repo.documentIds) await this.registerDoc(documentId)
     }
     this.repo.addHandler(this.onDocChanged.bind(this))
-  }
-
-  async requestAll() {
-    this.send({ type: REQUEST_ALL })
   }
 
   close() {
@@ -92,15 +91,11 @@ export class RepoSync {
     this.repo.removeHandler(this.onDocChanged.bind(this))
   }
 
-  weHaveDoc(documentId: string) {
-    return this.repo.getSnapshot(documentId) !== undefined
-  }
-
   /**
    * Called by the network stack whenever it receives a message from a peer
    * @param msg
    */
-  async receive(msg: any) {
+  async receive(msg: Message) {
     this.log('receive', msg)
     switch (msg.type) {
       case SEND_CHANGES: {
@@ -123,23 +118,34 @@ export class RepoSync {
         break
       }
       case REQUEST_DOC: {
-        // they are asking for this document in its entirety
-        const { documentId, clock } = msg
-        this.updateClock(documentId, theirs, clock)
+        // they don't have this document and are asking for this document in its entirety
+        const { documentId } = msg
+        this.updateClock(documentId, theirs, EMPTY_CLOCK)
         // send them what we have
         await this.maybeSendChanges(documentId)
         break
       }
       case REQUEST_ALL: {
         // they are starting from zero & asking for everything we have
+        // only send if we have something
+        if (this.repo.documentIds.length > 0) {
+          this.sendAllSnapshots()
+          await this.sendAllHistory()
+        } else {
+          this.log('nothing to send')
+        }
         break
       }
-      case SEND_ALL_CHANGES: {
+      case SEND_ALL_HISTORY: {
         // they are sending us the complete history of all documents
+        const { history } = msg
+        await this.receiveAllHistory(history)
         break
       }
       case SEND_ALL_SNAPSHOTS: {
         // they are sending us the latest snapshots for all documents
+        const { state } = msg
+        this.receiveAllSnapshots(state)
         break
       }
       default: {
@@ -280,11 +286,61 @@ export class RepoSync {
   }
 
   /**
-   * Advertises a documentId with an empty clock, indicating that we need its entire history
+   * Requests a document that we don't have, indicating that we need its entire history
    * @param documentId
    */
   private requestDoc(documentId: string) {
-    this.send({ type: REQUEST_DOC, documentId, clock: {} })
+    this.send({ type: REQUEST_DOC, documentId })
+  }
+
+  /**
+   * Initializing repo from the network, request everything peer has (snapshots and changes)
+   */
+  private async requestAll() {
+    this.log('requestAll')
+    this.send({ type: REQUEST_ALL })
+  }
+
+  /**
+   * Send snapshots for all documents
+   */
+  private sendAllSnapshots() {
+    const state = this.repo.getState()
+    this.log('sendAllSnapshots', state)
+    this.send({
+      type: SEND_ALL_SNAPSHOTS,
+      state,
+    })
+  }
+
+  /**
+   * Send all changes for all documents (for initialization)
+   */
+  private async sendAllHistory() {
+    const history = await this.repo.getHistory()
+    this.log('sendAllHistory', history)
+    this.send({
+      type: SEND_ALL_HISTORY,
+      history,
+    })
+  }
+
+  /**
+   * Load a history of all changes sent by peer
+   * @param history
+   */
+  private async receiveAllHistory(history: RepoHistory) {
+    this.log('receiveAllHistory', history)
+    await this.repo.loadHistory(history)
+  }
+
+  /**
+   * Load a snapshot of the entire repo
+   * @param state
+   */
+  private receiveAllSnapshots(state: RepoSnapshot) {
+    this.log('receiveAllSnapshots', state)
+    this.repo.loadState(state)
   }
 
   /**
@@ -298,7 +354,7 @@ export class RepoSync {
   getClock(documentId: string, which: keyof Clocks): Clock | undefined {
     const initialClockValue =
       which === ours
-        ? (Map() as Clock) // our default clock value is an empty clock
+        ? EMPTY_CLOCK // our default clock value is an empty clock
         : undefined // their default clock value is undefined
     return this.clock[which].get(documentId, initialClockValue)
   }
@@ -309,7 +365,7 @@ export class RepoSync {
    * @returns clock from doc
    */
   private async getClockFromDoc(documentId: string): Promise<Clock> {
-    if (!this.weHaveDoc(documentId)) return Map() as Clock
+    if (!this.weHaveDoc(documentId)) return EMPTY_CLOCK
     const state = (await this.getBackendState(documentId)) as any
     return state.getIn(['opSet', 'clock'])
   }
@@ -324,7 +380,7 @@ export class RepoSync {
   private async updateClock(documentId: string, which: keyof Clocks, clock?: Clock) {
     if (clock === undefined) clock = await this.getClockFromDoc(documentId)
     const clockMap = this.clock[which]
-    const oldClock = clockMap.get(documentId, Map() as Clock)
+    const oldClock = clockMap.get(documentId, EMPTY_CLOCK)
     // Merge the clocks, keeping the maximum sequence number for each node
     const largestWins = (x: number = 0, y: number = 0): number => Math.max(x, y)
     const newClock = oldClock.mergeWith(largestWins, clock!)
