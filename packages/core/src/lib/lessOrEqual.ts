@@ -1,6 +1,8 @@
 ﻿import { Map } from 'immutable'
 type Clock = Map<string, number>
 
+export const isMoreRecent = (clock1: Clock, clock2: Clock) => !lessOrEqual(clock1, clock2)
+
 export const lessOrEqual = (clock1: Clock, clock2: Clock) => {
   // coerce to plain JS
   clock1 = clock1.toJS ? (clock1.toJS() as Clock) : clock1
