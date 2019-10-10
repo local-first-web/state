@@ -6,9 +6,9 @@ import { lessOrEqual } from './lib/lessOrEqual'
 import {
   Message,
   SEND_CHANGES,
-  REQUEST_DOC,
+  REQUEST_DOCS,
   REQUEST_ALL,
-  ADVERTISE_DOC,
+  ADVERTISE_DOCS,
   SEND_ALL_HISTORY,
   SEND_ALL_SNAPSHOTS,
   HELLO,
@@ -127,23 +127,28 @@ export class RepoSync {
         await this.repo.applyChanges(documentId, changes)
         break
       }
-      case ADVERTISE_DOC: {
+      case ADVERTISE_DOCS: {
         // they are letting us know they have this specific version of this doc
-        const { documentId, clock } = msg
-        this.updateClock(documentId, theirs, clock)
-        // we have the document as well; see if we have a more recent version than they do; if so
-        // send them the changes they're missing
-        if (this.repo.has(documentId)) await this.maybeSendChanges(documentId)
-        // we don't have this document at all; ask for it
-        else this.requestDoc(documentId)
+        const { documents } = msg
+        for (const { documentId, clock } of documents) {
+          // const { documentId, clock } = msg
+          this.updateClock(documentId, theirs, clock)
+          // we have the document as well; see if we have a more recent version than they do; if so
+          // send them the changes they're missing
+          if (this.repo.has(documentId)) await this.maybeSendChanges(documentId)
+          // we don't have this document at all; ask for it
+          else this.requestDoc(documentId)
+        }
         break
       }
-      case REQUEST_DOC: {
+      case REQUEST_DOCS: {
         // they don't have this document and are asking for this document in its entirety
-        const { documentId } = msg
-        this.updateClock(documentId, theirs, EMPTY_CLOCK)
-        // send them what we have
-        await this.maybeSendChanges(documentId)
+        const { documentIds } = msg
+        for (const documentId of documentIds) {
+          this.updateClock(documentId, theirs, EMPTY_CLOCK)
+          // send them what we have
+          await this.maybeSendChanges(documentId)
+        }
         break
       }
       case REQUEST_ALL: {
@@ -292,9 +297,13 @@ export class RepoSync {
   ) {
     this.log('advertise', documentId)
     this.send({
-      type: ADVERTISE_DOC,
-      documentId,
-      clock: (await clock).toJS() as any,
+      type: ADVERTISE_DOCS,
+      documents: [
+        {
+          documentId,
+          clock: (await clock).toJS() as any,
+        },
+      ],
     })
   }
 
@@ -303,7 +312,7 @@ export class RepoSync {
    * @param documentId
    */
   private requestDoc(documentId: string) {
-    this.send({ type: REQUEST_DOC, documentId })
+    this.send({ type: REQUEST_DOCS, documentIds: [documentId] })
   }
 
   /**

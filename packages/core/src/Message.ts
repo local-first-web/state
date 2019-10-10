@@ -16,20 +16,22 @@ export interface HelloMessage {
 /**
  * Request a document we don't have (snapshot and changes)
  */
-export const REQUEST_DOC = 'REQUEST_DOC'
-export interface RequestDocMessage {
-  type: typeof REQUEST_DOC
-  documentId: string
+export const REQUEST_DOCS = 'REQUEST_DOCS'
+export interface RequestDocsMessage {
+  type: typeof REQUEST_DOCS
+  documentIds: string[]
 }
 
 /**
  * Advertise new document
  */
-export const ADVERTISE_DOC = 'ADVERTISE_DOC'
-export interface AdvertiseDocMessage {
-  type: typeof ADVERTISE_DOC
-  documentId: string
-  clock: Clock
+export const ADVERTISE_DOCS = 'ADVERTISE_DOCS'
+export interface AdvertiseDocsMessage {
+  type: typeof ADVERTISE_DOCS
+  documents: {
+    documentId: string
+    clock: Clock
+  }[]
 }
 
 /**
@@ -63,11 +65,13 @@ interface SendAllHistoryMessage {
 /**
  * Send snapshot for a document
  */
-export const SEND_SNAPSHOT = 'SEND_SNAPSHOT'
-interface SendSnapshotMessage {
-  type: typeof SEND_SNAPSHOT
-  documentId: string
-  snapshot: any
+export const SEND_SNAPSHOTS = 'SEND_SNAPSHOTS'
+interface SendSnapshotsMessage {
+  type: typeof SEND_SNAPSHOTS
+  snapshots: {
+    documentId: string
+    snapshot: any
+  }[]
 }
 
 /**
@@ -81,10 +85,10 @@ interface SendAllSnapshotsMessage {
 
 export type Message =
   | HelloMessage
-  | RequestDocMessage
-  | AdvertiseDocMessage
+  | RequestDocsMessage
+  | AdvertiseDocsMessage
   | SendChangesMessage
   | RequestAllMessage
   | SendAllHistoryMessage
-  | SendSnapshotMessage
+  | SendSnapshotsMessage
   | SendAllSnapshotsMessage
