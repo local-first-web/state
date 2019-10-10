@@ -5,6 +5,15 @@ import { RepoSnapshot, RepoHistory } from './types'
 type Clock = Map<string, number>
 
 /**
+ * Kick off our interaction with a peer by telling them how many documents we have
+ */
+export const HELLO = 'HELLO'
+export interface HelloMessage {
+  type: typeof HELLO
+  documentCount: number
+}
+
+/**
  * Request a document we don't have (snapshot and changes)
  */
 export const REQUEST_DOC = 'REQUEST_DOC'
@@ -71,6 +80,7 @@ interface SendAllSnapshotsMessage {
 }
 
 export type Message =
+  | HelloMessage
   | RequestDocMessage
   | AdvertiseDocMessage
   | SendChangesMessage
