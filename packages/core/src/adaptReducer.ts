@@ -1,10 +1,10 @@
 import A from 'automerge'
-// import debug from 'debug'
+import debug from 'debug'
 import { AnyAction, Reducer } from 'redux'
-import { collection, DELETED } from './collection'
-import { DELETE_COLLECTION, RECEIVE_MESSAGE_FROM_PEER } from './constants'
+import { RECEIVE_MESSAGE_FROM_PEER, DELETE_COLLECTION } from './constants'
 import { Repo } from './Repo'
 import { ProxyReducer, RepoSnapshot } from './types'
+import { collection } from './collection'
 
 export type ReducerConverter = (
   proxyReducer: ProxyReducer,
@@ -23,13 +23,14 @@ export type ReducerConverter = (
  * @param repo The store's repo
  */
 export const adaptReducer: ReducerConverter = (proxyReducer, repo) => {
-  // const log = debug(`cevitxe:adaptreducer:${repo.databaseName}`)
+  const log = debug(`cevitxe:adaptreducer:${repo.databaseName}`)
   const reducer: Reducer<RepoSnapshot, AnyAction> = (state, { type, payload }): RepoSnapshot => {
-    state = state || {}
     if (type === RECEIVE_MESSAGE_FROM_PEER) {
       // Connection has already updated our repo - nothing to do here.
-      return state
+
+      return repo.getState()
     } else {
+      state = state || {}
       const functionMap = proxyReducer(state, { type, payload })
       if (!functionMap) {
         // no matching function - return the unmodified state
@@ -42,12 +43,10 @@ export const adaptReducer: ReducerConverter = (proxyReducer, repo) => {
         if (fn === DELETE_COLLECTION) {
           const name = collection.getCollectionName(documentId)
           // this updates snapshots synchronously then updates underlying data asynchronously
-          collection(name).markAllDeleted(repo)
+          collection(name).removeAllFromSnapshot(repo)
         } else if (typeof fn === 'function') {
           // update snapshot synchronously
           repo.changeSnapshot(documentId, fn)
-          // update underlying data asynchronously (fire & forget)
-          repo.change(documentId, fn)
         }
       }
       return repo.getState()
