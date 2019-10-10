@@ -1,4 +1,4 @@
-import { RepoHistory } from './types'
+﻿import { RepoHistory } from './types'
 import A from 'automerge'
 import { newid } from 'cevitxe-signal-client'
 import debug from 'debug'
@@ -177,16 +177,10 @@ export class Repo<T = any> extends EventEmitter {
    * @param documentId
    */
   async get(documentId: string): Promise<A.Doc<T>> {
+    // TODO: reimplement caching
     this.log('get', documentId)
-    // if (!this.docCache.has(documentId)) {
     const doc = await this.reconstructDoc(documentId)
     return doc
-    // await this.saveSnapshot(documentId, doc)
-    // this.docCache.set(documentId, doc)
-    // } else {
-    // }
-    // const cachedDoc = this.docCache.get(documentId)
-    // return cachedDoc
   }
 
   /**
