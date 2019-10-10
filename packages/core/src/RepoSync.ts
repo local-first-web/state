@@ -1,4 +1,4 @@
-import A from 'automerge'
+﻿import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
 import { isMoreRecent } from './lib/lessOrEqual'
@@ -283,12 +283,10 @@ export class RepoSync {
    * @param documentId
    */
   private async maybeSendChanges(documentId: string) {
-    this.log('maybeSendChanges', documentId)
-    const theirClock = (this.getTheirClock(documentId) as unknown) as A.Clock
+    const theirClock = this.getTheirClock(documentId)
     if (theirClock === undefined) return
-
-    const ourState = await this.getBackendState(documentId)
-    const changes = A.Backend.getMissingChanges(ourState!, theirClock)
+    const ourDoc = await this.repo.get(documentId)
+    const changes = _A.getMissingChanges(ourDoc, (theirClock as unknown) as A.Clock)
     if (changes.length > 0) await this.sendChanges(documentId, changes)
   }
 
@@ -403,8 +401,8 @@ export class RepoSync {
    */
   private async getClockFromDoc(documentId: string): Promise<Clock> {
     if (!this.repo.has(documentId)) return EMPTY_CLOCK
-    const state = (await this.getBackendState(documentId)) as any
-    return state.getIn(['opSet', 'clock'])
+    const doc = await this.repo.get(documentId)
+    return _A.getClock(doc)
   }
 
   /**
@@ -413,7 +411,6 @@ export class RepoSync {
    * @param documentId
    * @param which
    * @param clock
-   * @returns true if an update took place, false if the new clock is the same as the old one
    */
   private async updateClock(documentId: string, which: Which, clock?: Clock) {
     if (clock === undefined) clock = await this.getClockFromDoc(documentId)
@@ -423,18 +420,6 @@ export class RepoSync {
     const largestWins = (x: number = 0, y: number = 0): number => Math.max(x, y)
     const newClock = oldClock.mergeWith(largestWins, clock!)
     this.clock[which] = clockMap.set(documentId, newClock)
-    const changed = !oldClock.equals(newClock)
-    return changed
-  }
-
-  /**
-   * Returns the Automerge state for the specified document
-   * @param documentId
-   * @returns
-   */
-  private async getBackendState(documentId: string) {
-    const doc = await this.repo.get(documentId)
-    if (doc) return A.Frontend.getBackendState(doc)
   }
 }
 
