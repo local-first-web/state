@@ -113,8 +113,8 @@ export class RepoSync {
     switch (msg.type) {
       case HELLO: {
         // they are introducing themselves by saying how many documents they have
-        const theirCount = msg.documentCount
-        const ourCount = this.repo.count
+        const theirCount: number = +msg.documentCount
+        const ourCount: number = +this.repo.count
         this.log('received hello ', { theirCount, ourCount })
         if (theirCount === 0 && ourCount === 0) {
           // neither of us has anything, nothing to talk about until we get documents
