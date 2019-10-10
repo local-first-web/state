@@ -1,4 +1,4 @@
-import A from 'automerge'
+﻿import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
 import { Repo } from './Repo'
@@ -120,8 +120,11 @@ export class RepoSync {
         // they are sending us changes that they figure we don't have
         const { documentId, changes, clock } = msg
         this.updateClock(documentId, theirs, clock)
-        // apply their changes
-        await this.repo.applyChanges(documentId, changes)
+
+        // does this message contain new changes?
+        const shouldUpdate = !lessOrEqual(clock, this.getOurClock(documentId))
+        // if so apply their changes
+        if (shouldUpdate) await this.repo.applyChanges(documentId, changes)
         break
       }
 
@@ -396,7 +399,8 @@ export class RepoSync {
    * sequence number to the maximum for that node
    * @param documentId
    * @param which
-   * @param [clock]
+   * @param clock
+   * @returns true if an update took place, false if the new clock is the same as the old one
    */
   private async updateClock(documentId: string, which: Which, clock?: Clock) {
     if (clock === undefined) clock = await this.getClockFromDoc(documentId)
@@ -406,6 +410,8 @@ export class RepoSync {
     const largestWins = (x: number = 0, y: number = 0): number => Math.max(x, y)
     const newClock = oldClock.mergeWith(largestWins, clock!)
     this.clock[which] = clockMap.set(documentId, newClock)
+    const changed = !oldClock.equals(newClock)
+    return changed
   }
 
   /**
