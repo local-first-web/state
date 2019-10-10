@@ -1,4 +1,4 @@
-﻿import A from 'automerge'
+import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
 import { Repo } from './Repo'
@@ -112,7 +112,7 @@ export class RepoSync {
         this.updateClock(documentId, theirs, clock)
         // we have the document as well; see if we have a more recent version than they do; if so
         // send them the changes they're missing
-        if (this.weHaveDoc(documentId)) await this.maybeSendChanges(documentId)
+        if (this.has(documentId)) await this.maybeSendChanges(documentId)
         // we don't have this document at all; ask for it
         else this.requestDoc(documentId)
         break
@@ -158,10 +158,11 @@ export class RepoSync {
 
   /**
    * @param documentId
-   * @returns  Returns true if the current repo has a snapshot for the requested documentId
+   * @returns  Returns true if the current repo has ever seen the requested documentId (even if it's
+   * been deleted)
    */
-  private weHaveDoc(documentId: string) {
-    return this.repo.getSnapshot(documentId) !== undefined
+  private has(documentId: string) {
+    return this.repo.has(documentId)
   }
 
   /**
@@ -364,7 +365,7 @@ export class RepoSync {
    * @param documentId
    * @returns clock from doc
    */
-  private async getClockFromDoc(documentId: string): Promise<Clock> {
+    if (!this.has(documentId)) return EMPTY_CLOCK
     if (!this.weHaveDoc(documentId)) return EMPTY_CLOCK
     const state = (await this.getBackendState(documentId)) as any
     return state.getIn(['opSet', 'clock'])

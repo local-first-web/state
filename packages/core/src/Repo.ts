@@ -1,4 +1,4 @@
-﻿import { RepoHistory } from './types'
+import { RepoHistory } from './types'
 import A from 'automerge'
 import { newid } from 'cevitxe-signal-client'
 import debug from 'debug'
@@ -162,6 +162,13 @@ export class Repo<T = any> extends EventEmitter {
    */
   get documentIds() {
     return Object.keys(this.state)
+  }
+
+  /**
+   * @returns true if this repo has this document (even if it's been deleted)
+   */
+  has(documentId: string): boolean {
+    return this.state.hasOwnProperty(documentId) //
   }
 
   /**
