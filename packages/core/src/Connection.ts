@@ -37,17 +37,14 @@ export class Connection extends EventEmitter {
     log('receive %o', message)
     this.emit('receive', message)
     await this.repoSync.receive(message) // this updates the doc
-    if (message.changes) {
-      log('%s changes received', message.changes.length)
-      if (this.dispatch) {
-        // dispatch the changes from the peer for middleware to write them to local feed
-        this.dispatch({
-          type: RECEIVE_MESSAGE_FROM_PEER,
-          payload: {
-            message,
-          },
-        })
-      }
+    if (this.dispatch) {
+      // dispatch the changes from the peer
+      this.dispatch({
+        type: RECEIVE_MESSAGE_FROM_PEER,
+        payload: {
+          message,
+        },
+      })
     }
   }
 
