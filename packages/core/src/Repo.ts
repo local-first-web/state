@@ -75,17 +75,31 @@ export class Repo<T = any> extends EventEmitter {
     this.clientId = clientId
   }
 
-  /**
-   * Determines whether the repo has previously persisted data or not.
-   * @returns `true` if there is any stored data in the repo.
-   */
-  async hasData() {
-    const count = await this.database!.count('feeds')
-    return count > 0
-  }
+  // PUBLIC METHODS
 
+  /**
+   * Opens the local database and returns a reference to it.
+   * @returns An `idb` wrapper for an indexed DB.
+   */
   async open() {
-    this.database = await this.openDB()
+    const storageKey = `cevitxe::${this.databaseName}::${this.discoveryKey.substr(0, 12)}`
+    this.database = await idb.openDB(storageKey, DB_VERSION, {
+      upgrade(db) {
+        // feeds
+        const feeds = db.createObjectStore('feeds', {
+          keyPath: 'id',
+          autoIncrement: true,
+        })
+        feeds.createIndex('documentId', 'documentId')
+
+        // snapshots
+        const snapshots = db.createObjectStore('snapshots', {
+          keyPath: 'documentId',
+          autoIncrement: false,
+        })
+        snapshots.createIndex('documentId', 'documentId')
+      },
+    })
   }
 
   close() {
@@ -98,8 +112,8 @@ export class Repo<T = any> extends EventEmitter {
   /**
    * Initializes the repo and returns a snapshot of its current state.
    * @param initialState The starting state to use when creating a new repo.
-   * @param creating Use `true` if creating a new repo, `false` if joining an existing repo (locally
-   * or with a peer)
+   * @param creating Use `true` if creating a new repo, `false` if joining an existing repo (one
+   * that we already created locally, or that a peer has)
    * @returns A snapshot of the repo's current state.
    */
   async init(initialState: any, creating: boolean): Promise<RepoSnapshot> {
@@ -118,6 +132,29 @@ export class Repo<T = any> extends EventEmitter {
     }
     this.emit('ready')
     return this.state
+  }
+
+  /**
+   * Determines whether the repo has previously persisted data or not.
+   * @returns `true` if there is any stored data in the repo.
+   */
+  async hasData() {
+    const count = await this.database!.count('feeds')
+    return count > 0
+  }
+
+  /**
+   * Creates a new repo with the given initial state
+   * @param initialState
+   */
+  async createFromSnapshot(state: RepoSnapshot<T>) {
+    for (let documentId in state) {
+      const snapshot = state[documentId]
+      if (snapshot !== null) {
+        const document = A.from(snapshot)
+        await this.set(documentId, document)
+      }
+    }
   }
 
   /**
@@ -142,15 +179,6 @@ export class Repo<T = any> extends EventEmitter {
     // }
     // const cachedDoc = this.docCache.get(documentId)
     // return cachedDoc
-  }
-
-  async reconstructDoc(documentId: string): Promise<A.Doc<T>> {
-    let doc = A.init<T>({ actorId: this.clientId })
-    const changeSets = await this.getChangesets(documentId)
-    for (const { changes } of changeSets) {
-      if (changes) doc = A.applyChanges(doc, changes)
-    }
-    return doc
   }
 
   /**
@@ -328,12 +356,6 @@ export class Repo<T = any> extends EventEmitter {
     }
   }
 
-  // private getDocumentIds(objectStore: string = 'feeds') {
-  //   this.log('getDocumentIds', objectStore)
-  //   const index = this.database!.transaction(objectStore).store.index('documentId')
-  //   return index.iterate(undefined, 'nextunique')
-  // }
-
   /**
    * Adds a change event listener
    * @param handler
@@ -352,45 +374,6 @@ export class Repo<T = any> extends EventEmitter {
   // PRIVATE
 
   /**
-   * Opens the local database and returns a reference to it.
-   * @returns An `idb` wrapper for an indexed DB.
-   */
-  private openDB() {
-    const storageKey = `cevitxe::${this.databaseName}::${this.discoveryKey.substr(0, 12)}`
-    return idb.openDB(storageKey, DB_VERSION, {
-      upgrade(db) {
-        // feeds
-        const feeds = db.createObjectStore('feeds', {
-          keyPath: 'id',
-          autoIncrement: true,
-        })
-        feeds.createIndex('documentId', 'documentId')
-
-        // snapshots
-        const snapshots = db.createObjectStore('snapshots', {
-          keyPath: 'documentId',
-          autoIncrement: false,
-        })
-        snapshots.createIndex('documentId', 'documentId')
-      },
-    })
-  }
-
-  /**
-   * Creates a new repo with the given initial state
-   * @param initialState
-   */
-  private async createFromSnapshot(state: RepoSnapshot<T>) {
-    for (let documentId in state) {
-      const snapshot = state[documentId]
-      if (snapshot !== null) {
-        const document = A.from(snapshot)
-        await this.set(documentId, document)
-      }
-    }
-  }
-
-  /**
    * Loads all the repo's snapshots into memory
    */
   private async rebuildSnapshotsFromHistory() {
@@ -402,6 +385,19 @@ export class Repo<T = any> extends EventEmitter {
         this.state[documentId] = snapshot
       }
     }
+  }
+
+  /**
+   * Recreates an Automerge document from its change history
+   * @param documentId
+   */
+  private async reconstructDoc(documentId: string): Promise<A.Doc<T>> {
+    let doc = A.init<T>({ actorId: this.clientId })
+    const changeSets = await this.getChangesets(documentId)
+    for (const { changes } of changeSets) {
+      if (changes) doc = A.applyChanges(doc, changes)
+    }
+    return doc
   }
 
   /**
