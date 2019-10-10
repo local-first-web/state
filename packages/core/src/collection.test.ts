@@ -1,6 +1,6 @@
 import { adaptReducer } from './adaptReducer'
 import { collection } from './collection'
-import { repoFromObject } from './repoHelpers'
+import { repoFromSnapshot } from './repoHelpers'
 import { ProxyReducer } from './types'
 import { pause } from './lib/pause'
 import { AnyAction } from 'redux'
@@ -65,14 +65,14 @@ describe('collections', () => {
   describe('reducers', () => {
     const setupEmpty = async () => {
       let state = {}
-      const repo = await repoFromObject(state)
+      const repo = await repoFromSnapshot(state)
       const reducer = asyncReducer(proxyReducer, repo)
       return { state, reducer }
     }
 
     const setupWithOneTeacher = async () => {
       let state = {}
-      const repo = await repoFromObject(state)
+      const repo = await repoFromSnapshot(state)
       const reducer = asyncReducer(proxyReducer, repo)
       const action = { type: 'ADD_TEACHER', payload: teacher1 }
       state = await reducer({}, action)
@@ -138,7 +138,7 @@ describe('collections', () => {
   describe('selectors', () => {
     const setupTeachers = async () => {
       let state = {}
-      const repo = await repoFromObject(state)
+      const repo = await repoFromSnapshot(state)
       const reducer = asyncReducer(proxyReducer, repo)
       const addAction = {
         type: 'ADD_TEACHER',
@@ -154,7 +154,7 @@ describe('collections', () => {
 
     const setupTeachersAndStudents = async () => {
       let state = {}
-      const repo = await repoFromObject(state)
+      const repo = await repoFromSnapshot(state)
       const reducer = asyncReducer(proxyReducer, repo)
       state = await reducer(state, {
         type: 'ADD_TEACHER',

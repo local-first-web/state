@@ -1,17 +1,12 @@
-import A from 'automerge'
-import { RepoSnapshot } from './types'
-import { Repo } from './Repo'
 import { newid } from 'cevitxe-signal-client'
+import { Repo } from './Repo'
 
 /**
- * DEPRECATED
- * This is only used in tests
+ * only used in tests
  */
-export const repoFromObject = async (obj: any): Promise<Repo<any>> => {
+export const repoFromSnapshot = async (obj: any): Promise<Repo<any>> => {
   const repo = new Repo<any>('brilliant-test', `testdb-${newid()}`)
   await repo.open()
-  for (let documentId of Object.getOwnPropertyNames(obj)) {
-    await repo.set(documentId, A.from(obj[documentId]))
-  }
+  await repo.createFromSnapshot(obj)
   return repo
 }

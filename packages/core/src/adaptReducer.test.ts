@@ -1,5 +1,5 @@
 import { adaptReducer } from './adaptReducer'
-import { repoFromObject } from './repoHelpers'
+import { repoFromSnapshot } from './repoHelpers'
 import { ProxyReducer } from './types'
 import { pause as _yield } from './lib/pause'
 import { Reducer, AnyAction } from 'redux'
@@ -15,7 +15,7 @@ describe('adaptReducer', () => {
     beforeEach(async () => {
       proxyReducer = () => ({ settings: s => (s.foo = 2) })
       state = { settings: {} }
-      repo = await repoFromObject(state)
+      repo = await repoFromSnapshot(state)
       reducer = adaptReducer(proxyReducer, repo)
     })
 
