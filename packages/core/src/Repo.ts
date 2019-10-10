@@ -168,7 +168,8 @@ export class Repo<T = any> extends EventEmitter {
    * @returns true if this repo has this document (even if it's been deleted)
    */
   has(documentId: string): boolean {
-    return this.state.hasOwnProperty(documentId) //
+    // if the document has been deleted, its snapshot set to `null`, but the map still contains the entry
+    return this.state.hasOwnProperty(documentId)
   }
 
   /**
@@ -311,7 +312,8 @@ export class Repo<T = any> extends EventEmitter {
   }
 
   /**
-   * Removes the snapshot with the given `documentId` from in-memory state.
+   * Removes the snapshot with the given `documentId` from in-memory state. (More precisely, sets it
+   * to `null` as a marker that we've seen the document before.)
    * @param documentId
    */
   removeSnapshot(documentId: string) {
