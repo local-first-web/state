@@ -1,4 +1,4 @@
-import A from 'automerge'
+﻿import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
 import { Repo } from './Repo'
@@ -18,7 +18,6 @@ import { RepoHistory, RepoSnapshot } from './types'
 
 type Clock = Map<string, number>
 type ClockMap = Map<string, Clock>
-type Clocks = { ours: ClockMap; theirs: ClockMap }
 
 const EMPTY_CLOCK: Clock = Map()
 const EMPTY_CLOCKMAP: ClockMap = Map()
@@ -62,7 +61,7 @@ const EMPTY_CLOCKMAP: ClockMap = Map()
 export class RepoSync {
   public repo: Repo<any>
   private send: (msg: Message) => void
-  private clock: Clocks
+  private clock: { ours: ClockMap; theirs: ClockMap }
   private log: debug.Debugger
 
   /**
@@ -212,7 +211,7 @@ export class RepoSync {
     if (!clock) throw new TypeError(ERR_NOCLOCK)
 
     // Make sure the document is newer than what we already have
-    const ourClock = this.getClock(documentId, ours)
+    const ourClock = this.getOurClock(documentId)
     if (!lessOrEqual(ourClock, clock)) {
       throw new RangeError(ERR_OLDCLOCK)
     }
@@ -249,7 +248,7 @@ export class RepoSync {
     theirClock: Clock | Promise<Clock> = this.getClockFromDoc(documentId)
   ) {
     this.log('maybeRequestChanges', documentId)
-    const ourClock = this.getClock(documentId, ours)
+    const ourClock = this.getOurClock(documentId)
     if (!lessOrEqual(await theirClock, ourClock)) this.advertise(documentId, theirClock)
   }
 
@@ -259,7 +258,7 @@ export class RepoSync {
    */
   private async maybeSendChanges(documentId: string) {
     this.log('maybeSendChanges', documentId)
-    const theirClock = (this.getClock(documentId, theirs) as unknown) as A.Clock
+    const theirClock = (this.getTheirClock(documentId) as unknown) as A.Clock
     if (theirClock === undefined) return
 
     const ourState = await this.getBackendState(documentId)
@@ -301,15 +300,17 @@ export class RepoSync {
   }
 
   /**
-   * Sends a single message letting the peer know everything we have
+   * Sends a single message containing each documentId along with our clock value for it
    */
   private async advertiseAll() {
     this.log('advertiseAll')
+    // recast our ClockMap from an immutable-js Map to an array of {docId, clock} objects
     const documents: { documentId: string; clock: Clock }[] = []
-    for (const documentId in this.repo.documentIds) {
-      const clock = (await this.getClockFromDoc(documentId)).toJS() as Clock
-      documents.push({ documentId, clock })
-    }
+    for (const [documentId, clock] of this.clock.ours.entries())
+      documents.push({
+        documentId,
+        clock: clock.toJS() as Clock,
+      })
     this.send({ type: ADVERTISE_DOCS, documents })
   }
 
@@ -368,21 +369,9 @@ export class RepoSync {
     this.repo.loadState(state)
   }
 
-  /**
-   * Looks up our last recorded clock for the requested document
-   * @param documentId
-   * @param which
-   * @returns clock
-   */
-  getClock(documentId: string, which: 'ours'): Clock
-  getClock(documentId: string, which: 'theirs'): Clock | undefined
-  getClock(documentId: string, which: keyof Clocks): Clock | undefined {
-    const initialClockValue =
-      which === ours
-        ? EMPTY_CLOCK // our default clock value is an empty clock
-        : undefined // their default clock value is undefined
-    return this.clock[which].get(documentId, initialClockValue)
-  }
+  /** Looks up our last recorded clock for the requested document */
+  getOurClock = (documentId: string) => this.clock.ours.get(documentId, EMPTY_CLOCK)
+  getTheirClock = (documentId: string) => this.clock.theirs.get(documentId, undefined)
 
   /**
    * Pulls clock information from the document's metadata
@@ -402,7 +391,7 @@ export class RepoSync {
    * @param which
    * @param [clock]
    */
-  private async updateClock(documentId: string, which: keyof Clocks, clock?: Clock) {
+  private async updateClock(documentId: string, which: Which, clock?: Clock) {
     if (clock === undefined) clock = await this.getClockFromDoc(documentId)
     const clockMap = this.clock[which]
     const oldClock = clockMap.get(documentId, EMPTY_CLOCK)
@@ -430,3 +419,4 @@ const ERR_NOCLOCK =
 
 const ours = 'ours'
 const theirs = 'theirs'
+type Which = typeof ours | typeof theirs
