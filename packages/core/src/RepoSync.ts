@@ -12,7 +12,6 @@ import {
   SEND_ALL_HISTORY,
   SEND_ALL_SNAPSHOTS,
   HELLO,
-  AdvertiseDocsMessage,
 } from './Message'
 import { RepoHistory, RepoSnapshot } from './types'
 
