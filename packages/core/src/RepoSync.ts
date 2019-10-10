@@ -100,8 +100,23 @@ export class RepoSync {
     this.log('receive', msg)
     switch (msg.type) {
       case HELLO: {
-        const { documentCount } = msg
-
+        // they are introducing themselves by saying how many documents they have
+        const theirCount = msg.documentCount
+        const ourCount = this.repo.count
+        this.log('received hello ', { theirCount, ourCount })
+        if (theirCount === 0 && ourCount === 0) {
+          // neither of us has anything, nothing to talk about until we get documents
+          this.log('nothing to do')
+        } else if (theirCount === 0 && ourCount > 0) {
+          // we have documents and they have none, so let's send them everything we have
+          this.log('sending everything')
+          this.sendAllSnapshots()
+          this.sendAllHistory()
+        } else {
+          // we both have some documents, so we'll each advertise everything we have
+          this.log('advertising everything')
+          // TODO
+        }
         break
       }
       case SEND_CHANGES: {
