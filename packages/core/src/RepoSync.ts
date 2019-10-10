@@ -12,6 +12,7 @@ import {
   SEND_ALL_HISTORY,
   SEND_ALL_SNAPSHOTS,
   HELLO,
+  AdvertiseDocsMessage,
 } from './Message'
 import { RepoHistory, RepoSnapshot } from './types'
 
@@ -115,7 +116,7 @@ export class RepoSync {
         } else {
           // we both have some documents, so we'll each advertise everything we have
           this.log('advertising everything')
-          // TODO
+          await this.advertiseAll()
         }
         break
       }
@@ -131,7 +132,6 @@ export class RepoSync {
         // they are letting us know they have this specific version of this doc
         const { documents } = msg
         for (const { documentId, clock } of documents) {
-          // const { documentId, clock } = msg
           this.updateClock(documentId, theirs, clock)
           // we have the document as well; see if we have a more recent version than they do; if so
           // send them the changes they're missing
@@ -285,26 +285,32 @@ export class RepoSync {
   }
 
   /**
-   * Informs a peer that we a specific version of a document, so they can see if they have an older
+   * Informs our peer that we a specific version of a document, so they can see if they have an older
    * version (in which case they will request changes) or a newer version (in which case they will
    * send changes)
    * @param documentId
-   * @param [clock]
+   * @param [_clock]
    */
   private async advertise(
     documentId: string,
-    clock: Clock | Promise<Clock> = this.getClockFromDoc(documentId)
+    _clock: Clock | Promise<Clock> = this.getClockFromDoc(documentId)
   ) {
     this.log('advertise', documentId)
-    this.send({
-      type: ADVERTISE_DOCS,
-      documents: [
-        {
-          documentId,
-          clock: (await clock).toJS() as any,
-        },
-      ],
-    })
+    const clock = (await _clock).toJS() as Clock
+    this.send({ type: ADVERTISE_DOCS, documents: [{ documentId, clock }] })
+  }
+
+  /**
+   * Sends a single message letting the peer know everything we have
+   */
+  private async advertiseAll() {
+    this.log('advertiseAll')
+    const documents: { documentId: string; clock: Clock }[] = []
+    for (const documentId in this.repo.documentIds) {
+      const clock = (await this.getClockFromDoc(documentId)).toJS() as Clock
+      documents.push({ documentId, clock })
+    }
+    this.send({ type: ADVERTISE_DOCS, documents })
   }
 
   /**
@@ -341,10 +347,7 @@ export class RepoSync {
   private async sendAllHistory() {
     const history = await this.repo.getHistory()
     this.log('sendAllHistory', history)
-    this.send({
-      type: SEND_ALL_HISTORY,
-      history,
-    })
+    this.send({ type: SEND_ALL_HISTORY, history })
   }
 
   /**
