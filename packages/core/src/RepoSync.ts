@@ -78,12 +78,9 @@ export class RepoSync {
   // Public API
 
   async open() {
-    if (this.repo.documentIds.length === 0) {
-      await this.requestAll()
-    } else {
-      for (let documentId of this.repo.documentIds) await this.registerDoc(documentId)
-    }
+    for (let documentId of this.repo.documentIds) await this.registerDoc(documentId)
     this.repo.addHandler(this.onDocChanged.bind(this))
+    await this.sendHello()
   }
 
   close() {
@@ -118,6 +115,7 @@ export class RepoSync {
         }
         break
       }
+
       case SEND_CHANGES: {
         // they are sending us changes that they figure we don't have
         const { documentId, changes, clock } = msg
@@ -126,6 +124,7 @@ export class RepoSync {
         await this.repo.applyChanges(documentId, changes)
         break
       }
+
       case ADVERTISE_DOCS: {
         // they are letting us know they have this specific version of each of these docs
         const { documents } = msg
@@ -139,6 +138,7 @@ export class RepoSync {
         }
         break
       }
+
       case REQUEST_DOCS: {
         // they don't have this document and are asking for this document in its entirety
         const { documentIds } = msg
@@ -149,6 +149,7 @@ export class RepoSync {
         }
         break
       }
+
       case REQUEST_ALL: {
         // they are starting from zero & asking for everything we have
         // only send if we have something
@@ -160,18 +161,21 @@ export class RepoSync {
         }
         break
       }
+
       case SEND_ALL_HISTORY: {
         // they are sending us the complete history of all documents
         const { history } = msg
         await this.receiveAllHistory(history)
         break
       }
+
       case SEND_ALL_SNAPSHOTS: {
         // they are sending us the latest snapshots for all documents
         const { state } = msg
         this.receiveAllSnapshots(state)
         break
       }
+
       default: {
         throw new Error(`Unknown message type: ${msg.type}`)
       }
@@ -191,9 +195,6 @@ export class RepoSync {
     // Make sure we can sync this document
     this.validateDoc(documentId, clock)
 
-    // Let peer know we have the document
-    await this.advertise(documentId, clock)
-
     // Record the doc's initial clock
     await this.updateClock(documentId, ours, clock)
   }
@@ -211,9 +212,7 @@ export class RepoSync {
 
     // Make sure the document is newer than what we already have
     const ourClock = this.getOurClock(documentId)
-    if (!lessOrEqual(ourClock, clock)) {
-      throw new RangeError(ERR_OLDCLOCK)
-    }
+    if (!lessOrEqual(ourClock, clock)) throw new RangeError(ERR_OLDCLOCK)
   }
 
   /**
@@ -235,6 +234,13 @@ export class RepoSync {
 
     // update our clock
     this.updateClock(documentId, ours, clock)
+  }
+
+  /**
+   * Sends a hello message including our document count
+   */
+  private async sendHello() {
+    this.send({ type: HELLO, documentCount: this.repo.count })
   }
 
   /**
