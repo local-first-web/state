@@ -271,7 +271,7 @@ export class RepoSync {
    */
   private async maybeRequestChanges(
     documentId: string,
-    theirClock: Clock | Promise<Clock> = this.getClockFromDoc(documentId)
+    theirClock: Clock = this.getOurClock(documentId)
   ) {
     this.log('maybeRequestChanges', documentId)
     const ourClock = this.getOurClock(documentId)
@@ -303,7 +303,7 @@ export class RepoSync {
     this.send({
       type: SEND_CHANGES,
       documentId,
-      clock: clock.toJS() as any,
+      clock: clock.toJS() as Clock,
       changes,
     })
     this.updateClock(documentId, ours)
@@ -316,12 +316,9 @@ export class RepoSync {
    * @param documentId
    * @param [_clock]
    */
-  private async advertise(
-    documentId: string,
-    _clock: Clock | Promise<Clock> = this.getClockFromDoc(documentId)
-  ) {
+  private async advertise(documentId: string, _clock: Clock = this.getOurClock(documentId)) {
     this.log('advertise', documentId)
-    const clock = (await _clock).toJS() as Clock
+    const clock = _clock.toJS() as Clock
     this.send({ type: ADVERTISE_DOCS, documents: [{ documentId, clock }] })
   }
 
