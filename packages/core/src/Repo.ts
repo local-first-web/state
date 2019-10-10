@@ -173,6 +173,13 @@ export class Repo<T = any> extends EventEmitter {
   }
 
   /**
+   * Returns the number of document IDs that this repo has (including deleted)
+   */
+  get count() {
+    return this.documentIds.length
+  }
+
+  /**
    * Reconstitutes an Automerge document from its change history
    * @param documentId
    */
