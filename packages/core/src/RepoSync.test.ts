@@ -153,7 +153,9 @@ describe(`RepoSync`, () => {
       const { localRepo, remoteRepo } = await setup()
 
       await localRepo.set(documentId, A.from({ wrens: 2, swallows: 1, vultures: 234 }, 'L'))
+      await _yield()
       await remoteRepo.set(documentId, A.from({ ['andean condors']: 34 }, 'R'))
+      await _yield()
 
       await makeConnections(localRepo, remoteRepo)
 
