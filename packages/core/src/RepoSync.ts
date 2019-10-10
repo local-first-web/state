@@ -1,4 +1,4 @@
-﻿import A from 'automerge'
+import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
 import { Repo } from './Repo'
@@ -129,7 +129,7 @@ export class RepoSync {
         break
       }
       case ADVERTISE_DOCS: {
-        // they are letting us know they have this specific version of this doc
+        // they are letting us know they have this specific version of each of these docs
         const { documents } = msg
         for (const { documentId, clock } of documents) {
           this.updateClock(documentId, theirs, clock)
@@ -285,9 +285,9 @@ export class RepoSync {
   }
 
   /**
-   * Informs our peer that we a specific version of a document, so they can see if they have an older
-   * version (in which case they will request changes) or a newer version (in which case they will
-   * send changes)
+   * Informs our peer that we have a specific version of a document, so they can see if they have an
+   * older version (in which case they will request changes) or a newer version (in which case they
+   * will send changes)
    * @param documentId
    * @param [_clock]
    */
