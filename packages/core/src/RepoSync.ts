@@ -1,4 +1,4 @@
-import A from 'automerge'
+﻿import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
 import { Repo } from './Repo'
@@ -11,6 +11,7 @@ import {
   ADVERTISE_DOC,
   SEND_ALL_HISTORY,
   SEND_ALL_SNAPSHOTS,
+  HELLO,
 } from './Message'
 import { RepoHistory, RepoSnapshot } from './types'
 
@@ -98,6 +99,11 @@ export class RepoSync {
   async receive(msg: Message) {
     this.log('receive', msg)
     switch (msg.type) {
+      case HELLO: {
+        const { documentCount } = msg
+
+        break
+      }
       case SEND_CHANGES: {
         // they are sending us changes that they figure we don't have
         const { documentId, changes, clock } = msg
@@ -112,7 +118,7 @@ export class RepoSync {
         this.updateClock(documentId, theirs, clock)
         // we have the document as well; see if we have a more recent version than they do; if so
         // send them the changes they're missing
-        if (this.has(documentId)) await this.maybeSendChanges(documentId)
+        if (this.repo.has(documentId)) await this.maybeSendChanges(documentId)
         // we don't have this document at all; ask for it
         else this.requestDoc(documentId)
         break
@@ -155,15 +161,6 @@ export class RepoSync {
   }
 
   // Private methods
-
-  /**
-   * @param documentId
-   * @returns  Returns true if the current repo has ever seen the requested documentId (even if it's
-   * been deleted)
-   */
-  private has(documentId: string) {
-    return this.repo.has(documentId)
-  }
 
   /**
    * Called for each document upon initialization. Records the document's clock and advertises it.
@@ -365,8 +362,8 @@ export class RepoSync {
    * @param documentId
    * @returns clock from doc
    */
-    if (!this.has(documentId)) return EMPTY_CLOCK
-    if (!this.weHaveDoc(documentId)) return EMPTY_CLOCK
+  private async getClockFromDoc(documentId: string): Promise<Clock> {
+    if (!this.repo.has(documentId)) return EMPTY_CLOCK
     const state = (await this.getBackendState(documentId)) as any
     return state.getIn(['opSet', 'clock'])
   }
