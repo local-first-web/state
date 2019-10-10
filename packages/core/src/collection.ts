@@ -154,15 +154,24 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
   }
 
   /**
-   * Marks all items in the collection as deleted. ("PRIVATE")
+   * Marks all items in the collection as deleted.
    * @param repo
    */
   const markAllDeleted = async (repo: Repo<any>) => {
     for (const documentId of repo.documentIds) {
       if (isCollectionKey(documentId)) {
-        // update snapshot
         repo.change(documentId, setDeleteFlag)
-        // update underlying data (fire & forget)
+      }
+    }
+  }
+
+  /**
+   * Removes all items in the collection from the snapshot.
+   * @param repo
+   */
+  const removeAllFromSnapshot = (repo: Repo<any>) => {
+    for (const documentId of repo.documentIds) {
+      if (isCollectionKey(documentId)) {
         repo.removeSnapshot(documentId)
       }
     }
@@ -210,6 +219,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
       count,
     },
     markAllDeleted,
+    removeAllFromSnapshot,
   }
 }
 
