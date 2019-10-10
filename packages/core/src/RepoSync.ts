@@ -1,18 +1,18 @@
 import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
-import { Repo } from './Repo'
-import { lessOrEqual } from './lib/lessOrEqual'
+import { isMoreRecent } from './lib/lessOrEqual'
 import {
   Message,
-  SEND_CHANGES,
-  REQUEST_DOCS,
-  REQUEST_ALL,
   ADVERTISE_DOCS,
+  HELLO,
+  REQUEST_ALL,
+  REQUEST_DOCS,
   SEND_ALL_HISTORY,
   SEND_ALL_SNAPSHOTS,
-  HELLO,
+  SEND_CHANGES,
 } from './Message'
+import { Repo } from './Repo'
 import { RepoHistory, RepoSnapshot } from './types'
 
 type Clock = Map<string, number>
@@ -138,7 +138,7 @@ export class RepoSync {
         this.updateClock(documentId, theirs, clock)
 
         // does this message contain new changes?
-        const shouldUpdate = !lessOrEqual(clock, this.getOurClock(documentId))
+        const shouldUpdate = isMoreRecent(clock, this.getOurClock(documentId))
         // if so apply their changes
         if (shouldUpdate) await this.repo.applyChanges(documentId, changes)
         break
@@ -231,7 +231,7 @@ export class RepoSync {
 
     // Make sure the document is newer than what we already have
     const ourClock = this.getOurClock(documentId)
-    if (!lessOrEqual(ourClock, clock)) throw new RangeError(ERR_OLDCLOCK)
+    if (isMoreRecent(ourClock, clock)) throw new RangeError(ERR_OLDCLOCK)
   }
 
   /**
@@ -275,7 +275,7 @@ export class RepoSync {
   ) {
     this.log('maybeRequestChanges', documentId)
     const ourClock = this.getOurClock(documentId)
-    if (!lessOrEqual(await theirClock, ourClock)) this.advertise(documentId, theirClock)
+    if (isMoreRecent(theirClock, ourClock)) await this.advertise(documentId, theirClock)
   }
 
   /**
