@@ -49,11 +49,15 @@ export class Repo<T = any> extends EventEmitter {
    */
   public databaseName: string
 
+  /**
+   * Unique identifier representing this peer
+   */
   public clientId: string
+
   /**
    * In-memory map of document snapshots.
    */
-  private state: RepoSnapshot<T>
+  private state: RepoSnapshot<T> = {}
 
   private docCache: Cache<string, any>
 
@@ -69,7 +73,6 @@ export class Repo<T = any> extends EventEmitter {
     this.discoveryKey = discoveryKey
     this.databaseName = databaseName
     this.log = debug(`cevitxe:repo:${databaseName}`)
-    this.state = {}
     this.handlers = new Set()
     this.docCache = new Cache({ max: 1000 })
     this.clientId = clientId
