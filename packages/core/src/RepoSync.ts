@@ -1,4 +1,4 @@
-﻿import A from 'automerge'
+import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
 import { Repo } from './Repo'
@@ -240,7 +240,9 @@ export class RepoSync {
    * Sends a hello message including our document count
    */
   private async sendHello() {
-    this.send({ type: HELLO, documentCount: this.repo.count })
+    const documentCount = this.repo.count
+    this.log('sending hello', documentCount)
+    this.send({ type: HELLO, documentCount })
   }
 
   /**
