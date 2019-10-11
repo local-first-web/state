@@ -49,11 +49,15 @@ export class Repo<T = any> extends EventEmitter {
    */
   public databaseName: string
 
+  /**
+   * Unique identifier representing this peer
+   */
   public clientId: string
+
   /**
    * In-memory map of document snapshots.
    */
-  private state: RepoSnapshot<T>
+  private state: RepoSnapshot<T> = {}
 
   private docCache: Cache<string, any>
 
@@ -69,7 +73,6 @@ export class Repo<T = any> extends EventEmitter {
     this.discoveryKey = discoveryKey
     this.databaseName = databaseName
     this.log = debug(`cevitxe:repo:${databaseName}`)
-    this.state = {}
     this.handlers = new Set()
     this.docCache = new Cache({ max: 1000 })
     this.clientId = clientId
@@ -128,7 +131,7 @@ export class Repo<T = any> extends EventEmitter {
       await this.createFromSnapshot({})
     } else {
       this.log('recovering an existing repo from persisted state')
-      await this.rebuildSnapshotsFromHistory()
+      await this.loadSnapshotsFromDb()
     }
     this.emit('ready')
     return this.state
@@ -165,20 +168,29 @@ export class Repo<T = any> extends EventEmitter {
   }
 
   /**
+   * @returns true if this repo has this document (even if it's been deleted)
+   */
+  has(documentId: string): boolean {
+    // if the document has been deleted, its snapshot set to `null`, but the map still contains the entry
+    return this.state.hasOwnProperty(documentId)
+  }
+
+  /**
+   * Returns the number of document IDs that this repo has (including deleted)
+   */
+  get count() {
+    return this.documentIds.length
+  }
+
+  /**
    * Reconstitutes an Automerge document from its change history
    * @param documentId
    */
   async get(documentId: string): Promise<A.Doc<T>> {
+    // TODO: reimplement caching
     this.log('get', documentId)
-    // if (!this.docCache.has(documentId)) {
     const doc = await this.reconstructDoc(documentId)
     return doc
-    // await this.saveSnapshot(documentId, doc)
-    // this.docCache.set(documentId, doc)
-    // } else {
-    // }
-    // const cachedDoc = this.docCache.get(documentId)
-    // return cachedDoc
   }
 
   /**
@@ -304,7 +316,8 @@ export class Repo<T = any> extends EventEmitter {
   }
 
   /**
-   * Removes the snapshot with the given `documentId` from in-memory state.
+   * Removes the snapshot with the given `documentId` from in-memory state. (More precisely, sets it
+   * to `null` as a marker that we've seen the document before.)
    * @param documentId
    */
   removeSnapshot(documentId: string) {
@@ -349,10 +362,9 @@ export class Repo<T = any> extends EventEmitter {
    * Used when receiving the entire current state of a repo from a peer.
    */
   async loadHistory(history: RepoHistory) {
-    // TODO: clear current changes?
     for (const documentId in history) {
       const changes = history[documentId]
-      await this.appendChangeset({ documentId, changes })
+      await this.applyChanges(documentId, changes)
     }
   }
 
@@ -376,14 +388,10 @@ export class Repo<T = any> extends EventEmitter {
   /**
    * Loads all the repo's snapshots into memory
    */
-  private async rebuildSnapshotsFromHistory() {
+  private async loadSnapshotsFromDb() {
     const snapshots = await this.database!.getAll('snapshots')
     for (const { documentId, snapshot } of snapshots) {
-      if (snapshot === null || snapshot[DELETED]) {
-        // omit deleted documents
-      } else {
-        this.state[documentId] = snapshot
-      }
+      this.state[documentId] = snapshot[DELETED] ? null : snapshot
     }
   }
 

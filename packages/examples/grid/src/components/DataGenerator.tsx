@@ -57,7 +57,7 @@ export function DataGenerator() {
           {progress ? 'Generating...' : 'Generate data'}
         </button>
         <div css={menu(menuOpen)}>
-          {[10, 100, 1000, 10000, 20000, 50000, 100000].map(rows => (
+          {[10, 100, 1000, 10000, 100000, 200000, 500000, 1000000].map(rows => (
             <button
               key={rows}
               css={styles.menuItem}
@@ -67,7 +67,7 @@ export function DataGenerator() {
                 generate(rows)
               }}
             >
-              {rows} rows
+              {rows.toLocaleString()} rows
             </button>
           ))}
         </div>
