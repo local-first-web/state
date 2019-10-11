@@ -5,7 +5,7 @@ import debug from 'debug'
 import { EventEmitter } from 'events'
 import * as idb from 'idb/with-async-ittr-cjs'
 import { ChangeSet, RepoSnapshot } from './types'
-import { DELETED } from './collection'
+import { DELETED } from './constants'
 import Cache from 'lru-cache'
 
 const DB_VERSION = 1

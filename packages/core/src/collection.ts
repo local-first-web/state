@@ -1,9 +1,8 @@
+import { DELETED } from './constants'
 import A from 'automerge'
 import { DELETE_COLLECTION } from './constants'
 import { ChangeMap, RepoSnapshot } from './types'
 import { Repo } from './Repo'
-
-export const DELETED = '::DELETED'
 
 export interface CollectionOptions {
   idField?: string
