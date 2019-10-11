@@ -106,6 +106,7 @@ export class Repo<T = any> extends EventEmitter {
           autoIncrement: false,
         })
         snapshots.createIndex('documentId', 'documentId')
+        // TODO: use unique index?
       },
     })
   }
