@@ -131,7 +131,7 @@ export class Repo<T = any> extends EventEmitter {
       await this.createFromSnapshot({})
     } else {
       this.log('recovering an existing repo from persisted state')
-      await this.rebuildSnapshotsFromHistory()
+      await this.loadSnapshotsFromDb()
     }
     this.emit('ready')
     return this.state
@@ -362,7 +362,6 @@ export class Repo<T = any> extends EventEmitter {
    * Used when receiving the entire current state of a repo from a peer.
    */
   async loadHistory(history: RepoHistory) {
-    // TODO: clear current changes?
     for (const documentId in history) {
       const changes = history[documentId]
       await this.appendChangeset({ documentId, changes })
@@ -389,7 +388,7 @@ export class Repo<T = any> extends EventEmitter {
   /**
    * Loads all the repo's snapshots into memory
    */
-  private async rebuildSnapshotsFromHistory() {
+  private async loadSnapshotsFromDb() {
     const snapshots = await this.database!.getAll('snapshots')
     for (const { documentId, snapshot } of snapshots) {
       if (snapshot === null || snapshot[DELETED]) {
