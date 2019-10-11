@@ -271,11 +271,12 @@ export class RepoSync {
    */
   private async maybeRequestChanges(
     documentId: string,
-    theirClock: Clock = this.getOurClock(documentId)
+    theirClock: Clock | Promise<Clock> = this.getClockFromDoc(documentId)
   ) {
     this.log('maybeRequestChanges', documentId)
     const ourClock = this.getOurClock(documentId)
-    if (isMoreRecent(theirClock, ourClock)) await this.advertise(documentId, theirClock)
+    theirClock = await theirClock
+    if (isMoreRecent(theirClock, ourClock)) this.advertise(documentId, theirClock)
   }
 
   /**
