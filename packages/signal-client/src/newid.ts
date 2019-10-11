@@ -7,5 +7,5 @@ export const newid = (len: number = 4) => {
         .split('')
         .reverse()
         .slice(0, len)
-        .join('')
+        .join('') //the beginning of a cuid changes slowly, use the end
 }
