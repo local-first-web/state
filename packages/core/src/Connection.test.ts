@@ -45,7 +45,7 @@ describe('Connection', () => {
     let key: keyof FooStateDoc
     for (key in initialState) {
       const value = initialState[key]
-      await repo.set(key, A.from(value, localActorId))
+      repo.set(key, A.from(value, localActorId))
     }
   })
 
