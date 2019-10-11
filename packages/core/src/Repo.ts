@@ -364,7 +364,7 @@ export class Repo<T = any> extends EventEmitter {
   async loadHistory(history: RepoHistory) {
     for (const documentId in history) {
       const changes = history[documentId]
-      await this.appendChangeset({ documentId, changes })
+      await this.applyChanges(documentId, changes)
     }
   }
 
