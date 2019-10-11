@@ -391,11 +391,7 @@ export class Repo<T = any> extends EventEmitter {
   private async loadSnapshotsFromDb() {
     const snapshots = await this.database!.getAll('snapshots')
     for (const { documentId, snapshot } of snapshots) {
-      if (snapshot === null || snapshot[DELETED]) {
-        // omit deleted documents
-      } else {
-        this.state[documentId] = snapshot
-      }
+      this.state[documentId] = snapshot[DELETED] ? null : snapshot
     }
   }
 
