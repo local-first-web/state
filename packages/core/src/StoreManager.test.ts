@@ -2,7 +2,7 @@ import { newid } from 'cevitxe-signal-client'
 import { Server } from 'cevitxe-signal-server'
 import { getPortPromise as getAvailablePort } from 'portfinder'
 import { collection } from './collection'
-import { pause as _yield } from './lib/pause'
+import { pause as _yield } from './pause'
 import { StoreManager } from './StoreManager'
 import { ProxyReducer } from './types'
 

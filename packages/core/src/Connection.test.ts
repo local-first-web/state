@@ -6,7 +6,7 @@ import { newid } from 'cevitxe-signal-client'
 import { Connection } from './Connection'
 
 import { WebSocket } from 'mock-socket'
-import { pause as _yield } from './lib/pause'
+import { pause as _yield } from './pause'
 
 // @ts-ignore adding object to global scope
 global.WebSocket = WebSocket

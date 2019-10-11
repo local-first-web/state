@@ -1,9 +1,9 @@
 import A from 'automerge'
-import { TestChannel } from './lib/TestChannel'
+import { TestChannel } from './TestChannel'
 import { Repo } from './Repo'
 import { RepoSync } from './RepoSync'
 import { Message } from './Message'
-import { pause as _yield } from './lib/pause'
+import { pause as _yield } from './pause'
 import debug from 'debug'
 import { newid } from 'cevitxe-signal-client'
 

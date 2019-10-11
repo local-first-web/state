@@ -2,7 +2,7 @@ import { adaptReducer } from './adaptReducer'
 import { collection } from './collection'
 import { repoFromSnapshot } from './repoTestHelpers'
 import { ProxyReducer } from './types'
-import { pause } from './lib/pause'
+import { pause } from './pause'
 import { AnyAction } from 'redux'
 import { Repo } from './Repo'
 

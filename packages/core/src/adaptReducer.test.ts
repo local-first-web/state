@@ -1,7 +1,7 @@
 import { adaptReducer } from './adaptReducer'
 import { repoFromSnapshot } from './repoTestHelpers'
 import { ProxyReducer } from './types'
-import { pause as _yield } from './lib/pause'
+import { pause as _yield } from './pause'
 import { Reducer, AnyAction } from 'redux'
 import { Repo } from './Repo'
 

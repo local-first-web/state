@@ -1,7 +1,7 @@
 ﻿import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
-import { isMoreRecent } from './lib/lessOrEqual'
+import { isMoreRecent } from './lessOrEqual'
 import {
   Message,
   ADVERTISE_DOCS,

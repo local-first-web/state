@@ -1,5 +1,5 @@
 ﻿import { EventEmitter } from 'events'
-import { Message } from '../Message'
+import { Message } from './Message'
 import debug from 'debug'
 
 const log = debug('HIDE:cevitxe:testchannel')
