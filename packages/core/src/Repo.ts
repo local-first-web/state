@@ -357,6 +357,7 @@ export class Repo<T = any> extends EventEmitter {
     const index = this.database!.transaction('feeds').store.index('documentId')
     const changeSets = index.iterate(undefined, 'next')
 
+    // TODO: for large datasets, send in batches
     for await (const cursor of changeSets) {
       const { documentId, changes } = cursor.value as ChangeSet
       history[documentId] = (history[documentId] || []).concat(changes)

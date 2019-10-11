@@ -368,6 +368,7 @@ export class RepoSync {
    * Send all changes for all documents (for initialization)
    */
   private async sendAllHistory() {
+    // TODO: for large datasets, send in batches
     const history = await this.repo.getHistory()
     this.log('sendAllHistory', history)
     this.send({ type: SEND_ALL_HISTORY, history })
