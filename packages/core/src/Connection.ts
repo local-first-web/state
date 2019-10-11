@@ -16,15 +16,15 @@ const log = debug('cevitxe:connection')
 export class Connection extends EventEmitter {
   private repoSync: RepoSync
   private peerSocket: WebSocket | null
-  private dispatch?: Dispatch<AnyAction>
+  private dispatch: Dispatch<AnyAction>
   private repo: Repo<any>
 
-  constructor(repo: Repo<any>, peerSocket: WebSocket, dispatch?: Dispatch<AnyAction>) {
+  constructor(repo: Repo<any>, peerSocket: WebSocket, dispatch: Dispatch<AnyAction>) {
     super()
     log('new connection')
     this.repo = repo
     this.peerSocket = peerSocket
-    if (dispatch) this.dispatch = dispatch
+    this.dispatch = dispatch
 
     this.peerSocket.onmessage = this.receive.bind(this)
 
@@ -37,18 +37,13 @@ export class Connection extends EventEmitter {
     log('receive %o', message)
     this.emit('receive', message)
     await this.repoSync.receive(message) // this updates the doc
-    if (message.changes) {
-      log('%s changes received', message.changes.length)
-      if (this.dispatch) {
-        // dispatch the changes from the peer for middleware to write them to local feed
-        this.dispatch({
-          type: RECEIVE_MESSAGE_FROM_PEER,
-          payload: {
-            message,
-          },
-        })
-      }
-    }
+    // dispatch the changes from the peer
+    this.dispatch({
+      type: RECEIVE_MESSAGE_FROM_PEER,
+      payload: {
+        message,
+      },
+    })
   }
 
   send = (message: Message) => {
