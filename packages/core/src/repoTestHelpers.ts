@@ -1,9 +1,6 @@
 import { newid } from 'cevitxe-signal-client'
 import { Repo } from './Repo'
 
-/**
- * only used in tests
- */
 export const repoFromSnapshot = async (obj: any): Promise<Repo<any>> => {
   const repo = new Repo<any>('brilliant-test', `testdb-${newid()}`)
   await repo.open()

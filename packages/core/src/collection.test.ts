@@ -1,6 +1,6 @@
 import { adaptReducer } from './adaptReducer'
 import { collection } from './collection'
-import { repoFromSnapshot } from './repoHelpers'
+import { repoFromSnapshot } from './repoTestHelpers'
 import { ProxyReducer } from './types'
 import { pause } from './lib/pause'
 import { AnyAction } from 'redux'
