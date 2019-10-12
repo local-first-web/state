@@ -27,6 +27,7 @@
     "react": "16",
     "react-dom": "16",
     "react-redux": "7",
+    "react-redux-worker": "^0.1.9",
     "react-scripts": "3",
     "react-spinkit": "3",
     "redux": "4",
@@ -54,8 +55,8 @@
     "prettier": "1",
     "react-app-rewired": "2",
     "rimraf": "3",
-    "tslint-react": "4",
     "tslint-config-prettier": "1",
+    "tslint-react": "4",
     "typescript": "3",
     "worker-loader": "2"
   },
