@@ -75,10 +75,9 @@ export class StoreManager<T> extends EventEmitter {
   private makeStore = async (discoveryKey: string, isCreating: boolean = false) => {
     log = debug(`cevitxe:${isCreating ? 'createStore' : 'joinStore'}:${discoveryKey}`)
 
+    // Create Repo
     this.repo = new Repo(discoveryKey, this.databaseName, this.clientId)
-
     this.repo.addHandler(this.onChange)
-
     const state = await this.repo.init(this.initialState, isCreating)
 
     // Create Redux store
