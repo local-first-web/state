@@ -1,4 +1,4 @@
-import { adaptReducer } from './adaptReducer'
+import { getReducer } from './getReducer'
 import { collection } from './collection'
 import { repoFromSnapshot } from './repoTestHelpers'
 import { ProxyReducer } from './types'
@@ -51,12 +51,9 @@ describe('collections', () => {
     })
   })
 
-  // HACK: This isn't awesome - reducers are by definition not supposed to be async;
-  // but that's kind of where we are for the moment, since making reducers true functions would
-  // force us to carry all of state in memory
   const asyncReducer = (proxyReducer: ProxyReducer, repo: Repo) => {
     return async (state: any, { type, payload }: AnyAction) => {
-      const _reducer = adaptReducer(proxyReducer, repo)
+      const _reducer = getReducer(proxyReducer, repo)
       const result = _reducer(state, { type, payload })
       await pause()
       return result

@@ -22,8 +22,8 @@ export type ReducerConverter = (
  * @param proxyReducer The proxyReducer to be adapted
  * @param repo The store's repo
  */
-export const adaptReducer: ReducerConverter = (proxyReducer, repo) => {
-  const log = debug(`cevitxe:adaptreducer:${repo.databaseName}`)
+export const getReducer: ReducerConverter = (proxyReducer, repo) => {
+  const log = debug(`cevitxe:getReducer:${repo.databaseName}`)
   const reducer: Reducer<RepoSnapshot, AnyAction> = (state, { type, payload }): RepoSnapshot => {
     if (type === RECEIVE_MESSAGE_FROM_PEER) {
       // Connection has already updated our repo - nothing to do here.
