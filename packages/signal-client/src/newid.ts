@@ -1,4 +1,11 @@
-﻿import uuid from 'uuid'
+﻿import cuid from 'cuid'
 // use shorter ids in development & testing
-export const newid = (len: number = 4) =>
-  process.env.NODE_ENV === 'production' ? uuid() : uuid().slice(0, len)
+export const newid = (len: number = 4) => {
+  return process.env.NODE_ENV === 'production'
+    ? cuid()
+    : cuid()
+        .split('')
+        .reverse()
+        .slice(0, len)
+        .join('') //the beginning of a cuid changes slowly, use the end
+}

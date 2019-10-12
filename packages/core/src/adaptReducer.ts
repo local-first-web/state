@@ -1,64 +1,56 @@
 import A from 'automerge'
-import { RECEIVE_MESSAGE_FROM_PEER, DELETE_COLLECTION } from './constants'
-import { docSetToObject } from './docSetHelpers'
-import { Reducer, AnyAction } from 'redux'
-import { ProxyReducer, DocSetState } from 'types'
-import { collection } from './collection'
-import { getMemUsage } from './getMemUsage'
 import debug from 'debug'
-
-const log = debug('cevitxe:grid:adaptreducer')
+import { AnyAction, Reducer } from 'redux'
+import { RECEIVE_MESSAGE_FROM_PEER, DELETE_COLLECTION } from './constants'
+import { Repo } from './Repo'
+import { ProxyReducer, RepoSnapshot } from './types'
+import { collection } from './collection'
 
 export type ReducerConverter = (
   proxyReducer: ProxyReducer,
-  docSet: A.DocSet<any>
-) => Reducer<DocSetState, AnyAction>
+  repo: Repo<any>
+) => Reducer<RepoSnapshot, AnyAction>
 
 /**
  * This function, used when wiring up the store, takes a `proxyReducer` and turns it into a
  * garden-variety Redux reducer.
  *
- * @remarks
  * When we initialize a `StoreManager`, we give it a `proxyReducer`, which is like a Redux reducer,
  * except it's designed to work with Automerge objects instead of plain JavaScript objects. Instead
  * of returning a modified state, it returns one or more change functions.
  *
  * @param proxyReducer The proxyReducer to be adapted
- * @param docSet The store's docSet
+ * @param repo The store's repo
  */
-export const adaptReducer: ReducerConverter = (proxyReducer, docSet) => {
-  const reducer: Reducer<DocSetState, AnyAction> = (state, { type, payload }): DocSetState => {
+export const adaptReducer: ReducerConverter = (proxyReducer, repo) => {
+  const log = debug(`cevitxe:adaptreducer:${repo.databaseName}`)
+  const reducer: Reducer<RepoSnapshot, AnyAction> = (state, { type, payload }): RepoSnapshot => {
     if (type === RECEIVE_MESSAGE_FROM_PEER) {
-      // Connection has already updated our docSet - nothing to do here.
-    } else {
-      const functionMap = proxyReducer(state, { type, payload })
+      // Connection has already updated our repo - nothing to do here.
 
+      return repo.getState()
+    } else {
+      state = state || {}
+      const functionMap = proxyReducer(state, { type, payload })
       if (!functionMap) {
         // no matching function - return the unmodified state
-        return state || {}
+        return state
       }
-
+      repo.loadState({ ...state }) // clone
       // Apply each change function to the corresponding document
-      for (let docId in functionMap) {
-        const fn = functionMap[docId] as A.ChangeFn<any> | symbol
-
+      for (let documentId in functionMap) {
+        const fn = functionMap[documentId] as A.ChangeFn<any> | symbol
         if (fn === DELETE_COLLECTION) {
-          const name = collection.getCollectionName(docId)
-          collection(name).removeAll(docSet)
+          const name = collection.getCollectionName(documentId)
+          // this updates snapshots synchronously then updates underlying data asynchronously
+          collection(name).removeAllFromSnapshot(repo)
         } else if (typeof fn === 'function') {
-          // find the corresponding document in the docSet
-          const oldDoc = docSet.getDoc(docId) || A.init() // create a new doc if one doesn't exist
-          // run the change function to get a new document
-          const newDoc = A.change(oldDoc, fn)
-          // update the docSet
-          docSet.setDoc(docId, newDoc)
+          // update snapshot synchronously
+          repo.changeSnapshot(documentId, fn)
         }
       }
-      log(`after applying changes`, getMemUsage())
+      return repo.getState()
     }
-
-    const newState = docSetToObject(docSet)
-    return newState
   }
 
   return reducer

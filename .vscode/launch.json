@@ -6,7 +6,10 @@
       "type": "chrome",
       "request": "launch",
       "url": "http://localhost:3000",
-      "preLaunchTask": "Start Grid example"
+      "preLaunchTask": "Start Grid example",
+      "sourceMapPathOverrides": {
+        "${workspaceRoot}/packages/core/dist/src/*.js": "${workspaceRoot}/packages/core/src/*.ts"
+      }
     }
   ]
 }

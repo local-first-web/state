@@ -5,16 +5,15 @@ import { JSONSchema7 } from 'json-schema'
 import { Fragment, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { clearCollection, loadCollection, loadSchema } from 'redux/actions'
-import GeneratorWorker from '../workers/generator.worker'
+
+import { nextFrame } from '../lib/nextFrame'
+import GeneratorWorker from '../workers/dataGenerator.worker'
 import { ProgressBar } from './ProgressBar'
-import { getMemUsage } from '../getMemUsage'
-import debug from 'debug'
 
+/**
+ * The actual generation of random data is performed in a worker
+ */
 const generator = new GeneratorWorker()
-
-const nextFrame = () => new Promise(ok => requestAnimationFrame(ok))
-
-const log = debug('cevitxe:grid:datagenerator')
 
 export function DataGenerator() {
   const dispatch = useDispatch()
@@ -25,8 +24,6 @@ export function DataGenerator() {
   const hideMenu = () => setTimeout(() => setMenuOpen(false), 500)
 
   const generate = async (rows: number) => {
-    log('before generating %o', getMemUsage())
-
     setProgress(0)
     dispatch(clearCollection())
     dispatch(loadSchema(schema))
@@ -37,14 +34,11 @@ export function DataGenerator() {
       await nextFrame()
       if (reportedProgress) {
         setProgress(Math.ceil((reportedProgress / rows) * 100))
-        // log(`generated row ${reportedProgress}`, getMemUsage())
       }
       if (result) {
         setProgress(0)
         const collection = event.data.result
-        log('before dispatch %o', getMemUsage())
         dispatch(loadCollection(collection))
-        log('after dispatch %o', getMemUsage())
       }
     }
     generator.postMessage(rows)
@@ -63,7 +57,7 @@ export function DataGenerator() {
           {progress ? 'Generating...' : 'Generate data'}
         </button>
         <div css={menu(menuOpen)}>
-          {[10, 100, 1000, 10000, 20000, 50000, 100000].map(rows => (
+          {[10, 100, 1000, 10000, 100000, 200000, 500000, 1000000].map(rows => (
             <button
               key={rows}
               css={styles.menuItem}
@@ -73,7 +67,7 @@ export function DataGenerator() {
                 generate(rows)
               }}
             >
-              {rows} rows
+              {rows.toLocaleString()} rows
             </button>
           ))}
         </div>

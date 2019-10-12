@@ -1,19 +1,34 @@
 import { adaptReducer } from './adaptReducer'
+import { repoFromSnapshot } from './repoTestHelpers'
 import { ProxyReducer } from './types'
-import { docSetFromObject } from './docSetHelpers'
-import { collection } from './collection'
+import { pause as _yield } from './pause'
+import { Reducer, AnyAction } from 'redux'
+import { Repo } from './Repo'
 
 describe('adaptReducer', () => {
   describe('should return a working reducer', () => {
-    const proxyReducer: ProxyReducer = () => ({ settings: s => (s.foo = 2) })
-    const state = { settings: {} }
-    const docSet = docSetFromObject(state)
-    const reducer = adaptReducer(proxyReducer, docSet)
+    let proxyReducer: ProxyReducer
+    let state: any
+    let repo: Repo
+    let reducer: Reducer<any, AnyAction>
+
+    beforeEach(async () => {
+      proxyReducer = () => ({ settings: s => (s.foo = 2) })
+      state = { settings: {} }
+      repo = await repoFromSnapshot(state)
+      reducer = adaptReducer(proxyReducer, repo)
+    })
 
     it('should return a function', () => expect(typeof reducer).toBe('function'))
 
-    const newState = reducer(state, { type: 'FOO' })
-    it('should not change the original state', () => expect(state).toEqual({ settings: {} }))
-    it('should return a modified state', () => expect(newState).toEqual({ settings: { foo: 2 } }))
+    it('should not change the original state', async () => {
+      const newState = reducer(state, { type: 'DOESNTMATTER' })
+      expect(state).toEqual({ settings: {} })
+    })
+
+    it('should return a modified state', async () => {
+      const newState = reducer(state, { type: 'DOESNTMATTER' })
+      expect(newState).toEqual({ settings: { foo: 2 } })
+    })
   })
 })

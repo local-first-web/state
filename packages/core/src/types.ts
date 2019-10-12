@@ -1,71 +1,40 @@
 import A from 'automerge'
-import { AnyAction, Middleware, Reducer, Store } from 'redux'
-import { DocSetSync } from './DocSetSync'
-import { StorageFeed } from './StorageFeed'
+import { AnyAction } from 'redux'
 
 export type ProxyReducer = (state: any, action: AnyAction) => ChangeMap | null
 
+/**
+ * Associates documentIds with a change function to be executed by the reducer.
+ */
 export interface ChangeMap {
-  [docId: string]: A.ChangeFn<any> | symbol
+  [documentId: string]: A.ChangeFn<any> | symbol
 }
-
-export interface StoreManagerOptions<T> {
-  /** A Cevitxe proxy reducer that returns a ChangeMap (map of change functions) for each action. */
-  proxyReducer: ProxyReducer
-  /** Redux middlewares to add to the store. */
-  middlewares?: Middleware[]
-  /** The starting state of a blank document. */
-  initialState: DocSetState<T>
-  /** A name for the storage feed, to distinguish this application's data from any other Cevitxe data stored on the same machine. */
-  databaseName: string
-  /** The address(es) of one or more signal servers to try. */
-  urls?: string[]
-}
-
-export interface CreateStoreResult {
-  feed: any //Feed<string>
-  store: Store
-}
-
-export type MiddlewareFactory = (
-  feed: StorageFeed,
-  docSet: A.DocSet<any>,
-  proxyReducer: ProxyReducer,
-  discoveryKey?: string
-) => Middleware
 
 /**
  * A keychain maps a discovery key (the id we share to the signal server) with a public/private
  * keypair (which we use for storage etc). The discovery key can be any string that we think is
  * going to be unique on our signal hub servers.
+ * > Note: we're not currently encrypting anything
  */
 export interface Keychain {
   [discoveryKey: string]: KeyPair
 }
 
+/**
+ * > Note: we're not currently encrypting anything
+ */
 export interface KeyPair {
-  key: string
-  secretKey: string
-}
-
-export interface Message {
-  docId: string
-  clock: A.Clock
-  changes?: A.Change[]
-}
-
-export interface ReceiveMessagePayload {
-  message: Message
-  connection: DocSetSync
+  key: CryptoKey
+  secretKey: CryptoKey
 }
 
 /**
- * `DocSetState` is a plain JavaScript representation of a DocSet. It is an object, each property of
- * which is also an object; so any primitive values or arrays need to be nested a couple of levels
- * in.
+ * `RepoSnapshot` is a plain JavaScript representation of a repo's contents. It is an object, each
+ * property of which is also an object; so any primitive values or arrays need to be nested a couple
+ * of levels in.
  */
-export interface DocSetState<T = any> {
-  [docId: string]: A.Doc<T>
+export interface RepoSnapshot<T = any> {
+  [documentId: string]: T | null
 }
 
 /**
@@ -73,9 +42,14 @@ export interface DocSetState<T = any> {
  */
 export interface ChangeSet {
   /** The ID of the document */
-  docId: string
+  documentId: string
   /** One or more Automerge changes made to the document */
   changes: A.Change[]
-  /** Special flag marking the document for deletion */
-  isDelete?: boolean
+}
+
+/**
+ * `RepoHistory` is an object mapping documentIds to the corresponding document's entire change history.
+ */
+export type RepoHistory = {
+  [documentId: string]: A.Change[]
 }

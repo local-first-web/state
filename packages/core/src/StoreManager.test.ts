@@ -1,17 +1,12 @@
 import { newid } from 'cevitxe-signal-client'
 import { Server } from 'cevitxe-signal-server'
-import debug from 'debug'
-import eventPromise from 'p-event'
 import { getPortPromise as getAvailablePort } from 'portfinder'
+import { collection } from './collection'
+import { pause as _yield } from './pause'
 import { StoreManager } from './StoreManager'
 import { ProxyReducer } from './types'
-import { pause } from './lib/pause'
-import { collection } from './collection'
 
-require('fake-indexeddb/auto')
-
-describe('Cevitxe', () => {
-  const log = debug('cevitxe:test')
+describe('StoreManager', () => {
   const teachers = collection('teachers')
 
   const proxyReducer = ((state, { type, payload }) => {
@@ -51,22 +46,19 @@ describe('Cevitxe', () => {
 
       const discoveryKey = newDiscoveryKey()
 
-      // local cevitxe & store
+      // local StoreManager & store
       const localStoreManager = new StoreManager({
         databaseName: `local-${newid()}`,
         proxyReducer,
         initialState,
         urls,
       })
-
-      // get local store
       const localStore = join
         ? await localStoreManager.joinStore(discoveryKey)
         : await localStoreManager.createStore(discoveryKey)
 
       // include a teardown function in the return values
       const close = async () => {
-        await pause(100)
         await localStoreManager.close()
       }
 
@@ -74,7 +66,6 @@ describe('Cevitxe', () => {
     }
 
     it('should join a store', async () => {
-      expect.assertions(5)
       const { close, localStore } = await open({ join: true })
 
       // store exists
@@ -89,11 +80,10 @@ describe('Cevitxe', () => {
       expect(localStore.getState()).toEqual({})
 
       await close()
+      expect.assertions(5)
     })
 
     it('should create a store', async () => {
-      expect.assertions(5)
-
       const { close, localStore } = await open()
 
       // store exists
@@ -108,26 +98,28 @@ describe('Cevitxe', () => {
       expect(localStore.getState()).toEqual(initialState)
 
       await close()
+      expect.assertions(5)
     })
 
     it('should dispatch a change', async () => {
-      expect.assertions(1)
-
       const { close, localStore } = await open()
 
       // dispatch a change
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
 
+      await _yield()
+
       // confirm that the change was made
       const state = localStore.getState()
+
       const allTeachers = teachers.selectors.getMap(state) as any
       expect(allTeachers.abcxyz.first).toEqual('Herb')
 
       await close()
+      expect.assertions(1)
     })
 
     it('should close a store', async () => {
-      expect.assertions(2)
       const { close, localStoreManager } = await open()
 
       // confirm that we have a store
@@ -138,50 +130,56 @@ describe('Cevitxe', () => {
 
       // confirm the store is gone
       expect(localStoreManager.store).toBeUndefined()
+      expect.assertions(2)
     })
 
     it('should persist state between sessions', async () => {
-      expect.assertions(2)
       const { close, localStoreManager, localStore, discoveryKey } = await open()
 
       // change something in the local store
-      localStore.dispatch({ type: 'ADD_TEACHER', payload: [teacher1, teacher2] })
+      localStore.dispatch({ type: 'ADD_TEACHER', payload: [teacher1] })
 
-      // confirm that the change took locally
+      // wait for addition to take
+      await _yield()
+
+      // confirm that the changes took locally
       const state0 = localStore.getState()
-      expect(teachers.selectors.getMap(state0)).toEqual({ abcxyz: teacher1, defcba: teacher2 })
+      expect(teachers.selectors.getMap(state0)).toEqual({ abcxyz: teacher1 })
 
       // disconnect store
-      await pause(500)
       await localStoreManager.close()
 
       // Then we join the same store, which should see the state in the fake db and load it
-      const newLocalState = await localStoreManager.joinStore(discoveryKey)
+      const localStore1 = await localStoreManager.joinStore(discoveryKey)
 
       // Confirm that the modified state is still there
-      const state1 = newLocalState.getState()
-      expect(teachers.selectors.getMap(state1)).toEqual({ abcxyz: teacher1, defcba: teacher2 })
-
+      const state1 = localStore1.getState()
+      expect(teachers.selectors.getMap(state1)).toEqual({ abcxyz: teacher1 })
       await close()
+      expect.assertions(2)
     })
 
     it('should persist deletions', async () => {
-      expect.assertions(3)
       const { close, localStoreManager, localStore, discoveryKey } = await open()
       localStore.dispatch({ type: 'ADD_TEACHER', payload: [teacher1, teacher2] })
+
+      // wait for both additions to take
+      await _yield()
 
       const state0 = localStore.getState()
       expect(teachers.selectors.getMap(state0)).toEqual({ abcxyz: teacher1, defcba: teacher2 })
 
-      // change something in the local store
+      // delete something in the local store
       localStore.dispatch({ type: 'REMOVE_TEACHER', payload: teacher1 })
 
-      // confirm that the change took locally
+      // wait for deletion to take
+      await _yield()
+
+      // confirm that the deletion took locally
       const state1 = localStore.getState()
       expect(teachers.selectors.getMap(state1)).toEqual({ defcba: teacher2 })
 
       // disconnect store
-      await pause(500)
       await localStoreManager.close()
 
       // Then we create a new store, which should see the state in the fake db and load it
@@ -192,6 +190,7 @@ describe('Cevitxe', () => {
       expect(teachers.selectors.getMap(newState)).toEqual({ defcba: teacher2 })
 
       await close()
+      // expect.assertions(3)
     })
   })
 
@@ -202,9 +201,10 @@ describe('Cevitxe', () => {
       server = new Server({ port })
       await server.listen({ silent: true })
 
+      const initialState = {}
       const discoveryKey = newDiscoveryKey()
 
-      // local cevitxe & store
+      // local storemanager & store
       const localStoreManager = new StoreManager({
         databaseName: `local-${newid()}`,
         proxyReducer,
@@ -214,41 +214,41 @@ describe('Cevitxe', () => {
       // create new store locally
       const localStore = await localStoreManager.createStore(discoveryKey)
 
-      // remote cevitxe
+      // remote storemanager & store
       const remoteStoreManager = new StoreManager({
         databaseName: `remote-${newid()}`,
         proxyReducer,
-        initialState: {},
+        initialState,
         urls,
       })
       // join store from remote peer
       const remoteStore = await remoteStoreManager.joinStore(discoveryKey)
 
-      // wait for both peers to see connection
-      await Promise.all([
-        eventPromise(localStoreManager, 'peer'), //
-        eventPromise(remoteStoreManager, 'peer'),
-      ])
+      await _yield()
 
       // include a teardown function in the return values
       const close = async () => {
-        await pause(500)
         await localStoreManager.close()
         await remoteStoreManager.close()
       }
-
-      return { close, localStoreManager, remoteStoreManager, localStore, remoteStore, discoveryKey }
+      return {
+        close,
+        localStoreManager,
+        remoteStoreManager,
+        localStore,
+        remoteStore,
+        discoveryKey,
+      }
     }
 
     it('should sync a new document', async () => {
-      expect.assertions(2)
-      const { close, remoteStoreManager, localStore, remoteStore } = await open()
+      const { close, localStore, remoteStore } = await open()
 
       // change something in the local store
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
 
       // wait for remote peer to see change
-      await eventPromise(remoteStoreManager, 'change')
+      await _yield()
 
       const expectedState = { abcxyz: teacher1 }
 
@@ -261,14 +261,14 @@ describe('Cevitxe', () => {
       expect(teachers.selectors.getMap(remoteState)).toEqual(expectedState)
 
       await close()
+      expect.assertions(2)
     })
 
     it('should sync changes to an existing document in both directions', async () => {
-      expect.assertions(3)
-      const { close, localStoreManager, remoteStoreManager, localStore, remoteStore } = await open()
+      const { close, localStore, remoteStore } = await open()
 
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
-      await eventPromise(remoteStoreManager, 'change')
+      await _yield()
 
       expect(teachers.selectors.getMap(localStore.getState())).toEqual({ abcxyz: teacher1 })
 
@@ -277,14 +277,15 @@ describe('Cevitxe', () => {
         type: 'UPDATE_TEACHER',
         payload: { id: 'abcxyz', first: 'Herbert' },
       })
-      await eventPromise(remoteStoreManager, 'change')
+      await _yield()
 
       // modify the teacher in the remote store
       remoteStore.dispatch({
         type: 'UPDATE_TEACHER',
         payload: { id: 'abcxyz', email: 'h@hc3.me' },
       })
-      await eventPromise(localStoreManager, 'change')
+
+      await _yield()
 
       const expectedState = {
         abcxyz: { id: 'abcxyz', first: 'Herbert', last: 'Caudill', email: 'h@hc3.me' },
@@ -297,19 +298,20 @@ describe('Cevitxe', () => {
       expect(teachers.selectors.getMap(remoteStore.getState())).toEqual(expectedState)
 
       await close()
+      expect.assertions(3)
     })
 
     it('should sync new documents in both directions', async () => {
-      expect.assertions(2)
-      const { close, localStoreManager, remoteStoreManager, localStore, remoteStore } = await open()
+      const { close, localStore, remoteStore } = await open()
 
       // add a teacher in the local store
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
-      await eventPromise(remoteStoreManager, 'change')
+      await _yield()
 
       // add a teacher in the remote store
       remoteStore.dispatch({ type: 'ADD_TEACHER', payload: teacher2 })
-      await eventPromise(localStoreManager, 'change')
+
+      await _yield()
 
       const expectedState = {
         abcxyz: { id: 'abcxyz', first: 'Herb', last: 'Caudill' },
@@ -323,77 +325,76 @@ describe('Cevitxe', () => {
       expect(teachers.selectors.getMap(remoteStore.getState())).toEqual(expectedState)
 
       await close()
+      expect.assertions(2)
     })
 
     it('should persist changes coming from a peer', async () => {
-      expect.assertions(2)
-      const { close, remoteStoreManager, localStore, remoteStore, discoveryKey } = await open()
+      const { close, localStore, remoteStoreManager, remoteStore, discoveryKey } = await open()
 
       // add a teacher in the local store
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
-      await eventPromise(remoteStoreManager, 'change')
+      await _yield()
 
       // change something in the local store
       localStore.dispatch({
         type: 'UPDATE_TEACHER',
         payload: { id: 'abcxyz', first: 'Herbert' },
       })
+      await _yield()
 
-      // wait for remote peer to see change
-      await eventPromise(remoteStoreManager, 'change')
-
-      // confirm that the remote store has the new value
+      // confirm that both stores have the new value
       expect(teachers.selectors.getMap(remoteStore.getState()).abcxyz.first).toEqual('Herbert')
+      expect(teachers.selectors.getMap(localStore.getState()).abcxyz.first).toEqual('Herbert')
 
       // disconnect both stores
       await close()
 
-      // create a new store, which should see the state in the fake db and load it
+      // create a new store, which should see the state in the db and load it
       const newRemoteStore = await remoteStoreManager.joinStore(discoveryKey)
+      await _yield()
 
       // confirm that the modified state is still there
       expect(teachers.selectors.getMap(newRemoteStore.getState()).abcxyz.first).toEqual('Herbert')
 
       await close()
+      expect.assertions(3)
     })
 
     it('should persist deletions coming from a peer', async () => {
-      expect.assertions(4)
-      const { close, remoteStoreManager, localStore, remoteStore, discoveryKey } = await open()
+      const { close, localStore, remoteStoreManager, remoteStore, discoveryKey } = await open()
 
       // add a record
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
-      await eventPromise(remoteStoreManager, 'change')
+      await _yield()
 
       // confirm that the record is there before deleting it
       expect(teachers.selectors.getMap(localStore.getState())).toHaveProperty('abcxyz')
 
       // delete a record in the local store
       localStore.dispatch({ type: 'REMOVE_TEACHER', payload: { id: 'abcxyz' } })
-
-      // wait for remote peer to see change
-      await eventPromise(remoteStoreManager, 'change')
+      await _yield()
 
       // confirm that the deletion took place locally
-      expect(teachers.selectors.getMap(localStore.getState())).not.toHaveProperty('abcxyz')
+      expect(teachers.selectors.getMap(localStore.getState())['abcxyz']).toBeFalsy() // null or undefined
 
       // confirm that the deletion took place in the remote store
-      expect(teachers.selectors.getMap(remoteStore.getState())).not.toHaveProperty('abcxyz')
+      expect(teachers.selectors.getMap(remoteStore.getState())['abcxyz']).toBeFalsy() // null or undefined
 
       // disconnect both stores
       await close()
 
       // reconnect remote store
       const newRemoteStore = await remoteStoreManager.joinStore(discoveryKey)
+      await _yield()
 
       // Confirm that the deletion was persisted
       expect(teachers.selectors.getMap(newRemoteStore.getState())).not.toHaveProperty('abcxyz')
 
       await close()
+      expect.assertions(4)
     })
 
     it('should delete any connections', async () => {
-      expect.assertions(2)
       const { close, localStoreManager } = await open()
 
       // confirm that we have a connection
@@ -403,15 +404,15 @@ describe('Cevitxe', () => {
 
       // confirm that we no longer have a connection
       expect(Object.keys(localStoreManager.connections)).toHaveLength(0)
+      expect.assertions(2)
     })
 
     it('should sync a dropped collection', async () => {
-      expect.assertions(4)
-      const { close, remoteStoreManager, localStore, remoteStore } = await open()
+      const { close, localStore, remoteStore } = await open()
 
       // add a record
       localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
-      await eventPromise(remoteStoreManager, 'change')
+      await _yield()
 
       // confirm that the local store has initial state
       expect(teachers.selectors.count(localStore.getState())).toBe(1)
@@ -421,7 +422,7 @@ describe('Cevitxe', () => {
 
       // Drop teachers locally
       localStore.dispatch({ type: 'DROP_TEACHERS' })
-      await eventPromise(remoteStoreManager, 'change')
+      await _yield()
 
       // confirm that the local store is caught up
       expect(teachers.selectors.count(localStore.getState())).toBe(0)
@@ -430,6 +431,7 @@ describe('Cevitxe', () => {
       expect(teachers.selectors.count(remoteStore.getState())).toBe(0)
 
       await close()
+      expect.assertions(4)
     })
   })
 })

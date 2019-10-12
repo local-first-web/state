@@ -3,7 +3,6 @@ import { jsx } from '@emotion/core'
 import { collection } from 'cevitxe'
 import { styles } from 'cevitxe-toolbar'
 import { useSelector } from 'react-redux'
-import { Counter, CounterProgress } from './Counter'
 import { DataGenerator } from './DataGenerator'
 
 export const Toolbar = () => (
@@ -11,8 +10,8 @@ export const Toolbar = () => (
     <DataGenerator />
     <Loading />
     <Rows />
-    <Counter />
-    <CounterProgress />
+    {/* <Counter />
+    <CounterProgress /> */}
   </div>
 )
 

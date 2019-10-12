@@ -1,18 +1,17 @@
+import A from 'automerge'
 import { Client, newid, Peer } from 'cevitxe-signal-client'
+import cuid from 'cuid'
 import debug from 'debug'
 import { EventEmitter } from 'events'
-import A from 'automerge'
-import { Middleware, Store, createStore, applyMiddleware } from 'redux'
+import { applyMiddleware, createStore, Middleware, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
 import { adaptReducer } from './adaptReducer'
 import { Connection } from './Connection'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
-import { docSetToObject } from './docSetHelpers'
 import { getMiddleware } from './getMiddleware'
 import { getKnownDiscoveryKeys } from './keys'
-import { StorageFeed } from './StorageFeed'
-import { ProxyReducer, StoreManagerOptions, DocSetState } from './types'
-import cuid from 'cuid'
+import { Repo } from './Repo'
+import { RepoSnapshot, ProxyReducer } from './types'
 
 let log = debug('cevitxe:StoreManager')
 
@@ -21,21 +20,33 @@ let log = debug('cevitxe:StoreManager')
 EventEmitter.defaultMaxListeners = 500
 
 // Use shorter IDs
-A.uuid.setFactory(cuid.slug)
+A.uuid.setFactory(cuid)
+
+export interface StoreManagerOptions<T> {
+  /** A Cevitxe proxy reducer that returns a ChangeMap (map of change functions) for each action. */
+  proxyReducer: ProxyReducer
+  /** Redux middlewares to add to the store. */
+  middlewares?: Middleware[]
+  /** The starting state of a blank document. */
+  initialState: RepoSnapshot<T>
+  /** A name for the storage feed, to distinguish this application's data from any other Cevitxe data stored on the same machine. */
+  databaseName: string
+  /** The address(es) of one or more signal servers to try. */
+  urls?: string[]
+}
 
 /**
- * A StoreManager generates a Redux store with persistence (via hypercore), networking (via
+ * A StoreManager generates a Redux store with persistence (via the Repo class), networking (via
  * cevitxe-signal-client), and magical synchronization with peers (via automerge)
  */
 export class StoreManager<T> extends EventEmitter {
   private proxyReducer: ProxyReducer
-  private initialState: DocSetState<T>
+  private initialState: RepoSnapshot<T>
   private urls: string[]
   private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
 
   private clientId = newid()
-  private feed?: StorageFeed
-  private docSet?: A.DocSet<T>
+  private repo?: Repo
 
   public connections: { [peerId: string]: Connection }
   public databaseName: string
@@ -64,17 +75,15 @@ export class StoreManager<T> extends EventEmitter {
   private makeStore = async (discoveryKey: string, isCreating: boolean = false) => {
     log = debug(`cevitxe:${isCreating ? 'createStore' : 'joinStore'}:${discoveryKey}`)
 
-    this.feed = new StorageFeed(discoveryKey, this.databaseName)
+    this.repo = new Repo(discoveryKey, this.databaseName, this.clientId)
 
-    this.docSet = new A.DocSet<T>()
-    this.docSet.registerHandler(this.onChange)
+    this.repo.addHandler(this.onChange)
 
-    const state = await this.feed.init(this.initialState, isCreating, this.docSet)
+    const state = await this.repo.init(this.initialState, isCreating)
 
     // Create Redux store
-    // const state = docSetToObject(this.docSet)
-    const reducer = adaptReducer(this.proxyReducer, this.docSet)
-    const cevitxeMiddleware = getMiddleware(this.feed, this.docSet, this.proxyReducer)
+    const reducer = adaptReducer(this.proxyReducer, this.repo)
+    const cevitxeMiddleware = getMiddleware(this.repo, this.proxyReducer)
     const enhancer = composeWithDevTools(applyMiddleware(...this.middlewares, cevitxeMiddleware))
     this.store = createStore(reducer, state, enhancer)
 
@@ -84,6 +93,7 @@ export class StoreManager<T> extends EventEmitter {
     client.on('peer', (peer: Peer) => this.addPeer(peer, discoveryKey))
 
     this.emit('ready', this.store)
+
     return this.store
   }
 
@@ -95,17 +105,17 @@ export class StoreManager<T> extends EventEmitter {
     return getKnownDiscoveryKeys(this.databaseName)
   }
 
-  private onChange = (docId: string, doc: A.Doc<T>) => {
-    this.emit('change', docId, doc)
+  private onChange = (documentId: string, doc: A.Doc<T>) => {
+    this.emit('change', documentId, doc)
   }
 
   private addPeer = (peer: Peer, discoveryKey: string) => {
-    if (!this.store || !this.docSet) return
+    if (!this.store || !this.repo) return
     log('connecting to peer', peer.id)
 
     // For each peer that wants to connect, create a Connection object
     const socket = peer.get(discoveryKey)
-    const connection = new Connection(this.docSet, socket, this.store.dispatch)
+    const connection = new Connection(this.repo, socket, this.store.dispatch)
     this.connections[peer.id] = connection
     this.emit('peer', peer) // hook for testing
     log('connected to peer', peer.id)
@@ -126,14 +136,7 @@ export class StoreManager<T> extends EventEmitter {
     await Promise.all(closeAllConnections)
     this.connections = {}
 
-    const feed = this.feed
-    if (feed)
-      await Promise.all([
-        new Promise(ok => feed.close(ok)),
-        new Promise(ok => feed.on('close', ok)),
-      ])
-
-    delete this.feed
+    delete this.repo
     delete this.store
 
     this.emit('close')

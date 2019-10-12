@@ -1,7 +1,8 @@
+import { DELETED } from './constants'
 import A from 'automerge'
 import { DELETE_COLLECTION } from './constants'
-import { docSetToObject } from './docSetHelpers'
-import { ChangeMap, DocSetState } from './types'
+import { ChangeMap, RepoSnapshot } from './types'
+import { Repo } from './Repo'
 
 export interface CollectionOptions {
   idField?: string
@@ -16,7 +17,7 @@ export interface CollectionOptions {
  * multi-document state from the developer.
  *
  * Each of the reducers (`add`, `remove`, etc.) returns a dictionary of ProxyReducer functions or
- * flags for modifying the docset and/or one or many docs.
+ * flags for modifying the repo and/or one or many docs.
  *
  * Here's how this might be used in a reducer:
  * ```ts
@@ -44,8 +45,8 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
   /**
    * ## How collections are stored
    *
-   * Multiple collections can be stored side-by-side in a single `DocSet`, with each item as an
-   * individual root-level Automerge document. So a `DocSet` might look something like this:
+   * Multiple collections can be stored side-by-side in a single `Repo`, with each item as an
+   * individual root-level Automerge document. So a `Repo` might look something like this:
    * ```ts
    * {
    *   '::teachers::abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill' },
@@ -62,7 +63,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    *
    * Since we don't have an index, we need to delete documents in two steps:
    *
-   *    1. We mark them as deleted by adding a special "deleted" flag. This allows the deletion to be
+   *    1. We mark them as deleted by adding a special DELETED flag. This allows the deletion to be
    *       persisted and propagated to peers.
    *       ```ts
    *       {
@@ -70,7 +71,9 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    *         '::teachers::qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelshon' },
    *       }
    *       ```
-   *    2. The actual deletion is then performed in middleware. (TODO!! not really happening yet 🤷‍)
+   *    2. The repo then looks out for the DELETED flag and removes deleted items from the snapshot.
+   *       (We don't ever delete the underlying change history, in case the document is undeleted.)
+   *
    *
    * ### Dropping a collection
    *
@@ -85,8 +88,6 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * }
    */
 
-  const DELETED = '::DELETED'
-
   const keyName = collection.getKeyName(name)
 
   // these are for converting individual item IDs back and forth
@@ -97,22 +98,35 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
 
   // SELECTORS
 
-  const isCollectionKey = (key: string) => key.startsWith(`${keyName}::`)
+  /**
+   * Returns true if the given string is a key for this collection
+   * @param maybeKey
+   */
+  const isCollectionKey = (maybeKey: string) => maybeKey.startsWith(`${keyName}::`)
 
   /**
-   * Returns all keys for the collection when given the current redux state.
+   * Iterates over all keys for the collection when given the current redux state.
    * @param state The plain JSON representation of the state.
    */
-  function* keys(state: DocSetState<T>, { includeDeleted = false } = {}) {
-    for (const key in state || {})
-      if (isCollectionKey(key) && (includeDeleted || !(state as any)[key][DELETED])) yield key
+  function* keys(state: RepoSnapshot<T> = {}) {
+    for (const key in state) {
+      const item = (state as any)[key]
+      const shouldInclude = item && !item[DELETED]
+      if (isCollectionKey(key) && shouldInclude) yield key
+    }
+  }
+
+  function* ids(state: RepoSnapshot<T> = {}) {
+    for (const key of keys(state)) {
+      yield keyToId(key)
+    }
   }
 
   /**
    * Given the redux state, returns an array containing all items in the collection.
    * @param state The plain JSON representation of the state.
    */
-  const getAll = (state: DocSetState<T> = {}) => {
+  const getAll = (state: RepoSnapshot<T> = {}) => {
     let result = []
     for (const key of keys(state)) result.push(state[key])
     return result
@@ -122,7 +136,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * Given the redux state, returns a map keying each item in the collection to its `id`.
    * @param state The plain JSON representation of the state.
    */
-  const getMap = (state: DocSetState<T> = {}): DocSetState<T> => {
+  const getMap = (state: RepoSnapshot<T> = {}): RepoSnapshot<T> => {
     let result = {} as any
     for (const key of keys(state)) result[keyToId(key)] = state[key]
     return result
@@ -132,24 +146,32 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * Returns the number of items in the collection when given the redux state.
    * @param state The plain JSON representation of the state.
    */
-  const count = (state: DocSetState<T> = {}) => {
+  const count = (state: RepoSnapshot<T> = {}) => {
     let i = 0
     for (const _ of keys(state)) i++
     return i
   }
 
   /**
-   * Marks all items in the collection as deleted. PRIVATE.
-   * @param docSet
+   * Marks all items in the collection as deleted.
+   * @param repo
    */
-  const removeAll = (docSet: A.DocSet<any>) => {
-    for (const docId of docSet.docIds) {
-      if (isCollectionKey(docId)) {
-        const doc = docSet.getDoc(docId)
-        if (!doc[DELETED]) {
-          const deletedDoc = A.change(doc, setDeleteFlag)
-          docSet.setDoc(docId, deletedDoc)
-        }
+  const markAllDeleted = async (repo: Repo<any>) => {
+    for (const documentId of repo.documentIds) {
+      if (isCollectionKey(documentId)) {
+        repo.change(documentId, setDeleteFlag)
+      }
+    }
+  }
+
+  /**
+   * Removes all items in the collection from the snapshot.
+   * @param repo
+   */
+  const removeAllFromSnapshot = (repo: Repo<any>) => {
+    for (const documentId of repo.documentIds) {
+      if (isCollectionKey(documentId)) {
+        repo.removeSnapshot(documentId)
       }
     }
   }
@@ -190,11 +212,13 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
     },
     selectors: {
       keys,
+      ids,
       getAll,
       getMap,
       count,
     },
-    removeAll,
+    markAllDeleted,
+    removeAllFromSnapshot,
   }
 }
 

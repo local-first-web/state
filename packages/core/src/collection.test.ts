@@ -1,7 +1,10 @@
 import { adaptReducer } from './adaptReducer'
 import { collection } from './collection'
-import { docSetFromObject } from './docSetHelpers'
+import { repoFromSnapshot } from './repoTestHelpers'
 import { ProxyReducer } from './types'
+import { pause } from './pause'
+import { AnyAction } from 'redux'
+import { Repo } from './Repo'
 
 describe('collections', () => {
   const teachers = collection('teachers')
@@ -48,50 +51,61 @@ describe('collections', () => {
     })
   })
 
+  // HACK: This isn't awesome - reducers are by definition not supposed to be async;
+  // but that's kind of where we are for the moment, since making reducers true functions would
+  // force us to carry all of state in memory
+  const asyncReducer = (proxyReducer: ProxyReducer, repo: Repo) => {
+    return async (state: any, { type, payload }: AnyAction) => {
+      const _reducer = adaptReducer(proxyReducer, repo)
+      const result = _reducer(state, { type, payload })
+      await pause()
+      return result
+    }
+  }
   describe('reducers', () => {
-    const setupEmpty = () => {
+    const setupEmpty = async () => {
       let state = {}
-      const docSet = docSetFromObject({})
-      const reducer = adaptReducer(proxyReducer, docSet)
+      const repo = await repoFromSnapshot(state)
+      const reducer = asyncReducer(proxyReducer, repo)
       return { state, reducer }
     }
 
-    const setupWithOneTeacher = () => {
+    const setupWithOneTeacher = async () => {
       let state = {}
-      const docSet = docSetFromObject(state)
-      const reducer = adaptReducer(proxyReducer, docSet)
+      const repo = await repoFromSnapshot(state)
+      const reducer = asyncReducer(proxyReducer, repo)
       const action = { type: 'ADD_TEACHER', payload: teacher1 }
-      state = reducer({}, action)
+      state = await reducer({}, action)
       return { state, reducer }
     }
 
-    it('should not change the original state', () => {
-      const { state, reducer } = setupEmpty()
+    it('should not change the original state', async () => {
+      const { state, reducer } = await setupEmpty()
       const action = { type: 'ADD_TEACHER', payload: teacher1 }
-      const _ = reducer(state, action)
+      const _ = await reducer(state, action)
       expect(state).toEqual({})
     })
 
-    it('should add an item', () => {
-      const { state, reducer } = setupEmpty()
+    it('should add an item', async () => {
+      const { state, reducer } = await setupEmpty()
       const action = { type: 'ADD_TEACHER', payload: teacher1 }
-      const newState = reducer(state, action)
+      const newState = await reducer(state, action)
       const allItems = teachers.selectors.getAll(newState)
       expect(allItems).toEqual([teacher1])
     })
 
-    it('should update an item', () => {
-      const { state, reducer } = setupWithOneTeacher()
+    it('should update an item', async () => {
+      const { state, reducer } = await setupWithOneTeacher()
       const action = { type: 'UPDATE_TEACHER', payload: { id: teacher1.id, first: 'Herbert' } }
-      const newState = reducer(state, action)
+      const newState = await reducer(state, action)
       const allItems = teachers.selectors.getAll(newState)
       expect(allItems).toEqual([{ id: 'abcxyz', first: 'Herbert', last: 'Caudill' }])
     })
 
-    it('should remove an item', () => {
-      const { state, reducer } = setupWithOneTeacher()
+    it('should remove an item', async () => {
+      const { state, reducer } = await setupWithOneTeacher()
       const action = { type: 'REMOVE_TEACHER', payload: { id: teacher1.id } }
-      const newState = reducer(state, action)
+      const newState = await reducer(state, action)
       const allItems = teachers.selectors.getAll(newState)
       expect(allItems).toHaveLength(0)
     })
@@ -105,17 +119,13 @@ describe('collections', () => {
     //   expect(allItems).toHaveLength(0)
     // })
 
-    it('should allow adding multiple items from an array', () => {
-      const { state, reducer } = setupWithOneTeacher()
+    it('should allow adding multiple items from an array', async () => {
+      const { state, reducer } = await setupWithOneTeacher()
       const addAction = {
         type: 'ADD_STUDENT',
-        payload: [
-          { id: 'student_001' }, //
-          { id: 'student_002' },
-          { id: 'student_003' },
-        ],
+        payload: [{ id: 'student_001' }, { id: 'student_002' }, { id: 'student_003' }],
       }
-      const newState = reducer(state, addAction)
+      const newState = await reducer(state, addAction)
       const allItems = students.selectors.getAll(newState)
       expect(allItems).toEqual([
         { id: 'student_001' },
@@ -126,10 +136,10 @@ describe('collections', () => {
   })
 
   describe('selectors', () => {
-    const setupTeachers = () => {
+    const setupTeachers = async () => {
       let state = {}
-      const docSet = docSetFromObject(state)
-      const reducer = adaptReducer(proxyReducer, docSet)
+      const repo = await repoFromSnapshot(state)
+      const reducer = asyncReducer(proxyReducer, repo)
       const addAction = {
         type: 'ADD_TEACHER',
         payload: [
@@ -138,15 +148,15 @@ describe('collections', () => {
           { id: 'teacher_003' },
         ],
       }
-      state = reducer(state, addAction)
+      state = await reducer(state, addAction)
       return { state, reducer }
     }
 
-    const setupTeachersAndStudents = () => {
+    const setupTeachersAndStudents = async () => {
       let state = {}
-      const docSet = docSetFromObject(state)
-      const reducer = adaptReducer(proxyReducer, docSet)
-      state = reducer(state, {
+      const repo = await repoFromSnapshot(state)
+      const reducer = asyncReducer(proxyReducer, repo)
+      state = await reducer(state, {
         type: 'ADD_TEACHER',
         payload: [
           { id: 'teacher_001' }, //
@@ -154,7 +164,7 @@ describe('collections', () => {
           { id: 'teacher_003' },
         ],
       })
-      state = reducer(state, {
+      state = await reducer(state, {
         type: 'ADD_STUDENT',
         payload: [
           { id: 'student_001' }, //
@@ -165,24 +175,28 @@ describe('collections', () => {
     }
 
     describe('getArray', () => {
-      it('should return all the items in the collection', () => {
-        const { state } = setupTeachers()
+      it('should return all the items in the collection', async () => {
+        const { state } = await setupTeachers()
         const allItems = teachers.selectors.getAll(state)
-        expect(allItems).toEqual([
-          { id: 'teacher_001' },
-          { id: 'teacher_002' },
-          { id: 'teacher_003' },
-        ])
+        expect(allItems).toEqual(
+          expect.arrayContaining([
+            { id: 'teacher_001' },
+            { id: 'teacher_002' },
+            { id: 'teacher_003' },
+          ])
+        )
       })
 
-      it('should keep items from different collections separate', () => {
-        let { state } = setupTeachersAndStudents()
+      it('should keep items from different collections separate', async () => {
+        let { state } = await setupTeachersAndStudents()
         const allTeachers = teachers.selectors.getAll(state)
-        expect(allTeachers).toEqual([
-          { id: 'teacher_001' },
-          { id: 'teacher_002' },
-          { id: 'teacher_003' },
-        ])
+        expect(allTeachers).toEqual(
+          expect.arrayContaining([
+            { id: 'teacher_001' },
+            { id: 'teacher_002' },
+            { id: 'teacher_003' },
+          ])
+        )
         const allStudents = students.selectors.getAll(state)
         expect(allStudents).toEqual([
           { id: 'student_001' }, //
@@ -190,20 +204,22 @@ describe('collections', () => {
         ])
       })
 
-      it('should only return non-deleted items', () => {
+      it('should only return non-deleted items', async () => {
         // populate with three items
-        const { state, reducer } = setupTeachers()
+        const { state, reducer } = await setupTeachers()
 
         // remove one
         const action = { type: 'REMOVE_TEACHER', payload: { id: 'teacher_002' } }
-        const newState = reducer(state, action)
+        const newState = await reducer(state, action)
 
         // check the new list of items
         const allItems = teachers.selectors.getAll(newState)
-        expect(allItems).toEqual([
-          { id: 'teacher_001' }, //
-          { id: 'teacher_003' },
-        ])
+        expect(allItems).toEqual(
+          expect.arrayContaining([
+            { id: 'teacher_001' }, //
+            { id: 'teacher_003' },
+          ])
+        )
       })
 
       it('should return empty array if state is undefined', () => {
@@ -213,8 +229,8 @@ describe('collections', () => {
     })
 
     describe('getMap', () => {
-      it('should return all the items in the collection', () => {
-        const { state } = setupTeachers()
+      it('should return all the items in the collection', async () => {
+        const { state } = await setupTeachers()
         const allItems = teachers.selectors.getMap(state)
         expect(allItems).toEqual({
           teacher_001: { id: 'teacher_001' },
@@ -225,21 +241,21 @@ describe('collections', () => {
     })
 
     describe('count', () => {
-      it('should return the number of items in the collection', () => {
-        const { state } = setupTeachers()
+      it('should return the number of items in the collection', async () => {
+        const { state } = await setupTeachers()
         const count = teachers.selectors.count(state)
         expect(count).toEqual(3)
       })
 
-      it('should only count non-deleted items', () => {
+      it('should only count non-deleted items', async () => {
         // populate with three items
-        const { state, reducer } = setupTeachers()
+        const { state, reducer } = await setupTeachers()
         const count = teachers.selectors.count(state)
         expect(count).toEqual(3)
 
         // remove one
         const action = { type: 'REMOVE_TEACHER', payload: { id: 'teacher_002' } }
-        const newState = reducer(state, action)
+        const newState = await reducer(state, action)
 
         // check the new count
         const newCount = teachers.selectors.count(newState)
@@ -252,81 +268,4 @@ describe('collections', () => {
       })
     })
   })
-
-  // describe('deleteCollectionItems', () => {
-  //   const docSet = docSetFromObject({
-  //     teachers: {
-  //       1: true,
-  //       2: true,
-  //       3: true,
-  //     },
-  //     1: { id: '1', type: 'teacher' },
-  //     2: { id: '2', type: 'teacher' },
-  //     3: { id: '3', type: 'teacher' },
-
-  //     schools: {
-  //       4: true,
-  //       5: true,
-  //     },
-  //     4: { id: '4', type: 'school' },
-  //     5: { id: '4', type: 'school' },
-  //   })
-
-  //   it('should remove all items listed in index', () => {
-  //     deleteCollectionItems(docSet, 'teachers')
-  //     expect(docSetToObject(docSet)).toEqual({
-  //       teachers: {
-  //         1: false,
-  //         2: false,
-  //         3: false,
-  //       },
-
-  //       schools: {
-  //         4: true,
-  //         5: true,
-  //       },
-  //       4: { id: '4', type: 'school' },
-  //       5: { id: '4', type: 'school' },
-  //     })
-  //   })
-  // })
-
-  // describe('purgeDeletedCollectionItems', () => {
-  //   const docSet = docSetFromObject({
-  //     teachers: {
-  //       1: true,
-  //       2: false,
-  //       3: false,
-  //     },
-  //     1: { id: '1', type: 'teacher' },
-  //     2: { id: '2', type: 'teacher' },
-  //     3: { id: '3', type: 'teacher' },
-
-  //     schools: {
-  //       4: true,
-  //       5: true,
-  //     },
-  //     4: { id: '4', type: 'school' },
-  //     5: { id: '5', type: 'school' },
-  //   })
-
-  //   it('should remove all docs marked as deleted in the index', () => {
-  //     purgeDeletedCollectionItems(docSet, 'teachers')
-  //     expect(docSetToObject(docSet)).toEqual({
-  //       teachers: {
-  //         1: true,
-  //         2: false,
-  //         3: false,
-  //       },
-  //       1: { id: '1', type: 'teacher' },
-
-  //       schools: {
-  //         4: true,
-  //         5: true,
-  //       },
-  //       4: { id: '4', type: 'school' },
-  //       5: { id: '5', type: 'school' },
-  //     })
-  //   })
-  // })
 })

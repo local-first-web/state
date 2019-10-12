@@ -27,8 +27,8 @@
     "test": "jest",
     "test:todo:e2e": "yarn workspace cevitxe-example-todo test:e2e",
     "test:grid:e2e": "yarn workspace cevitxe-example-grid test:e2e",
+    "test:log": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 yarn test",
     "test:watch": "jest --watch",
-    "test:log": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 yarn test:watch",
     "purge": "scripts/purge.bat"
   },
   "dependencies": {

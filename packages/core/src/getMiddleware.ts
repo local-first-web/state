@@ -1,87 +1,51 @@
-import A from 'automerge'
 import debug from 'debug'
-import { collection } from './collection'
-import { DELETE_COLLECTION, DELETE_ITEM, RECEIVE_MESSAGE_FROM_PEER } from './constants'
-import { ChangeSet, MiddlewareFactory, DocSetState } from './types'
-import { getMemUsage } from './getMemUsage'
+import { Middleware } from 'redux'
+import { collection, ProxyReducer } from '.'
+import { DELETE_COLLECTION, RECEIVE_MESSAGE_FROM_PEER } from './constants'
+import { Repo } from './Repo'
 
 const log = debug('cevitxe:middleware')
 
-export const getMiddleware: MiddlewareFactory = (feed, docSet, proxyReducer) => {
-  return store => next => action => {
+export type MiddlewareFactory = (
+  feed: Repo,
+  proxyReducer: ProxyReducer,
+  discoveryKey?: string
+) => Middleware
+
+export const getMiddleware: MiddlewareFactory = (repo, proxyReducer) => {
+  return store => next => async action => {
     // BEFORE CHANGES
-
-    // detect which documents will be changed and cache them
-    const affectedDocs: DocSetState = {} // cache for docs that will be changed
-    const removedDocs: string[] = [] // list of docs that will be removed
-
-    const functionMap = proxyReducer(store.getState(), action)
-    if (functionMap) {
-      for (let docId in functionMap) {
-        const fn = functionMap[docId]
-        if (fn === DELETE_COLLECTION) {
-          const name = collection.getCollectionName(docId)
-          const docIds = collection(name).selectors.keys(store.getState(), { includeDeleted: true })
-          // Record each doc as removed so we can note that in the storage feed
-          for (const itemDocId of docIds) removedDocs.push(itemDocId)
-        } else if (fn === DELETE_ITEM) {
-          // Record the doc as removed so we can note that in the storage feed
-          removedDocs.push(docId)
-        } else if (typeof fn === 'function') {
-          // Doc will be run through a change function. Cache the previous version of the doc so we
-          // can record changes for the storage feed
-          const oldDoc = docSet.getDoc(docId) || A.init() // create a new doc if one doesn't exist
-          affectedDocs[docId] = oldDoc
-        }
-      }
-    }
+    // ...
 
     // CHANGES
-    log(`before changes`, getMemUsage())
-
     const newState = next(action)
 
     // AFTER CHANGES
 
     log('%o', { action })
 
-    // collect document changes for persistence
-    const changeSets: ChangeSet[] = []
+    const functionMap = proxyReducer(store.getState(), action)
 
     if (action.type === RECEIVE_MESSAGE_FROM_PEER) {
-      // for changes coming from peer, we already have the Automerge changes, so just persist them
-      const { docId, changes } = action.payload.message
-      changeSets.push({ docId, changes })
-    } else {
-      // for insert/update, we generate the changes by comparing each document before & after
-      for (const docId in affectedDocs) {
-        const oldDoc = affectedDocs[docId]
-        const newDoc = docSet.getDoc(docId)
-        const changes = A.getChanges(oldDoc, newDoc)
-        if (changes.length > 0) changeSets.push({ docId, changes })
-      }
-      // for remove actions, we've made a list, so we just add a flag for each
-      for (const docId of removedDocs) {
-        const changeSet: ChangeSet = {
-          docId,
-          changes: [],
-          isDelete: true,
+      // pass any changes coming from the peer to the repo
+      // const { documentId, changes } = action.payload.message
+      // log('apply message from peer', documentId)
+      // const newDoc = await repo.applyChanges(documentId, changes)
+      // newState[documentId] = { ...newDoc }
+    } else if (functionMap) {
+      for (let documentId in functionMap) {
+        const fn = functionMap[documentId]
+        if (fn === DELETE_COLLECTION) {
+          const name = collection.getCollectionName(documentId)
+          await collection(name).markAllDeleted(repo)
         }
-        changeSets.push(changeSet)
+        // apply change functions via the repo
+        else if (typeof fn === 'function') {
+          log('apply change function', documentId)
+          await repo.change(documentId, fn)
+        }
       }
     }
-
-    feed.saveSnapshot(store.getState())
-
-    log(`before writing to feed`, getMemUsage())
-    // write any changes to the feed
-    for (const changeSet of changeSets) {
-      const s = JSON.stringify(changeSet)
-      feed.append(s)
-    }
-    log(`after writing to feed`, getMemUsage())
-
-    // TODO? perform removal of deleted documents from docset
 
     return newState
   }

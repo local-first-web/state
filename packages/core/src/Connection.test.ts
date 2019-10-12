@@ -1,11 +1,14 @@
+import eventPromise from 'p-event'
 import A from 'automerge'
+import { Repo } from './Repo'
 import { Server } from 'cevitxe-signal-server'
 import { newid } from 'cevitxe-signal-client'
 import { Connection } from './Connection'
 
 import { WebSocket } from 'mock-socket'
+import { pause as _yield } from './pause'
 
-// @ts-ignore
+// @ts-ignore adding object to global scope
 global.WebSocket = WebSocket
 
 jest.mock('mock-socket')
@@ -28,7 +31,7 @@ const localActorId = newid()
 describe('Connection', () => {
   const initialState: FooStateDoc = { state: { foo: 1 } }
 
-  let docSet: A.DocSet<FooState>
+  let repo: Repo<FooState>
   let server: Server
 
   beforeAll(async () => {
@@ -36,13 +39,13 @@ describe('Connection', () => {
     await server.listen({ silent: true })
   })
 
-  beforeEach(() => {
-    docSet = new A.DocSet<any>()
+  beforeEach(async () => {
+    repo = new Repo<any>('test', `test${newid()}`, localActorId)
+    await repo.open()
     let key: keyof FooStateDoc
     for (key in initialState) {
       const value = initialState[key]
-      // docSet.setDoc(key, A.change(A.init(localActorId), s => value))
-      docSet.setDoc(key, A.from(value, localActorId))
+      repo.set(key, A.from(value, localActorId))
     }
   })
 
@@ -50,27 +53,24 @@ describe('Connection', () => {
     await server.close()
   })
 
-  it('should expose its current state', () => {
+  it('should send messages to the peer when local state changes', async () => {
     const peer = new WebSocket(url)
-    const connection = new Connection(docSet, peer, fakeDispatch)
-    expect(connection.state).toEqual(initialState)
-  })
+    const connection = new Connection(repo, peer, fakeDispatch)
 
-  it('should send messages to the peer when local state changes', () => {
-    const peer = new WebSocket(url)
-    const connection = new Connection(docSet, peer, fakeDispatch)
+    await eventPromise(connection, 'ready')
+    await _yield()
+
     expect(peer.send).toHaveBeenCalledWith(
       expect.stringContaining(JSON.stringify({ [localActorId]: 1 }))
     )
+
     expect(peer.send).not.toHaveBeenCalledWith(
       expect.stringContaining(JSON.stringify({ [localActorId]: 2 }))
     )
 
-    const localDoc = docSet.getDoc('state')
-    const updatedDoc = A.change<FooState>(localDoc, 'update', doc => (doc.boo = 2))
-    docSet.setDoc('state', updatedDoc)
+    await repo.change('state', s => (s.boo = 2))
+    await _yield()
 
-    expect(connection.state.state.boo).toBe(2)
     expect(peer.send).toHaveBeenCalledWith(
       expect.stringContaining(JSON.stringify({ [localActorId]: 2 }))
     )
@@ -78,7 +78,7 @@ describe('Connection', () => {
 
   it('should call close on peer when close is called', () => {
     const peer = new WebSocket(url)
-    const connection = new Connection(docSet, peer, fakeDispatch)
+    const connection = new Connection(repo, peer, fakeDispatch)
     connection.close()
     expect(peer.close).toHaveBeenCalled()
   })
