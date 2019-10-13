@@ -63,7 +63,7 @@ export class StoreManager<T> extends EventEmitter {
     // Connect to discovery server
     this.client = new Client({
       discoveryKey,
-      store: this.store,
+      dispatch: this.store.dispatch,
       repo: this.repo,
       urls: this.urls,
     })

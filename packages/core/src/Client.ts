@@ -11,25 +11,25 @@ export class Client extends EventEmitter {
   private clientId = newid()
   private signalClient: SignalClient
   public connections: { [peerId: string]: Connection } = {}
-  store: any
-  repo: any
-  constructor({ repo, store, discoveryKey, urls }: ClientOptions) {
+
+  private dispatch: Redux.Dispatch
+  private repo: Repo
+
+  constructor({ repo, dispatch, discoveryKey, urls }: ClientOptions) {
     super()
     this.signalClient = new SignalClient({ id: this.clientId, url: urls[0] }) // TODO: randomly select a URL if more than one is provided? select best based on ping?
     this.signalClient.join(discoveryKey)
     this.signalClient.on('peer', this.addPeer)
     this.repo = repo
-    this.store = store
+    this.dispatch = dispatch
     this.connections = {}
   }
 
   private addPeer = (peer: Peer, discoveryKey: string) => {
-    if (!this.store || !this.repo) return
+    if (!this.dispatch || !this.repo) return
     log('connecting to peer', peer.id)
-    // For each peer that wants to connect, create a Connection object
     const socket = peer.get(discoveryKey)
-    const connection = new Connection(this.repo, socket, this.store.dispatch)
-    this.connections[peer.id] = connection
+    this.connections[peer.id] = new Connection(this.repo, socket, this.dispatch)
     this.emit('peer', peer) // hook for testing
     log('connected to peer', peer.id)
     peer.on('close', () => this.removePeer(peer.id))
@@ -55,7 +55,7 @@ export class Client extends EventEmitter {
 
 interface ClientOptions {
   repo: Repo
-  store: Redux.Store
+  dispatch: Redux.Dispatch
   discoveryKey: string
   urls: string[]
 }
