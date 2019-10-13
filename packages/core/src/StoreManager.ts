@@ -50,15 +50,15 @@ export class StoreManager<T> extends EventEmitter {
   private getStore = async (discoveryKey: string, isCreating: boolean = false) => {
     log = debug(`cevitxe:${isCreating ? 'createStore' : 'joinStore'}:${discoveryKey}`)
 
-    // Create Repo
+    // Create repo for storage
     this.repo = new Repo(discoveryKey, this.databaseName)
     this.repo.addHandler(this.onChange)
     const state = await this.repo.init(this.initialState, isCreating)
 
-    // Create Redux store
-    this.store = createReduxStore(this.repo, this.proxyReducer, state, this.middlewares)
+    // Create Redux store to expose to app
+    this.store = this.createReduxStore(state)
 
-    // Connect to discovery server
+    // Connect to discovery server to find peers and sync up with them
     this.client = new Client({
       discoveryKey,
       dispatch: this.store.dispatch,
@@ -69,6 +69,13 @@ export class StoreManager<T> extends EventEmitter {
     return this.store
   }
 
+  private createReduxStore(initialState: RepoSnapshot<T>) {
+    if (!this.repo) throw new Error(`Can't create Redux store without repo`)
+    const reducer = getReducer(this.proxyReducer, this.repo)
+    const cevitxeMiddleware = getMiddleware(this.repo, this.proxyReducer)
+    const enhancer = composeWithDevTools(applyMiddleware(...this.middlewares, cevitxeMiddleware))
+    return createStore(reducer, initialState, enhancer)
+  }
   public get connectionCount() {
     return this.client ? this.client.connectionCount : 0
   }
@@ -100,18 +107,6 @@ export interface StoreManagerOptions<T> {
   databaseName: string
   /** The address(es) of one or more signal servers to try. */
   urls?: string[]
-}
-
-const createReduxStore = <T>(
-  repo: Repo,
-  proxyReducer: ProxyReducer,
-  initialState: RepoSnapshot<T>,
-  middlewares: Middleware[]
-) => {
-  const reducer = getReducer(proxyReducer, repo)
-  const cevitxeMiddleware = getMiddleware(repo, proxyReducer)
-  const enhancer = composeWithDevTools(applyMiddleware(...middlewares, cevitxeMiddleware))
-  return createStore(reducer, initialState, enhancer)
 }
 
 // Use shorter IDs
