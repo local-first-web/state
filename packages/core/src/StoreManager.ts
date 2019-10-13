@@ -19,15 +19,14 @@ let log = debug('cevitxe:StoreManager')
  * cevitxe-signal-client), and magical synchronization with peers (via automerge)
  */
 export class StoreManager<T> extends EventEmitter {
+  private databaseName: string
   private proxyReducer: ProxyReducer
   private initialState: RepoSnapshot<T>
   private urls: string[]
   private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
-
-  private clientId = cuid()
   private repo?: Repo
-  public client?: Client
-  public databaseName: string
+  private client?: Client
+
   public store?: Store
 
   constructor({
@@ -45,15 +44,14 @@ export class StoreManager<T> extends EventEmitter {
     this.urls = urls
   }
 
-  joinStore = (discoveryKey: string) => this.makeStore(discoveryKey, false)
+  joinStore = (discoveryKey: string) => this.getStore(discoveryKey, false)
+  createStore = (discoveryKey: string) => this.getStore(discoveryKey, true)
 
-  createStore = (discoveryKey: string) => this.makeStore(discoveryKey, true)
-
-  private makeStore = async (discoveryKey: string, isCreating: boolean = false) => {
+  private getStore = async (discoveryKey: string, isCreating: boolean = false) => {
     log = debug(`cevitxe:${isCreating ? 'createStore' : 'joinStore'}:${discoveryKey}`)
 
     // Create Repo
-    this.repo = new Repo(discoveryKey, this.databaseName, this.clientId)
+    this.repo = new Repo(discoveryKey, this.databaseName)
     this.repo.addHandler(this.onChange)
     const state = await this.repo.init(this.initialState, isCreating)
 
@@ -71,6 +69,9 @@ export class StoreManager<T> extends EventEmitter {
     return this.store
   }
 
+  public get connectionCount() {
+    return this.client ? this.client.connectionCount : 0
+  }
   public get knownDiscoveryKeys() {
     return getKnownDiscoveryKeys(this.databaseName)
   }

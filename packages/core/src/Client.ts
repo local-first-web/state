@@ -6,11 +6,13 @@ import { Repo } from './Repo'
 
 const log = debug('cevitxe:client')
 
+/**
+ * Wraps a SignalClient and creates a Connection instance for each peer we connect to.
+ */
 export class Client {
   private clientId = newid()
   private signalClient: SignalClient
-  public connections: { [peerId: string]: Connection } = {}
-
+  private connections: { [peerId: string]: Connection } = {}
   private dispatch: Redux.Dispatch
   private repo: Repo
 
