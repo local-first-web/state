@@ -5,7 +5,7 @@ import debug from 'debug'
 import { EventEmitter } from 'events'
 import { applyMiddleware, createStore, Middleware, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
-import { adaptReducer } from './adaptReducer'
+import { getReducer } from './getReducer'
 import { Connection } from './Connection'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
@@ -14,26 +14,6 @@ import { Repo } from './Repo'
 import { RepoSnapshot, ProxyReducer } from './types'
 
 let log = debug('cevitxe:StoreManager')
-
-// It's normal for a document with a lot of participants to have a lot of connections, so increase
-// the limit to avoid spurious warnings about emitter leaks.
-EventEmitter.defaultMaxListeners = 500
-
-// Use shorter IDs
-A.uuid.setFactory(cuid)
-
-export interface StoreManagerOptions<T> {
-  /** A Cevitxe proxy reducer that returns a ChangeMap (map of change functions) for each action. */
-  proxyReducer: ProxyReducer
-  /** Redux middlewares to add to the store. */
-  middlewares?: Middleware[]
-  /** The starting state of a blank document. */
-  initialState: RepoSnapshot<T>
-  /** A name for the storage feed, to distinguish this application's data from any other Cevitxe data stored on the same machine. */
-  databaseName: string
-  /** The address(es) of one or more signal servers to try. */
-  urls?: string[]
-}
 
 /**
  * A StoreManager generates a Redux store with persistence (via the Repo class), networking (via
@@ -81,10 +61,7 @@ export class StoreManager<T> extends EventEmitter {
     const state = await this.repo.init(this.initialState, isCreating)
 
     // Create Redux store
-    const reducer = adaptReducer(this.proxyReducer, this.repo)
-    const cevitxeMiddleware = getMiddleware(this.repo, this.proxyReducer)
-    const enhancer = composeWithDevTools(applyMiddleware(...this.middlewares, cevitxeMiddleware))
-    this.store = createStore(reducer, state, enhancer)
+    this.store = createReduxStore(this.repo, this.proxyReducer, state, this.middlewares)
 
     // Connect to discovery server
     const client = new Client({ id: this.clientId, url: this.urls[0] }) // TODO: randomly select a URL if more than one is provided? select best based on ping?
@@ -141,3 +118,35 @@ export class StoreManager<T> extends EventEmitter {
     this.emit('close')
   }
 }
+
+export interface StoreManagerOptions<T> {
+  /** A Cevitxe proxy reducer that returns a ChangeMap (map of change functions) for each action. */
+  proxyReducer: ProxyReducer
+  /** Redux middlewares to add to the store. */
+  middlewares?: Middleware[]
+  /** The starting state of a blank document. */
+  initialState: RepoSnapshot<T>
+  /** A name for the storage feed, to distinguish this application's data from any other Cevitxe data stored on the same machine. */
+  databaseName: string
+  /** The address(es) of one or more signal servers to try. */
+  urls?: string[]
+}
+
+const createReduxStore = <T>(
+  repo: Repo,
+  proxyReducer: ProxyReducer,
+  initialState: RepoSnapshot<T>,
+  middlewares: Middleware[]
+) => {
+  const reducer = getReducer(proxyReducer, repo)
+  const cevitxeMiddleware = getMiddleware(repo, proxyReducer)
+  const enhancer = composeWithDevTools(applyMiddleware(...middlewares, cevitxeMiddleware))
+  return createStore(reducer, initialState, enhancer)
+}
+
+// Use shorter IDs
+A.uuid.setFactory(cuid)
+
+// It's normal for a document with a lot of participants to have a lot of connections, so increase
+// the limit to avoid spurious warnings about emitter leaks.
+EventEmitter.defaultMaxListeners = 500
