@@ -139,7 +139,6 @@ export class Repo<T = any> extends EventEmitter {
       this.log('recovering an existing repo from persisted state')
       await this.loadSnapshotsFromDb()
     }
-    this.emit('ready')
     return this.state
   }
 
@@ -223,9 +222,8 @@ export class Repo<T = any> extends EventEmitter {
     await this.saveSnapshot(documentId, doc)
 
     // call handlers
-    for (const fn of this.handlers) {
+    for (const fn of this.handlers) //
       await fn(documentId, doc)
-    }
   }
 
   /**

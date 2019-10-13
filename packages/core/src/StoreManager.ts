@@ -1,17 +1,16 @@
 import A from 'automerge'
-import { Client, newid, Peer } from 'cevitxe-signal-client'
 import cuid from 'cuid'
 import debug from 'debug'
 import { EventEmitter } from 'events'
 import { applyMiddleware, createStore, Middleware, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
 import { getReducer } from './getReducer'
-import { Connection } from './Connection'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getKnownDiscoveryKeys } from './keys'
 import { Repo } from './Repo'
 import { RepoSnapshot, ProxyReducer } from './types'
+import { Client } from './Client'
 
 let log = debug('cevitxe:StoreManager')
 
@@ -25,10 +24,9 @@ export class StoreManager<T> extends EventEmitter {
   private urls: string[]
   private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
 
-  private clientId = newid()
+  private clientId = cuid()
   private repo?: Repo
-
-  public connections: { [peerId: string]: Connection }
+  public client?: Client
   public databaseName: string
   public store?: Store
 
@@ -45,7 +43,6 @@ export class StoreManager<T> extends EventEmitter {
     this.initialState = initialState
     this.databaseName = databaseName
     this.urls = urls
-    this.connections = {}
   }
 
   joinStore = (discoveryKey: string) => this.makeStore(discoveryKey, false)
@@ -64,17 +61,14 @@ export class StoreManager<T> extends EventEmitter {
     this.store = createReduxStore(this.repo, this.proxyReducer, state, this.middlewares)
 
     // Connect to discovery server
-    const client = new Client({ id: this.clientId, url: this.urls[0] }) // TODO: randomly select a URL if more than one is provided? select best based on ping?
-    client.join(discoveryKey)
-    client.on('peer', (peer: Peer) => this.addPeer(peer, discoveryKey))
-
-    this.emit('ready', this.store)
+    this.client = new Client({
+      discoveryKey,
+      store: this.store,
+      repo: this.repo,
+      urls: this.urls,
+    })
 
     return this.store
-  }
-
-  public get connectionCount() {
-    return Object.keys(this.connections).length
   }
 
   public get knownDiscoveryKeys() {
@@ -85,37 +79,12 @@ export class StoreManager<T> extends EventEmitter {
     this.emit('change', documentId, doc)
   }
 
-  private addPeer = (peer: Peer, discoveryKey: string) => {
-    if (!this.store || !this.repo) return
-    log('connecting to peer', peer.id)
-
-    // For each peer that wants to connect, create a Connection object
-    const socket = peer.get(discoveryKey)
-    const connection = new Connection(this.repo, socket, this.store.dispatch)
-    this.connections[peer.id] = connection
-    this.emit('peer', peer) // hook for testing
-    log('connected to peer', peer.id)
-
-    peer.on('close', () => this.removePeer(peer.id))
-  }
-
-  private removePeer = (peerId: string) => {
-    log('removing peer', peerId)
-    if (this.connections[peerId]) this.connections[peerId].close()
-    delete this.connections[peerId]
-  }
-
   close = async () => {
     this.removeAllListeners()
-
-    const closeAllConnections = Object.keys(this.connections).map(peerId => this.removePeer(peerId))
-    await Promise.all(closeAllConnections)
-    this.connections = {}
-
+    if (this.client) this.client.close()
+    // if (this.repo) this.repo.close() // why does this break tests?
     delete this.repo
     delete this.store
-
-    this.emit('close')
   }
 }
 

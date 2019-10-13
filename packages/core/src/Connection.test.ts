@@ -57,7 +57,6 @@ describe('Connection', () => {
     const peer = new WebSocket(url)
     const connection = new Connection(repo, peer, fakeDispatch)
 
-    await eventPromise(connection, 'ready')
     await _yield()
 
     expect(peer.send).toHaveBeenCalledWith(
