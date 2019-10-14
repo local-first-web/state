@@ -95,11 +95,6 @@ export class Repo<T = any> extends EventEmitter {
    * @returns An `idb` wrapper for an indexed DB.
    */
   async open() {
-    // TODO: add helper method to ensure open() is called
-    // see https://github.com/DevResults/cevitxe/pull/24#discussion_r333490817 : Since this is 100%
-    // required (it's the async part of construction), I suggest we add a flag (set at the end of
-    // open) and a helper method that checks it and throws if the repo isn't open yet. All the
-    // instance methods would call it to avoid hard-to-track bugs.
     const storageKey = `cevitxe::${this.databaseName}::${this.discoveryKey.substr(0, 12)}`
     this.database = await idb.openDB(storageKey, DB_VERSION, {
       upgrade(db) {
