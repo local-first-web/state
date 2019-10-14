@@ -87,10 +87,20 @@ export class StoreManager<T> extends EventEmitter {
     this.emit('change', documentId, doc)
   }
 
+  /**
+   * Close all connections and (TODO) the repo's database
+   */
   close = async () => {
     this.removeAllListeners()
     if (this.client) this.client.close()
-    // if (this.repo) this.repo.close() // why does this break tests?
+
+    // TODO: Close repo when closing StoreManager
+    // > This is obviously the right thing to do, but it breaks tests. For some reason RepoSync
+    // continues to respond to messages from the peer after the repo is closed, and then tries to
+    // access the closed database.
+
+    // if (this.repo) this.repo.close()
+
     delete this.repo
     delete this.store
   }
