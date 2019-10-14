@@ -88,7 +88,7 @@ export class StoreManager<T> extends EventEmitter {
   }
 
   /**
-   * Close all connections and (TODO) the repo's database
+   * Close all connections and the repo's database
    */
   close = async () => {
     this.removeAllListeners()
