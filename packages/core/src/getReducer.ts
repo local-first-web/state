@@ -37,15 +37,17 @@ export const getReducer: ReducerConverter = (proxyReducer, repo) => {
         return state
       }
       repo.loadState({ ...state }) // clone
+
       // Apply each change function to the corresponding document
       for (let documentId in functionMap) {
         const fn = functionMap[documentId] as A.ChangeFn<any> | symbol
+
         if (fn === DELETE_COLLECTION) {
           const name = collection.getCollectionName(documentId)
           // this updates snapshots synchronously then updates underlying data asynchronously
           collection(name).removeAllFromSnapshot(repo)
         } else if (typeof fn === 'function') {
-          // update snapshot synchronously
+          // update snapshot synchronously using change function
           repo.changeSnapshot(documentId, fn)
         }
       }
