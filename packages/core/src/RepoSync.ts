@@ -78,6 +78,7 @@ export class RepoSync {
   private send: (msg: Message) => void
   private clock: { ours: ClockMap; theirs: ClockMap }
   private log: debug.Debugger
+  private isOpen = false
 
   /**
    * @param repo A `Repo` containing the document being synchronized.
@@ -94,6 +95,8 @@ export class RepoSync {
   // Public API
 
   async open() {
+    this.log('open')
+    this.isOpen = true
     for (let documentId of this.repo.documentIds) await this.registerDoc(documentId)
     this.repo.addHandler(this.onDocChanged.bind(this))
     await this.sendHello()
@@ -101,6 +104,7 @@ export class RepoSync {
 
   close() {
     this.log('close')
+    this.isOpen = false
     this.repo.removeHandler(this.onDocChanged.bind(this))
   }
 
@@ -109,7 +113,10 @@ export class RepoSync {
    * @param msg
    */
   async receive(msg: Message) {
+    if (!this.isOpen) return // don't respond to messages after closing
+
     this.log('receive', msg)
+
     switch (msg.type) {
       case HELLO: {
         // they are introducing themselves by saying how many documents they have
