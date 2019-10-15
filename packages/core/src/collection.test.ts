@@ -107,9 +107,8 @@ describe('collections', () => {
       expect(allItems).toHaveLength(0)
     })
 
-    // TODO: This test should be moved somewhere where it will work - this is taken care of by middleware
-    // it('should allow dropping a collection', () => {
-    //   const { state, reducer } = setupWithOneTeacher()
+    // it('should allow dropping a collection', async () => {
+    //   const { state, reducer } = await setupWithOneTeacher()
     //   const action = { type: 'CLEAR_TEACHERS' }
     //   const newState = reducer(state, action)
     //   const allItems = teachers.toArray(newState)
