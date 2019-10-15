@@ -77,7 +77,8 @@ export class Repo<T = any> {
 
   private database?: idb.IDBPDatabase<unknown>
 
-  constructor(discoveryKey: string, databaseName: string, clientId: string = newid()) {
+  constructor(options: { discoveryKey: string; databaseName: string; clientId?: string }) {
+    const { discoveryKey, databaseName, clientId = newid() } = options
     this.discoveryKey = discoveryKey
     this.databaseName = databaseName
     this.log = debug(`cevitxe:repo:${databaseName}`)

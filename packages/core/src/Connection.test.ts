@@ -40,7 +40,11 @@ describe('Connection', () => {
   })
 
   beforeEach(async () => {
-    repo = new Repo<any>('test', `test${newid()}`, localActorId)
+    repo = new Repo<any>({
+      discoveryKey: 'test',
+      databaseName: `test${newid()}`,
+      clientId: localActorId,
+    })
     await repo.open()
     let key: keyof FooStateDoc
     for (key in initialState) {
