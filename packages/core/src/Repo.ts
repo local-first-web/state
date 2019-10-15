@@ -2,7 +2,6 @@
 import A from 'automerge'
 import { newid } from 'cevitxe-signal-client'
 import debug from 'debug'
-import { EventEmitter } from 'events'
 import * as idb from 'idb/with-async-ittr-cjs'
 import { ChangeSet, RepoSnapshot } from './types'
 import { DELETED } from './constants'
@@ -43,7 +42,7 @@ export type RepoEventHandler<T> = (documentId: string, doc: A.Doc<T>) => void | 
  *     qrs567: [snapshot]
  * ```
  */
-export class Repo<T = any> extends EventEmitter {
+export class Repo<T = any> {
   private log: debug.Debugger
 
   /**
@@ -79,7 +78,6 @@ export class Repo<T = any> extends EventEmitter {
   private database?: idb.IDBPDatabase<unknown>
 
   constructor(discoveryKey: string, databaseName: string, clientId: string = newid()) {
-    super()
     this.discoveryKey = discoveryKey
     this.databaseName = databaseName
     this.log = debug(`cevitxe:repo:${databaseName}`)
