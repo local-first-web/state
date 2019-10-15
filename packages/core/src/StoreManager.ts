@@ -76,9 +76,11 @@ export class StoreManager<T> extends EventEmitter {
     const enhancer = composeWithDevTools(applyMiddleware(...this.middlewares, cevitxeMiddleware))
     return createStore(reducer, initialState, enhancer)
   }
+
   public get connectionCount() {
     return this.client ? this.client.connectionCount : 0
   }
+
   public get knownDiscoveryKeys() {
     return getKnownDiscoveryKeys(this.databaseName)
   }
