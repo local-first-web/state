@@ -38,30 +38,30 @@ export class IdbAdapter extends StorageAdapter {
     }
   }
 
+  get snapshots() {
+    this.ensureOpen()
+    const index = this.database!.transaction('snapshots').store.index('by-documentId')
+    return index.iterate(undefined, 'next')
+  }
+
+  get changes() {
+    this.ensureOpen()
+    const index = this.database!.transaction('changes').store.index('by-documentId')
+    return index.iterate(undefined, 'next')
+  }
+
   async hasData() {
     this.ensureOpen()
     const count = await this.database!.count('changes')
     return count > 0
   }
 
-  get snapshotIterator() {
-    this.ensureOpen()
-    const index = this.database!.transaction('snapshots').store.index('by-documentId')
-    return index.iterate(undefined, 'next')
-  }
-
-  get changeSetIterator() {
-    this.ensureOpen()
-    const index = this.database!.transaction('changes').store.index('by-documentId')
-    return index.iterate(undefined, 'next')
-  }
-
-  async getChangeSets(documentId: string): Promise<ChangeSet[]> {
+  async getDocumentChanges(documentId: string): Promise<ChangeSet[]> {
     this.ensureOpen()
     return this.database!.getAllFromIndex('changes', 'by-documentId', documentId)
   }
 
-  async appendChangeSet(changeSet: ChangeSet) {
+  async appendChanges(changeSet: ChangeSet) {
     this.ensureOpen()
     await this.database!.add('changes', changeSet)
   }

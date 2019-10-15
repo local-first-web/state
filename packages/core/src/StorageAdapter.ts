@@ -16,13 +16,13 @@ export abstract class StorageAdapter {
   abstract async open(): Promise<void>
   abstract async close(): Promise<void>
 
+  abstract get snapshots(): AsyncIterableIterator<IteratorResult<SnapshotRecord>>
+  abstract get changes(): AsyncIterableIterator<IteratorResult<ChangeSet>>
+
   abstract async hasData(): Promise<boolean>
 
-  abstract get snapshotIterator(): AsyncIterableIterator<IteratorResult<SnapshotRecord>>
-  abstract get changeSetIterator(): AsyncIterableIterator<IteratorResult<ChangeSet>>
-
-  abstract async getChangeSets(documentId: string): Promise<ChangeSet[]>
-  abstract async appendChangeSet(changeSet: ChangeSet): Promise<void>
+  abstract async getDocumentChanges(documentId: string): Promise<ChangeSet[]>
+  abstract async appendChanges(changeSet: ChangeSet): Promise<void>
 
   abstract async putSnapshot(snapshotId: string, snapshot: Snapshot): Promise<void>
   abstract async deleteSnapshot(snapshotId: string): Promise<void>
