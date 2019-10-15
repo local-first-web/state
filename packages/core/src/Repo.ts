@@ -1,14 +1,38 @@
-﻿import { RepoHistory } from './types'
-import A from 'automerge'
+﻿import A from 'automerge'
 import { newid } from 'cevitxe-signal-client'
 import debug from 'debug'
-import * as idb from 'idb/with-async-ittr-cjs'
-import { ChangeSet, RepoSnapshot } from './types'
-import { DELETED } from './constants'
 import Cache from 'lru-cache'
+import { DELETED } from './constants'
+import { IdbAdapter } from './IdbAdapter'
+import { SnapshotRecord, StorageAdapter } from './StorageAdapter'
+import { ChangeSet, RepoHistory, RepoSnapshot } from './types'
 
-const DB_VERSION = 1
 export type RepoEventHandler<T> = (documentId: string, doc: A.Doc<T>) => void | Promise<void>
+
+interface RepoOptions {
+  /**
+   * The discovery key is a unique ID for this dataset, used to identify it when seeking peers with
+   * whom to synchronize. In the example apps we use randomly generated two-word names like
+   * `golden-lizard`. It could also be a UUID.
+   */
+  discoveryKey: string
+
+  /**
+   * Name to distinguish this application's data from others that this browser might have stored;
+   * e.g. `grid` or `todos`.
+   */
+  databaseName: string
+
+  /**
+   * Unique identifier representing this peer
+   */
+  clientId?: string
+
+  /**
+   * Storage adapter to use. Defaults to
+   */
+  storage?: StorageAdapter
+}
 
 /**
  * A Repo manages a set of Automerge documents. For each document, it persists:
@@ -44,30 +68,19 @@ export type RepoEventHandler<T> = (documentId: string, doc: A.Doc<T>) => void | 
  */
 export class Repo<T = any> {
   private log: debug.Debugger
+  private storage: StorageAdapter
 
-  /**
-   * The discovery key is a unique ID for this dataset, used to identify it when seeking peers with
-   * whom to synchronize. In the example apps we use randomly generated two-word names like
-   * `golden-lizard`. It could also be a UUID.
-   */
-  private discoveryKey: string
-
-  /**
-   * Name to distinguish this application's data from others that this browser might have stored;
-   * e.g. `grid` or `todos`.
-   */
   public databaseName: string
-
-  /**
-   * Unique identifier representing this peer
-   */
   public clientId: string
 
   /**
-   * In-memory map of document snapshots.
+   * In-memory map of document snapshots
    */
-  private state: RepoSnapshot<T> = {}
+  private state: RepoSnapshot = {}
 
+  /**
+   * LRU cache of recently accessed Docs
+   */
   private docCache: Cache<string, any>
 
   /**
@@ -75,52 +88,29 @@ export class Repo<T = any> {
    */
   private handlers: Set<RepoEventHandler<T>>
 
-  private database?: idb.IDBPDatabase<unknown>
-
-  constructor(options: { discoveryKey: string; databaseName: string; clientId?: string }) {
-    const { discoveryKey, databaseName, clientId = newid() } = options
-    this.discoveryKey = discoveryKey
+  constructor(options: RepoOptions) {
+    const {
+      discoveryKey,
+      databaseName,
+      clientId = newid(),
+      storage = new IdbAdapter({
+        databaseName,
+        discoveryKey,
+      }),
+    } = options
     this.databaseName = databaseName
     this.log = debug(`cevitxe:repo:${databaseName}`)
     this.handlers = new Set()
     this.docCache = new Cache({ max: 1000 })
     this.clientId = clientId
+
+    this.storage = storage
   }
 
   // PUBLIC METHODS
 
-  /**
-   * Opens the local database and returns a reference to it.
-   * @returns An `idb` wrapper for an indexed DB.
-   */
-  async open() {
-    const storageKey = `cevitxe::${this.databaseName}::${this.discoveryKey.substr(0, 12)}`
-    this.database = await idb.openDB(storageKey, DB_VERSION, {
-      upgrade(db) {
-        // changes
-        const changes = db.createObjectStore('changes', {
-          keyPath: 'id',
-          autoIncrement: true,
-        })
-        changes.createIndex('documentId', 'documentId')
-
-        // snapshots
-        const snapshots = db.createObjectStore('snapshots', {
-          keyPath: 'documentId',
-          autoIncrement: false,
-        })
-        snapshots.createIndex('documentId', 'documentId')
-        // TODO: use unique index?
-      },
-    })
-  }
-
-  close() {
-    if (this.database) {
-      this.database.close()
-      delete this.database
-    }
-  }
+  open = async () => await this.storage.open()
+  close = () => this.storage.close()
 
   /**
    * Initializes the repo and returns a snapshot of its current state.
@@ -211,7 +201,7 @@ export class Repo<T = any> {
     this.docCache.set(documentId, doc)
 
     // append changes to this document's history
-    if (changes.length > 0) await this.appendChangeset({ documentId, changes })
+    if (changes.length > 0) await this.appendChangeSet({ documentId, changes })
 
     // save snapshot
     await this.saveSnapshot(documentId, doc)
@@ -255,7 +245,7 @@ export class Repo<T = any> {
     this.docCache.set(documentId, newDoc)
 
     // append changes to this document's history
-    if (changes.length > 0) await this.appendChangeset({ documentId, changes })
+    if (changes.length > 0) await this.appendChangeSet({ documentId, changes })
 
     // save snapshot
     await this.saveSnapshot(documentId, newDoc)
@@ -276,9 +266,7 @@ export class Repo<T = any> {
   async getHistory(): Promise<RepoHistory> {
     const history: RepoHistory = {}
 
-    const index = this.database!.transaction('changes').store.index('documentId')
-    const changeSets = index.iterate(undefined, 'next')
-
+    const changeSets = this.storage.changeSetIterator
     // TODO: for large datasets, send in batches
     for await (const cursor of changeSets) {
       const { documentId, changes } = cursor.value as ChangeSet
@@ -286,6 +274,16 @@ export class Repo<T = any> {
     }
     return history
   }
+
+  //   const index = this.database!.transaction('changes').store.index('documentId')
+  // const changeSets = index.iterate(undefined, 'next')
+
+  // // TODO: for large datasets, send in batches
+  // for await (const cursor of changeSets) {
+  //   const { documentId, changes } = cursor.value as ChangeSet
+  //   history[documentId] = (history[documentId] || []).concat(changes)
+  // }
+  // return history
 
   /**
    * Used when receiving the entire current state of a repo from a peer.
@@ -385,28 +383,21 @@ export class Repo<T = any> {
 
   // PRIVATE
 
-  private ensureOpen() {
-    if (!this.database)
-      throw new Error('The database has not been opened yet. Have you called `repo.open()`?')
-  }
-
   /**
    * Determines whether the repo has previously persisted data or not.
    * @returns `true` if there is any stored data in the repo.
    */
   private async hasData() {
-    this.ensureOpen()
-    const count = await this.database!.count('changes')
-    return count > 0
+    return this.storage.hasData()
   }
 
   /**
    * Loads all the repo's snapshots into memory
    */
   private async loadSnapshotsFromDb() {
-    this.ensureOpen()
-    const snapshots = await this.database!.getAll('snapshots')
-    for (const { documentId, snapshot } of snapshots) {
+    const snapshots = this.storage.snapshotIterator
+    for await (const cursor of snapshots) {
+      const { documentId, snapshot } = cursor.value as SnapshotRecord
       this.state[documentId] = snapshot[DELETED] ? null : snapshot
     }
   }
@@ -418,9 +409,8 @@ export class Repo<T = any> {
   private async rebuildDoc(documentId: string): Promise<A.Doc<T>> {
     let doc = A.init<T>({ actorId: this.clientId })
     const changeSets = await this.getChangesets(documentId)
-    for (const { changes } of changeSets) {
+    for (const { changes } of changeSets) //
       if (changes) doc = A.applyChanges(doc, changes)
-    }
     return doc
   }
 
@@ -428,10 +418,9 @@ export class Repo<T = any> {
    * Adds a set of changes to the document's append-only history.
    * @param changeSet
    */
-  private async appendChangeset(changeSet: ChangeSet) {
-    this.ensureOpen()
+  private async appendChangeSet(changeSet: ChangeSet) {
     this.log('appending changeset', changeSet.documentId, changeSet.changes.length)
-    await this.database!.add('changes', changeSet)
+    this.storage.appendChangeSet(changeSet)
   }
 
   /**
@@ -440,8 +429,7 @@ export class Repo<T = any> {
    * @returns An array of changesets in order of application.
    */
   private async getChangesets(documentId: string): Promise<ChangeSet[]> {
-    this.ensureOpen()
-    const changeSets = await this.database!.getAllFromIndex('changes', 'documentId', documentId)
+    const changeSets = await this.storage.getChangeSets(documentId)
     this.log('getChangeSets', documentId, changeSets.length)
     return changeSets
   }
@@ -452,15 +440,14 @@ export class Repo<T = any> {
    * @param snapshot
    */
   private async saveSnapshot(documentId: string, document: A.Doc<T>) {
-    this.ensureOpen()
     const snapshot: any = { ...document } // clone without Automerge metadata
     if (snapshot[DELETED]) {
       this.removeSnapshot(documentId)
-      await this.database!.delete('snapshots', documentId)
+      await this.storage.deleteSnapshot(documentId)
     } else {
       this.log('saveSnapshot', documentId, document)
       this.setSnapshot(documentId, snapshot)
-      await this.database!.put('snapshots', { documentId, snapshot })
+      await this.storage.putSnapshot(documentId, snapshot)
     }
   }
 }
