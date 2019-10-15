@@ -89,22 +89,16 @@ export class Repo<T = any> {
   private handlers: Set<RepoEventHandler<T>>
 
   constructor(options: RepoOptions) {
-    const {
-      discoveryKey,
-      databaseName,
-      clientId = newid(),
-      storage = new IdbAdapter({
-        databaseName,
-        discoveryKey,
-      }),
-    } = options
-    this.databaseName = databaseName
+    const { discoveryKey, databaseName, clientId = newid(), storage } = options
     this.log = debug(`cevitxe:repo:${databaseName}`)
+
+    this.databaseName = databaseName
     this.handlers = new Set()
     this.docCache = new Cache({ max: 1000 })
     this.clientId = clientId
 
-    this.storage = storage
+    // Use IdbAdapter by default
+    this.storage = storage || new IdbAdapter({ databaseName, discoveryKey })
   }
 
   // PUBLIC METHODS
@@ -265,25 +259,13 @@ export class Repo<T = any> {
    */
   async getHistory(): Promise<RepoHistory> {
     const history: RepoHistory = {}
-
-    const changeSets = this.storage.changeSetIterator
     // TODO: for large datasets, send in batches
-    for await (const cursor of changeSets) {
+    for await (const cursor of this.storage.changes) {
       const { documentId, changes } = cursor.value as ChangeSet
       history[documentId] = (history[documentId] || []).concat(changes)
     }
     return history
   }
-
-  //   const index = this.database!.transaction('changes').store.index('documentId')
-  // const changeSets = index.iterate(undefined, 'next')
-
-  // // TODO: for large datasets, send in batches
-  // for await (const cursor of changeSets) {
-  //   const { documentId, changes } = cursor.value as ChangeSet
-  //   history[documentId] = (history[documentId] || []).concat(changes)
-  // }
-  // return history
 
   /**
    * Used when receiving the entire current state of a repo from a peer.
@@ -395,8 +377,7 @@ export class Repo<T = any> {
    * Loads all the repo's snapshots into memory
    */
   private async loadSnapshotsFromDb() {
-    const snapshots = this.storage.snapshotIterator
-    for await (const cursor of snapshots) {
+    for await (const cursor of this.storage.snapshots) {
       const { documentId, snapshot } = cursor.value as SnapshotRecord
       this.state[documentId] = snapshot[DELETED] ? null : snapshot
     }
@@ -408,7 +389,7 @@ export class Repo<T = any> {
    */
   private async rebuildDoc(documentId: string): Promise<A.Doc<T>> {
     let doc = A.init<T>({ actorId: this.clientId })
-    const changeSets = await this.getChangesets(documentId)
+    const changeSets = await this.getDocumentChanges(documentId)
     for (const { changes } of changeSets) //
       if (changes) doc = A.applyChanges(doc, changes)
     return doc
@@ -420,7 +401,7 @@ export class Repo<T = any> {
    */
   private async appendChangeSet(changeSet: ChangeSet) {
     this.log('appending changeset', changeSet.documentId, changeSet.changes.length)
-    this.storage.appendChangeSet(changeSet)
+    this.storage.appendChanges(changeSet)
   }
 
   /**
@@ -428,10 +409,9 @@ export class Repo<T = any> {
    * @param documentId The ID of the requested document.
    * @returns An array of changesets in order of application.
    */
-  private async getChangesets(documentId: string): Promise<ChangeSet[]> {
-    const changeSets = await this.storage.getChangeSets(documentId)
-    this.log('getChangeSets', documentId, changeSets.length)
-    return changeSets
+  private async getDocumentChanges(documentId: string): Promise<ChangeSet[]> {
+    this.log('getChangeSets', documentId)
+    return this.storage.getDocumentChanges(documentId)
   }
 
   /**
