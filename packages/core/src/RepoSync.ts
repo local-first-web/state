@@ -2,16 +2,8 @@
 import debug from 'debug'
 import { Map } from 'immutable'
 import { isMoreRecent } from './lessOrEqual'
-import {
-  Message,
-  ADVERTISE_DOCS,
-  HELLO,
-  REQUEST_ALL,
-  REQUEST_DOCS,
-  SEND_ALL_HISTORY,
-  SEND_ALL_SNAPSHOTS,
-  SEND_CHANGES,
-} from './Message'
+import { Message } from './Message'
+import * as message from './Message'
 import { Repo } from './Repo'
 import { RepoHistory, RepoSnapshot } from './types'
 
@@ -20,22 +12,6 @@ type ClockMap = Map<string, Clock>
 
 const EMPTY_CLOCK: Clock = Map()
 const EMPTY_CLOCKMAP: ClockMap = Map()
-
-// TODO: Submit these to Automerge
-const _A = {
-  ...A,
-
-  getMissingChanges: (ourDoc: A.Doc<any>, theirClock: A.Clock): A.Change[] => {
-    if (theirClock === undefined) return []
-    const ourState = A.Frontend.getBackendState(ourDoc)
-    return A.Backend.getMissingChanges(ourState!, theirClock)
-  },
-
-  getClock: (doc: A.Doc<any>): Clock => {
-    const state = A.Frontend.getBackendState(doc) as any // BackendState doesn't have a public API
-    return state.getIn(['opSet', 'clock']) as Clock
-  },
-}
 
 /**
  * One instance of `RepoSync` keeps one local document in sync with one remote peer's replica of the
@@ -88,16 +64,29 @@ export class RepoSync {
   constructor(repo: Repo<any>, send: (msg: Message) => void) {
     this.repo = repo
     this.send = send
-    this.clock = { ours: EMPTY_CLOCKMAP, theirs: EMPTY_CLOCKMAP }
+    this.clock = this.getClocks()
     this.log = debug(`cevitxe:reposync:${repo.databaseName}`)
+  }
+
+  getClocks() {
+    // const ours = EMPTY_CLOCKMAP
+    const theirs = EMPTY_CLOCKMAP
+
+    const persistedClock = localStorage.getItem('ourClock')
+    const ours = persistedClock ? (Map(JSON.parse(persistedClock)) as ClockMap) : EMPTY_CLOCKMAP
+
+    return { ours, theirs }
   }
 
   // Public API
 
   async open() {
     this.log('open')
+
     this.isOpen = true
-    for (let documentId of this.repo.documentIds) await this.registerDoc(documentId)
+    for (let documentId of this.repo.documentIds)
+      if (!this.clock.ours.get(documentId)) await this.registerDoc(documentId)
+
     this.repo.addHandler(this.onDocChanged.bind(this))
     await this.sendHello()
   }
@@ -118,7 +107,7 @@ export class RepoSync {
     this.log('receive', msg)
 
     switch (msg.type) {
-      case HELLO: {
+      case message.HELLO: {
         // they are introducing themselves by saying how many documents they have
         const theirCount: number = +msg.documentCount
         const ourCount: number = +this.repo.count
@@ -139,7 +128,7 @@ export class RepoSync {
         break
       }
 
-      case SEND_CHANGES: {
+      case message.SEND_CHANGES: {
         // they are sending us changes that they figure we don't have
         const { documentId, changes, clock } = msg
         this.updateClock(documentId, theirs, clock)
@@ -151,7 +140,7 @@ export class RepoSync {
         break
       }
 
-      case ADVERTISE_DOCS: {
+      case message.ADVERTISE_DOCS: {
         // they are letting us know they have this specific version of each of these docs
         const { documents } = msg
         for (const { documentId, clock } of documents) {
@@ -165,7 +154,7 @@ export class RepoSync {
         break
       }
 
-      case REQUEST_DOCS: {
+      case message.REQUEST_DOCS: {
         // they don't have this document and are asking for this document in its entirety
         const { documentIds } = msg
         for (const documentId of documentIds) {
@@ -176,7 +165,7 @@ export class RepoSync {
         break
       }
 
-      case REQUEST_ALL: {
+      case message.REQUEST_ALL: {
         // they are starting from zero & asking for everything we have
         // only send if we have something
         if (this.repo.documentIds.length > 0) {
@@ -188,14 +177,14 @@ export class RepoSync {
         break
       }
 
-      case SEND_ALL_HISTORY: {
+      case message.SEND_ALL_HISTORY: {
         // they are sending us the complete history of all documents
         const { history } = msg
         await this.receiveAllHistory(history)
         break
       }
 
-      case SEND_ALL_SNAPSHOTS: {
+      case message.SEND_ALL_SNAPSHOTS: {
         // they are sending us the latest snapshots for all documents
         const { state } = msg
         this.receiveAllSnapshots(state)
@@ -268,7 +257,7 @@ export class RepoSync {
   private async sendHello() {
     const documentCount = this.repo.count
     this.log('sending hello', documentCount)
-    this.send({ type: HELLO, documentCount })
+    this.send({ type: message.HELLO, documentCount })
   }
 
   /**
@@ -307,7 +296,7 @@ export class RepoSync {
     this.log('sendChanges', documentId)
     const clock = await this.getClockFromDoc(documentId)
     this.send({
-      type: SEND_CHANGES,
+      type: message.SEND_CHANGES,
       documentId,
       clock: clock.toJS() as Clock,
       changes,
@@ -325,7 +314,7 @@ export class RepoSync {
   private async advertise(documentId: string, _clock: Clock = this.getOurClock(documentId)) {
     this.log('advertise', documentId)
     const clock = _clock.toJS() as Clock
-    this.send({ type: ADVERTISE_DOCS, documents: [{ documentId, clock }] })
+    this.send({ type: message.ADVERTISE_DOCS, documents: [{ documentId, clock }] })
   }
 
   /**
@@ -340,7 +329,7 @@ export class RepoSync {
         documentId,
         clock: clock.toJS() as Clock,
       })
-    this.send({ type: ADVERTISE_DOCS, documents })
+    this.send({ type: message.ADVERTISE_DOCS, documents })
   }
 
   /**
@@ -348,7 +337,7 @@ export class RepoSync {
    * @param documentId
    */
   private requestDoc(documentId: string) {
-    this.send({ type: REQUEST_DOCS, documentIds: [documentId] })
+    this.send({ type: message.REQUEST_DOCS, documentIds: [documentId] })
   }
 
   /**
@@ -356,7 +345,7 @@ export class RepoSync {
    */
   private async requestAll() {
     this.log('requestAll')
-    this.send({ type: REQUEST_ALL })
+    this.send({ type: message.REQUEST_ALL })
   }
 
   /**
@@ -366,7 +355,7 @@ export class RepoSync {
     const state = this.repo.getState()
     this.log('sendAllSnapshots', state)
     this.send({
-      type: SEND_ALL_SNAPSHOTS,
+      type: message.SEND_ALL_SNAPSHOTS,
       state,
     })
   }
@@ -378,7 +367,7 @@ export class RepoSync {
     // TODO: for large datasets, send in batches
     const history = await this.repo.getHistory()
     this.log('sendAllHistory', history)
-    this.send({ type: SEND_ALL_HISTORY, history })
+    this.send({ type: message.SEND_ALL_HISTORY, history })
   }
 
   /**
@@ -425,10 +414,14 @@ export class RepoSync {
     if (clock === undefined) clock = await this.getClockFromDoc(documentId)
     const clockMap = this.clock[which]
     const oldClock = clockMap.get(documentId, EMPTY_CLOCK)
+
     // Merge the clocks, keeping the maximum sequence number for each node
     const largestWins = (x: number = 0, y: number = 0): number => Math.max(x, y)
     const newClock = oldClock.mergeWith(largestWins, clock!)
     this.clock[which] = clockMap.set(documentId, newClock)
+
+    // persist clock
+    if (which === ours) localStorage.setItem('ourClock', JSON.stringify(this.clock.ours.toJS()))
   }
 }
 
@@ -440,3 +433,19 @@ const ERR_NOCLOCK =
 const ours = 'ours'
 const theirs = 'theirs'
 type Which = typeof ours | typeof theirs
+
+// TODO: Submit these to Automerge
+const _A = {
+  ...A,
+
+  getMissingChanges: (ourDoc: A.Doc<any>, theirClock: A.Clock): A.Change[] => {
+    if (theirClock === undefined) return []
+    const ourState = A.Frontend.getBackendState(ourDoc)
+    return A.Backend.getMissingChanges(ourState!, theirClock)
+  },
+
+  getClock: (doc: A.Doc<any>): Clock => {
+    const state = A.Frontend.getBackendState(doc) as any // BackendState doesn't have a public API
+    return state.getIn(['opSet', 'clock']) as Clock
+  },
+}

@@ -11,6 +11,7 @@ import { getKnownDiscoveryKeys } from './keys'
 import { Repo } from './Repo'
 import { RepoSnapshot, ProxyReducer } from './types'
 import { Client } from './Client'
+import { newid } from 'cevitxe-signal-client'
 
 let log = debug('cevitxe:StoreManager')
 
@@ -50,8 +51,11 @@ export class StoreManager<T> extends EventEmitter {
   private getStore = async (discoveryKey: string, isCreating: boolean = false) => {
     log = debug(`cevitxe:${isCreating ? 'createStore' : 'joinStore'}:${discoveryKey}`)
 
+    const clientId = localStorage.getItem('clientId') || newid()
+    localStorage.setItem('clientId', clientId)
+
     // Create repo for storage
-    this.repo = new Repo({ discoveryKey, databaseName: this.databaseName })
+    this.repo = new Repo({ clientId, discoveryKey, databaseName: this.databaseName })
     this.repo.addHandler(this.onChange)
     const state = await this.repo.init(this.initialState, isCreating)
 

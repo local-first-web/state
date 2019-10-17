@@ -67,6 +67,9 @@ interface RepoOptions {
  * ```
  */
 export class Repo<T = any> {
+  async getClockMap() {
+    throw new Error('Method not implemented.')
+  }
   private log: debug.Debugger
   private storage: StorageAdapter
 

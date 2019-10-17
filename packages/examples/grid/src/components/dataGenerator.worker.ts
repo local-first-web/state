@@ -1,5 +1,4 @@
 ﻿import { randomRow } from '../utils/randomRow'
-
 declare const self: Worker
 
 self.addEventListener('message', async e => {

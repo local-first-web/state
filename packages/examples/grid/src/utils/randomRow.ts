@@ -3,7 +3,9 @@ import faker from 'faker'
 
 export function randomRow() {
   return {
-    id: uuid(),
+    id: uuid()
+      .slice(18, 36)
+      .replace(/\-/gi, ''),
     name: faker.name.findName(),
     email: faker.internet.email(),
     age: faker.random.number({ min: 18, max: 100 }),
