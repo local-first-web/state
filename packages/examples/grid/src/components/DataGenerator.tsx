@@ -6,8 +6,8 @@ import { Fragment, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { clearCollection, loadCollection, loadSchema } from 'redux/actions'
 
-import { nextFrame } from '../lib/nextFrame'
-import GeneratorWorker from '../workers/dataGenerator.worker'
+import { nextFrame } from '../utils/nextFrame'
+import GeneratorWorker from './dataGenerator.worker'
 import { ProgressBar } from './ProgressBar'
 
 /**

@@ -149,11 +149,6 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
                   New
                 </button>
               </div>
-
-              {/* Connection count */}
-              <div css={styles.toolbarGroup}>
-                <label>{storeManager.connectionCount}</label>
-              </div>
             </React.Fragment>
           )
         }}
