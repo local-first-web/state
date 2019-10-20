@@ -1,28 +1,32 @@
 <img src='logo.svg' width=500 alt=''>
 
-<table width='100%'>
-  <tr>
-    <td>
-      <h3>⚠ Under construction</h3>
-      <p>This package isn't ready for production use!</p>
-    </td>
-  </tr>
-<table>
+## Why?
 
-## What is this?
+- Suppose you want to build a web application where the data doesn't live on a server, but is shared
+  from peer to peer.
+
+- Or, you want to create an app that works offline, and syncs up with changes by other users when it
+  comes back online.
+
+- Or, you want to go local-first to eliminate latency, by keeping a complete copy of a user's data
+  on their machine, which you then replicate to other users in the background.
+
+What all of these scenarios have in common
+
+## What?
 
 Cevitxe is a wrapper for a Redux store that gives your app offline capabilities
-and secure peer-to-peer synchronization superpowers. If you are thinking about building a
-local-first, distributed application, you might want to give this a try!
+and secure peer-to-peer synchronization superpowers.
 
-## How does it work?
+## How?
 
 Let's assume you have an application that works with one or more JSON documents. For example, a
-single "document" might represent a to-do list, a spreadsheet table, or a chat conversation.
+single "document" might represent a task list, a row in a spreadsheet-like table, or a chat conversation.
 
-Cevitxe exposes a document to your application as a Redux store. Internally, it's represented as an
-[Automerge](https://github.com/automerge/automerge) document. Automerge translates the user's changes into an
-append-only log of changes, and reconciles changes coming from other instances of your app.
+Cevitxe exposes a set of documents to your application as a Redux store. Internally, each one is
+represented by both a snapshot of its current state and a history of
+[Automerge](https://github.com/automerge/automerge) changes. Automerge , and reconciles changes
+coming from other instances of your app.
 
 - **Persistence** The change history is stored locally, along with a snapshot of a recent state. By
   default IndexedDB is used, but you can use any storage provider that implements the
