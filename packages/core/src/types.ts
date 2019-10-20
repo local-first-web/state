@@ -28,8 +28,6 @@ export interface KeyPair {
   secretKey: CryptoKey
 }
 
-export { Doc } from 'automerge'
-
 export interface Snapshot<T = any> {
   [key: string]: T
 }
