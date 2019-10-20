@@ -204,7 +204,7 @@ export class Repo<T = any> {
     await this.saveSnapshot(documentId, doc)
 
     // call handlers
-    for (const fn of this.handlers) //
+    for (const fn of this.handlers)
       await fn(documentId, doc)
   }
 
