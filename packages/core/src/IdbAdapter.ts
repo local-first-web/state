@@ -1,7 +1,7 @@
 ﻿import * as idb from 'idb/with-async-ittr-cjs'
-import { DBSchema, IDBPCursorWithValueIteratorValue, IDBPDatabase } from 'idb/with-async-ittr-cjs'
+import { DBSchema, IDBPDatabase } from 'idb/with-async-ittr-cjs'
+import { SnapshotRecord, StorageAdapter } from './StorageAdapter'
 import { ChangeSet, Snapshot } from './types'
-import { StorageAdapter, SnapshotRecord } from './StorageAdapter'
 
 export class IdbAdapter extends StorageAdapter {
   private database?: IDBPDatabase<RepoSchema>

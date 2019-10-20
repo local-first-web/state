@@ -16,8 +16,8 @@ export abstract class StorageAdapter {
   abstract async open(): Promise<void>
   abstract async close(): Promise<void>
 
-  abstract get snapshots(): AsyncIterableIterator<IteratorResult<SnapshotRecord>>
-  abstract get changes(): AsyncIterableIterator<IteratorResult<ChangeSet>>
+  abstract get snapshots(): AsyncIterableIterator<IteratorResult<SnapshotRecord, SnapshotRecord>>
+  abstract get changes(): AsyncIterableIterator<IteratorResult<ChangeSet, ChangeSet>>
 
   abstract async hasData(): Promise<boolean>
 

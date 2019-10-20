@@ -264,7 +264,7 @@ export class Repo<T = any> {
     const history: RepoHistory = {}
     // TODO: for large datasets, send in batches
     for await (const cursor of this.storage.changes) {
-      const { documentId, changes } = cursor.value as ChangeSet
+      const { documentId, changes } = cursor.value
       history[documentId] = (history[documentId] || []).concat(changes)
     }
     return history
@@ -381,7 +381,7 @@ export class Repo<T = any> {
    */
   private async loadSnapshotsFromDb() {
     for await (const cursor of this.storage.snapshots) {
-      const { documentId, snapshot } = cursor.value as SnapshotRecord
+      const { documentId, snapshot } = cursor.value
       this.state[documentId] = snapshot[DELETED] ? null : snapshot
     }
   }
