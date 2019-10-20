@@ -96,10 +96,3 @@ interface RepoSchema extends DBSchema {
     indexes: { 'by-documentId': string }
   }
 }
-
-export type ChangesCursor = IDBPCursorWithValueIteratorValue<
-  RepoSchema,
-  ['changes'],
-  'changes',
-  'by-documentId'
->
