@@ -1,4 +1,7 @@
-<img src='logo.svg' width=500 alt=''>
+<img src='logo.svg' width=500 alt='cevitxe logo'>
+
+Cevitxe is a wrapper for a Redux store that gives your app offline capabilities and secure
+peer-to-peer synchronization superpowers.
 
 <table width='100%'>
   <tr>
@@ -282,19 +285,6 @@ Here are some articles and videos:
 - [Cevitxe](https://www.facebook.com/bentrobats/videos/1492898280822955/) is the Catalan spelling of
   the same word, and is pronounced the same way.
 
-#### Why the Catalan spelling?
+## Future work
 
-- @herbcaudill lives in Barcelona
-- The name was free on NPM
-- It's easier to Google
-- It has an **x** like Redu**x**:
-
-```
-        C R D T
-        E
-        V
-        I
-        T
-R E D U X
-        E
-```
+- [ ] Create adapters for other storage providers besides IndexedDb (e.g. SQLite, MongoDb)
