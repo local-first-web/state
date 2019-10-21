@@ -40,6 +40,36 @@
         }
       ],
       "isBackground": true
+    },
+    {
+      "label": "Start Todo example",
+      "type": "shell",
+      "command": "yarn",
+      "args": ["dev:todo"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$tsc-watch",
+        {
+          "owner": "powershell",
+          "pattern": [
+            {
+              "regexp": "^([^\\\\s].*)\\\\((\\\\d+,\\\\d+)\\\\):\\\\s*(.*)$",
+              "file": 1,
+              "location": 2,
+              "message": 3
+            }
+          ],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": "Starting the development server",
+            "endsPattern": "Files successfully emitted"
+          }
+        }
+      ],
+      "isBackground": true
     }
   ]
 }
