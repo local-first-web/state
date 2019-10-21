@@ -299,13 +299,13 @@ export class Repo<T = any> {
     // create a new automerge object from the current version's snapshot
     const oldDoc = this.getSnapshot(documentId) || {}
 
-    const doc: A.Doc<any> = A.from(getSnapshot(oldDoc))
+    const doc: A.Doc<any> = A.from(clone(oldDoc))
 
     // apply the change
     const newDoc = A.change(doc, fn)
 
     // convert the result back to a plain object
-    const snapshot = getSnapshot(newDoc)
+    const snapshot = clone(newDoc)
 
     this.setSnapshot(documentId, snapshot)
     this.log('changed snapshot', documentId, snapshot)
@@ -424,7 +424,7 @@ export class Repo<T = any> {
    * @param snapshot
    */
   private async saveSnapshot(documentId: string, document: A.Doc<T>) {
-    const snapshot: any = getSnapshot(document)
+    const snapshot: any = clone(document)
     if (snapshot[DELETED]) {
       this.removeSnapshot(documentId)
       await this.storage.deleteSnapshot(documentId)
@@ -437,4 +437,4 @@ export class Repo<T = any> {
 }
 
 // deep clone without Automerge metadata
-const getSnapshot = (o: any) => JSON.parse(JSON.stringify(o))
+const clone = (o: any) => JSON.parse(JSON.stringify(o))
