@@ -1,22 +1,22 @@
 <img src='logo.svg' width=500 alt=''>
 
-## Why?
-
-- Suppose you want to build a web application where the data doesn't live on a server, but is shared
-  from peer to peer.
-
-- Or, you want to create an app that works offline, and syncs up with changes by other users when it
-  comes back online.
-
-- Or, you want to go local-first to eliminate latency, by keeping a complete copy of a user's data
-  on their machine, which you then replicate to other users in the background.
-
-What all of these scenarios have in common
-
 ## What?
 
-Cevitxe is a wrapper for a Redux store that gives your app offline capabilities
-and secure peer-to-peer synchronization superpowers.
+Cevitxe is a wrapper for a Redux store that gives your app offline capabilities and secure
+peer-to-peer synchronization superpowers.
+
+## Why?
+
+- Suppose you want to build a web application where the **data doesn't live on a server**, but is
+  shared from **peer to peer**.
+
+- Or, you want to create an app that **works offline**, and **syncs up** with changes by other users
+  when it comes back online.
+
+- Or, you want to go **local-first** to **eliminate latency**, by keeping a complete copy of a
+  user's data on their machine, which you then replicate to other users in the background.
+
+What all of these scenarios have in common is that you need to keep
 
 ## How?
 
