@@ -3,10 +3,11 @@ import cn from 'classnames'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { actions } from '../redux/actions'
-import { VisibilityFilter, VisibilityFilterKey } from '../types'
+import { VisibilityFilter, VisibilityFilterKey, RepoState } from '../types'
 
 export const VisibilityFilters = () => {
-  const activeFilter = useSelector((state: any) => {
+  const activeFilter = useSelector((repoState: RepoState) => {
+    const state = repoState.root
     if (!state || !state.visibilityFilter) return VisibilityFilter.ALL
     return state.visibilityFilter
   })
@@ -28,11 +29,7 @@ export const VisibilityFilters = () => {
           <li key={`visibility-filter-${currentFilter}`}>
             {/* linter doesn't like not having an href */}
             {/* eslint-disable-next-line */}
-            <a
-              className={cn({ selected })}
-              onClick={onClick}
-              style={{ cursor: 'pointer' }}
-            >
+            <a className={cn({ selected })} onClick={onClick} style={{ cursor: 'pointer' }}>
               {currentFilter}
             </a>
           </li>
