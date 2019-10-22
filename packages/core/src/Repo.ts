@@ -2,9 +2,10 @@
 import { newid } from 'cevitxe-signal-client'
 import debug from 'debug'
 import Cache from 'lru-cache'
+import R from 'ramda'
 import { DELETED } from './constants'
 import { IdbAdapter } from './IdbAdapter'
-import { SnapshotRecord, StorageAdapter } from './StorageAdapter'
+import { StorageAdapter } from './StorageAdapter'
 import { ChangeSet, RepoHistory, RepoSnapshot } from './types'
 
 export type RepoEventHandler<T> = (documentId: string, doc: A.Doc<T>) => void | Promise<void>
@@ -437,4 +438,4 @@ export class Repo<T = any> {
 }
 
 // deep clone without Automerge metadata
-const clone = (o: any) => JSON.parse(JSON.stringify(o))
+const clone = (o: any) => R.clone(o)
