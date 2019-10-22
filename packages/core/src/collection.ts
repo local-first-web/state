@@ -1,5 +1,5 @@
 import { DELETED } from './constants'
-import A from 'automerge'
+import A, { ChangeFn } from 'automerge'
 import { DELETE_COLLECTION } from './constants'
 import { ChangeMap, RepoSnapshot } from './types'
 import { Repo } from './Repo'
@@ -194,10 +194,28 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
     return changeFunctions
   }
 
+  /**
+   * Takes an updated version of the given doc (can be partial); returns a function merging the
+   * updates with the existing doc, mapped to the collection key corresponding to the id field in
+   * item.
+   * @param item An object containing the id of the item to modify, as well as the values to be
+   * modified. This can be either a modified copy of the whole document, or just the fields to be
+   * changed.
+   */
   const update = (item: A.Doc<any>) => ({
     [idToKey(item[idField])]: (s: any) => Object.assign(s, item),
   })
 
+  /**
+   * Takes a change function and an id, and returns the function mapped to the collection key.
+   */
+  const change = (id: string, fn: ChangeFn<T>) => ({
+    [idToKey(id)]: fn,
+  })
+
+  /**
+   * Takes an id, and returns a delete flag mapped to the collection key.
+   */
   const remove = ({ id }: { id: string }) => ({
     [idToKey(id)]: setDeleteFlag,
   })
@@ -208,6 +226,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
       drop,
       add,
       update,
+      change,
       remove,
     },
     selectors: {

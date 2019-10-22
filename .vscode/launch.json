@@ -10,6 +10,16 @@
       "sourceMapPathOverrides": {
         "${workspaceRoot}/packages/core/dist/src/*.js": "${workspaceRoot}/packages/core/src/*.ts"
       }
+    },
+    {
+      "name": "Start Todo example",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "preLaunchTask": "Start Todo example",
+      "sourceMapPathOverrides": {
+        "${workspaceRoot}/packages/core/dist/src/*.js": "${workspaceRoot}/packages/core/src/*.ts"
+      }
     }
   ]
 }

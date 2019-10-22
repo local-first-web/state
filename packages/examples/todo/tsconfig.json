@@ -6,7 +6,10 @@
     "esModuleInterop": true,
     "importHelpers": true,
     "jsx": "react",
-    "lib": ["dom", "esnext"],
+    "lib": [
+      "dom",
+      "esnext"
+    ],
     "moduleResolution": "node",
     "noEmit": true,
     "sourceMap": true,
@@ -18,12 +21,22 @@
       "../../core/node_modules/@types",
       "../../node_modules/@types"
     ],
-
-    // strictness: exceptions for development (must be reversed in tsconfig.build.json)
     "strict": true,
     "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "resolveJsonModule": true,
+    "isolatedModules": true
   },
-  "include": ["src", "@types"],
-  "exclude": ["public", "cypress"]
+  "include": [
+    "src",
+    "@types"
+  ],
+  "exclude": [
+    "public",
+    "cypress"
+  ]
 }

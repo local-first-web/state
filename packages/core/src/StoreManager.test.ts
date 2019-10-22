@@ -10,7 +10,7 @@ describe('StoreManager', () => {
   const teachers = collection('teachers')
 
   const proxyReducer = ((state, { type, payload }) => {
-    const { add, remove, update, drop } = teachers.reducers
+    const { add, remove, update, drop, change } = teachers.reducers
     switch (type) {
       case 'ADD_TEACHER':
         return add(payload)
@@ -18,6 +18,10 @@ describe('StoreManager', () => {
         return remove(payload)
       case 'UPDATE_TEACHER':
         return update(payload)
+      case 'ADD_PHONE': {
+        const { id, phone } = payload
+        return change(id, s => s.phones.push(phone))
+      }
       case 'DROP_TEACHERS':
         return drop()
       default:
@@ -25,8 +29,8 @@ describe('StoreManager', () => {
     }
   }) as ProxyReducer
 
-  const teacher1 = { id: 'abcxyz', first: 'Herb', last: 'Caudill' }
-  const teacher2 = { id: 'defcba', first: 'Brent', last: 'Keller' }
+  const teacher1 = { id: 'abcxyz', first: 'Herb', last: 'Caudill', phones: [] }
+  const teacher2 = { id: 'defcba', first: 'Brent', last: 'Keller', phones: [] }
   const initialState = { foo: { pizza: 1 } }
 
   const newDiscoveryKey = () => newid(6)
@@ -114,6 +118,48 @@ describe('StoreManager', () => {
 
       const allTeachers = teachers.selectors.getMap(state) as any
       expect(allTeachers.abcxyz.first).toEqual('Herb')
+
+      await close()
+      expect.assertions(1)
+    })
+
+    it('should handle two consecutive changes', async () => {
+      const { close, localStore } = await open()
+
+      // dispatch a change
+      localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
+      await _yield()
+      localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher2 })
+      await _yield()
+
+      // confirm that the changes were made
+      const state = localStore.getState()
+
+      const allTeachers = teachers.selectors.getMap(state) as any
+      expect(allTeachers.abcxyz.first).toEqual('Herb')
+      expect(allTeachers.defcba.first).toEqual('Brent')
+
+      await close()
+      expect.assertions(2)
+    })
+
+    it('should handle nested objects', async () => {
+      const { close, localStore } = await open()
+
+      localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
+      await _yield()
+
+      // add a phone object to the teacher's array of phones
+      const { id } = teacher1
+      const phone = { type: 'cell', number: '(202) 294-7901' }
+      localStore.dispatch({ type: 'ADD_PHONE', payload: { id, phone } })
+      await _yield()
+
+      // confirm that the changes were made
+      const state = localStore.getState()
+
+      const allTeachers = teachers.selectors.getMap(state) as any
+      expect(allTeachers[id].phones).toEqual([phone])
 
       await close()
       expect.assertions(1)
@@ -288,7 +334,7 @@ describe('StoreManager', () => {
       await _yield()
 
       const expectedState = {
-        abcxyz: { id: 'abcxyz', first: 'Herbert', last: 'Caudill', email: 'h@hc3.me' },
+        abcxyz: { ...teacher1, first: 'Herbert', email: 'h@hc3.me' },
       }
 
       // confirm that the local store is caught up
@@ -314,8 +360,8 @@ describe('StoreManager', () => {
       await _yield()
 
       const expectedState = {
-        abcxyz: { id: 'abcxyz', first: 'Herb', last: 'Caudill' },
-        defcba: { id: 'defcba', first: 'Brent', last: 'Keller' },
+        abcxyz: teacher1,
+        defcba: teacher2,
       }
 
       // confirm that the local store is caught up

@@ -59,13 +59,11 @@ describe('Connection', () => {
 
   it('should send messages to the peer when local state changes', async () => {
     const peer = new WebSocket(url)
-    const connection = new Connection(repo, peer, fakeDispatch)
+    const _connection = new Connection(repo, peer, fakeDispatch)
 
     await _yield()
 
-    expect(peer.send).toHaveBeenCalledWith(
-      expect.stringContaining(JSON.stringify({ [localActorId]: 1 }))
-    )
+    expect(peer.send).toHaveBeenCalledWith(JSON.stringify({ type: 'HELLO', documentCount: 1 }))
 
     expect(peer.send).not.toHaveBeenCalledWith(
       expect.stringContaining(JSON.stringify({ [localActorId]: 2 }))
