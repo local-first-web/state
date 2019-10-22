@@ -10,7 +10,7 @@ describe('StoreManager', () => {
   const teachers = collection('teachers')
 
   const proxyReducer = ((state, { type, payload }) => {
-    const { add, remove, update, drop } = teachers.reducers
+    const { add, remove, update, drop, change } = teachers.reducers
     switch (type) {
       case 'ADD_TEACHER':
         return add(payload)
@@ -19,6 +19,8 @@ describe('StoreManager', () => {
       case 'UPDATE_TEACHER':
         return update(payload)
       case 'ADD_PHONE': {
+        const { id, phone } = payload
+        return change(id, s => s.phones.push(phone))
       }
       case 'DROP_TEACHERS':
         return drop()
@@ -141,26 +143,27 @@ describe('StoreManager', () => {
       expect.assertions(2)
     })
 
-    // it('should handle nested objects', async () => {
-    //   const { close, localStore } = await open()
+    it('should handle nested objects', async () => {
+      const { close, localStore } = await open()
 
-    //   // dispatch a change
-    //   localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
-    //   await _yield()
+      localStore.dispatch({ type: 'ADD_TEACHER', payload: teacher1 })
+      await _yield()
 
-    //   localStore.dispatch({ type: 'ADD_PHONE', payload: { id: teacher1.id, phones: [] } })
-    //   await _yield()
+      // add a phone object to the teacher's array of phones
+      const { id } = teacher1
+      const phone = { type: 'cell', number: '(202) 294-7901' }
+      localStore.dispatch({ type: 'ADD_PHONE', payload: { id, phone } })
+      await _yield()
 
-    //   // confirm that the changes were made
-    //   const state = localStore.getState()
+      // confirm that the changes were made
+      const state = localStore.getState()
 
-    //   const allTeachers = teachers.selectors.getMap(state) as any
-    //   expect(allTeachers.abcxyz.first).toEqual('Herb')
-    //   expect(allTeachers.defcba.first).toEqual('Brent')
+      const allTeachers = teachers.selectors.getMap(state) as any
+      expect(allTeachers[id].phones).toEqual([phone])
 
-    //   await close()
-    //   expect.assertions(2)
-    // })
+      await close()
+      expect.assertions(1)
+    })
 
     it('should close a store', async () => {
       const { close, localStoreManager } = await open()
