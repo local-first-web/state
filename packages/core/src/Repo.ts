@@ -173,7 +173,7 @@ export class Repo<T = any> {
    * Reconstitutes an Automerge document from its change history
    * @param documentId
    */
-  async get(documentId: string): Promise<A.Doc<T>> {
+  async get(documentId: string): Promise<A.Doc<T> | undefined> {
     // TODO: reimplement caching
     this.log('get', documentId)
     const doc = await this.rebuildDoc(documentId)
@@ -190,7 +190,7 @@ export class Repo<T = any> {
   async set(documentId: string, doc: A.Doc<T>) {
     this.log('set', documentId, doc)
     // look up old doc and generate diff
-    const oldDoc = await this.rebuildDoc(documentId)
+    const oldDoc = (await this.rebuildDoc(documentId)) || A.init()
     const changes = A.getChanges(oldDoc, doc)
 
     // cache the doc
@@ -204,8 +204,7 @@ export class Repo<T = any> {
     await this.saveSnapshot(documentId, doc)
 
     // call handlers
-    for (const fn of this.handlers)
-      await fn(documentId, doc)
+    for (const fn of this.handlers) await fn(documentId, doc)
   }
 
   /**
@@ -216,7 +215,7 @@ export class Repo<T = any> {
    */
   async change(documentId: string, changeFn: A.ChangeFn<T>) {
     // apply changes to document
-    const oldDoc = await this.rebuildDoc(documentId)
+    const oldDoc = (await this.rebuildDoc(documentId)) || A.init()
     const newDoc = A.change(oldDoc, changeFn)
 
     // save the new document, snapshot, etc.
@@ -235,7 +234,7 @@ export class Repo<T = any> {
   async applyChanges(documentId: string, changes: A.Change[]) {
     this.log('apply changes')
     // apply changes to document
-    const doc = await this.rebuildDoc(documentId)
+    const doc = (await this.rebuildDoc(documentId)) || A.init()
     const newDoc = A.applyChanges(doc, changes)
 
     // cache the doc
@@ -391,7 +390,8 @@ export class Repo<T = any> {
    * Recreates an Automerge document from its change history
    * @param documentId
    */
-  private async rebuildDoc(documentId: string): Promise<A.Doc<T>> {
+  private async rebuildDoc(documentId: string): Promise<A.Doc<T> | undefined> {
+    if (!this.has(documentId)) return undefined
     let doc = A.init<T>({ actorId: this.clientId })
     const changeSets = await this.getDocumentChanges(documentId)
     for (const { changes } of changeSets) //
@@ -436,5 +436,8 @@ export class Repo<T = any> {
   }
 }
 
+// shallow clone - need to build a test that fails using this
+const clone = (o: any) => ({ ...o })
+
 // deep clone without Automerge metadata
-const clone = (o: any) => JSON.parse(JSON.stringify(o))
+// const clone = (o: any) => JSON.parse(JSON.stringify(o))
