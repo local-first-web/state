@@ -1,5 +1,5 @@
 import { DELETED } from './constants'
-import A from 'automerge'
+import A, { ChangeFn } from 'automerge'
 import { DELETE_COLLECTION } from './constants'
 import { ChangeMap, RepoSnapshot } from './types'
 import { Repo } from './Repo'
@@ -198,6 +198,10 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
     [idToKey(item[idField])]: (s: any) => Object.assign(s, item),
   })
 
+  const change = (id: string, fn: ChangeFn<T>) => ({
+    [idToKey(id)]: fn,
+  })
+
   const remove = ({ id }: { id: string }) => ({
     [idToKey(id)]: setDeleteFlag,
   })
@@ -208,6 +212,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
       drop,
       add,
       update,
+      change,
       remove,
     },
     selectors: {
