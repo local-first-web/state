@@ -2379,6 +2379,18 @@
     csstype "^2.0.0"
     indefinite-observable "^1.0.1"
 
+"@types/lodash.isequal@^4.5.5":
+  version "4.5.5"
+  resolved "https://registry.yarnpkg.com/@types/lodash.isequal/-/lodash.isequal-4.5.5.tgz#4fed1b1b00bef79e305de0352d797e9bb816c8ff"
+  integrity sha512-4IKbinG7MGP131wRfceK6W4E/Qt3qssEFLF30LnJbjYiSfHGGRU/Io8YxXrZX109ir+iDETC8hw8QsDijukUVg==
+  dependencies:
+    "@types/lodash" "*"
+
+"@types/lodash@*":
+  version "4.14.144"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.144.tgz#12e57fc99064bce45e5ab3c8bc4783feb75eab8e"
+  integrity sha512-ogI4g9W5qIQQUhXAclq6zhqgqNUr7UlFaqDHbch7WLSLeeM/7d3CRaw7GLajxvyFvhJqw4Rpcz5bhoaYtIx6Tg==
+
 "@types/lru-cache@^5.1.0":
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/@types/lru-cache/-/lru-cache-5.1.0.tgz#57f228f2b80c046b4a1bd5cac031f81f207f4f03"
@@ -4150,6 +4162,11 @@ combined-stream@^1.0.6, combined-stream@~1.0.6:
   integrity sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==
   dependencies:
     delayed-stream "~1.0.0"
+
+comlinkjs@3:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/comlinkjs/-/comlinkjs-3.2.0.tgz#26874718627f4fbd3e45fe5c39b2ddf001e56bed"
+  integrity sha512-2eawZHTjhK5Y1G6RZtSIqLijedIsULYQxnkC4MOhleUPgLRatMhqlflzWClyWRb6cLrLU6oAxDTT/Bl/fw/H7g==
 
 commander@2.15.1:
   version "2.15.1"
@@ -8616,6 +8633,11 @@ lodash.get@^4.4.2:
   resolved "https://registry.yarnpkg.com/lodash.get/-/lodash.get-4.4.2.tgz#2d177f652fa31e939b4438d5341499dfa3825e99"
   integrity sha1-LRd/ZS+jHpObRDjVNBSZ36OCXpk=
 
+lodash.isequal@4:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/lodash.isequal/-/lodash.isequal-4.5.0.tgz#415c4478f2bcc30120c22ce10ed3226f7d3e18e0"
+  integrity sha1-QVxEePK8wwEgwizhDtMib30+GOA=
+
 lodash.ismatch@^4.4.0:
   version "4.4.0"
   resolved "https://registry.yarnpkg.com/lodash.ismatch/-/lodash.ismatch-4.4.0.tgz#756cb5150ca3ba6f11085a78849645f188f85f37"
@@ -11369,6 +11391,15 @@ react-lifecycles-compat@^3.0.2, react-lifecycles-compat@^3.0.4:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
   integrity sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==
+
+react-redux-worker@^0.1.9:
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/react-redux-worker/-/react-redux-worker-0.1.9.tgz#7abfab6ccbb98c51bec77869ed15592e5c450a84"
+  integrity sha512-n4ahnOFnrV7D6zemBHKKOjs/WS5KqrOubugT9DekVwBzaTOBNhYpDCg3A4bJsj5x0sPGBDnXPl/UO2qFceVD2w==
+  dependencies:
+    "@types/lodash.isequal" "^4.5.5"
+    comlinkjs "3"
+    lodash.isequal "4"
 
 react-redux@7:
   version "7.1.1"

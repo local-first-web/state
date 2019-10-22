@@ -1,11 +1,11 @@
-import { adaptReducer } from './adaptReducer'
+import { getReducer } from './getReducer'
 import { repoFromSnapshot } from './repoTestHelpers'
 import { ProxyReducer } from './types'
 import { pause as _yield } from './pause'
 import { Reducer, AnyAction } from 'redux'
 import { Repo } from './Repo'
 
-describe('adaptReducer', () => {
+describe('getReducer', () => {
   describe('should return a working reducer', () => {
     let proxyReducer: ProxyReducer
     let state: any
@@ -16,7 +16,7 @@ describe('adaptReducer', () => {
       proxyReducer = () => ({ settings: s => (s.foo = 2) })
       state = { settings: {} }
       repo = await repoFromSnapshot(state)
-      reducer = adaptReducer(proxyReducer, repo)
+      reducer = getReducer(proxyReducer, repo)
     })
 
     it('should return a function', () => expect(typeof reducer).toBe('function'))

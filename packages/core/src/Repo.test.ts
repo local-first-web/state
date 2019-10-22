@@ -14,7 +14,7 @@ describe('Repo', () => {
     beforeDoc = A.from({ birds: ['goldfinch'] })
     afterDoc = A.change(beforeDoc, s => (s.birds = ['swallows']))
     changes = A.getChanges(beforeDoc, afterDoc)
-    repo = new Repo('jive-panda', `testdb-${newid()}`)
+    repo = new Repo({ discoveryKey: 'jive-panda', databaseName: `testdb-${newid()}` })
     await repo.open()
     await repo.set(ID, beforeDoc)
     callback = jest.fn((documentId, doc) => {})

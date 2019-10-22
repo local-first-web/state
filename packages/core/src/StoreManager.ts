@@ -1,55 +1,33 @@
 import A from 'automerge'
-import { Client, newid, Peer } from 'cevitxe-signal-client'
 import cuid from 'cuid'
 import debug from 'debug'
 import { EventEmitter } from 'events'
 import { applyMiddleware, createStore, Middleware, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
-import { adaptReducer } from './adaptReducer'
-import { Connection } from './Connection'
+import { getReducer } from './getReducer'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getKnownDiscoveryKeys } from './keys'
 import { Repo } from './Repo'
 import { RepoSnapshot, ProxyReducer } from './types'
+import { Client } from './Client'
+import { newid } from 'cevitxe-signal-client'
 
 let log = debug('cevitxe:StoreManager')
-
-// It's normal for a document with a lot of participants to have a lot of connections, so increase
-// the limit to avoid spurious warnings about emitter leaks.
-EventEmitter.defaultMaxListeners = 500
-
-// Use shorter IDs
-A.uuid.setFactory(cuid)
-
-export interface StoreManagerOptions<T> {
-  /** A Cevitxe proxy reducer that returns a ChangeMap (map of change functions) for each action. */
-  proxyReducer: ProxyReducer
-  /** Redux middlewares to add to the store. */
-  middlewares?: Middleware[]
-  /** The starting state of a blank document. */
-  initialState: RepoSnapshot<T>
-  /** A name for the storage feed, to distinguish this application's data from any other Cevitxe data stored on the same machine. */
-  databaseName: string
-  /** The address(es) of one or more signal servers to try. */
-  urls?: string[]
-}
 
 /**
  * A StoreManager generates a Redux store with persistence (via the Repo class), networking (via
  * cevitxe-signal-client), and magical synchronization with peers (via automerge)
  */
 export class StoreManager<T> extends EventEmitter {
+  private databaseName: string
   private proxyReducer: ProxyReducer
   private initialState: RepoSnapshot<T>
   private urls: string[]
   private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
-
-  private clientId = newid()
   private repo?: Repo
+  private client?: Client
 
-  public connections: { [peerId: string]: Connection }
-  public databaseName: string
   public store?: Store
 
   constructor({
@@ -65,40 +43,46 @@ export class StoreManager<T> extends EventEmitter {
     this.initialState = initialState
     this.databaseName = databaseName
     this.urls = urls
-    this.connections = {}
   }
 
-  joinStore = (discoveryKey: string) => this.makeStore(discoveryKey, false)
+  joinStore = (discoveryKey: string) => this.getStore(discoveryKey, false)
+  createStore = (discoveryKey: string) => this.getStore(discoveryKey, true)
 
-  createStore = (discoveryKey: string) => this.makeStore(discoveryKey, true)
-
-  private makeStore = async (discoveryKey: string, isCreating: boolean = false) => {
+  private getStore = async (discoveryKey: string, isCreating: boolean = false) => {
     log = debug(`cevitxe:${isCreating ? 'createStore' : 'joinStore'}:${discoveryKey}`)
 
-    this.repo = new Repo(discoveryKey, this.databaseName, this.clientId)
+    const clientId = localStorage.getItem('clientId') || newid()
+    localStorage.setItem('clientId', clientId)
 
+    // Create repo for storage
+    this.repo = new Repo({ clientId, discoveryKey, databaseName: this.databaseName })
     this.repo.addHandler(this.onChange)
-
     const state = await this.repo.init(this.initialState, isCreating)
 
-    // Create Redux store
-    const reducer = adaptReducer(this.proxyReducer, this.repo)
-    const cevitxeMiddleware = getMiddleware(this.repo, this.proxyReducer)
-    const enhancer = composeWithDevTools(applyMiddleware(...this.middlewares, cevitxeMiddleware))
-    this.store = createStore(reducer, state, enhancer)
+    // Create Redux store to expose to app
+    this.store = this.createReduxStore(state)
 
-    // Connect to discovery server
-    const client = new Client({ id: this.clientId, url: this.urls[0] }) // TODO: randomly select a URL if more than one is provided? select best based on ping?
-    client.join(discoveryKey)
-    client.on('peer', (peer: Peer) => this.addPeer(peer, discoveryKey))
-
-    this.emit('ready', this.store)
+    // Connect to discovery server to find peers and sync up with them
+    this.client = new Client({
+      discoveryKey,
+      dispatch: this.store.dispatch,
+      repo: this.repo,
+      urls: this.urls,
+    })
 
     return this.store
   }
 
+  private createReduxStore(initialState: RepoSnapshot<T>) {
+    if (!this.repo) throw new Error(`Can't create Redux store without repo`)
+    const reducer = getReducer(this.proxyReducer, this.repo)
+    const cevitxeMiddleware = getMiddleware(this.repo, this.proxyReducer)
+    const enhancer = composeWithDevTools(applyMiddleware(...this.middlewares, cevitxeMiddleware))
+    return createStore(reducer, initialState, enhancer)
+  }
+
   public get connectionCount() {
-    return Object.keys(this.connections).length
+    return this.client ? this.client.connectionCount : 0
   }
 
   public get knownDiscoveryKeys() {
@@ -109,36 +93,41 @@ export class StoreManager<T> extends EventEmitter {
     this.emit('change', documentId, doc)
   }
 
-  private addPeer = (peer: Peer, discoveryKey: string) => {
-    if (!this.store || !this.repo) return
-    log('connecting to peer', peer.id)
-
-    // For each peer that wants to connect, create a Connection object
-    const socket = peer.get(discoveryKey)
-    const connection = new Connection(this.repo, socket, this.store.dispatch)
-    this.connections[peer.id] = connection
-    this.emit('peer', peer) // hook for testing
-    log('connected to peer', peer.id)
-
-    peer.on('close', () => this.removePeer(peer.id))
-  }
-
-  private removePeer = (peerId: string) => {
-    log('removing peer', peerId)
-    if (this.connections[peerId]) this.connections[peerId].close()
-    delete this.connections[peerId]
-  }
-
+  /**
+   * Close all connections and the repo's database
+   */
   close = async () => {
     this.removeAllListeners()
+    if (this.client) this.client.close()
 
-    const closeAllConnections = Object.keys(this.connections).map(peerId => this.removePeer(peerId))
-    await Promise.all(closeAllConnections)
-    this.connections = {}
+    // TODO: Close repo when closing StoreManager
+    // > This is obviously the right thing to do, but it breaks tests. For some reason RepoSync
+    // continues to respond to messages from the peer after the repo is closed, and then tries to
+    // access the closed database.
+
+    // if (this.repo) this.repo.close()
 
     delete this.repo
     delete this.store
-
-    this.emit('close')
   }
 }
+
+export interface StoreManagerOptions<T> {
+  /** A Cevitxe proxy reducer that returns a ChangeMap (map of change functions) for each action. */
+  proxyReducer: ProxyReducer
+  /** Redux middlewares to add to the store. */
+  middlewares?: Middleware[]
+  /** The starting state of a blank document. */
+  initialState: RepoSnapshot<T>
+  /** A name for the storage feed, to distinguish this application's data from any other Cevitxe data stored on the same machine. */
+  databaseName: string
+  /** The address(es) of one or more signal servers to try. */
+  urls?: string[]
+}
+
+// Use shorter IDs
+A.uuid.setFactory(cuid)
+
+// It's normal for a document with a lot of participants to have a lot of connections, so increase
+// the limit to avoid spurious warnings about emitter leaks.
+EventEmitter.defaultMaxListeners = 500

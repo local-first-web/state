@@ -39,9 +39,18 @@ const docChanged = (repo: Repo) => new Promise(ok => repo.addHandler(ok))
 describe(`RepoSync`, () => {
   describe('Changes after connecting', () => {
     const setup = async () => {
-      const localRepo = new Repo<BirdCount>('angry-cockatoo', `local-${newid()}`, 'local')
+      const discoveryKey = 'angry-cockatoo'
+      const localRepo = new Repo<BirdCount>({
+        discoveryKey,
+        databaseName: `local-${newid()}`,
+        clientId: 'local',
+      })
       await localRepo.open()
-      const remoteRepo = new Repo<BirdCount>('angry-cockatoo', `remote-${newid()}`, 'remote')
+      const remoteRepo = new Repo<BirdCount>({
+        discoveryKey,
+        databaseName: `remote-${newid()}`,
+        clientId: 'remote',
+      })
       await remoteRepo.open()
       const channel = new TestChannel()
       return { localRepo, remoteRepo, channel }
@@ -135,9 +144,18 @@ describe(`RepoSync`, () => {
 
   describe('Changes before connecting', () => {
     const setup = async () => {
-      const localRepo = new Repo<BirdCount>('miffed-bratwurst', `local-${newid()}`, 'L')
+      const discoveryKey = 'miffed-bratwurst'
+      const localRepo = new Repo<BirdCount>({
+        discoveryKey,
+        databaseName: `local-${newid()}`,
+        clientId: 'L',
+      })
       await localRepo.open()
-      const remoteRepo = new Repo<BirdCount>('miffed-bratwurst', `remote-${newid()}`, 'R')
+      const remoteRepo = new Repo<BirdCount>({
+        discoveryKey,
+        databaseName: `remote-${newid()}`,
+        clientId: 'R',
+      })
       await remoteRepo.open()
       return { localRepo, remoteRepo }
     }
@@ -231,9 +249,18 @@ describe(`RepoSync`, () => {
     }
 
     beforeEach(async () => {
-      remoteRepo = new Repo('test', `remote-${newid()}`, remoteActor)
+      const discoveryKey = 'test'
+      remoteRepo = new Repo({
+        discoveryKey,
+        databaseName: `remote-${newid()}`,
+        clientId: remoteActor,
+      })
       await remoteRepo.open()
-      localRepo = new Repo('test', `local-${newid()}`, localActor)
+      localRepo = new Repo({
+        discoveryKey,
+        databaseName: `local-${newid()}`,
+        clientId: localActor,
+      })
       await localRepo.open()
 
       await remoteRepo.set(documentId, A.from<BirdCount>({}))

@@ -398,12 +398,12 @@ describe('StoreManager', () => {
       const { close, localStoreManager } = await open()
 
       // confirm that we have a connection
-      expect(Object.keys(localStoreManager.connections)).toHaveLength(1)
+      expect(localStoreManager.connectionCount).toBe(1)
 
       await close()
 
       // confirm that we no longer have a connection
-      expect(Object.keys(localStoreManager.connections)).toHaveLength(0)
+      expect(localStoreManager.connectionCount).toBe(0)
       expect.assertions(2)
     })
 

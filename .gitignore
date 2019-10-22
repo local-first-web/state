@@ -1,7 +1,10 @@
 *.log
-.DS_Store
+
 node_modules
 dist
+coverage
+
+.DS_Store
 .rts2_cache_cjs
 .rts2_cache_es
 .rts2_cache_umd
