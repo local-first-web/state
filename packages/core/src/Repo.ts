@@ -436,8 +436,5 @@ export class Repo<T = any> {
   }
 }
 
-// shallow clone - need to build a test that fails using this
-const clone = (o: any) => ({ ...o })
-
 // deep clone without Automerge metadata
-// const clone = (o: any) => JSON.parse(JSON.stringify(o))
+const clone = (o: any) => JSON.parse(JSON.stringify(o))
