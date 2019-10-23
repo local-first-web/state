@@ -1,6 +1,12 @@
 ﻿import * as R from 'ramda'
 import { Clock } from './types'
 
+/**
+ * A vector clock is a map, where the keys are the actorIds of all actors that have been active on a
+ * particular document, and the values are the most recent sequence number for that actor. The
+ * sequence number starts at 1 and increments every time an actor makes a change.
+ */
+
 /** Merges the clocks, keeping the maximum sequence number for each node */
 export function mergeClocks(oldClock: Clock, newClock: Clock): Clock {
   const largestWins = (x: number = 0, y: number = 0): number => Math.max(x, y)
