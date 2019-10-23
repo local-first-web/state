@@ -1,7 +1,7 @@
 ﻿import * as idb from 'idb/with-async-ittr-cjs'
 import { DBSchema, IDBPDatabase } from 'idb/with-async-ittr-cjs'
 import { SnapshotRecord, StorageAdapter } from './StorageAdapter'
-import { ChangeSet, Snapshot, Clock } from './types'
+import { ChangeSet, Snapshot } from './types'
 
 export class IdbAdapter extends StorageAdapter {
   private database?: IDBPDatabase<RepoSchema>
@@ -66,9 +66,9 @@ export class IdbAdapter extends StorageAdapter {
     await this.database!.add('changes', changeSet)
   }
 
-  async putSnapshot(documentId: string, snapshot: Snapshot, clock: Clock) {
+  async putSnapshot(documentId: string, snapshot: Snapshot) {
     this.ensureOpen()
-    await this.database!.put('snapshots', { documentId, snapshot, clock })
+    await this.database!.put('snapshots', { documentId, snapshot })
   }
 
   async deleteSnapshot(documentId: string) {

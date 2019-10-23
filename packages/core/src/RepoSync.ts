@@ -311,7 +311,6 @@ export class RepoSync {
   private async advertiseAll() {
     this.log('advertiseAll')
     // recast our ClockMap from a dictionary to an array of {docId, clock} objects
-
     const documents = Object.keys(this.clock.ours).map(documentId => {
       const clock = this.getOurClock(documentId)
       return { documentId, clock }
