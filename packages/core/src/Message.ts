@@ -1,8 +1,6 @@
 import { Map } from 'immutable'
 import A from 'automerge'
-import { RepoSnapshot, RepoHistory } from './types'
-
-type Clock = Map<string, number>
+import { RepoSnapshot, RepoHistory, PlainClock } from './types'
 
 /**
  * Kick off our interaction with a peer by telling them how many documents we have
@@ -30,7 +28,7 @@ export interface AdvertiseDocsMessage {
   type: typeof ADVERTISE_DOCS
   documents: {
     documentId: string
-    clock: Clock
+    clock: PlainClock
   }[]
 }
 
@@ -41,7 +39,7 @@ export const SEND_CHANGES = 'SEND_CHANGES'
 export interface SendChangesMessage {
   type: typeof SEND_CHANGES
   documentId: string
-  clock: Clock
+  clock: PlainClock
   changes: A.Change[]
 }
 
