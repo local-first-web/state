@@ -425,10 +425,8 @@ export class RepoSync {
   }
 }
 
-const ERR_OLDCLOCK = 'Cannot pass an old state object to a connection'
-const ERR_NOCLOCK =
-  'This object cannot be used for network sync. ' +
-  'Are you trying to sync a snapshot from the history?'
+const ERR_OLDCLOCK = `Cannot pass an old state object to a connection`
+const ERR_NOCLOCK = `This object doesn't have a clock and cannot be used for network sync. `
 
 const ours = 'ours'
 const theirs = 'theirs'
