@@ -5,7 +5,7 @@ import { isMoreRecent, mergeClocks } from './clocks'
 import * as message from './Message'
 import { Message } from './Message'
 import { Repo } from './Repo'
-import { Clock, ClockMap, PlainClock, RepoHistory, RepoSnapshot } from './types'
+import { Clock, ClockMap, PlainClock, RepoHistory, RepoSnapshot, PlainClockMap } from './types'
 
 /**
  * A vector clock is a map, where the keys are the actorIds of all actors that have been active on a
@@ -57,7 +57,7 @@ const EMPTY_CLOCK_PLAIN: PlainClock = {}
 export class RepoSync {
   public repo: Repo<any>
   private send: (msg: Message) => void
-  private clock: { ours: ClockMap; theirs: ClockMap }
+  private clock: { ours: PlainClockMap; theirs: PlainClockMap }
   private log: debug.Debugger
   private isOpen = false
 
@@ -74,8 +74,8 @@ export class RepoSync {
   }
 
   getClocks() {
-    const ours = EMPTY_CLOCKMAP
-    const theirs = EMPTY_CLOCKMAP
+    const ours = {}
+    const theirs = {}
     return { ours, theirs }
   }
 
@@ -86,7 +86,7 @@ export class RepoSync {
 
     this.isOpen = true
     for (let documentId of this.repo.documentIds)
-      if (!this.clock.ours.get(documentId)) await this.registerDoc(documentId)
+      if (!this.clock.ours[documentId]) await this.registerDoc(documentId)
 
     this.repo.addHandler(this.onDocChanged.bind(this))
     await this.sendHello()
@@ -315,10 +315,10 @@ export class RepoSync {
     this.log('advertiseAll')
     // recast our ClockMap from an immutable-js Map to an array of {docId, clock} objects
     const documents: { documentId: string; clock: PlainClock }[] = []
-    for (const [documentId, clock] of this.clock.ours.entries())
+    for (const [documentId, clock] of Object.entries(this.clock.ours))
       documents.push({
         documentId,
-        clock: clock.toJS() as PlainClock,
+        clock,
       })
     this.send({ type: message.ADVERTISE_DOCS, documents })
   }
@@ -372,12 +372,10 @@ export class RepoSync {
   }
 
   /** Looks up our last recorded clock for the requested document */
-  getOurClock = (documentId: string) =>
-    this.clock.ours.get(documentId, EMPTY_CLOCK).toJS() as PlainClock
+  getOurClock = (documentId: string) => this.clock.ours[documentId] || EMPTY_CLOCK
 
   getTheirClock = (documentId: string) => {
-    const theirClock = this.clock.theirs.get(documentId)
-    return theirClock ? (theirClock.toJS() as PlainClock) : undefined
+    return this.clock.theirs[documentId]
   }
 
   /**
@@ -402,11 +400,12 @@ export class RepoSync {
     const _clock = clock ? (clock.toJS() as PlainClock) : await this.getClockFromDoc(documentId)
 
     const clockMap = this.clock[which]
-    const oldClock = clockMap.get(documentId, EMPTY_CLOCK).toJS() as PlainClock
+    const oldClock = clockMap[documentId] || EMPTY_CLOCK_PLAIN
 
     // Merge the clocks, keeping the maximum sequence number for each node
     const newClock = mergeClocks(oldClock, _clock)
-    this.clock[which] = clockMap.set(documentId, Map(newClock))
+    clockMap[documentId] = newClock
+    this.clock[which] = clockMap
   }
 }
 
