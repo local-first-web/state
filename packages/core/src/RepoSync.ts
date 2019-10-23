@@ -17,7 +17,6 @@ const EMPTY_CLOCK: Clock = Map()
 const EMPTY_CLOCKMAP: ClockMap = Map()
 
 const EMPTY_CLOCK_PLAIN: PlainClock = {}
-const EMPTY_CLOCKMAP_PLAIN: PlainClockMap = {}
 
 /**
  * One instance of `RepoSync` keeps one local document in sync with one remote peer's replica of the
@@ -167,18 +166,6 @@ export class RepoSync {
         break
       }
 
-      case message.REQUEST_ALL: {
-        // they are starting from zero & asking for everything we have
-        // only send if we have something
-        if (this.repo.documentIds.length > 0) {
-          this.sendAllSnapshots()
-          await this.sendAllHistory()
-        } else {
-          this.log('nothing to send')
-        }
-        break
-      }
-
       case message.SEND_ALL_HISTORY: {
         // they are sending us the complete history of all documents
         const { history } = msg
@@ -227,10 +214,11 @@ export class RepoSync {
     // Make sure doc has a clock (i.e. is an Automerge object)
     if (!clock) throw new TypeError(ERR_NOCLOCK)
 
+    const _clock = clock.toJS() as PlainClock
+
     // Make sure the document is newer than what we already have
-    const ourClock = this.getOurClock(documentId)
-    if (isMoreRecent(ourClock.toJS() as PlainClock, clock.toJS() as PlainClock))
-      throw new RangeError(ERR_OLDCLOCK)
+    const ourClock = this.getOurClock(documentId).toJS() as PlainClock
+    if (isMoreRecent(ourClock, _clock)) throw new RangeError(ERR_OLDCLOCK)
   }
 
   /**
@@ -345,14 +333,6 @@ export class RepoSync {
    */
   private requestDoc(documentId: string) {
     this.send({ type: message.REQUEST_DOCS, documentIds: [documentId] })
-  }
-
-  /**
-   * Initializing repo from the network, request everything peer has (snapshots and changes)
-   */
-  private async requestAll() {
-    this.log('requestAll')
-    this.send({ type: message.REQUEST_ALL })
   }
 
   /**
