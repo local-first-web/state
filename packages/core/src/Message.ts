@@ -1,4 +1,3 @@
-import { Map } from 'immutable'
 import A from 'automerge'
 import { RepoSnapshot, RepoHistory, Clock } from './types'
 
