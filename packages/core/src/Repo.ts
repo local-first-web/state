@@ -8,11 +8,12 @@ import { DELETED } from './constants'
 import { IdbAdapter } from './IdbAdapter'
 import { StorageAdapter } from './StorageAdapter'
 import { ChangeSet, RepoHistory, RepoSnapshot, ClockMap, Clock } from './types'
+import { Map } from 'immutable'
 
 export type RepoEventHandler<T> = (documentId: string, doc: A.Doc<T>) => void | Promise<void>
 
-const EMPTY_CLOCK: Clock = {}
-const EMPTY_CLOCKMAP: ClockMap = {}
+const EMPTY_CLOCK: Clock = Map()
+const EMPTY_CLOCKMAP: ClockMap = Map()
 
 interface RepoOptions {
   /**
@@ -191,11 +192,11 @@ export class Repo<T = any> {
   }
 
   getClock(documentId: string): Clock {
-    return this.clocks[documentId] || EMPTY_CLOCK
+    return this.clocks.get(documentId, EMPTY_CLOCK) //this.clocks[documentId] || EMPTY_CLOCK
   }
 
   async setClock(documentId: string, clock: Clock) {
-    this.clocks[documentId] = clock
+    this.clocks.set(documentId, clock) //this.clocks[documentId] = clock
     // await this.saveSnapshot(documentId, doc)
   }
 
@@ -403,7 +404,7 @@ export class Repo<T = any> {
       const { documentId, snapshot, clock } = cursor.value
       this.state[documentId] = snapshot[DELETED] ? null : snapshot
       this.log('loading snapshot', snapshot, clock)
-      this.clocks[documentId] = clock
+      this.clocks.set(documentId, clock) //this.clocks[documentId] = clock
     }
     this.log('done loading snapshots', this.clocks)
   }
@@ -448,7 +449,7 @@ export class Repo<T = any> {
   private async saveSnapshot(documentId: string, document: A.Doc<T>) {
     const snapshot: any = clone(document)
     const clock = _A.getClock(document).toJS() as Clock
-    this.clocks[documentId] = clock
+    this.clocks.set(documentId, clock) // [documentId] = clock
 
     if (snapshot[DELETED]) {
       this.removeSnapshot(documentId)
