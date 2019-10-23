@@ -61,3 +61,11 @@ export type RepoHistory = {
 
 export type Clock = Map<string, number>
 export type ClockMap = Map<string, Clock>
+
+export type PlainClock = {
+  [actorId: string]: number
+}
+
+export type PlainClockMap = {
+  [documentId: string]: PlainClock
+}
