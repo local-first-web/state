@@ -135,7 +135,9 @@ export class RepoSync {
         this.updateClock(documentId, theirs, Map(clock))
 
         // does this message contain new changes?
-        const shouldUpdate = isMoreRecent(clock, this.getOurClock(documentId).toJS() as PlainClock)
+        const shouldUpdate = isMoreRecent(clock, this.getOurClock_old(
+          documentId
+        ).toJS() as PlainClock)
         // if so apply their changes
         if (shouldUpdate) await this.repo.applyChanges(documentId, changes)
         break
@@ -215,7 +217,7 @@ export class RepoSync {
     if (!clock) throw new TypeError(ERR_NOCLOCK)
 
     // Make sure the document is newer than what we already have
-    const ourClock = this.getOurClock(documentId).toJS() as PlainClock
+    const ourClock = this.getOurClock(documentId)
     if (isMoreRecent(ourClock, clock)) throw new RangeError(ERR_OLDCLOCK)
   }
 
@@ -260,7 +262,7 @@ export class RepoSync {
     theirClock: PlainClock | Promise<PlainClock> = this.getClockFromDoc(documentId)
   ) {
     this.log('maybeRequestChanges', documentId)
-    const ourClock = this.getOurClock(documentId).toJS() as PlainClock
+    const ourClock = this.getOurClock(documentId) as PlainClock
     theirClock = await theirClock
     if (isMoreRecent(theirClock, ourClock)) this.advertise(documentId, theirClock)
   }
@@ -274,7 +276,8 @@ export class RepoSync {
     if (theirClock === undefined) return
     const ourDoc = await this.repo.get(documentId)
     if (ourDoc === undefined) return
-    const changes = _A.getMissingChanges(ourDoc, (theirClock as unknown) as A.Clock)
+    const _theirClock: A.Clock = (Map(theirClock) as unknown) as A.Clock
+    const changes = _A.getMissingChanges(ourDoc, _theirClock)
     if (changes.length > 0) await this.sendChanges(documentId, changes)
   }
 
@@ -304,7 +307,7 @@ export class RepoSync {
    */
   private async advertise(
     documentId: string,
-    clock: PlainClock = this.getOurClock(documentId).toJS() as PlainClock
+    clock: PlainClock = this.getOurClock_old(documentId).toJS() as PlainClock
   ) {
     this.log('advertise', documentId)
     this.send({ type: message.ADVERTISE_DOCS, documents: [{ documentId, clock }] })
@@ -374,8 +377,15 @@ export class RepoSync {
   }
 
   /** Looks up our last recorded clock for the requested document */
-  getOurClock = (documentId: string) => this.clock.ours.get(documentId, EMPTY_CLOCK)
-  getTheirClock = (documentId: string) => this.clock.theirs.get(documentId, undefined)
+  getOurClock_old = (documentId: string) => this.clock.ours.get(documentId, EMPTY_CLOCK)
+  getOurClock = (documentId: string) =>
+    this.clock.ours.get(documentId, EMPTY_CLOCK).toJS() as PlainClock
+
+  getTheirClock_old = (documentId: string) => this.clock.theirs.get(documentId, undefined)
+  getTheirClock = (documentId: string) => {
+    const theirClock = this.clock.theirs.get(documentId)
+    return theirClock ? (theirClock.toJS() as PlainClock) : undefined
+  }
 
   /**
    * Pulls clock information from the document's metadata
