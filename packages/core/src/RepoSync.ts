@@ -197,7 +197,7 @@ export class RepoSync {
     const clock = await this.getClockFromDoc(documentId)
 
     // Make sure we can sync this document
-    this.validateDoc(documentId, Map(clock))
+    this.validateDoc(documentId, clock)
 
     // Record the doc's initial clock
     await this.updateClock(documentId, ours, Map(clock))
@@ -208,17 +208,15 @@ export class RepoSync {
    * @param documentId
    * @param clock
    */
-  private validateDoc(documentId: string, clock: Clock) {
+  private validateDoc(documentId: string, clock: PlainClock) {
     this.log('validateDoc', documentId)
 
     // Make sure doc has a clock (i.e. is an Automerge object)
     if (!clock) throw new TypeError(ERR_NOCLOCK)
 
-    const _clock = clock.toJS() as PlainClock
-
     // Make sure the document is newer than what we already have
     const ourClock = this.getOurClock(documentId).toJS() as PlainClock
-    if (isMoreRecent(ourClock, _clock)) throw new RangeError(ERR_OLDCLOCK)
+    if (isMoreRecent(ourClock, clock)) throw new RangeError(ERR_OLDCLOCK)
   }
 
   /**
@@ -231,7 +229,7 @@ export class RepoSync {
     if (clock === undefined) return
 
     // make sure we can sync the new document
-    this.validateDoc(documentId, Map(clock))
+    this.validateDoc(documentId, clock)
 
     // send the document if peer doesn't have it or has an older version
     await this.maybeSendChanges(documentId)
