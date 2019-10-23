@@ -8,7 +8,6 @@ import { Repo } from './Repo'
 import { Clock, ClockMap, RepoHistory, RepoSnapshot } from './types'
 
 const EMPTY_CLOCK: Clock = {}
-
 /**
  * One instance of `RepoSync` keeps one local document in sync with one remote peer's replica of the
  * same document.
@@ -392,10 +391,6 @@ export class RepoSync {
 
 const ERR_OLDCLOCK = `Cannot pass an old state object to a connection`
 const ERR_NOCLOCK = `This object doesn't have a clock and cannot be used for network sync. `
-
-const ours = 'ours'
-const theirs = 'theirs'
-type Which = typeof ours | typeof theirs
 
 // TODO: Submit these to Automerge
 const _A = {
