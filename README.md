@@ -17,9 +17,9 @@ centralized server:
 - Or, you want to go **local-first** to **eliminate latency**, by keeping a complete copy of a
   user's data on their machine, which you then replicate to other users in the background.
 
-| <img src='images/008.jpg'></img>                   | <img src='images/023.jpg'></img>                        |
-| -------------------------------------------------- | ------------------------------------------------------- |
-| <small>A typical client-server application</small> | <small>A distributed (peer-to-peer) application</small> |
+| <img src='images/008.jpg'></img>               | <img src='images/023.jpg'></img>                    |
+| ---------------------------------------------- | --------------------------------------------------- |
+| <sub>A typical client-server application</sub> | <sub>A distributed (peer-to-peer) application</sub> |
 
 A typical web application developer today is likely to be comfortable working with databases and API
 endpoints on the server, along with state containers like Redux on the client. A distributed
@@ -67,7 +67,7 @@ one is represented by both a snapshot of its current state and a history of Auto
 
 | <img src='images/redux.2.png'></img> | <img src='images/architecture.png'></img> |
 | ------------------------------------ | ----------------------------------------- |
-| <small>Redux</small>                 | <small>Redux & Cevitxe</small>            |
+| <sub>Redux</sub>                     | <sub>Redux & Cevitxe</sub>                |
 
 ### Networking
 
@@ -95,7 +95,7 @@ each one with the appropriate `yarn start` command:
 | `yarn start:grid`                             | `yarn start:todo`                              | `yarn start:chat`                             |
 | --------------------------------------------- | ---------------------------------------------- | --------------------------------------------- |
 | <img src='images/screen.grid.png' width=600/> | <img src='images/screen.todo.png'  width=600/> | <img src='images/screen.grid.png' width=600/> |
-| <small>A simple table editor</small>          | <small>An implementation of TodoMVC</small>    | <small>A chat channel</small>                 |
+| <sub>A simple table editor</sub>              | <sub>An implementation of TodoMVC</sub>        | <sub>A chat channel</sub>                     |
 
 If you are working on the Cevitxe code and/or the code for one of the demo apps, you can start in
 watch mode by running `yarn dev` instead:
