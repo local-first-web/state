@@ -1,4 +1,3 @@
-import eventPromise from 'p-event'
 import A from 'automerge'
 import { Repo } from './Repo'
 import { Server } from 'cevitxe-signal-server'
