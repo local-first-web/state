@@ -137,10 +137,10 @@ export class RepoSync {
       case message.SEND_CHANGES: {
         // they are sending us changes that they figure we don't have
         const { documentId, changes, clock } = msg
-        this.updateClock(documentId, theirs, clock)
+        this.updateClock(documentId, theirs, Map(clock))
 
         // does this message contain new changes?
-        const shouldUpdate = isMoreRecent(clock, this.getOurClock(documentId))
+        const shouldUpdate = isMoreRecent(Map(clock), this.getOurClock(documentId))
         // if so apply their changes
         if (shouldUpdate) await this.repo.applyChanges(documentId, changes)
         break
@@ -150,7 +150,7 @@ export class RepoSync {
         // they are letting us know they have this specific version of each of these docs
         const { documents } = msg
         for (const { documentId, clock } of documents) {
-          this.updateClock(documentId, theirs, clock)
+          this.updateClock(documentId, theirs, Map(clock))
           // we have the document as well; see if we have a more recent version than they do; if so
           // send them the changes they're missing
           if (this.repo.has(documentId)) await this.maybeSendChanges(documentId)
@@ -306,7 +306,7 @@ export class RepoSync {
     this.send({
       type: message.SEND_CHANGES,
       documentId,
-      clock: clock.toJS() as Clock,
+      clock: clock.toJS() as PlainClock,
       changes,
     })
     this.updateClock(documentId, ours)
@@ -321,7 +321,7 @@ export class RepoSync {
    */
   private async advertise(documentId: string, _clock: Clock = this.getOurClock(documentId)) {
     this.log('advertise', documentId)
-    const clock = _clock.toJS() as Clock
+    const clock = _clock.toJS() as PlainClock
     this.send({ type: message.ADVERTISE_DOCS, documents: [{ documentId, clock }] })
   }
 
@@ -331,11 +331,11 @@ export class RepoSync {
   private async advertiseAll() {
     this.log('advertiseAll')
     // recast our ClockMap from an immutable-js Map to an array of {docId, clock} objects
-    const documents: { documentId: string; clock: Clock }[] = []
+    const documents: { documentId: string; clock: PlainClock }[] = []
     for (const [documentId, clock] of this.clock.ours.entries())
       documents.push({
         documentId,
-        clock: clock.toJS() as Clock,
+        clock: clock.toJS() as PlainClock,
       })
     this.send({ type: message.ADVERTISE_DOCS, documents })
   }
