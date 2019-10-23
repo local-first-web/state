@@ -5,7 +5,7 @@ import { isMoreRecent, mergeClocks } from './clocks'
 import * as message from './Message'
 import { Message } from './Message'
 import { Repo } from './Repo'
-import { PlainClock, PlainClockMap, RepoHistory, RepoSnapshot } from './types'
+import { PlainClock as Clock, PlainClockMap as ClockMap, RepoHistory, RepoSnapshot } from './types'
 
 /**
  * A vector clock is a map, where the keys are the actorIds of all actors that have been active on a
@@ -13,7 +13,7 @@ import { PlainClock, PlainClockMap, RepoHistory, RepoSnapshot } from './types'
  * sequence number starts at 1 and increments every time an actor makes a change.
  */
 
-const EMPTY_CLOCK_PLAIN: PlainClock = {}
+const EMPTY_CLOCK_PLAIN: Clock = {}
 
 /**
  * One instance of `RepoSync` keeps one local document in sync with one remote peer's replica of the
@@ -54,7 +54,7 @@ const EMPTY_CLOCK_PLAIN: PlainClock = {}
 export class RepoSync {
   public repo: Repo<any>
   private send: (msg: Message) => void
-  private clock: { ours: PlainClockMap; theirs: PlainClockMap }
+  private clock: { ours: ClockMap; theirs: ClockMap }
   private log: debug.Debugger
   private isOpen = false
 
@@ -205,7 +205,7 @@ export class RepoSync {
    * @param documentId
    * @param clock
    */
-  private validateDoc(documentId: string, clock: PlainClock) {
+  private validateDoc(documentId: string, clock: Clock) {
     this.log('validateDoc', documentId)
 
     // Make sure doc has a clock (i.e. is an Automerge object)
@@ -254,10 +254,10 @@ export class RepoSync {
    */
   private async maybeRequestChanges(
     documentId: string,
-    theirClock: PlainClock | Promise<PlainClock> = this.getClockFromDoc(documentId)
+    theirClock: Clock | Promise<Clock> = this.getClockFromDoc(documentId)
   ) {
     this.log('maybeRequestChanges', documentId)
-    const ourClock = this.getOurClock(documentId) as PlainClock
+    const ourClock = this.getOurClock(documentId) as Clock
     theirClock = await theirClock
     if (isMoreRecent(theirClock, ourClock)) this.advertise(documentId, theirClock)
   }
@@ -300,7 +300,7 @@ export class RepoSync {
    * @param documentId
    * @param [_clock]
    */
-  private async advertise(documentId: string, clock: PlainClock = this.getOurClock(documentId)) {
+  private async advertise(documentId: string, clock: Clock = this.getOurClock(documentId)) {
     this.log('advertise', documentId)
     this.send({ type: message.ADVERTISE_DOCS, documents: [{ documentId, clock }] })
   }
@@ -310,13 +310,10 @@ export class RepoSync {
    */
   private async advertiseAll() {
     this.log('advertiseAll')
-    // recast our ClockMap from an immutable-js Map to an array of {docId, clock} objects
-    const documents: { documentId: string; clock: PlainClock }[] = []
-    for (const [documentId, clock] of Object.entries(this.clock.ours))
-      documents.push({
-        documentId,
-        clock,
-      })
+    // recast our ClockMap from a dictionary to an array of {docId, clock} objects
+    const documents: { documentId: string; clock: Clock }[] = []
+    for (const documentId in this.clock.ours)
+      documents.push({ documentId, clock: this.getOurClock(documentId) })
     this.send({ type: message.ADVERTISE_DOCS, documents })
   }
 
@@ -377,10 +374,10 @@ export class RepoSync {
    * @param documentId
    * @returns clock from doc
    */
-  private async getClockFromDoc(documentId: string): Promise<PlainClock> {
+  private async getClockFromDoc(documentId: string): Promise<Clock> {
     const doc = await this.repo.get(documentId)
     if (doc === undefined) return EMPTY_CLOCK_PLAIN
-    return Map(_A.getClock(doc!)).toJS() as PlainClock
+    return Map(_A.getClock(doc!)).toJS() as Clock
   }
 
   /**
@@ -390,7 +387,7 @@ export class RepoSync {
    * @param which
    * @param clock
    */
-  private async updateClock(documentId: string, which: Which, clock?: PlainClock) {
+  private async updateClock(documentId: string, which: Which, clock?: Clock) {
     const _clock = clock ? clock : await this.getClockFromDoc(documentId)
 
     const clockMap = this.clock[which]
