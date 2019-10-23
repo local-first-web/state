@@ -1,12 +1,12 @@
 import A from 'automerge'
-import * as R from 'ramda'
 import debug from 'debug'
 import { Map } from 'immutable'
+import { mergeClocks } from './clocks'
 import { isMoreRecent } from './lessOrEqual'
-import { Message } from './Message'
 import * as message from './Message'
+import { Message } from './Message'
 import { Repo } from './Repo'
-import { RepoHistory, RepoSnapshot, PlainClock, PlainClockMap } from './types'
+import { PlainClock, RepoHistory, RepoSnapshot } from './types'
 
 /**
  * A vector clock is a map, where the keys are the actorIds of all actors that have been active on a
@@ -434,18 +434,6 @@ const ERR_NOCLOCK =
 const ours = 'ours'
 const theirs = 'theirs'
 type Which = typeof ours | typeof theirs
-
-const mergeClocks = (oldClock: Map<string, number>, clock: Map<string, number>) => {
-  const _oldClock = oldClock.toJS() as PlainClock
-  const _clock = clock.toJS() as PlainClock
-  const _newClock = mergePlainClocks(_oldClock, _clock)
-  return Map(_newClock) as Clock
-}
-
-function mergePlainClocks(_oldClock: PlainClock, _clock: PlainClock): PlainClock {
-  const largestWins = (x: number = 0, y: number = 0): number => Math.max(x, y)
-  return R.mergeWith(largestWins, _oldClock, _clock)
-}
 
 // TODO: Submit these to Automerge
 const _A = {
