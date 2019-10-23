@@ -1,7 +1,7 @@
 import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
-import { isMoreRecent, isMoreRecent_old, mergeClocks, mergeClocks_old } from './clocks'
+import { isMoreRecent, mergeClocks } from './clocks'
 import * as message from './Message'
 import { Message } from './Message'
 import { Repo } from './Repo'
@@ -136,7 +136,7 @@ export class RepoSync {
         this.updateClock(documentId, theirs, Map(clock))
 
         // does this message contain new changes?
-        const shouldUpdate = isMoreRecent_old(Map(clock), this.getOurClock(documentId))
+        const shouldUpdate = isMoreRecent(clock, this.getOurClock(documentId).toJS() as PlainClock)
         // if so apply their changes
         if (shouldUpdate) await this.repo.applyChanges(documentId, changes)
         break
@@ -207,13 +207,13 @@ export class RepoSync {
    */
   private async registerDoc(documentId: string) {
     this.log('registerDoc', documentId)
-    const clock = await this.getClockFromDoc_old(documentId)
+    const clock = await this.getClockFromDoc(documentId)
 
     // Make sure we can sync this document
-    this.validateDoc(documentId, clock)
+    this.validateDoc(documentId, Map(clock))
 
     // Record the doc's initial clock
-    await this.updateClock(documentId, ours, clock)
+    await this.updateClock(documentId, ours, Map(clock))
   }
 
   /**
@@ -229,7 +229,8 @@ export class RepoSync {
 
     // Make sure the document is newer than what we already have
     const ourClock = this.getOurClock(documentId)
-    if (isMoreRecent_old(ourClock, clock)) throw new RangeError(ERR_OLDCLOCK)
+    if (isMoreRecent(ourClock.toJS() as PlainClock, clock.toJS() as PlainClock))
+      throw new RangeError(ERR_OLDCLOCK)
   }
 
   /**
@@ -238,20 +239,20 @@ export class RepoSync {
    */
   private async onDocChanged(documentId: string) {
     this.log('onDocChanged', documentId)
-    const clock = await this.getClockFromDoc_old(documentId)
+    const clock = await this.getClockFromDoc(documentId)
     if (clock === undefined) return
 
     // make sure we can sync the new document
-    this.validateDoc(documentId, clock)
+    this.validateDoc(documentId, Map(clock))
 
     // send the document if peer doesn't have it or has an older version
     await this.maybeSendChanges(documentId)
 
     // see if peer has a newer version
-    await this.maybeRequestChanges(documentId, clock.toJS() as PlainClock)
+    await this.maybeRequestChanges(documentId, clock)
 
     // update our clock
-    this.updateClock(documentId, ours, clock)
+    this.updateClock(documentId, ours, Map(clock))
   }
 
   /**
@@ -403,12 +404,6 @@ export class RepoSync {
    * @param documentId
    * @returns clock from doc
    */
-  private async getClockFromDoc_old(documentId: string): Promise<Clock> {
-    const doc = await this.repo.get(documentId)
-    if (doc === undefined) return EMPTY_CLOCK
-    return Map(_A.getClock(doc!)) as Clock
-  }
-
   private async getClockFromDoc(documentId: string): Promise<PlainClock> {
     const doc = await this.repo.get(documentId)
     if (doc === undefined) return EMPTY_CLOCK_PLAIN
