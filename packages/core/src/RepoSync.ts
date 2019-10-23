@@ -5,7 +5,7 @@ import { isMoreRecent, mergeClocks } from './clocks'
 import * as message from './Message'
 import { Message } from './Message'
 import { Repo } from './Repo'
-import { Clock, ClockMap, PlainClock, PlainClockMap, RepoHistory, RepoSnapshot } from './types'
+import { Clock, ClockMap, PlainClock, RepoHistory, RepoSnapshot } from './types'
 
 /**
  * A vector clock is a map, where the keys are the actorIds of all actors that have been active on a
