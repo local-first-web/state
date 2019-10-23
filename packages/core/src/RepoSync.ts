@@ -242,6 +242,7 @@ export class RepoSync {
   private async onDocChanged(documentId: string) {
     this.log('onDocChanged', documentId)
     const clock = await this.getClockFromDoc(documentId)
+    if (clock === undefined) return
 
     // make sure we can sync the new document
     this.validateDoc(documentId, clock)
@@ -288,6 +289,7 @@ export class RepoSync {
     const theirClock = this.getTheirClock(documentId)
     if (theirClock === undefined) return
     const ourDoc = await this.repo.get(documentId)
+    if (ourDoc === undefined) return
     const changes = _A.getMissingChanges(ourDoc, (theirClock as unknown) as A.Clock)
     if (changes.length > 0) await this.sendChanges(documentId, changes)
   }
@@ -403,9 +405,9 @@ export class RepoSync {
    * @returns clock from doc
    */
   private async getClockFromDoc(documentId: string): Promise<Clock> {
-    if (!this.repo.has(documentId)) return EMPTY_CLOCK
     const doc = await this.repo.get(documentId)
-    return _A.getClock(doc)
+    if (doc === undefined) return EMPTY_CLOCK
+    return _A.getClock(doc!)
   }
 
   /**

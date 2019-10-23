@@ -276,7 +276,7 @@ describe(`RepoSync`, () => {
     it('should sync local changes made while offline', async () => {
       // remote peer has original state
       let remoteDoc = await remoteRepo.get(documentId)
-      expect(remoteDoc.swallows).toEqual(1)
+      expect(remoteDoc!.swallows).toEqual(1)
 
       // make local changes online
       await localRepo.change(documentId, s => (s.swallows = 2))
@@ -284,7 +284,7 @@ describe(`RepoSync`, () => {
       // remote peer sees changes immediately
       await docChanged(remoteRepo)
       remoteDoc = await remoteRepo.get(documentId)
-      expect(remoteDoc.swallows).toEqual(2)
+      expect(remoteDoc!.swallows).toEqual(2)
 
       networkOff()
 
@@ -293,13 +293,13 @@ describe(`RepoSync`, () => {
 
       // remote peer doesn't see changes
       remoteDoc = await remoteRepo.get(documentId)
-      expect(remoteDoc.swallows).toEqual(2)
+      expect(remoteDoc!.swallows).toEqual(2)
 
       await networkOn()
 
       // as soon as we're back online, remote peer sees changes
       remoteDoc = await remoteRepo.get(documentId)
-      expect(remoteDoc.swallows).toEqual(3)
+      expect(remoteDoc!.swallows).toEqual(3)
     })
 
     it('should bidirectionally sync offline changes', async () => {
@@ -356,8 +356,8 @@ describe(`RepoSync`, () => {
       const localDoc = await localRepo.get(documentId)
       const remoteDoc = await remoteRepo.get(documentId)
 
-      const localValue = localDoc.swallows
-      const remoteValue = remoteDoc.swallows
+      const localValue = localDoc!.swallows
+      const remoteValue = remoteDoc!.swallows
 
       // we don't know which value won the conflict, but:
 
@@ -369,7 +369,7 @@ describe(`RepoSync`, () => {
       expect(remoteValue === localCount || remoteValue === remoteCount).toBe(true)
 
       // 3. the losing value is stored in `conflicts`
-      const conflicts = A.getConflicts(localDoc, 'swallows')
+      const conflicts = A.getConflicts(localDoc!, 'swallows')
       if (localValue === remoteCount) expect(conflicts[localActor]).toBe(localCount) // remote won, local's value stored in conflicts
       if (localValue === localCount) expect(conflicts[remoteActor]).toBe(remoteCount) // local won, remote's value stored in conflicts
     })
