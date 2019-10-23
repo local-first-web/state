@@ -5,21 +5,13 @@ import { isMoreRecent } from './lessOrEqual'
 import { Message } from './Message'
 import * as message from './Message'
 import { Repo } from './Repo'
-import { RepoHistory, RepoSnapshot } from './types'
+import { RepoHistory, RepoSnapshot, PlainClock, PlainClockMap } from './types'
 
 /**
  * A vector clock is a map, where the keys are the actorIds of all actors that have been active on a
  * particular document, and the values are the most recent sequence number for that actor. The
  * sequence number starts at 1 and increments every time an actor makes a change.
  */
-
-export type PlainClock = {
-  [actorId: string]: number
-}
-
-export type PlainClockMap = {
-  [documentId: string]: PlainClock
-}
 
 type Clock = Map<string, number>
 type ClockMap = Map<string, Clock>
