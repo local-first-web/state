@@ -5,16 +5,13 @@ import { isMoreRecent, mergeClocks } from './clocks'
 import * as message from './Message'
 import { Message } from './Message'
 import { Repo } from './Repo'
-import { Clock, ClockMap, PlainClock, RepoHistory, RepoSnapshot, PlainClockMap } from './types'
+import { PlainClock, PlainClockMap, RepoHistory, RepoSnapshot } from './types'
 
 /**
  * A vector clock is a map, where the keys are the actorIds of all actors that have been active on a
  * particular document, and the values are the most recent sequence number for that actor. The
  * sequence number starts at 1 and increments every time an actor makes a change.
  */
-
-const EMPTY_CLOCK: Clock = Map()
-const EMPTY_CLOCKMAP: ClockMap = Map()
 
 const EMPTY_CLOCK_PLAIN: PlainClock = {}
 
@@ -369,7 +366,7 @@ export class RepoSync {
   }
 
   /** Looks up our last recorded clock for the requested document */
-  getOurClock = (documentId: string) => this.clock.ours[documentId] || EMPTY_CLOCK
+  getOurClock = (documentId: string) => this.clock.ours[documentId] || EMPTY_CLOCK_PLAIN
 
   getTheirClock = (documentId: string) => {
     return this.clock.theirs[documentId]
