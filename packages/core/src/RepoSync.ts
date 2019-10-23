@@ -78,10 +78,6 @@ export class RepoSync {
   getClocks() {
     const ours = EMPTY_CLOCKMAP
     const theirs = EMPTY_CLOCKMAP
-
-    // const persistedClock = localStorage.getItem('ourClock')
-    // const ours = persistedClock ? (Map(JSON.parse(persistedClock)) as ClockMap) : EMPTY_CLOCKMAP
-
     return { ours, theirs }
   }
 
