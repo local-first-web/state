@@ -1,7 +1,7 @@
 import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
-import { isMoreRecent_old, mergeClocks_old } from './clocks'
+import { isMoreRecent, isMoreRecent_old, mergeClocks_old } from './clocks'
 import * as message from './Message'
 import { Message } from './Message'
 import { Repo } from './Repo'
@@ -248,7 +248,7 @@ export class RepoSync {
     await this.maybeSendChanges(documentId)
 
     // see if peer has a newer version
-    await this.maybeRequestChanges(documentId, clock)
+    await this.maybeRequestChanges(documentId, clock.toJS() as PlainClock)
 
     // update our clock
     this.updateClock(documentId, ours, clock)
@@ -270,12 +270,12 @@ export class RepoSync {
    */
   private async maybeRequestChanges(
     documentId: string,
-    theirClock: Clock | Promise<Clock> = this.getClockFromDoc_old(documentId)
+    theirClock: PlainClock | Promise<PlainClock> = this.getClockFromDoc(documentId)
   ) {
     this.log('maybeRequestChanges', documentId)
-    const ourClock = this.getOurClock(documentId)
+    const ourClock = this.getOurClock(documentId).toJS() as PlainClock
     theirClock = await theirClock
-    if (isMoreRecent_old(theirClock, ourClock)) this.advertise(documentId, theirClock)
+    if (isMoreRecent(theirClock, ourClock)) this.advertise(documentId, theirClock)
   }
 
   /**
@@ -315,9 +315,11 @@ export class RepoSync {
    * @param documentId
    * @param [_clock]
    */
-  private async advertise(documentId: string, _clock: Clock = this.getOurClock(documentId)) {
+  private async advertise(
+    documentId: string,
+    clock: PlainClock = this.getOurClock(documentId).toJS() as PlainClock
+  ) {
     this.log('advertise', documentId)
-    const clock = _clock.toJS() as PlainClock
     this.send({ type: message.ADVERTISE_DOCS, documents: [{ documentId, clock }] })
   }
 
