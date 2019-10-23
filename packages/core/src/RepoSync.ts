@@ -412,7 +412,7 @@ export class RepoSync {
   private async getClockFromDoc(documentId: string): Promise<PlainClock> {
     const doc = await this.repo.get(documentId)
     if (doc === undefined) return EMPTY_CLOCK_PLAIN
-    return _A.getClock(doc!) as PlainClock
+    return Map(_A.getClock(doc!)).toJS() as PlainClock
   }
 
   /**
@@ -423,12 +423,13 @@ export class RepoSync {
    * @param clock
    */
   private async updateClock(documentId: string, which: Which, clock?: Clock) {
-    const _clock = clock || (await this.getClockFromDoc_old(documentId))
+    const _clock = clock ? (clock.toJS() as PlainClock) : await this.getClockFromDoc(documentId)
+
     const clockMap = this.clock[which]
     const oldClock = clockMap.get(documentId, EMPTY_CLOCK).toJS() as PlainClock
 
     // Merge the clocks, keeping the maximum sequence number for each node
-    const newClock = mergeClocks(oldClock, _clock.toJS() as PlainClock)
+    const newClock = mergeClocks(oldClock, _clock)
     this.clock[which] = clockMap.set(documentId, Map(newClock))
   }
 }
