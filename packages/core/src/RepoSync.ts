@@ -1,4 +1,5 @@
 import A from 'automerge'
+import * as R from 'ramda'
 import debug from 'debug'
 import { Map } from 'immutable'
 import { isMoreRecent } from './lessOrEqual'
@@ -424,8 +425,7 @@ export class RepoSync {
     const oldClock = clockMap.get(documentId, EMPTY_CLOCK)
 
     // Merge the clocks, keeping the maximum sequence number for each node
-    const largestWins = (x: number = 0, y: number = 0): number => Math.max(x, y)
-    const newClock = oldClock.mergeWith(largestWins, clock!)
+    const newClock = mergeClocks(oldClock, clock)
     this.clock[which] = clockMap.set(documentId, newClock)
   }
 }
@@ -438,6 +438,18 @@ const ERR_NOCLOCK =
 const ours = 'ours'
 const theirs = 'theirs'
 type Which = typeof ours | typeof theirs
+
+const mergeClocks = (oldClock: Map<string, number>, clock: Map<string, number>) => {
+  const _oldClock = oldClock.toJS()
+  const _clock = clock.toJS()
+  const _newClock = mergePlainClocks(_oldClock, _clock)
+  return Map<string, number>(_newClock)
+}
+
+function mergePlainClocks(_oldClock: Object, _clock: Object) {
+  const largestWins = (x: number = 0, y: number = 0): number => Math.max(x, y)
+  return R.mergeWith(largestWins, _oldClock, _clock)
+}
 
 // TODO: Submit these to Automerge
 const _A = {
