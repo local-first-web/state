@@ -427,9 +427,6 @@ export class RepoSync {
     const largestWins = (x: number = 0, y: number = 0): number => Math.max(x, y)
     const newClock = oldClock.mergeWith(largestWins, clock!)
     this.clock[which] = clockMap.set(documentId, newClock)
-
-    // persist clock
-    // if (which === ours) localStorage.setItem('ourClock', JSON.stringify(this.clock.ours.toJS()))
   }
 }
 
