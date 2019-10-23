@@ -1,4 +1,4 @@
-﻿import A from 'automerge'
+import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
 import { isMoreRecent } from './lessOrEqual'
@@ -12,6 +12,15 @@ import { RepoHistory, RepoSnapshot } from './types'
  * particular document, and the values are the most recent sequence number for that actor. The
  * sequence number starts at 1 and increments every time an actor makes a change.
  */
+
+export type PlainClock = {
+  [actorId: string]: number
+}
+
+export type PlainClockMap = {
+  [documentId: string]: PlainClock
+}
+
 type Clock = Map<string, number>
 type ClockMap = Map<string, Clock>
 
