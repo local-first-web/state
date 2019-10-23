@@ -18,24 +18,24 @@ export function mergeClocks(_oldClock: PlainClock, _clock: PlainClock): PlainClo
   return R.mergeWith(largestWins, _oldClock, _clock)
 }
 
-export const isMoreRecent = (clock1: Clock, clock2: Clock) => {
+export const isMoreRecent_old = (clock1: Clock, clock2: Clock) => {
   // coerce to plain JS
   const _clock1 = clock1.toJS() as PlainClock
   const _clock2 = clock2.toJS() as PlainClock
 
-  return !lessOrEqual(_clock1, _clock2)
+  return isMoreRecent(_clock1, _clock2)
 }
 
-export const lessOrEqual = (clock1: PlainClock, clock2: PlainClock) => {
+export const isMoreRecent = (clock1: PlainClock, clock2: PlainClock) => {
   // get a list of all the keys
   const actors1 = Object.keys(clock1)
   const actors2 = Object.keys(clock2)
 
-  const allActors = actors1.concat(actors2) // not worth the effort of deduplicating
+  // there will be duplicates, but it's not worth the effort of deduplicating
+  const allActors = actors1.concat(actors2)
 
-  // @ts-ignore
   const clockIsLessOrEqual = (key: string) => (clock1[key] || 0) <= (clock2[key] || 0)
-  return allActors.map(clockIsLessOrEqual).reduce(allTrue, true)
+  return !allActors.map(clockIsLessOrEqual).reduce(allTrue, true)
 }
 
 const allTrue = (acc: boolean, d: boolean): boolean => acc && d
