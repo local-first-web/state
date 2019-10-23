@@ -59,13 +59,10 @@ export type RepoHistory = {
   [documentId: string]: A.Change[]
 }
 
-export type Clock = Map<string, number>
-export type ClockMap = Map<string, Clock>
-
-export type PlainClock = {
+export type Clock = {
   [actorId: string]: number
 }
 
-export type PlainClockMap = {
-  [documentId: string]: PlainClock
+export type ClockMap = {
+  [documentId: string]: Clock
 }

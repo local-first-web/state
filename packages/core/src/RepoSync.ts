@@ -5,7 +5,7 @@ import { isMoreRecent, mergeClocks } from './clocks'
 import * as message from './Message'
 import { Message } from './Message'
 import { Repo } from './Repo'
-import { PlainClock as Clock, PlainClockMap as ClockMap, RepoHistory, RepoSnapshot } from './types'
+import { Clock, ClockMap, RepoHistory, RepoSnapshot } from './types'
 
 /**
  * A vector clock is a map, where the keys are the actorIds of all actors that have been active on a
@@ -13,7 +13,7 @@ import { PlainClock as Clock, PlainClockMap as ClockMap, RepoHistory, RepoSnapsh
  * sequence number starts at 1 and increments every time an actor makes a change.
  */
 
-const EMPTY_CLOCK_PLAIN: Clock = {}
+const EMPTY_CLOCK: Clock = {}
 
 /**
  * One instance of `RepoSync` keeps one local document in sync with one remote peer's replica of the
@@ -156,7 +156,7 @@ export class RepoSync {
         // they don't have this document and are asking for this document in its entirety
         const { documentIds } = msg
         for (const documentId of documentIds) {
-          this.updateClock(documentId, theirs, EMPTY_CLOCK_PLAIN)
+          this.updateClock(documentId, theirs, EMPTY_CLOCK)
           // send them what we have
           await this.maybeSendChanges(documentId)
         }
@@ -364,7 +364,7 @@ export class RepoSync {
   }
 
   /** Looks up our last recorded clock for the requested document */
-  getOurClock = (documentId: string) => this.clock.ours[documentId] || EMPTY_CLOCK_PLAIN
+  getOurClock = (documentId: string) => this.clock.ours[documentId] || EMPTY_CLOCK
 
   getTheirClock = (documentId: string) => {
     return this.clock.theirs[documentId]
@@ -377,7 +377,7 @@ export class RepoSync {
    */
   private async getClockFromDoc(documentId: string): Promise<Clock> {
     const doc = await this.repo.get(documentId)
-    if (doc === undefined) return EMPTY_CLOCK_PLAIN
+    if (doc === undefined) return EMPTY_CLOCK
     return Map(_A.getClock(doc!)).toJS() as Clock
   }
 
@@ -392,7 +392,7 @@ export class RepoSync {
     const _clock = clock ? clock : await this.getClockFromDoc(documentId)
 
     const clockMap = this.clock[which]
-    const oldClock = clockMap[documentId] || EMPTY_CLOCK_PLAIN
+    const oldClock = clockMap[documentId] || EMPTY_CLOCK
 
     // Merge the clocks, keeping the maximum sequence number for each node
     const newClock = mergeClocks(oldClock, _clock)
