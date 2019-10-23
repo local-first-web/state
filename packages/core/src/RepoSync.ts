@@ -7,12 +7,6 @@ import { Message } from './Message'
 import { Repo } from './Repo'
 import { Clock, ClockMap, RepoHistory, RepoSnapshot } from './types'
 
-/**
- * A vector clock is a map, where the keys are the actorIds of all actors that have been active on a
- * particular document, and the values are the most recent sequence number for that actor. The
- * sequence number starts at 1 and increments every time an actor makes a change.
- */
-
 const EMPTY_CLOCK: Clock = {}
 
 /**
@@ -129,7 +123,7 @@ export class RepoSync {
       case message.SEND_CHANGES: {
         // they are sending us changes that they figure we don't have
         const { documentId, changes, clock } = msg
-        this.updateClock(documentId, theirs, clock)
+        this.updateTheirClock(documentId, clock)
 
         // does this message contain new changes?
         const shouldUpdate = isMoreRecent(clock, this.getOurClock(documentId))
@@ -142,7 +136,7 @@ export class RepoSync {
         // they are letting us know they have this specific version of each of these docs
         const { documents } = msg
         for (const { documentId, clock } of documents) {
-          this.updateClock(documentId, theirs, clock)
+          this.updateTheirClock(documentId, clock)
           // we have the document as well; see if we have a more recent version than they do; if so
           // send them the changes they're missing
           if (this.repo.has(documentId)) await this.maybeSendChanges(documentId)
@@ -156,7 +150,7 @@ export class RepoSync {
         // they don't have this document and are asking for this document in its entirety
         const { documentIds } = msg
         for (const documentId of documentIds) {
-          this.updateClock(documentId, theirs, EMPTY_CLOCK)
+          this.updateTheirClock(documentId, EMPTY_CLOCK)
           // send them what we have
           await this.maybeSendChanges(documentId)
         }
@@ -197,7 +191,7 @@ export class RepoSync {
     this.validateDoc(documentId, clock)
 
     // Record the doc's initial clock
-    await this.updateClock(documentId, ours, clock)
+    await this.updateOurClock(documentId, clock)
   }
 
   /**
@@ -235,7 +229,7 @@ export class RepoSync {
     await this.maybeRequestChanges(documentId, clock)
 
     // update our clock
-    this.updateClock(documentId, ours, clock)
+    this.updateOurClock(documentId, clock)
   }
 
   /**
@@ -284,13 +278,8 @@ export class RepoSync {
   private async sendChanges(documentId: string, changes: A.Change[]) {
     this.log('sendChanges', documentId)
     const clock = await this.getClockFromDoc(documentId)
-    this.send({
-      type: message.SEND_CHANGES,
-      documentId,
-      clock,
-      changes,
-    })
-    this.updateClock(documentId, ours)
+    this.send({ type: message.SEND_CHANGES, documentId, clock, changes })
+    this.updateOurClock(documentId, clock)
   }
 
   /**
@@ -365,10 +354,7 @@ export class RepoSync {
 
   /** Looks up our last recorded clock for the requested document */
   getOurClock = (documentId: string) => this.clock.ours[documentId] || EMPTY_CLOCK
-
-  getTheirClock = (documentId: string) => {
-    return this.clock.theirs[documentId]
-  }
+  getTheirClock = (documentId: string) => this.clock.theirs[documentId]
 
   /**
    * Pulls clock information from the document's metadata
@@ -385,19 +371,22 @@ export class RepoSync {
    * Updates the vector clock by merging in the new vector clock `clock`, setting each node's
    * sequence number to the maximum for that node
    * @param documentId
-   * @param which
-   * @param clock
+   * @param newClock
    */
-  private async updateClock(documentId: string, which: Which, clock?: Clock) {
-    const _clock = clock ? clock : await this.getClockFromDoc(documentId)
+  private async updateOurClock(documentId: string, newClock: Clock) {
+    const oldClock = this.clock.ours[documentId]
+    this.clock.ours[documentId] = mergeClocks(oldClock, newClock)
+  }
 
-    const clockMap = this.clock[which]
-    const oldClock = clockMap[documentId] || EMPTY_CLOCK
-
-    // Merge the clocks, keeping the maximum sequence number for each node
-    const newClock = mergeClocks(oldClock, _clock)
-    clockMap[documentId] = newClock
-    this.clock[which] = clockMap
+  /**
+   * Updates the vector clock by merging in the new vector clock `clock`, setting each node's
+   * sequence number to the maximum for that node
+   * @param documentId
+   * @param newClock
+   */
+  private async updateTheirClock(documentId: string, newClock: Clock) {
+    const oldClock = this.clock.theirs[documentId] || EMPTY_CLOCK
+    this.clock.theirs[documentId] = mergeClocks(oldClock, newClock)
   }
 }
 
