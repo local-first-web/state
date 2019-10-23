@@ -1,5 +1,6 @@
 import A from 'automerge'
 import { AnyAction } from 'redux'
+import { Map } from 'immutable'
 
 export type ProxyReducer = (state: any, action: AnyAction) => ChangeMap | null
 
@@ -57,3 +58,6 @@ export interface ChangeSet {
 export type RepoHistory = {
   [documentId: string]: A.Change[]
 }
+
+export type Clock = Map<string, number>
+export type ClockMap = Map<string, Clock>
