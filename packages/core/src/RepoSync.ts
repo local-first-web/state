@@ -5,7 +5,7 @@ import { isMoreRecent_old, mergeClocks_old } from './clocks'
 import * as message from './Message'
 import { Message } from './Message'
 import { Repo } from './Repo'
-import { PlainClock, RepoHistory, RepoSnapshot } from './types'
+import { Clock, ClockMap, PlainClock, PlainClockMap, RepoHistory, RepoSnapshot } from './types'
 
 /**
  * A vector clock is a map, where the keys are the actorIds of all actors that have been active on a
@@ -13,11 +13,11 @@ import { PlainClock, RepoHistory, RepoSnapshot } from './types'
  * sequence number starts at 1 and increments every time an actor makes a change.
  */
 
-type Clock = Map<string, number>
-type ClockMap = Map<string, Clock>
-
 const EMPTY_CLOCK: Clock = Map()
 const EMPTY_CLOCKMAP: ClockMap = Map()
+
+const EMPTY_CLOCK_PLAIN: PlainClock = {}
+const EMPTY_CLOCKMAP_PLAIN: PlainClockMap = {}
 
 /**
  * One instance of `RepoSync` keeps one local document in sync with one remote peer's replica of the
@@ -207,7 +207,7 @@ export class RepoSync {
    */
   private async registerDoc(documentId: string) {
     this.log('registerDoc', documentId)
-    const clock = await this.getClockFromDoc(documentId)
+    const clock = await this.getClockFromDoc_old(documentId)
 
     // Make sure we can sync this document
     this.validateDoc(documentId, clock)
@@ -238,7 +238,7 @@ export class RepoSync {
    */
   private async onDocChanged(documentId: string) {
     this.log('onDocChanged', documentId)
-    const clock = await this.getClockFromDoc(documentId)
+    const clock = await this.getClockFromDoc_old(documentId)
     if (clock === undefined) return
 
     // make sure we can sync the new document
@@ -270,7 +270,7 @@ export class RepoSync {
    */
   private async maybeRequestChanges(
     documentId: string,
-    theirClock: Clock | Promise<Clock> = this.getClockFromDoc(documentId)
+    theirClock: Clock | Promise<Clock> = this.getClockFromDoc_old(documentId)
   ) {
     this.log('maybeRequestChanges', documentId)
     const ourClock = this.getOurClock(documentId)
@@ -298,7 +298,7 @@ export class RepoSync {
    */
   private async sendChanges(documentId: string, changes: A.Change[]) {
     this.log('sendChanges', documentId)
-    const clock = await this.getClockFromDoc(documentId)
+    const clock = await this.getClockFromDoc_old(documentId)
     this.send({
       type: message.SEND_CHANGES,
       documentId,
@@ -401,10 +401,16 @@ export class RepoSync {
    * @param documentId
    * @returns clock from doc
    */
-  private async getClockFromDoc(documentId: string): Promise<Clock> {
+  private async getClockFromDoc_old(documentId: string): Promise<Clock> {
     const doc = await this.repo.get(documentId)
     if (doc === undefined) return EMPTY_CLOCK
-    return _A.getClock(doc!)
+    return Map(_A.getClock(doc!)) as Clock
+  }
+
+  private async getClockFromDoc(documentId: string): Promise<PlainClock> {
+    const doc = await this.repo.get(documentId)
+    if (doc === undefined) return EMPTY_CLOCK_PLAIN
+    return _A.getClock(doc!) as PlainClock
   }
 
   /**
@@ -415,7 +421,7 @@ export class RepoSync {
    * @param clock
    */
   private async updateClock(documentId: string, which: Which, clock?: Clock) {
-    if (clock === undefined) clock = await this.getClockFromDoc(documentId)
+    if (clock === undefined) clock = await this.getClockFromDoc_old(documentId)
     const clockMap = this.clock[which]
     const oldClock = clockMap.get(documentId, EMPTY_CLOCK)
 
@@ -442,8 +448,8 @@ const _A = {
     return A.Backend.getMissingChanges(ourState!, theirClock)
   },
 
-  getClock: (doc: A.Doc<any>): Clock => {
+  getClock: (doc: A.Doc<any>): A.Clock => {
     const state = A.Frontend.getBackendState(doc) as any // BackendState doesn't have a public API
-    return state.getIn(['opSet', 'clock']) as Clock
+    return state.getIn(['opSet', 'clock']) as A.Clock
   },
 }
