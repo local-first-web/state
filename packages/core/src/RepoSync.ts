@@ -440,13 +440,13 @@ const theirs = 'theirs'
 type Which = typeof ours | typeof theirs
 
 const mergeClocks = (oldClock: Map<string, number>, clock: Map<string, number>) => {
-  const _oldClock = oldClock.toJS()
-  const _clock = clock.toJS()
+  const _oldClock = oldClock.toJS() as PlainClock
+  const _clock = clock.toJS() as PlainClock
   const _newClock = mergePlainClocks(_oldClock, _clock)
-  return Map<string, number>(_newClock)
+  return Map(_newClock) as Clock
 }
 
-function mergePlainClocks(_oldClock: Object, _clock: Object) {
+function mergePlainClocks(_oldClock: PlainClock, _clock: PlainClock): PlainClock {
   const largestWins = (x: number = 0, y: number = 0): number => Math.max(x, y)
   return R.mergeWith(largestWins, _oldClock, _clock)
 }
