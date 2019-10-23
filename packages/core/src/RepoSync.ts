@@ -1,7 +1,7 @@
 import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
-import { isMoreRecent, isMoreRecent_old, mergeClocks_old } from './clocks'
+import { isMoreRecent, isMoreRecent_old, mergeClocks, mergeClocks_old } from './clocks'
 import * as message from './Message'
 import { Message } from './Message'
 import { Repo } from './Repo'
@@ -298,11 +298,11 @@ export class RepoSync {
    */
   private async sendChanges(documentId: string, changes: A.Change[]) {
     this.log('sendChanges', documentId)
-    const clock = await this.getClockFromDoc_old(documentId)
+    const clock = await this.getClockFromDoc(documentId)
     this.send({
       type: message.SEND_CHANGES,
       documentId,
-      clock: clock.toJS() as PlainClock,
+      clock,
       changes,
     })
     this.updateClock(documentId, ours)
@@ -428,8 +428,8 @@ export class RepoSync {
     const oldClock = clockMap.get(documentId, EMPTY_CLOCK)
 
     // Merge the clocks, keeping the maximum sequence number for each node
-    const newClock = mergeClocks_old(oldClock, clock)
-    this.clock[which] = clockMap.set(documentId, newClock)
+    const newClock = mergeClocks(oldClock.toJS() as PlainClock, clock.toJS() as PlainClock)
+    this.clock[which] = clockMap.set(documentId, Map(newClock))
   }
 }
 
