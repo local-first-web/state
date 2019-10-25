@@ -6,7 +6,8 @@ import * as R from 'ramda'
 import { DELETED } from './constants'
 import { IdbAdapter } from './IdbAdapter'
 import { StorageAdapter } from './StorageAdapter'
-import { ChangeSet, RepoHistory, RepoSnapshot } from './types'
+import { ChangeSet, RepoHistory, RepoSnapshot, ClockMap, Clock } from './types'
+import { mergeClocks, EMPTY_CLOCK } from './clocks'
 
 export type RepoEventHandler<T> = (documentId: string, doc: A.Doc<T>) => void | Promise<void>
 
@@ -78,6 +79,31 @@ export class Repo<T = any> {
    * In-memory map of document snapshots
    */
   private state: RepoSnapshot = {}
+
+  /**
+   * In-memory map of document clocks
+   */
+  public clock: ClockMap = {}
+
+  /**
+   * Accessor for a document's clock
+   * @param documentId
+   * @returns Our clock, or if none exists, an empty clock
+   */
+  public getClock(documentId: string) {
+    return this.clock[documentId] || EMPTY_CLOCK
+  }
+
+  /**
+   * Updates the vector clock by merging in the new vector clock `clock`, setting each node's
+   * sequence number to the maximum for that node
+   * @param documentId
+   * @param newClock
+   */
+  public updateClock(documentId: string, newClock: Clock) {
+    const oldClock = this.clock[documentId]
+    this.clock[documentId] = mergeClocks(oldClock, newClock)
+  }
 
   /**
    * LRU cache of recently accessed Docs
