@@ -179,8 +179,8 @@ export class RepoSync {
 
   /** Event listener that fires when any document is modified on the repo */
   private async onDocChanged(documentId: string) {
-    this.log('onDocChanged', documentId)
     const clock = await this.getClockFromDoc(documentId)
+    this.log('onDocChanged', documentId, clock)
     if (clock === undefined) return
 
     // send the document if peer doesn't have it or has an older version
@@ -270,7 +270,8 @@ export class RepoSync {
   /** Load a snapshot of the entire repo */
   private receiveAllSnapshots(state: RepoSnapshot, clocks: ClockMap) {
     this.log('receiveAllSnapshots', state)
-    this.repo.loadState(state, clocks)
+    this.repo.loadState(state)
+    for (const documentId in clocks) this.updateTheirClock(documentId, clocks[documentId])
   }
 
   /** Pulls clock information from the document's metadata */

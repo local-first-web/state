@@ -195,6 +195,7 @@ export class Repo<T = any> {
    * @returns The updated document
    */
   async change(documentId: string, changeFn: A.ChangeFn<T>) {
+    this.log('change', documentId)
     // apply changes to document
     const oldDoc = (await this.rebuildDoc(documentId)) || A.init()
     const newDoc = A.change(oldDoc, changeFn)
@@ -348,12 +349,8 @@ export class Repo<T = any> {
    * > NOTE: This doesn't update the repo's change history or persist anything; this is only used
    * for synchronous updates of the state for UI purposes.
    */
-  loadState(state: RepoSnapshot<T>, clocks?: ClockMap) {
+  loadState(state: RepoSnapshot<T>) {
     this.state = Object.assign(this.state, state)
-    console.log(this.clock)
-    console.log(clocks)
-    // if (clocks) for (const documentId in clocks) this.updateClock(documentId, clocks[documentId])
-    // if (clocks) this.clock = Object.assign(this.clock, clocks)
   }
 
   /** Adds a change event listener */
