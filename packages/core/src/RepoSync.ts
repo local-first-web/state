@@ -270,7 +270,7 @@ export class RepoSync {
   /** Load a snapshot of the entire repo */
   private receiveAllSnapshots(state: RepoSnapshot, clocks: ClockMap) {
     this.log('receiveAllSnapshots', state)
-    // this.repo.loadState(state, clocks)
+    this.repo.loadState(state, clocks)
   }
 
   /** Pulls clock information from the document's metadata */

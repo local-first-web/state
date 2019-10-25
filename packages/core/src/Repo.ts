@@ -350,7 +350,10 @@ export class Repo<T = any> {
    */
   loadState(state: RepoSnapshot<T>, clocks?: ClockMap) {
     this.state = Object.assign(this.state, state)
-    if (clocks) this.clock = Object.assign(this.clock, clocks)
+    console.log(this.clock)
+    console.log(clocks)
+    // if (clocks) for (const documentId in clocks) this.updateClock(documentId, clocks[documentId])
+    // if (clocks) this.clock = Object.assign(this.clock, clocks)
   }
 
   /** Adds a change event listener */
