@@ -12,11 +12,9 @@ import { mergeClocks, EMPTY_CLOCK, getClock } from './clocks'
 export type RepoEventHandler<T> = (documentId: string, doc: A.Doc<T>) => void | Promise<void>
 
 interface RepoOptions {
-  /**
-   * The discovery key is a unique ID for this dataset, used to identify it when seeking peers with
-   * whom to synchronize. In the example apps we use randomly generated two-word names like
-   * `golden-lizard`. It could also be a UUID.
-   */
+  /** The discovery key is a unique ID for this dataset, used to identify it when seeking peers with
+   *  whom to synchronize. In the example apps we use randomly generated two-word names like
+   *  `golden-lizard`. It could also be a UUID. */
   discoveryKey: string
 
   /** Name to distinguish this application's data from others that this browser might have stored; * e.g. `grid` or `todos`. */
@@ -260,6 +258,11 @@ export class Repo<T = any> {
     return this.clock.hasOwnProperty(documentId)
   }
 
+  // TODO: merge getClocks and getAllClocks
+  public getClocks() {
+    return this.clock
+  }
+
   /* recast our ClockMap from a dictionary to an array of {docId, clock} objects */
   public getAllClocks() {
     return Object.keys(this.clock).map(documentId => ({
@@ -341,12 +344,13 @@ export class Repo<T = any> {
   }
 
   /**
-   * Replaces the (snapshot) state of the entire repo. NOTE: This doesn't update the repo's change
-   * history or persist anything; this is only used for synchronous updates of the state for UI
-   * purposes.
+   * Replaces the (snapshot) state of the entire repo.
+   * > NOTE: This doesn't update the repo's change history or persist anything; this is only used
+   * for synchronous updates of the state for UI purposes.
    */
-  loadState(replacementState: RepoSnapshot<T>) {
-    this.state = replacementState
+  loadState(state: RepoSnapshot<T>, clocks?: ClockMap) {
+    this.state = Object.assign(this.state, state)
+    if (clocks) this.clock = Object.assign(this.clock, clocks)
   }
 
   /** Adds a change event listener */
