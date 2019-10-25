@@ -71,7 +71,7 @@ export class RepoSync {
 
     this.isOpen = true
     for (let documentId of this.repo.documentIds)
-      if (!this.ourClock[documentId]) await this.registerDoc(documentId)
+      if (!this.repo.hasClock(documentId)) await this.registerDoc(documentId)
 
     this.repo.addHandler(this.onDocChanged.bind(this))
     await this.sendHello()
