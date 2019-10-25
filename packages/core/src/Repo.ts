@@ -166,13 +166,14 @@ export class Repo<T = any> {
    * @param changes (optional) If we're already given the changes (e.g. in `applyChanges`), we can
    * pass them in so we don't have to recalculate them.
    */
-  async set(documentId: string, doc: A.Doc<T>) {
+  async set(documentId: string, doc: A.Doc<T>, changes?: A.Change[]) {
     this.log('set', documentId, doc)
 
     // look up old doc and generate diff
-    const oldDoc = (await this.rebuildDoc(documentId)) || A.init()
-    const changes = A.getChanges(oldDoc, doc)
-
+    if (!changes) {
+      const oldDoc = (await this.rebuildDoc(documentId)) || A.init()
+      changes = A.getChanges(oldDoc, doc)
+    }
     // cache the doc
     this.docCache.set(documentId, doc)
 
@@ -214,24 +215,11 @@ export class Repo<T = any> {
    * @returns The updated document
    */
   async applyChanges(documentId: string, changes: A.Change[]) {
-    this.log('apply changes')
     // apply changes to document
     const doc = (await this.rebuildDoc(documentId)) || A.init()
     const newDoc = A.applyChanges(doc, changes)
 
-    // cache the doc
-    this.docCache.set(documentId, newDoc)
-
-    // append changes to this document's history
-    if (changes.length > 0) await this.appendChangeSet({ documentId, changes })
-
-    // save snapshot
-    await this.saveSnapshot(documentId, newDoc)
-
-    // call handlers
-    for (const fn of this.handlers) {
-      await fn(documentId, newDoc)
-    }
+    await this.set(documentId, newDoc, changes)
 
     // return the modified document
     return newDoc
@@ -415,6 +403,7 @@ export class Repo<T = any> {
   /** Saves the snapshot for the given `documentId`, replacing any existing snapshot. */
   private async saveSnapshot(documentId: string, document: A.Doc<T>) {
     const snapshot: any = clone(document)
+    const clock = getClock(document)
 
     if (snapshot[DELETED]) {
       this.removeSnapshot(documentId)
@@ -422,7 +411,7 @@ export class Repo<T = any> {
     } else {
       this.log('saveSnapshot', documentId, document)
       this.setSnapshot(documentId, snapshot)
-      await this.storage.putSnapshot(documentId, snapshot)
+      await this.storage.putSnapshot(documentId, snapshot, clock)
     }
   }
 }
