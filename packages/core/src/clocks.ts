@@ -18,3 +18,5 @@ export const isMoreRecent = (clock1: Clock, clock2: Clock) => {
   const clockIsMoreRecent = (actorId: string) => (clock1[actorId] || 0) > (clock2[actorId] || 0)
   return actors.some(clockIsMoreRecent)
 }
+
+export const EMPTY_CLOCK: Clock = {}
