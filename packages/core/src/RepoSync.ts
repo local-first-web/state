@@ -1,7 +1,7 @@
 import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
-import { isMoreRecent, mergeClocks } from './clocks'
+import { EMPTY_CLOCK, isMoreRecent, mergeClocks } from './clocks'
 import * as message from './Message'
 import { Message } from './Message'
 import { Repo } from './Repo'
@@ -9,7 +9,6 @@ import { Clock, ClockMap, RepoHistory, RepoSnapshot } from './types'
 
 // NEXT: Move our clock to the Repo, who is responsible for persisting it
 
-const EMPTY_CLOCK: Clock = {}
 /**
  * One instance of `RepoSync` keeps one local document in sync with one remote peer's replica of the
  * same document.
@@ -62,15 +61,9 @@ export class RepoSync {
   constructor(repo: Repo<any>, send: (msg: Message) => void) {
     this.repo = repo
     this.send = send
-    this.ourClock = {}
+    this.ourClock = repo.clock
     this.theirClock = {}
     this.log = debug(`cevitxe:reposync:${repo.databaseName}`)
-  }
-
-  getClocks() {
-    const ours = {}
-    const theirs = {}
-    return { ours, theirs }
   }
 
   // Public API
