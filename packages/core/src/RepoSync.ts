@@ -201,13 +201,10 @@ export class RepoSync {
   }
 
   /** Checks whether peer has more recent information than we do; if so, requests changes */
-  private async maybeRequestChanges(
-    documentId: string,
-    theirClock: Clock | Promise<Clock> = this.getClockFromDoc(documentId)
-  ) {
+  private async maybeRequestChanges(documentId: string, theirClock?: Clock) {
     this.log('maybeRequestChanges', documentId)
     const ourClock = this.getOurClock(documentId) as Clock
-    theirClock = await theirClock
+    theirClock = theirClock || (await this.getClockFromDoc(documentId))
     if (isMoreRecent(theirClock, ourClock)) this.advertise(documentId, theirClock)
   }
 
