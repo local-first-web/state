@@ -370,8 +370,7 @@ export class RepoSync {
    * @param newClock
    */
   private async updateOurClock(documentId: string, newClock: Clock) {
-    const oldClock = this.ourClock[documentId]
-    this.ourClock[documentId] = mergeClocks(oldClock, newClock)
+    this.repo.updateClock(documentId, newClock)
   }
 
   /**
