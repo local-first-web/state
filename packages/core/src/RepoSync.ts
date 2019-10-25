@@ -227,7 +227,9 @@ export class RepoSync {
     this.updateOurClock(documentId, clock)
   }
 
-  /** Informs our peer that we have a specific version of a document, so they can see if they have an * older version (in which case they will request changes) or a newer version (in which case they will send changes) */
+  /** Informs our peer that we have a specific version of a document, so they can see if they have
+   *  an older version (in which case they will request changes) or a newer version (in which case
+   *  they will send changes) */
   private async advertise(documentId: string, clock: Clock = this.getOurClock(documentId)) {
     this.log('advertise', documentId)
     this.send({ type: message.ADVERTISE_DOCS, clocks: [{ documentId, clock }] })
@@ -236,7 +238,10 @@ export class RepoSync {
   /** Sends a single message containing each documentId along with our clock value for it */
   private async advertiseAll() {
     this.log('advertiseAll')
-    const clocks = this.repo.getAllClocks()
+    const clocks = Object.keys(this.repo.getClocks()).map(documentId => ({
+      documentId,
+      clock: this.getOurClock(documentId),
+    }))
     this.send({ type: message.ADVERTISE_DOCS, clocks })
   }
 

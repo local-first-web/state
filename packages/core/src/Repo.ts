@@ -259,17 +259,9 @@ export class Repo<T = any> {
     return this.clock.hasOwnProperty(documentId)
   }
 
-  // TODO: merge getClocks and getAllClocks
+  /**  */
   public getClocks() {
     return this.clock
-  }
-
-  /* recast our ClockMap from a dictionary to an array of {docId, clock} objects */
-  public getAllClocks() {
-    return Object.keys(this.clock).map(documentId => ({
-      documentId,
-      clock: this.getClock(documentId),
-    }))
   }
 
   /**
