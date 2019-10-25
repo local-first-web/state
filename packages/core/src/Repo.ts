@@ -255,11 +255,12 @@ export class Repo<T = any> {
     return this.clock[documentId] || EMPTY_CLOCK
   }
 
+  /** Returns true if we have a clock in memory for this document */
   public hasClock(documentId: string) {
     return this.clock.hasOwnProperty(documentId)
   }
 
-  /**  */
+  /** Returns our entire ClockMap as-is */
   public getClocks() {
     return this.clock
   }
