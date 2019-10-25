@@ -248,9 +248,7 @@ export class RepoSync {
     this.updateOurClock(documentId, clock)
   }
 
-  /** Informs our peer that we have a specific version of a document, so they can see if they have an * older version (in which case they will request changes) or a newer version (in which case they
-   * will send changes)
-   */
+  /** Informs our peer that we have a specific version of a document, so they can see if they have an * older version (in which case they will request changes) or a newer version (in which case they will send changes) */
   private async advertise(documentId: string, clock: Clock = this.getOurClock(documentId)) {
     this.log('advertise', documentId)
     this.send({ type: message.ADVERTISE_DOCS, clocks: [{ documentId, clock }] })
@@ -311,10 +309,7 @@ export class RepoSync {
     this.repo.updateClock(documentId, newClock)
   }
 
-  /** Updates their vector clock by merging in the new vector clock `clock`, setting each node's sequence number to the maximum for that node
-   * @param documentId
-   * @param newClock
-   */
+  /** Updates their vector clock by merging in the new vector clock `clock`, setting each node's sequence number to the maximum for that node */
   private async updateTheirClock(documentId: string, newClock: Clock) {
     const oldClock = this.theirClock[documentId] || EMPTY_CLOCK
     this.theirClock[documentId] = mergeClocks(oldClock, newClock)
