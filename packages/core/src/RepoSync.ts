@@ -130,8 +130,8 @@ export class RepoSync {
 
       case message.ADVERTISE_DOCS: {
         // they are letting us know they have this specific version of each of these docs
-        const { documents } = msg
-        for (const { documentId, clock } of documents) {
+        const { clocks } = msg
+        for (const { documentId, clock } of clocks) {
           this.updateTheirClock(documentId, clock)
           // we have the document as well; see if we have a more recent version than they do; if so
           // send them the changes they're missing
@@ -287,7 +287,7 @@ export class RepoSync {
    */
   private async advertise(documentId: string, clock: Clock = this.getOurClock(documentId)) {
     this.log('advertise', documentId)
-    this.send({ type: message.ADVERTISE_DOCS, documents: [{ documentId, clock }] })
+    this.send({ type: message.ADVERTISE_DOCS, clocks: [{ documentId, clock }] })
   }
 
   /**
@@ -296,11 +296,11 @@ export class RepoSync {
   private async advertiseAll() {
     this.log('advertiseAll')
     // recast our ClockMap from a dictionary to an array of {docId, clock} objects
-    const documents = Object.keys(this.ourClock).map(documentId => {
+    const clocks = Object.keys(this.ourClock).map(documentId => {
       const clock = this.getOurClock(documentId)
       return { documentId, clock }
     })
-    this.send({ type: message.ADVERTISE_DOCS, documents })
+    this.send({ type: message.ADVERTISE_DOCS, clocks })
   }
 
   /**

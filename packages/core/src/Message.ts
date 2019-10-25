@@ -25,7 +25,7 @@ export interface RequestDocsMessage {
 export const ADVERTISE_DOCS = 'ADVERTISE_DOCS'
 export interface AdvertiseDocsMessage {
   type: typeof ADVERTISE_DOCS
-  documents: {
+  clocks: {
     documentId: string
     clock: Clock
   }[]
