@@ -173,23 +173,8 @@ export class RepoSync {
     this.log('registerDoc', documentId)
     const clock = await this.getClockFromDoc(documentId)
 
-    // Make sure we can sync this document
-    this.validateDoc(documentId, clock)
-
     // Record the doc's initial clock
     await this.updateOurClock(documentId, clock)
-  }
-
-  /** Checks the local doc's clock to ensure that it can be synced */
-  private validateDoc(documentId: string, clock: Clock) {
-    this.log('validateDoc', documentId)
-
-    // Make sure doc has a clock (i.e. is an Automerge object)
-    if (!clock) throw new TypeError(ERR_NOCLOCK)
-
-    // Make sure the document is newer than what we already have
-    const ourClock = this.getOurClock(documentId)
-    if (isMoreRecent(ourClock, clock)) throw new RangeError(ERR_OLDCLOCK)
   }
 
   /** Event listener that fires when any document is modified on the repo */
@@ -197,9 +182,6 @@ export class RepoSync {
     this.log('onDocChanged', documentId)
     const clock = await this.getClockFromDoc(documentId)
     if (clock === undefined) return
-
-    // make sure we can sync the new document
-    this.validateDoc(documentId, clock)
 
     // send the document if peer doesn't have it or has an older version
     await this.maybeSendChanges(documentId)
@@ -296,8 +278,7 @@ export class RepoSync {
   /** Pulls clock information from the document's metadata */
   private async getClockFromDoc(documentId: string): Promise<Clock> {
     const doc = await this.repo.get(documentId)
-    if (doc === undefined) return EMPTY_CLOCK
-    return Map(getClock(doc!)).toJS() as Clock
+    return doc ? (Map(getClock(doc!)).toJS() as Clock) : EMPTY_CLOCK
   }
 
   /** Looks up our last recorded clock for the requested document */
@@ -315,6 +296,3 @@ export class RepoSync {
     this.theirClock[documentId] = mergeClocks(oldClock, newClock)
   }
 }
-
-const ERR_OLDCLOCK = `Cannot pass an old state object to a connection`
-const ERR_NOCLOCK = `This object doesn't have a clock and cannot be used for network sync. `
