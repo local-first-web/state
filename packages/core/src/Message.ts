@@ -1,5 +1,5 @@
 import A from 'automerge'
-import { RepoSnapshot, RepoHistory, Clock } from './types'
+import { RepoSnapshot, RepoHistory, Clock, ClockMap } from './types'
 
 /**
  * Kick off our interaction with a peer by telling them how many documents we have
@@ -78,6 +78,7 @@ export const SEND_ALL_SNAPSHOTS = 'SEND_ALL_SNAPSHOTS'
 interface SendAllSnapshotsMessage {
   type: typeof SEND_ALL_SNAPSHOTS
   state: RepoSnapshot
+  clocks: ClockMap
 }
 
 export type Message =
