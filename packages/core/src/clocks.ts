@@ -1,5 +1,6 @@
 ﻿import * as R from 'ramda'
 import { Clock } from './types'
+import A from 'automerge'
 
 /**
  * A vector clock is a map, where the keys are the actorIds of all actors that have been active on a
@@ -7,11 +8,14 @@ import { Clock } from './types'
  * sequence number starts at 1 and increments every time an actor makes a change.
  */
 
+export const EMPTY_CLOCK: Clock = {}
+
 /** Merges the clocks, keeping the maximum sequence number for each node */
 export function mergeClocks(oldClock: Clock, newClock: Clock): Clock {
   const largestWins = (x: number = 0, y: number = 0): number => Math.max(x, y)
   return R.mergeWith(largestWins, oldClock, newClock)
 }
+
 /** Returns true if there are any actors in clock1 that have more recent updates than in clock2 */
 export const isMoreRecent = (clock1: Clock, clock2: Clock) => {
   const actors = Object.keys({ ...clock1, ...clock2 })
@@ -19,4 +23,15 @@ export const isMoreRecent = (clock1: Clock, clock2: Clock) => {
   return actors.some(clockIsMoreRecent)
 }
 
-export const EMPTY_CLOCK: Clock = {}
+// TODO: These probably should be top-level Automerge functions; submit PR
+
+export const getMissingChanges = (ourDoc: A.Doc<any>, theirClock: A.Clock): A.Change[] => {
+  if (theirClock === undefined) return []
+  const ourState = A.Frontend.getBackendState(ourDoc)
+  return A.Backend.getMissingChanges(ourState!, theirClock)
+}
+
+export const getClock = (doc: A.Doc<any>): A.Clock => {
+  const state = A.Frontend.getBackendState(doc) as any // BackendState doesn't have a public API
+  return state.getIn(['opSet', 'clock']) as A.Clock
+}

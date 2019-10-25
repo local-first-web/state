@@ -1,7 +1,7 @@
 import A from 'automerge'
 import debug from 'debug'
 import { Map } from 'immutable'
-import { EMPTY_CLOCK, isMoreRecent, mergeClocks } from './clocks'
+import { EMPTY_CLOCK, isMoreRecent, mergeClocks, getMissingChanges, getClock } from './clocks'
 import * as message from './Message'
 import { Message } from './Message'
 import { Repo } from './Repo'
@@ -238,7 +238,7 @@ export class RepoSync {
     const ourDoc = await this.repo.get(documentId)
     if (ourDoc === undefined) return
     const _theirClock: A.Clock = (Map(theirClock) as unknown) as A.Clock
-    const changes = _A.getMissingChanges(ourDoc, _theirClock)
+    const changes = getMissingChanges(ourDoc, _theirClock)
     if (changes.length > 0) await this.sendChanges(documentId, changes)
   }
 
@@ -270,13 +270,15 @@ export class RepoSync {
     this.send({ type: message.REQUEST_DOCS, documentIds: [documentId] })
   }
 
-  /** Send snapshots for all documents */ private sendAllSnapshots() {
+  /** Send snapshots for all documents */
+  private sendAllSnapshots() {
     const state = this.repo.getState()
     this.log('sendAllSnapshots', state)
     this.send({ type: message.SEND_ALL_SNAPSHOTS, state })
   }
 
-  /** Send all changes for all documents (for initialization) */ private async sendAllHistory() {
+  /** Send all changes for all documents (for initialization) */
+  private async sendAllHistory() {
     // TODO: for large datasets, send in batches
     const history = await this.repo.getHistory()
     this.log('sendAllHistory', history)
@@ -303,7 +305,7 @@ export class RepoSync {
   private async getClockFromDoc(documentId: string): Promise<Clock> {
     const doc = await this.repo.get(documentId)
     if (doc === undefined) return EMPTY_CLOCK
-    return Map(_A.getClock(doc!)).toJS() as Clock
+    return Map(getClock(doc!)).toJS() as Clock
   }
 
   /** Updates our vector clock by merging in the new vector clock `clock`, setting each node's sequence number to the maximum for that node */
@@ -323,19 +325,3 @@ export class RepoSync {
 
 const ERR_OLDCLOCK = `Cannot pass an old state object to a connection`
 const ERR_NOCLOCK = `This object doesn't have a clock and cannot be used for network sync. `
-
-// TODO: Submit these to Automerge
-const _A = {
-  ...A,
-
-  getMissingChanges: (ourDoc: A.Doc<any>, theirClock: A.Clock): A.Change[] => {
-    if (theirClock === undefined) return []
-    const ourState = A.Frontend.getBackendState(ourDoc)
-    return A.Backend.getMissingChanges(ourState!, theirClock)
-  },
-
-  getClock: (doc: A.Doc<any>): A.Clock => {
-    const state = A.Frontend.getBackendState(doc) as any // BackendState doesn't have a public API
-    return state.getIn(['opSet', 'clock']) as A.Clock
-  },
-}
