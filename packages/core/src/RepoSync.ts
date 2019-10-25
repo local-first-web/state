@@ -212,9 +212,7 @@ export class RepoSync {
   private async maybeSendChanges(documentId: string) {
     const theirClock = this.getTheirClock(documentId)
     const ourDoc = await this.repo.get(documentId)
-
     if (theirClock === undefined || ourDoc === undefined) return
-
     const changes = getMissingChanges(ourDoc, theirClock)
     if (changes.length > 0) await this.sendChanges(documentId, changes)
   }
