@@ -7,6 +7,8 @@ import { Message } from './Message'
 import { Repo } from './Repo'
 import { Clock, ClockMap, RepoHistory, RepoSnapshot } from './types'
 
+// NEXT: Move our clock to the Repo, who is responsible for persisting it
+
 const EMPTY_CLOCK: Clock = {}
 /**
  * One instance of `RepoSync` keeps one local document in sync with one remote peer's replica of the
@@ -47,9 +49,10 @@ const EMPTY_CLOCK: Clock = {}
 export class RepoSync {
   public repo: Repo<any>
   private send: (msg: Message) => void
-  private clock: { ours: ClockMap; theirs: ClockMap }
-  private log: debug.Debugger
+  private ourClock: ClockMap
+  private theirClock: ClockMap
   private isOpen = false
+  private log: debug.Debugger
 
   /**
    * @param repo A `Repo` containing the document being synchronized.
@@ -59,7 +62,8 @@ export class RepoSync {
   constructor(repo: Repo<any>, send: (msg: Message) => void) {
     this.repo = repo
     this.send = send
-    this.clock = this.getClocks()
+    this.ourClock = {}
+    this.theirClock = {}
     this.log = debug(`cevitxe:reposync:${repo.databaseName}`)
   }
 
@@ -76,7 +80,7 @@ export class RepoSync {
 
     this.isOpen = true
     for (let documentId of this.repo.documentIds)
-      if (!this.clock.ours[documentId]) await this.registerDoc(documentId)
+      if (!this.ourClock[documentId]) await this.registerDoc(documentId)
 
     this.repo.addHandler(this.onDocChanged.bind(this))
     await this.sendHello()
@@ -299,7 +303,7 @@ export class RepoSync {
   private async advertiseAll() {
     this.log('advertiseAll')
     // recast our ClockMap from a dictionary to an array of {docId, clock} objects
-    const documents = Object.keys(this.clock.ours).map(documentId => {
+    const documents = Object.keys(this.ourClock).map(documentId => {
       const clock = this.getOurClock(documentId)
       return { documentId, clock }
     })
@@ -352,8 +356,8 @@ export class RepoSync {
   }
 
   /** Looks up our last recorded clock for the requested document */
-  getOurClock = (documentId: string) => this.clock.ours[documentId] || EMPTY_CLOCK
-  getTheirClock = (documentId: string) => this.clock.theirs[documentId]
+  getOurClock = (documentId: string) => this.ourClock[documentId] || EMPTY_CLOCK
+  getTheirClock = (documentId: string) => this.theirClock[documentId]
 
   /**
    * Pulls clock information from the document's metadata
@@ -373,8 +377,8 @@ export class RepoSync {
    * @param newClock
    */
   private async updateOurClock(documentId: string, newClock: Clock) {
-    const oldClock = this.clock.ours[documentId]
-    this.clock.ours[documentId] = mergeClocks(oldClock, newClock)
+    const oldClock = this.ourClock[documentId]
+    this.ourClock[documentId] = mergeClocks(oldClock, newClock)
   }
 
   /**
@@ -384,8 +388,8 @@ export class RepoSync {
    * @param newClock
    */
   private async updateTheirClock(documentId: string, newClock: Clock) {
-    const oldClock = this.clock.theirs[documentId] || EMPTY_CLOCK
-    this.clock.theirs[documentId] = mergeClocks(oldClock, newClock)
+    const oldClock = this.theirClock[documentId] || EMPTY_CLOCK
+    this.theirClock[documentId] = mergeClocks(oldClock, newClock)
   }
 }
 
