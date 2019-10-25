@@ -7,8 +7,6 @@ import { Message } from './Message'
 import { Repo } from './Repo'
 import { Clock, ClockMap, RepoHistory, RepoSnapshot } from './types'
 
-// NEXT: Move our clock to the Repo, who is responsible for persisting it
-
 /**
  * One instance of `RepoSync` keeps one local document in sync with one remote peer's replica of the
  * same document.
@@ -66,7 +64,7 @@ export class RepoSync {
     this.log = debug(`cevitxe:reposync:${repo.databaseName}`)
   }
 
-  // Public API
+  // PUBLIC METHODS
 
   async open() {
     this.log('open')
@@ -170,7 +168,7 @@ export class RepoSync {
     }
   }
 
-  // Private methods
+  // PRIVATE METHODS
 
   /** Called for each document upon initialization. Records the document's clock and advertises it. */
   private async registerDoc(documentId: string) {
