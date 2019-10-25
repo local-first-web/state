@@ -369,8 +369,9 @@ export class Repo<T = any> {
   /** Loads all the repo's snapshots into memory */
   private async loadSnapshotsFromDb() {
     for await (const cursor of this.storage.snapshots) {
-      const { documentId, snapshot } = cursor.value
+      const { documentId, snapshot, clock } = cursor.value
       this.state[documentId] = snapshot[DELETED] ? null : snapshot
+      this.clock[documentId] = clock
     }
   }
 
