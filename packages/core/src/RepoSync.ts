@@ -248,8 +248,9 @@ export class RepoSync {
   /** Send snapshots for all documents */
   private sendAllSnapshots() {
     const state = this.repo.getState()
+    const clocks = this.repo.getClocks()
     this.log('sendAllSnapshots', state)
-    this.send({ type: message.SEND_ALL_SNAPSHOTS, state })
+    this.send({ type: message.SEND_ALL_SNAPSHOTS, state, clocks })
   }
 
   /** Send all changes for all documents (for initialization) */
