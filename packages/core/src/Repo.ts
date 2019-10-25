@@ -176,14 +176,17 @@ export class Repo<T = any> {
     // cache the doc
     this.docCache.set(documentId, doc)
 
-    // append changes to this document's history
-    if (changes.length > 0) await this.appendChangeSet({ documentId, changes })
+    // if Automerge actually found changes in the new document
+    if (changes.length > 0) {
+      // append changes to this document's history
+      await this.appendChangeSet({ documentId, changes })
 
-    // save snapshot
-    await this.saveSnapshot(documentId, doc)
+      // save snapshot
+      await this.saveSnapshot(documentId, doc)
 
-    // call handlers
-    for (const fn of this.handlers) await fn(documentId, doc)
+      // call handlers
+      for (const fn of this.handlers) await fn(documentId, doc)
+    }
   }
 
   /**
@@ -283,6 +286,7 @@ export class Repo<T = any> {
     const oldClock = this.clock[documentId]
     this.clock[documentId] = mergeClocks(oldClock, newClock)
   }
+
   /**
    * Gets the in-memory snapshot of a document
    * @param documentId
