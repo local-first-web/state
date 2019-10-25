@@ -25,7 +25,6 @@ const makeConnection = async (key: string, repo: Repo<BirdCount>, channel: TestC
   // hook up receive
   channel.addListener('data', (peer_id, msg) => {
     if (peer_id === key) return // ignore messages that we sent
-    log('receiving', peer_id, msg)
     sync.receive(msg)
   })
   channel.addPeer()
@@ -282,7 +281,7 @@ describe(`RepoSync`, () => {
       await localRepo.change(documentId, s => (s.swallows = 2))
 
       // remote peer sees changes immediately
-      await docChanged(remoteRepo)
+      await _yield()
       remoteDoc = await remoteRepo.get(documentId)
       expect(remoteDoc!.swallows).toEqual(2)
 
