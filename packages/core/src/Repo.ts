@@ -1,4 +1,4 @@
-import A from 'automerge'
+﻿import A from 'automerge'
 import { newid } from 'cevitxe-signal-client'
 import debug from 'debug'
 import Cache from 'lru-cache'
@@ -19,20 +19,13 @@ interface RepoOptions {
    */
   discoveryKey: string
 
-  /**
-   * Name to distinguish this application's data from others that this browser might have stored;
-   * e.g. `grid` or `todos`.
-   */
+  /** Name to distinguish this application's data from others that this browser might have stored; * e.g. `grid` or `todos`. */
   databaseName: string
 
-  /**
-   * Unique identifier representing this peer
-   */
+  /** Unique identifier representing this peer */
   clientId?: string
 
-  /**
-   * Storage adapter to use. Defaults to
-   */
+  /** Storage adapter to use. Defaults to `IdbAdapter` */
   storage?: StorageAdapter
 }
 
@@ -75,14 +68,10 @@ export class Repo<T = any> {
   public databaseName: string
   public clientId: string
 
-  /**
-   * In-memory map of document snapshots
-   */
+  /** In-memory map of document snapshots */
   private state: RepoSnapshot = {}
 
-  /**
-   * In-memory map of document clocks
-   */
+  /** In-memory map of document clocks */
   public clock: ClockMap = {}
 
   /**
@@ -113,14 +102,10 @@ export class Repo<T = any> {
     this.clock[documentId] = mergeClocks(oldClock, newClock)
   }
 
-  /**
-   * LRU cache of recently accessed Docs
-   */
+  /** LRU cache of recently accessed Docs */
   private docCache: Cache<string, any>
 
-  /**
-   * Document change event listeners. Each handler fires every time a document is set or removed.
-   */
+  /** Document change event listeners. Each handler fires every time a document is set or removed. */
   private handlers: Set<RepoEventHandler<T>>
 
   constructor(options: RepoOptions) {
@@ -179,32 +164,23 @@ export class Repo<T = any> {
     }
   }
 
-  /**
-   * Returns all of the repo's document IDs from memory.
-   */
+  /** Returns all of the repo's document IDs from memory. */
   get documentIds() {
     return Object.keys(this.state)
   }
 
-  /**
-   * @returns true if this repo has this document (even if it's been deleted)
-   */
+  /** @returns true if this repo has this document (even if it's been deleted) */
   has(documentId: string): boolean {
     // if the document has been deleted, its snapshot set to `null`, but the map still contains the entry
     return this.state.hasOwnProperty(documentId)
   }
 
-  /**
-   * Returns the number of document IDs that this repo has (including deleted)
-   */
+  /** Returns the number of document IDs that this repo has (including deleted) */
   get count() {
     return this.documentIds.length
   }
 
-  /**
-   * Reconstitutes an Automerge document from its change history
-   * @param documentId
-   */
+  /** Reconstitutes an Automerge document from its change history  */
   async get(documentId: string): Promise<A.Doc<T> | undefined> {
     // TODO: reimplement caching
     this.log('get', documentId)
@@ -288,7 +264,7 @@ export class Repo<T = any> {
 
   /**
    * Used for sending the entire current state of the repo to a new peer.
-   * @returns Returns an object mapping documentIds to an array of changes.
+   * @returns  an object mapping documentIds to an array of changes.
    */
   async getHistory(): Promise<RepoHistory> {
     const history: RepoHistory = {}
@@ -300,9 +276,7 @@ export class Repo<T = any> {
     return history
   }
 
-  /**
-   * Used when receiving the entire current state of a repo from a peer.
-   */
+  /** Used when receiving the entire current state of a repo from a peer. */
   async loadHistory(history: RepoHistory) {
     for (const documentId in history) {
       const changes = history[documentId]
@@ -313,7 +287,7 @@ export class Repo<T = any> {
   /**
    * Gets the in-memory snapshot of a document
    * @param documentId
-   * @returns Returns a plain JS object
+   * @returns  a plain JS object
    */
   getSnapshot(documentId: string) {
     return this.state[documentId]
@@ -342,9 +316,9 @@ export class Repo<T = any> {
   }
 
   /**
-   * Sets the in-memory snapshot of a document. NOTE: This does not update the document's change
-   * history or persist anything; this is just to allow synchronous updates of the state for UI
-   * purposes.
+   * Sets the in-memory snapshot of a document.
+   * > NOTE: This does not update the document's change history or persist anything; it's just to
+   * allow synchronous updates of the state for UI purposes.
    * @param documentId
    * @param snapshot
    */
@@ -366,9 +340,7 @@ export class Repo<T = any> {
     this.state[documentId] = null
   }
 
-  /**
-   * Returns the state of the entire repo, containing snapshots of all the documents.
-   */
+  /** Returns the state of the entire repo, containing snapshots of all the documents. */
   getState(): RepoSnapshot<T> {
     return this.state
   }
@@ -382,34 +354,24 @@ export class Repo<T = any> {
     this.state = replacementState
   }
 
-  /**
-   * Adds a change event listener
-   * @param handler
-   */
+  /** Adds a change event listener */
   addHandler(handler: RepoEventHandler<T>) {
     this.handlers.add(handler)
   }
 
-  /**
-   * Removes a change event listener
-   */
+  /** Removes a change event listener */
   removeHandler(handler: RepoEventHandler<T>) {
     this.handlers.delete(handler)
   }
 
   // PRIVATE
 
-  /**
-   * Determines whether the repo has previously persisted data or not.
-   * @returns `true` if there is any stored data in the repo.
-   */
+  /** @returns `true` if there is any stored data in the repo. */
   private async hasData() {
     return this.storage.hasData()
   }
 
-  /**
-   * Loads all the repo's snapshots into memory
-   */
+  /** Loads all the repo's snapshots into memory */
   private async loadSnapshotsFromDb() {
     for await (const cursor of this.storage.snapshots) {
       const { documentId, snapshot } = cursor.value
@@ -417,10 +379,7 @@ export class Repo<T = any> {
     }
   }
 
-  /**
-   * Recreates an Automerge document from its change history
-   * @param documentId
-   */
+  /** Recreates an Automerge document from its change history */
   private async rebuildDoc(documentId: string): Promise<A.Doc<T> | undefined> {
     if (!this.has(documentId)) return undefined
     let doc = A.init<T>({ actorId: this.clientId })
@@ -430,10 +389,7 @@ export class Repo<T = any> {
     return doc
   }
 
-  /**
-   * Adds a set of changes to the document's append-only history.
-   * @param changeSet
-   */
+  /** Adds a set of changes to the document's append-only history. */
   private async appendChangeSet(changeSet: ChangeSet) {
     this.log('appending changeset', changeSet.documentId, changeSet.changes.length)
     this.storage.appendChanges(changeSet)
@@ -449,11 +405,7 @@ export class Repo<T = any> {
     return this.storage.getDocumentChanges(documentId)
   }
 
-  /**
-   * Saves the snapshot for the given `documentId`, replacing any existing snapshot.
-   * @param documentId
-   * @param snapshot
-   */
+  /** Saves the snapshot for the given `documentId`, replacing any existing snapshot. */
   private async saveSnapshot(documentId: string, document: A.Doc<T>) {
     const snapshot: any = clone(document)
 
