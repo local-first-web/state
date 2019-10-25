@@ -155,8 +155,8 @@ export class RepoSync {
 
       case message.SEND_ALL_SNAPSHOTS: {
         // they are sending us the latest snapshots for all documents
-        const { state } = msg
-        this.receiveAllSnapshots(state)
+        const { state, clocks } = msg
+        this.receiveAllSnapshots(state, clocks)
         break
       }
 
@@ -268,9 +268,9 @@ export class RepoSync {
   }
 
   /** Load a snapshot of the entire repo */
-  private receiveAllSnapshots(state: RepoSnapshot) {
+  private receiveAllSnapshots(state: RepoSnapshot, clocks: ClockMap) {
     this.log('receiveAllSnapshots', state)
-    this.repo.loadState(state)
+    // this.repo.loadState(state, clocks)
   }
 
   /** Pulls clock information from the document's metadata */
