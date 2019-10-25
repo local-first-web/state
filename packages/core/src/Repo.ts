@@ -1,4 +1,4 @@
-﻿import A from 'automerge'
+import A from 'automerge'
 import { newid } from 'cevitxe-signal-client'
 import debug from 'debug'
 import Cache from 'lru-cache'
@@ -92,6 +92,14 @@ export class Repo<T = any> {
    */
   public getClock(documentId: string) {
     return this.clock[documentId] || EMPTY_CLOCK
+  }
+
+  /* recast our ClockMap from a dictionary to an array of {docId, clock} objects */
+  public getAllClocks() {
+    return Object.keys(this.clock).map(documentId => ({
+      documentId,
+      clock: this.getClock(documentId),
+    }))
   }
 
   /**
