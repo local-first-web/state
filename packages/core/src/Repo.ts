@@ -57,8 +57,8 @@ interface RepoOptions {
  *     5: { id:5, documentId: qrs567, changeSet: [...]}
  *     6: { id:6, documentId: qrs567, changeSet: [...]}
  *   snapshots (object store)
- *     abc123: [snapshot]
- *     qrs567: [snapshot]
+ *     abc123: { documentId: abc123, snapshot: {...}, clock: {...}}
+ *     qrs567: { documentId: qrs567, snapshot: {...}, clock: {...}}
  * ```
  */
 export class Repo<T = any> {
@@ -177,7 +177,7 @@ export class Repo<T = any> {
     // cache the doc
     this.docCache.set(documentId, doc)
 
-    // if Automerge actually found changes in the new document
+    // only if Automerge actually found changes in the new document...
     if (changes.length > 0) {
       // append changes to this document's history
       await this.appendChangeSet({ documentId, changes })
