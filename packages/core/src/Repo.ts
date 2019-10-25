@@ -74,34 +74,6 @@ export class Repo<T = any> {
   /** In-memory map of document clocks */
   public clock: ClockMap = {}
 
-  /**
-   * Accessor for a document's clock
-   * @param documentId
-   * @returns Our clock, or if none exists, an empty clock
-   */
-  public getClock(documentId: string) {
-    return this.clock[documentId] || EMPTY_CLOCK
-  }
-
-  /* recast our ClockMap from a dictionary to an array of {docId, clock} objects */
-  public getAllClocks() {
-    return Object.keys(this.clock).map(documentId => ({
-      documentId,
-      clock: this.getClock(documentId),
-    }))
-  }
-
-  /**
-   * Updates the vector clock by merging in the new vector clock `clock`, setting each node's
-   * sequence number to the maximum for that node
-   * @param documentId
-   * @param newClock
-   */
-  public updateClock(documentId: string, newClock: Clock) {
-    const oldClock = this.clock[documentId]
-    this.clock[documentId] = mergeClocks(oldClock, newClock)
-  }
-
   /** LRU cache of recently accessed Docs */
   private docCache: Cache<string, any>
 
@@ -285,6 +257,33 @@ export class Repo<T = any> {
   }
 
   /**
+   * Accessor for a document's clock
+   * @param documentId
+   * @returns Our clock, or if none exists, an empty clock
+   */
+  public getClock(documentId: string) {
+    return this.clock[documentId] || EMPTY_CLOCK
+  }
+
+  /* recast our ClockMap from a dictionary to an array of {docId, clock} objects */
+  public getAllClocks() {
+    return Object.keys(this.clock).map(documentId => ({
+      documentId,
+      clock: this.getClock(documentId),
+    }))
+  }
+
+  /**
+   * Updates the vector clock by merging in the new vector clock `clock`, setting each node's
+   * sequence number to the maximum for that node
+   * @param documentId
+   * @param newClock
+   */
+  public updateClock(documentId: string, newClock: Clock) {
+    const oldClock = this.clock[documentId]
+    this.clock[documentId] = mergeClocks(oldClock, newClock)
+  }
+  /**
    * Gets the in-memory snapshot of a document
    * @param documentId
    * @returns  a plain JS object
@@ -364,7 +363,7 @@ export class Repo<T = any> {
     this.handlers.delete(handler)
   }
 
-  // PRIVATE
+  // PRIVATE METHODS
 
   /** @returns `true` if there is any stored data in the repo. */
   private async hasData() {
