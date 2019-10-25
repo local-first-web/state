@@ -7,7 +7,7 @@ import { DELETED } from './constants'
 import { IdbAdapter } from './IdbAdapter'
 import { StorageAdapter } from './StorageAdapter'
 import { ChangeSet, RepoHistory, RepoSnapshot, ClockMap, Clock } from './types'
-import { mergeClocks, EMPTY_CLOCK } from './clocks'
+import { mergeClocks, EMPTY_CLOCK, getClock } from './clocks'
 
 export type RepoEventHandler<T> = (documentId: string, doc: A.Doc<T>) => void | Promise<void>
 
@@ -266,6 +266,10 @@ export class Repo<T = any> {
    */
   public getClock(documentId: string) {
     return this.clock[documentId] || EMPTY_CLOCK
+  }
+
+  public hasClock(documentId: string) {
+    return this.clock.hasOwnProperty(documentId)
   }
 
   /* recast our ClockMap from a dictionary to an array of {docId, clock} objects */
