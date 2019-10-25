@@ -46,7 +46,6 @@ import { Clock, ClockMap, RepoHistory, RepoSnapshot } from './types'
 export class RepoSync {
   public repo: Repo<any>
   private send: (msg: Message) => void
-  private ourClock: ClockMap
   private theirClock: ClockMap
   private isOpen = false
   private log: debug.Debugger
@@ -59,7 +58,6 @@ export class RepoSync {
   constructor(repo: Repo<any>, send: (msg: Message) => void) {
     this.repo = repo
     this.send = send
-    this.ourClock = repo.clock
     this.theirClock = {}
     this.log = debug(`cevitxe:reposync:${repo.databaseName}`)
   }
@@ -297,16 +295,16 @@ export class RepoSync {
     this.repo.loadState(state)
   }
 
-  /** Looks up our last recorded clock for the requested document */
-  getOurClock = (documentId: string) => this.repo.getClock(documentId)
-  getTheirClock = (documentId: string) => this.theirClock[documentId]
-
   /** Pulls clock information from the document's metadata */
   private async getClockFromDoc(documentId: string): Promise<Clock> {
     const doc = await this.repo.get(documentId)
     if (doc === undefined) return EMPTY_CLOCK
     return Map(getClock(doc!)).toJS() as Clock
   }
+
+  /** Looks up our last recorded clock for the requested document */
+  getOurClock = (documentId: string) => this.repo.getClock(documentId)
+  getTheirClock = (documentId: string) => this.theirClock[documentId]
 
   /** Updates our vector clock by merging in the new vector clock `clock`, setting each node's sequence number to the maximum for that node */
   private async updateOurClock(documentId: string, newClock: Clock) {
