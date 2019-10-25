@@ -214,11 +214,11 @@ export class RepoSync {
   /** Checks whether we have more recent information than they do; if so, sends changes */
   private async maybeSendChanges(documentId: string) {
     const theirClock = this.getTheirClock(documentId)
-    if (theirClock === undefined) return
     const ourDoc = await this.repo.get(documentId)
-    if (ourDoc === undefined) return
-    const _theirClock: A.Clock = (Map(theirClock) as unknown) as A.Clock
-    const changes = getMissingChanges(ourDoc, _theirClock)
+
+    if (theirClock === undefined || ourDoc === undefined) return
+
+    const changes = getMissingChanges(ourDoc, theirClock)
     if (changes.length > 0) await this.sendChanges(documentId, changes)
   }
 
