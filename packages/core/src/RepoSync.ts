@@ -349,7 +349,7 @@ export class RepoSync {
   }
 
   /** Looks up our last recorded clock for the requested document */
-  getOurClock = (documentId: string) => this.ourClock[documentId] || EMPTY_CLOCK
+  getOurClock = (documentId: string) => this.repo.getClock(documentId)
   getTheirClock = (documentId: string) => this.theirClock[documentId]
 
   /**
