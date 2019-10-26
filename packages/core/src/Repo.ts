@@ -408,6 +408,7 @@ export class Repo<T = any> {
   private async saveSnapshot(documentId: string, document: A.Doc<T>) {
     const snapshot: any = clone(document)
     const clock = getClock(document)
+    this.updateClock(documentId, clock)
 
     if (snapshot[DELETED]) {
       this.removeSnapshot(documentId)
@@ -415,7 +416,6 @@ export class Repo<T = any> {
     } else {
       this.log('saveSnapshot', documentId, document)
       this.setSnapshot(documentId, snapshot)
-      this.updateClock(documentId, clock)
       await this.storage.putSnapshot(documentId, snapshot, clock)
     }
   }
