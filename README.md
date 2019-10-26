@@ -1,5 +1,8 @@
 <img src='logo.svg' width=500 alt=''>
 
+Cevitxe is a wrapper for a Redux store that gives your app offline capabilities
+and secure peer-to-peer synchronization superpowers.
+
 ## Why?
 
 There are a lot of reasons to build an app that works in a distributed way, without depending on a
@@ -14,9 +17,13 @@ centralized server:
 - Or, you want to go **local-first** to **eliminate latency**, by keeping a complete copy of a
   user's data on their machine, which you then replicate to other users in the background.
 
+| <img src='images/008.jpg'></img>               | <img src='images/023.jpg'></img>                    |
+| ---------------------------------------------- | --------------------------------------------------- |
+| <sub>A typical client-server application</sub> | <sub>A distributed (peer-to-peer) application</sub> |
+
 A typical web application developer today is likely to be comfortable working with databases and API
 endpoints on the server, along with state containers like Redux on the client. A distributed
-architecture is compelling for all these reasons, but it puts us in very unfamiliar territory.
+architecture is compelling for all the reasons listed above, but it puts us in very unfamiliar territory.
 Without a server, how do peers talk to each other? Where is the data stored? How do we make sure
 that concurrent (and possibly conflicting) changes get replicated correctly between peers?
 
@@ -58,6 +65,10 @@ single "document" might represent a task list, a row in a spreadsheet-like table
 Cevitxe exposes a repository of documents to your application as a **Redux store**. Internally, each
 one is represented by both a snapshot of its current state and a history of Automerge changes.
 
+| <img src='images/redux.2.png'></img> | <img src='images/architecture.png'></img> |
+| ------------------------------------ | ----------------------------------------- |
+| <sub>Redux</sub>                     | <sub>Redux & Cevitxe</sub>                |
+
 ### Networking
 
 In the background, whenever you are online, Cevitxe connects to any peers that are using the same
@@ -83,8 +94,8 @@ each one with the appropriate `yarn start` command:
 
 | `yarn start:grid`                             | `yarn start:todo`                              | `yarn start:chat`                             |
 | --------------------------------------------- | ---------------------------------------------- | --------------------------------------------- |
-| A simple table editor                         | An implementation of TodoMVC                   | A chat channel                                |
 | <img src='images/screen.grid.png' width=600/> | <img src='images/screen.todo.png'  width=600/> | <img src='images/screen.grid.png' width=600/> |
+| <sub>A simple table editor</sub>              | <sub>An implementation of TodoMVC</sub>        | <sub>A chat channel</sub>                     |
 
 If you are working on the Cevitxe code and/or the code for one of the demo apps, you can start in
 watch mode by running `yarn dev` instead:
