@@ -1,7 +1,6 @@
 import A from 'automerge'
 import debug from 'debug'
-import { Map } from 'immutable'
-import { EMPTY_CLOCK, isMoreRecent, mergeClocks, getMissingChanges, getClock } from './clocks'
+import { EMPTY_CLOCK, getMissingChanges, isMoreRecent, mergeClocks } from './clocks'
 import * as message from './Message'
 import { Message } from './Message'
 import { Repo } from './Repo'
