@@ -168,14 +168,8 @@ export class RepoSync {
 
   /** Event listener that fires when any document is modified on the repo */
   private async onDocChanged(documentId: string) {
-    const clock = await this.getClockFromDoc(documentId)
-    this.log('onDocChanged', documentId, clock)
-
     // send the document if peer doesn't have it or has an older version
     await this.maybeSendChanges(documentId)
-
-    // update our clock
-    this.updateOurClock(documentId, clock)
   }
 
   /** Sends a hello message including our document count */
@@ -189,7 +183,6 @@ export class RepoSync {
   private async maybeSendChanges(documentId: string) {
     const theirClock = this.getTheirClock(documentId)
     const ourClock = this.getOurClock(documentId)
-    this.log('maybeSendChanges', { documentId, ourClock, theirClock })
     if (isMoreRecent(ourClock, theirClock)) {
       const ourDoc = await this.repo.get(documentId)
       if (ourDoc === undefined) return
@@ -203,17 +196,8 @@ export class RepoSync {
   /** Sends a changeset to our peer, bringing them up to date with our latest info */
   private async sendChanges(documentId: string, changes: A.Change[]) {
     this.log('sendChanges', documentId)
-    const clock = await this.getClockFromDoc(documentId)
+    const clock = this.getOurClock(documentId)
     this.send({ type: message.SEND_CHANGES, documentId, clock, changes })
-    this.updateOurClock(documentId, clock)
-  }
-
-  /** Informs our peer that we have a specific version of a document, so they can see if they have
-   *  an older version (in which case they will request changes) or a newer version (in which case
-   *  they will send changes) */
-  private async advertise(documentId: string, clock: Clock = this.getOurClock(documentId)) {
-    this.log('advertise', documentId)
-    this.send({ type: message.ADVERTISE_DOCS, clocks: [{ documentId, clock }] })
   }
 
   /** Sends a single message containing each documentId along with our clock value for it */
@@ -260,20 +244,12 @@ export class RepoSync {
     for (const documentId in clocks) this.updateTheirClock(documentId, clocks[documentId])
   }
 
-  /** Pulls clock information from the document's metadata */
-  private async getClockFromDoc(documentId: string): Promise<Clock> {
-    const doc = await this.repo.get(documentId)
-    return doc ? (Map(getClock(doc!)).toJS() as Clock) : EMPTY_CLOCK
-  }
+  /** Looks up our last recorded clock for the requested document.
+   *  Our clocks are managed by the repo. */
+  private getOurClock = (documentId: string) => this.repo.getClock(documentId)
 
-  /** Looks up our last recorded clock for the requested document */
-  getOurClock = (documentId: string) => this.repo.getClock(documentId)
-  getTheirClock = (documentId: string) => this.theirClock[documentId]
-
-  /** Updates our vector clock by merging in the new vector clock `clock`, setting each node's sequence number to the maximum for that node */
-  private async updateOurClock(documentId: string, newClock: Clock) {
-    this.repo.updateClock(documentId, newClock)
-  }
+  /** We keep track of their clocks here. */
+  private getTheirClock = (documentId: string) => this.theirClock[documentId]
 
   /** Updates their vector clock by merging in the new vector clock `clock`, setting each node's sequence number to the maximum for that node */
   private async updateTheirClock(documentId: string, newClock: Clock) {
