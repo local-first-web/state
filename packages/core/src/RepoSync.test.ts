@@ -132,10 +132,12 @@ describe(`RepoSync`, () => {
 
       await makeConnection('R', remoteRepo, channel)
       await makeConnection('L', localRepo, channel)
+      await _yield()
 
       await localRepo.set('abc', A.from({ wrens: 555 }, 'L'))
       await remoteRepo.set('qrs', A.from({ orioles: 123 }, 'R'))
-      await Promise.all([docChanged(localRepo), docChanged(remoteRepo)])
+      await _yield()
+      
       expect(await remoteRepo.get('abc')).toEqual({ wrens: 555 })
       expect(await localRepo.get('qrs')).toEqual({ orioles: 123 })
     })

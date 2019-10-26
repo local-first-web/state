@@ -17,7 +17,8 @@ export function mergeClocks(oldClock: Clock, newClock: Clock): Clock {
 }
 
 /** Returns true if there are any actors in clock1 that have more recent updates than in clock2 */
-export const isMoreRecent = (clock1: Clock, clock2: Clock) => {
+export const isMoreRecent = (clock1: Clock, clock2: Clock | undefined) => {
+  if (clock2 === undefined) return true
   const actors = Object.keys({ ...clock1, ...clock2 })
   const clockIsMoreRecent = (actorId: string) => (clock1[actorId] || 0) > (clock2[actorId] || 0)
   return actors.some(clockIsMoreRecent)

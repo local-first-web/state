@@ -170,7 +170,12 @@ export class Repo<T = any> {
     // look up old doc and generate diff
     if (!changes) {
       const oldDoc = (await this.rebuildDoc(documentId)) || A.init()
-      changes = A.getChanges(oldDoc, doc)
+      try {
+        changes = A.getChanges(oldDoc, doc)
+      } catch (error) {
+        this.log({ error, oldDoc, doc })
+        changes = []
+      }
     }
     // cache the doc
     this.docCache.set(documentId, doc)
@@ -365,6 +370,7 @@ export class Repo<T = any> {
 
   /** Loads all the repo's snapshots into memory */
   private async loadSnapshotsFromDb() {
+    // TODO: only problem with this approach is that we're not storing clocks for deleted documents
     for await (const cursor of this.storage.snapshots) {
       const { documentId, snapshot, clock } = cursor.value
       this.state[documentId] = snapshot[DELETED] ? null : snapshot
@@ -409,6 +415,7 @@ export class Repo<T = any> {
     } else {
       this.log('saveSnapshot', documentId, document)
       this.setSnapshot(documentId, snapshot)
+      this.updateClock(documentId, clock)
       await this.storage.putSnapshot(documentId, snapshot, clock)
     }
   }

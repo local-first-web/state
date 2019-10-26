@@ -68,8 +68,6 @@ export class RepoSync {
     this.log('open')
 
     this.isOpen = true
-    for (let documentId of this.repo.documentIds)
-      if (!this.repo.hasClock(documentId)) await this.registerDoc(documentId)
 
     this.repo.addHandler(this.onDocChanged.bind(this))
     await this.sendHello()
@@ -111,11 +109,11 @@ export class RepoSync {
 
       case message.SEND_CHANGES: {
         // they are sending us changes that they figure we don't have
-        const { documentId, changes, clock } = msg
-        this.updateTheirClock(documentId, clock)
-
+        const { documentId, changes, clock: theirClock } = msg
+        this.updateTheirClock(documentId, theirClock)
+        const ourClock = this.getOurClock(documentId)
         // does this message contain new changes?
-        const shouldUpdate = isMoreRecent(clock, this.getOurClock(documentId))
+        const shouldUpdate = isMoreRecent(theirClock, ourClock)
         // if so apply their changes
         if (shouldUpdate) await this.repo.applyChanges(documentId, changes)
         break
@@ -126,8 +124,8 @@ export class RepoSync {
         const { clocks } = msg
         for (const { documentId, clock } of clocks) {
           this.updateTheirClock(documentId, clock)
-          // we have the document as well; see if we have a more recent version than they do; if so
-          // send them the changes they're missing
+          // we have the document as well; see if we have a more recent version than they do;
+          // if so, send them the changes they're missing
           if (this.repo.has(documentId)) await this.maybeSendChanges(documentId)
           // we don't have this document at all; ask for it
           else this.requestDoc(documentId)
@@ -168,26 +166,13 @@ export class RepoSync {
 
   // PRIVATE METHODS
 
-  /** Called for each document upon initialization. Records the document's clock and advertises it. */
-  private async registerDoc(documentId: string) {
-    this.log('registerDoc', documentId)
-    const clock = await this.getClockFromDoc(documentId)
-
-    // Record the doc's initial clock
-    await this.updateOurClock(documentId, clock)
-  }
-
   /** Event listener that fires when any document is modified on the repo */
   private async onDocChanged(documentId: string) {
     const clock = await this.getClockFromDoc(documentId)
     this.log('onDocChanged', documentId, clock)
-    if (clock === undefined) return
 
     // send the document if peer doesn't have it or has an older version
     await this.maybeSendChanges(documentId)
-
-    // see if peer has a newer version
-    await this.maybeRequestChanges(documentId, clock)
 
     // update our clock
     this.updateOurClock(documentId, clock)
@@ -200,21 +185,19 @@ export class RepoSync {
     this.send({ type: message.HELLO, documentCount })
   }
 
-  /** Checks whether peer has more recent information than we do; if so, requests changes */
-  private async maybeRequestChanges(documentId: string, theirClock?: Clock) {
-    this.log('maybeRequestChanges', documentId)
-    const ourClock = this.getOurClock(documentId) as Clock
-    theirClock = theirClock || (await this.getClockFromDoc(documentId))
-    if (isMoreRecent(theirClock, ourClock)) this.advertise(documentId, theirClock)
-  }
-
   /** Checks whether we have more recent information than they do; if so, sends changes */
   private async maybeSendChanges(documentId: string) {
     const theirClock = this.getTheirClock(documentId)
-    const ourDoc = await this.repo.get(documentId)
-    if (theirClock === undefined || ourDoc === undefined) return
-    const changes = getMissingChanges(ourDoc, theirClock)
-    if (changes.length > 0) await this.sendChanges(documentId, changes)
+    const ourClock = this.getOurClock(documentId)
+    this.log('maybeSendChanges', { documentId, ourClock, theirClock })
+    if (isMoreRecent(ourClock, theirClock)) {
+      const ourDoc = await this.repo.get(documentId)
+      if (ourDoc === undefined) return
+      const changes = theirClock
+        ? getMissingChanges(ourDoc, theirClock)
+        : A.getChanges(A.init(), ourDoc)
+      if (changes.length > 0) await this.sendChanges(documentId, changes)
+    }
   }
 
   /** Sends a changeset to our peer, bringing them up to date with our latest info */
