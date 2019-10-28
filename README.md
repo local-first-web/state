@@ -325,7 +325,7 @@ that means something on the order of 1-10 GB.
        Enable running Cevitxe's `StoreManager` entirely in a web worker process. All the Automerge,
       local storage and sync components would live in the worker, thus freeing the UI context of all the
       expensive overhead of the system. We'll need a coarse-grained query API to query and retrieve
-      a view of a set of rows, aggregate information, etc. #45
+      a view of a set of rows, aggregate information, etc. [#45](https://github.com/DevResults/cevitxe/issues/45)
   - [ ] order + range / count
   - [ ] filter
   - [ ] aggregation, projection, etc. (might be entirely out of scope)
@@ -335,13 +335,13 @@ that means something on the order of 1-10 GB.
       happen when two peers happen to be online at the same time, it can take a while for updates to
       propagate. One solution would be to leave a client running on a computer that's never turned
       off. We'd like to provide a "superpeer" (don't call it a server!!) that can be inexpensively
-      deployed using the command line to cloud hosting providers. #41
+      deployed using the command line to cloud hosting providers. [#41](https://github.com/DevResults/cevitxe/issues/41)
 
 * [ ] **More storage adapters**  
        We currently only provide browser-based persistent storage using IndexedDb. A superpeer
       running in a serverless function would need access to a third-party hosted datastore like
       Redis, MongoDB or DynamoDB. An installable Electron app might prefer to work with
-      self-contained, portable documents in the file system; or with a database like Sqlite. #42
+      self-contained, portable documents in the file system; or with a database like Sqlite. [#42](https://github.com/DevResults/cevitxe/issues/42)
 
   - [x] IndexedDb
   - [ ] Sqlite
