@@ -73,6 +73,7 @@ export class Repo<T = any> {
   public clock: ClockMap = {}
 
   /** LRU cache of recently accessed Docs */
+  /** TODO: reimplement caching */
   private docCache: Cache<string, any>
 
   /** Document change event listeners. Each handler fires every time a document is set or removed. */
@@ -152,7 +153,6 @@ export class Repo<T = any> {
 
   /** Reconstitutes an Automerge document from its change history  */
   async get(documentId: string): Promise<A.Doc<T> | undefined> {
-    // TODO: reimplement caching
     this.log('get', documentId)
     return await this.rebuildDoc(documentId)
   }
