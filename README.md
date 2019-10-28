@@ -352,18 +352,18 @@ that means something on the order of 1-10 GB.
 
 * [ ] **Security** The signal server currently doesn't require authentication; anyone who knows its
       URL and the discovery key of a document can connect to it. We have some thoughts about how to
-      implement authentication and authorization: See #37 and #38.
+      implement authentication and authorization: See [#37](https://github.com/DevResults/cevitxe/issues/37) and [#38](https://github.com/DevResults/cevitxe/issues/38).
 
 * [ ] **Direct browser-to-browser connections**  
        For now, besides introducing two peers to each other, **the signal server also serves as a
       relay**, piping their two WebSocket connections together. In the future, Cevitxe will
       establish a direct connection between the two peers, using browser-to-browser communication
-      technologies like WebRTC. For now, we've found WebRTC too unreliable to be worth the trouble. #43
+      technologies like WebRTC. For now, we've found WebRTC too unreliable to be worth the trouble. [#43](https://github.com/DevResults/cevitxe/issues/43)
 
 * [ ] **Command-line deployment for signal server**  
        We've manually gotten our signal server up and running on Heroku. We'd like to script this
       and/or include configuration files to make it possible to deploy instances of the signal
-      server to multiple providers such as Heroku, Zeit Now, and Netlify. #44
+      server to multiple providers such as Heroku, Zeit Now, and Netlify. [#44](https://github.com/DevResults/cevitxe/issues/44)
 
 * [ ] **Swarm of signal servers**  
        Currently if we see a configuration with more than one URL for signal servers, we just pick
@@ -371,7 +371,7 @@ that means something on the order of 1-10 GB.
       per discovery key. (If Alice talks to signal server X and Bob talks to signal server B,
       they'll never be introduced even if they have the same discovery key.) That's because servers
       don't know anything about each other. We'd like to implement a swarm such that any number of
-      signal servers can be deployed, and the user will be directed to the best one. #27
+      signal servers can be deployed, and the user will be directed to the best one. [#27](https://github.com/DevResults/cevitxe/issues/27)
 
 ## Alternatives
 
