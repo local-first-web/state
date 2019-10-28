@@ -191,12 +191,56 @@ switch (type) {
 
 ### Implementation
 
-The underlying implementation of collections will be up to the `StorageAdapter`. For example, for the `IdbAdapter` we might consider the following options:
+The `StorageAdapter` abstract class will need to change to be collection-aware. I was thinking something like this:
+
+```ts
+export interface SnapshotRecord {
+  documentId: string
+  collection: string // <-- new
+  snapshot: Snapshot
+  clock: Clock
+}
+
+export interface ChangeSet {
+  documentId: string
+  collection: string // <-- new
+  changes: A.Change[]
+}
+
+type ChangeSetIterator = AsyncIterableIterator<IteratorResult<ChangeSet, ChangeSet>>
+type SnapshotIterator = AsyncIterableIterator<IteratorResult<SnapshotRecord, SnapshotRecord>>
+
+export abstract class StorageAdapter {
+  storageKey: string
+
+  constructor(options: {
+    discoveryKey: string
+    databaseName: string
+    collections?: string[] // <-- new
+  }) {}
+
+  abstract async open(): Promise<void>
+  abstract async close(): Promise<void>
+
+  abstract async hasData(): Promise<boolean>
+
+  abstract changes(collection?: string): ChangeSetIterator // <-- new optional parameter
+  abstract snapshots(collection?: string): SnapshotIterator // <-- new optional parameter
+
+  abstract async getChanges(documentId: string): Promise<ChangeSet[]>
+  abstract async appendChanges(changeSet: ChangeSet): Promise<void>
+
+  abstract async putSnapshot(snapshotRecord: SnapshotRecord): Promise<void>
+  abstract async deleteSnapshot(documentId: string): Promise<void>
+}
+```
+
+The underlying implementation of collections will be up to each individual storage adapter. For example, for the `IdbAdapter`, here are some options we might consider:
 
 1. create separate `changes` and `snapshots` object stores for each collection, e.g. `changes_teachers` and `snapshots_teachers`
 2. store each collection in a separate database
 3. leave everything jumbled up together, but persist special collection index documents indicating which documents belong to which collections
 4. store everything in the existing `changes` and `snapshots` object stores, and add an indexed `collection` field to the containing record
-5. etc.
+5. ... etc.
 
 I'd probably lean towards option 4 for IndexedDB, but different approaches will make sense for different persistence technologies. The point is that at the API level we don't need to care about the implementation details.
