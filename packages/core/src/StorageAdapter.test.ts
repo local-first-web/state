@@ -10,18 +10,12 @@ for (const Adapter of adapters) {
   }
 
   describe(Adapter.name, () => {
-    describe('open', () => {
-      test(`doesn't crash`, async () => {
-        const { storage } = await setup()
-        await storage.open()
-      })
-    })
-
-    describe('close', () => {
+    describe('open & clolse', () => {
       test(`doesn't crash`, async () => {
         const { storage } = await setup()
         await storage.open()
         await storage.close()
+        // just making sure nothing blows up
       })
     })
 
@@ -29,33 +23,31 @@ for (const Adapter of adapters) {
       test('`snapshots` getter', async () => {
         const { storage } = await setup()
         await storage.open()
-
         const documentId = '123'
         const snapshot = { foo: 42 }
         const clock = { local: 1 }
-
+        // add a snapshot
         await storage.putSnapshot({ documentId, snapshot, clock })
-
+        // should be the only one there
         for await (const cursor of storage.snapshots)
           expect(cursor.value).toEqual({ documentId, snapshot, clock })
       })
-    })
 
-    test('deleteSnapshot', async () => {
-      const { storage } = await setup()
-      await storage.open()
-
-      const documentId = '123'
-      const snapshot = { foo: 42 }
-      const clock = { local: 1 }
-
-      await storage.putSnapshot({ documentId, snapshot, clock })
-
-      await storage.deleteSnapshot(documentId)
-
-      let count = 0
-      for await (const cursor of storage.snapshots) count++
-      expect(count).toBe(0)
+      test('deleteSnapshot', async () => {
+        const { storage } = await setup()
+        await storage.open()
+        const documentId = '123'
+        const snapshot = { foo: 42 }
+        const clock = { local: 1 }
+        // add a snapshot
+        await storage.putSnapshot({ documentId, snapshot, clock })
+        // delete it
+        await storage.deleteSnapshot(documentId)
+        // confirm that no snapshots are left
+        let count = 0
+        for await (const cursor of storage.snapshots) count++
+        expect(count).toBe(0)
+      })
     })
 
     describe('changes', () => {
@@ -63,18 +55,20 @@ for (const Adapter of adapters) {
         const { storage } = await setup()
         await storage.open()
         const changeSet = { documentId: '123', changes: [] }
+        // add a changeset
         await storage.appendChanges(changeSet)
-
+        // should be the only one there
         for await (const cursor of storage.changes)
-          expect(cursor.value).toEqual(expect.objectContaining(changeSet)) // just one
+          expect(cursor.value).toEqual(expect.objectContaining(changeSet))
       })
 
       test('getChanges', async () => {
         const { storage } = await setup()
         await storage.open()
         const changeSet = { documentId: '123', changes: [] }
+        // add a changeset
         await storage.appendChanges(changeSet)
-
+        // retrieve it & confirm it looks right
         expect(await storage.getChanges('123')).toEqual([expect.objectContaining(changeSet)])
       })
     })
@@ -83,16 +77,17 @@ for (const Adapter of adapters) {
       test('returns false on a newly created adapter', async () => {
         const { storage } = await setup()
         await storage.open()
+        // nothing there yet
         expect(await storage.hasData()).toBe(false)
       })
 
       test('returns true after a document is added', async () => {
         const { storage } = await setup()
         await storage.open()
-        expect(await storage.hasData()).toBe(false)
-
+        // add something
         const changeSet = { documentId: '123', changes: [] }
         await storage.appendChanges(changeSet)
+        // now we haz data
         expect(await storage.hasData()).toBe(true)
       })
     })
