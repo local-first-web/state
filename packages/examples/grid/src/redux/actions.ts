@@ -53,7 +53,7 @@ export const clearCollection = () => ({
   payload: {},
 })
 
-export const addItem = (item: any = { id: uuid() }) => ({
+export const addItem = (item: any = { id: uuid(), displayOrder: Date.now() * 1000 }) => ({
   type: ITEM_ADD,
   payload: item,
 })
