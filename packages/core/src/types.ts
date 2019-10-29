@@ -57,3 +57,11 @@ export interface ChangeSet {
 export type RepoHistory = {
   [documentId: string]: A.Change[]
 }
+
+export type Clock = {
+  [actorId: string]: number
+}
+
+export type ClockMap = {
+  [documentId: string]: Clock
+}

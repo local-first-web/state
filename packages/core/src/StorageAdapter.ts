@@ -1,8 +1,9 @@
-﻿import { ChangeSet, Snapshot } from './types'
+﻿import { ChangeSet, Snapshot, Clock } from './types'
 
 export interface SnapshotRecord {
   documentId: string
   snapshot: Snapshot
+  clock: Clock
 }
 
 export abstract class StorageAdapter {
@@ -24,6 +25,6 @@ export abstract class StorageAdapter {
   abstract async getDocumentChanges(documentId: string): Promise<ChangeSet[]>
   abstract async appendChanges(changeSet: ChangeSet): Promise<void>
 
-  abstract async putSnapshot(snapshotId: string, snapshot: Snapshot): Promise<void>
+  abstract async putSnapshot(snapshotId: string, snapshot: Snapshot, clock: Clock): Promise<void>
   abstract async deleteSnapshot(snapshotId: string): Promise<void>
 }

@@ -25,7 +25,6 @@ const makeConnection = async (key: string, repo: Repo<BirdCount>, channel: TestC
   // hook up receive
   channel.addListener('data', (peer_id, msg) => {
     if (peer_id === key) return // ignore messages that we sent
-    log('receiving', peer_id, msg)
     sync.receive(msg)
   })
   channel.addPeer()
@@ -133,10 +132,12 @@ describe(`RepoSync`, () => {
 
       await makeConnection('R', remoteRepo, channel)
       await makeConnection('L', localRepo, channel)
+      await _yield()
 
       await localRepo.set('abc', A.from({ wrens: 555 }, 'L'))
       await remoteRepo.set('qrs', A.from({ orioles: 123 }, 'R'))
-      await Promise.all([docChanged(localRepo), docChanged(remoteRepo)])
+      await _yield()
+
       expect(await remoteRepo.get('abc')).toEqual({ wrens: 555 })
       expect(await localRepo.get('qrs')).toEqual({ orioles: 123 })
     })
@@ -276,15 +277,15 @@ describe(`RepoSync`, () => {
     it('should sync local changes made while offline', async () => {
       // remote peer has original state
       let remoteDoc = await remoteRepo.get(documentId)
-      expect(remoteDoc.swallows).toEqual(1)
+      expect(remoteDoc && remoteDoc.swallows).toEqual(1)
 
       // make local changes online
       await localRepo.change(documentId, s => (s.swallows = 2))
 
       // remote peer sees changes immediately
-      await docChanged(remoteRepo)
+      await _yield()
       remoteDoc = await remoteRepo.get(documentId)
-      expect(remoteDoc.swallows).toEqual(2)
+      expect(remoteDoc && remoteDoc.swallows).toEqual(2)
 
       networkOff()
 
@@ -293,13 +294,13 @@ describe(`RepoSync`, () => {
 
       // remote peer doesn't see changes
       remoteDoc = await remoteRepo.get(documentId)
-      expect(remoteDoc.swallows).toEqual(2)
+      expect(remoteDoc && remoteDoc.swallows).toEqual(2)
 
       await networkOn()
 
       // as soon as we're back online, remote peer sees changes
       remoteDoc = await remoteRepo.get(documentId)
-      expect(remoteDoc.swallows).toEqual(3)
+      expect(remoteDoc && remoteDoc.swallows).toEqual(3)
     })
 
     it('should bidirectionally sync offline changes', async () => {
@@ -356,6 +357,8 @@ describe(`RepoSync`, () => {
       const localDoc = await localRepo.get(documentId)
       const remoteDoc = await remoteRepo.get(documentId)
 
+      if (localDoc === undefined || remoteDoc === undefined)
+        throw new Error('localDoc and remoteDoc should be defined')
       const localValue = localDoc.swallows
       const remoteValue = remoteDoc.swallows
 
