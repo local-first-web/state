@@ -27,11 +27,7 @@ export const getMiddleware: MiddlewareFactory = (repo, proxyReducer) => {
     const functionMap = proxyReducer(store.getState(), action)
 
     if (action.type === RECEIVE_MESSAGE_FROM_PEER) {
-      // pass any changes coming from the peer to the repo
-      // const { documentId, changes } = action.payload.message
-      // log('apply message from peer', documentId)
-      // const newDoc = await repo.applyChanges(documentId, changes)
-      // newState[documentId] = { ...newDoc }
+      // changes have already been applied by repo
     } else if (functionMap) {
       for (let documentId in functionMap) {
         const fn = functionMap[documentId]
