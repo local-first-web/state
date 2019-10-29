@@ -65,3 +65,9 @@ export type Clock = {
 export type ClockMap = {
   [documentId: string]: Clock
 }
+
+export interface SnapshotRecord {
+  documentId: string
+  snapshot: Snapshot
+  clock: Clock
+}
