@@ -1,5 +1,5 @@
 {
-  "name": "cevitxe-storage-adapter-idb",
+  "name": "cevitxe-storage-adapter-indexed-db",
   "description": "IndexedDb storage adapter for Cevitxe",
   "version": "0.2.3",
   "private": false,
