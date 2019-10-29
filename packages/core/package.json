@@ -22,6 +22,7 @@
     "@types/simple-peer": "6",
     "automerge": "0",
     "cevitxe-signal-client": "0",
+    "cevitxe-storage-adapter-indexed-db": "0",
     "cuid": "2",
     "debug": "4",
     "idb": "herbcaudill/idb",
