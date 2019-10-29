@@ -70,6 +70,7 @@
   "jest": {
     "projects": [
       "<rootDir>/packages/core",
+      "<rootDir>/packages/storage-adapter-indexed-db",
       "<rootDir>/packages/signal-client",
       "<rootDir>/packages/signal-server",
       "<rootDir>/packages/examples/grid"
