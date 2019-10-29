@@ -1,10 +1,4 @@
-﻿import { ChangeSet, Snapshot, Clock } from './types'
-
-export interface SnapshotRecord {
-  documentId: string
-  snapshot: Snapshot
-  clock: Clock
-}
+﻿import { ChangeSet, SnapshotRecord } from './types'
 
 export abstract class StorageAdapter {
   storageKey: string
