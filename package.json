@@ -21,7 +21,7 @@
     "dev:todo:start": "run-p dev:signal-server watch start:todo",
     "dev:todo:e2e": "run-p dev:todo test:todo:e2e",
     "build": "lerna run build",
-    "build:quick": "tsc -b packages/cevitxe-signal-server packages/toolbar packages/cevitxe",
+    "build:quick": "tsc -b packages/cevitxe-signal-server packages/cevitxe-storage-indexeddb packages/cevitxe-toolbar packages/cevitxe",
     "lint": "lerna run lint",
     "publish": "lerna publish --yes",
     "watch": "yarn build:quick --watch",
