@@ -1,6 +1,6 @@
 # Cevitxe Signal Client
 
-A simple discovery cloud client library that can be paired with [cevitxe-signal-server](https://github.com/herbcaudill/cevitxe/packages/signal-server) to be used as a cloud-based alternative to [discovery-swarm](https://github.com/mafintosh/discovery-swarm).
+A simple discovery cloud client library that can be paired with [cevitxe-signal-server](https://github.com/herbcaudill/cevitxe/packages/cevitxe-signal-server) to be used as a cloud-based alternative to [discovery-swarm](https://github.com/mafintosh/discovery-swarm).
 
 ### Example
 
