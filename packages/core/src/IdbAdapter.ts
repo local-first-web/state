@@ -56,7 +56,7 @@ export class IdbAdapter extends StorageAdapter {
     return count > 0
   }
 
-  async getDocumentChanges(documentId: string): Promise<ChangeSet[]> {
+  async getChanges(documentId: string): Promise<ChangeSet[]> {
     this.ensureOpen()
     return this.database!.getAllFromIndex('changes', 'by-documentId', documentId)
   }
@@ -66,7 +66,7 @@ export class IdbAdapter extends StorageAdapter {
     await this.database!.add('changes', changeSet)
   }
 
-  async putSnapshot(documentId: string, snapshot: Snapshot, clock: Clock) {
+  async putSnapshot({ documentId, snapshot, clock }: SnapshotRecord) {
     this.ensureOpen()
     await this.database!.put('snapshots', { documentId, snapshot, clock })
   }

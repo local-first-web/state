@@ -401,7 +401,7 @@ export class Repo<T = any> {
    */
   private async getDocumentChanges(documentId: string): Promise<ChangeSet[]> {
     this.log('getChangeSets', documentId)
-    return this.storage.getDocumentChanges(documentId)
+    return this.storage.getChanges(documentId)
   }
 
   /** Saves the snapshot for the given `documentId`, replacing any existing snapshot. */
@@ -416,7 +416,7 @@ export class Repo<T = any> {
     } else {
       this.log('saveSnapshot', documentId, document)
       this.setSnapshot(documentId, snapshot)
-      await this.storage.putSnapshot(documentId, snapshot, clock)
+      await this.storage.putSnapshot({ documentId, snapshot, clock })
     }
   }
 }

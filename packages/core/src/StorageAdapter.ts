@@ -22,9 +22,9 @@ export abstract class StorageAdapter {
 
   abstract async hasData(): Promise<boolean>
 
-  abstract async getDocumentChanges(documentId: string): Promise<ChangeSet[]>
+  abstract async getChanges(documentId: string): Promise<ChangeSet[]>
   abstract async appendChanges(changeSet: ChangeSet): Promise<void>
 
-  abstract async putSnapshot(snapshotId: string, snapshot: Snapshot, clock: Clock): Promise<void>
+  abstract async putSnapshot(snapshotRecord: SnapshotRecord): Promise<void>
   abstract async deleteSnapshot(snapshotId: string): Promise<void>
 }
