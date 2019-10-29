@@ -1,4 +1,6 @@
-﻿## Why do we have collections in the first place?
+﻿This is a placeholder PR to propose & discuss changes to the collections interface.
+
+### Why do we have collections in the first place?
 
 At first we were using a single Automerge document to store everything, and the API was very simple: You just figured out a JSON structure for your entire state and passed it in. So, for example:
 
@@ -76,7 +78,7 @@ const rowArray = collection('rows').selectors.getAll(state)
 const rowMap = collection('rows').selectors.getMap(state)
 ```
 
-## What don't we like about this?
+### What don't we like about this?
 
 This entire API came from the requirement to handle datasets too large to fit into browser memory.
 
@@ -86,7 +88,7 @@ I also worry that we're drifting farther and farther the standard Redux API that
 
 Even in applications that _do_ have multiple large collections, this API feels awkward. Every time I come back to it I have to re-read the docs I wrote earlier. I think we can make the DX for this use case a little more ergonomic without making big changes.
 
-## Why do we have more options now than when we created this interface?
+### Why do we have more options now than when we created this interface?
 
 We created this setup to work within the limitations of an `Automerge.DocSet`. This is a very simple in-memory key/value structure that contains Automerge documents and fires events when any document is added or changed.
 
@@ -94,7 +96,7 @@ We now use the `Repo` object, which is basically a `DocSet` that takes a storage
 
 Since we no need to represent all our data as root-level items in a `DocSet`, we can rethink this API so that it handles both use cases - simple in-memory state and large datasets - without developer headaches.
 
-## What might a better interface look like?
+### What might a better interface look like?
 
 In my ideal world, we can go back to something more like a plain-vanilla Redux API. A developer can structure their state document in a familiar way, and just indicate which elements need the "collections" treatment when initializing the store. Something like this:
 
@@ -113,17 +115,17 @@ export const storeManager = new StoreManager({
 })
 ```
 
-### Regular objects
+#### Regular objects
 
 For anything that isn't part of a collection, the API is straight-up Redux.
 
-#### Selectors
+##### Selectors
 
 ```ts
 const defaultTheme = useSelector(state => state.settings.defaultTheme)
 ```
 
-#### Reducers
+##### Reducers
 
 Reducers still [use Automerge change functions](http://github.com/DevResults/cevitxe#proxy-reducers-for-automerge-are-different-from-ordinary-redux-reducers) instead of standard Redux pure functions, but we can just return a single function instead of a dictionary of functions:
 
@@ -133,9 +135,9 @@ case actions.CHANGE_DEFAULT_THEME:
 //...
 ```
 
-### Collections
+#### Collections
 
-#### Selectors
+##### Selectors
 
 To read data from collections, we use the `collection.selector` function, which takes a state object and returns a dictionary of collections. Each one of these offers an interface designed to mimic an ES6 `Map`, but with asynchronous accessors:
 
@@ -164,7 +166,7 @@ for await (const teacher of teachers.values()) {
 }
 ```
 
-#### Reducers
+##### Reducers
 
 Since each item in a collection is a separate Automerge document, the reducers for collection items still need to return a dictionary of functions, keyed to the item id (the way they do now).
 
@@ -189,7 +191,7 @@ switch (type) {
 }
 ```
 
-### Implementation
+#### Implementation
 
 The `StorageAdapter` abstract class will need to change to be collection-aware. I was thinking something like this:
 
