@@ -1,6 +1,5 @@
 import A from 'automerge'
 import { AnyAction } from 'redux'
-import { Map } from 'immutable'
 
 export type ProxyReducer = (state: any, action: AnyAction) => ChangeMap | null
 
