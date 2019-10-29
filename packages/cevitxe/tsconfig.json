@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "alwaysStrict": true,
+    "composite": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "lib": ["dom", "esnext"],
+    "moduleResolution": "node",
+    "noEmit": false,
+    "outDir": "dist",
+    "sourceMap": true,
+    "target": "es6",
+    "typeRoots": ["../node_modules/@types", "node_modules/@types", "@types"],
+    "module": "commonjs",
+    // strictness: exceptions for development (must be reversed in tsconfig.build.json)
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  },
+  "include": ["src", "@types"],
+  "references": [{ "path": "../cevitxe-signal-client" }, { "path": "../cevitxe-types" }]
+}

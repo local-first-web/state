@@ -2502,13 +2502,6 @@
     "@types/express-serve-static-core" "*"
     "@types/mime" "*"
 
-"@types/simple-peer@6":
-  version "6.1.6"
-  resolved "https://registry.yarnpkg.com/@types/simple-peer/-/simple-peer-6.1.6.tgz#a1a1f4793f6a3f7ec17df2056fe3a036a1bc2313"
-  integrity sha512-jnktVe4nDkNAIf/5brRQ4VqMP845dtRCrFMRagOxiTdC9gZ3rpnidt8EGR89b55Wtol+otYEJveFkEy3IpxA0Q==
-  dependencies:
-    "@types/node" "*"
-
 "@types/sizzle@*":
   version "2.3.2"
   resolved "https://registry.yarnpkg.com/@types/sizzle/-/sizzle-2.3.2.tgz#a811b8c18e2babab7d542b3365887ae2e4d9de47"

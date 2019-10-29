@@ -1,5 +1,5 @@
 {
-  "root": "packages/examples/${EXAMPLE}/build/",
+  "root": "packages/cevitxe-example-${EXAMPLE}/build/",
   "routes": {
     "/**": "index.html"
   }
