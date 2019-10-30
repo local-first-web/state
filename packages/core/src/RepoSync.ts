@@ -224,10 +224,10 @@ export class RepoSync {
 
   /** Send all changes for all documents (for initialization) */
   private async sendHistory() {
-    // TODO: for large datasets, send in batches
-    const history = await this.repo.getHistory()
-    this.log('sendHistory', history)
-    this.send({ type: message.SEND_ALL_HISTORY, history })
+    for await (const batch of this.repo.getHistory(1000)) {
+      this.log('sendHistory', Object.keys(batch).length)
+      this.send({ type: message.SEND_ALL_HISTORY, history: batch })
+    }
   }
 
   /** Load a history of all changes sent by peer */

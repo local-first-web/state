@@ -233,14 +233,19 @@ export class Repo<T = any> {
    * Used for sending the entire current state of the repo to a new peer.
    * @returns  an object mapping documentIds to an array of changes.
    */
-  async getHistory(): Promise<RepoHistory> {
-    const history: RepoHistory = {}
-    // TODO: for large datasets, send in batches
+  async *getHistory(batchSize: number = 1000): AsyncGenerator<RepoHistory> {
+    let history: RepoHistory = {}
+    let i = 0
     for await (const cursor of this.storage.changes) {
       const { documentId, changes } = cursor.value
       history[documentId] = (history[documentId] || []).concat(changes)
+      if (i++ > batchSize) {
+        yield history
+        i = 0
+        history = {}
+      }
     }
-    return history
+    yield history
   }
 
   /** Used when receiving the entire current state of a repo from a peer. */
