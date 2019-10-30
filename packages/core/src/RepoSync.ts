@@ -143,22 +143,18 @@ export class RepoSync {
         break
       }
 
-      case message.SEND_ALL_HISTORY: {
+      case message.SEND_HISTORY: {
         // they are sending us the complete history of all documents
         const { history } = msg
         await this.receiveHistory(history)
         break
       }
 
-      case message.SEND_ALL_SNAPSHOTS: {
+      case message.SEND_SNAPSHOTS: {
         // they are sending us the latest snapshots for all documents
         const { state, clocks } = msg
         this.receiveSnapshots(state, clocks)
         break
-      }
-
-      default: {
-        throw new Error(`Unknown message type: ${msg.type}`)
       }
     }
   }
@@ -219,14 +215,14 @@ export class RepoSync {
     const state = this.repo.getState()
     const clocks = this.repo.getClocks()
     this.log('sendSnapshots', state)
-    this.send({ type: message.SEND_ALL_SNAPSHOTS, state, clocks })
+    this.send({ type: message.SEND_SNAPSHOTS, state, clocks })
   }
 
   /** Send all changes for all documents (for initialization) */
   private async sendHistory() {
     for await (const batch of this.repo.getHistory(1000)) {
       this.log('sendHistory', Object.keys(batch).length)
-      this.send({ type: message.SEND_ALL_HISTORY, history: batch })
+      this.send({ type: message.SEND_HISTORY, history: batch })
     }
   }
 
