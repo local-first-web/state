@@ -34,33 +34,17 @@ export interface SendChangesMessage {
   changes: A.Change[]
 }
 
-/** Initializing repo from the network, request everything peer has (snapshots and changes) */
-export const REQUEST_ALL = 'REQUEST_ALL'
-export interface RequestAllMessage {
-  type: typeof REQUEST_ALL
-}
-
 /** Send all changes for all documents (for initialization) */
-export const SEND_ALL_HISTORY = 'SEND_ALL_HISTORY'
+export const SEND_HISTORY = 'SEND_HISTORY'
 interface SendAllHistoryMessage {
-  type: typeof SEND_ALL_HISTORY
+  type: typeof SEND_HISTORY
   history: RepoHistory
 }
 
-/** Send snapshot for a document */
-export const SEND_SNAPSHOTS = 'SEND_SNAPSHOTS'
-interface SendSnapshotsMessage {
-  type: typeof SEND_SNAPSHOTS
-  snapshots: {
-    documentId: string
-    snapshot: any
-  }[]
-}
-
 /** Send snapshots for all documents */
-export const SEND_ALL_SNAPSHOTS = 'SEND_ALL_SNAPSHOTS'
+export const SEND_SNAPSHOTS = 'SEND_SNAPSHOTS'
 interface SendAllSnapshotsMessage {
-  type: typeof SEND_ALL_SNAPSHOTS
+  type: typeof SEND_SNAPSHOTS
   state: RepoSnapshot
   clocks: ClockMap
 }
@@ -70,7 +54,5 @@ export type Message =
   | RequestDocsMessage
   | AdvertiseDocsMessage
   | SendChangesMessage
-  | RequestAllMessage
   | SendAllHistoryMessage
-  | SendSnapshotsMessage
   | SendAllSnapshotsMessage

@@ -96,8 +96,8 @@ export class RepoSync {
         } else if (theirCount === 0 && ourCount > 0) {
           // we have documents and they have none, so let's send them everything we have
           this.log('sending everything')
-          this.sendAllSnapshots()
-          this.sendAllHistory()
+          this.sendSnapshots()
+          this.sendHistory()
         } else {
           // we both have some documents, so we'll each advertise everything we have
           this.log('advertising everything')
@@ -143,22 +143,18 @@ export class RepoSync {
         break
       }
 
-      case message.SEND_ALL_HISTORY: {
+      case message.SEND_HISTORY: {
         // they are sending us the complete history of all documents
         const { history } = msg
-        await this.receiveAllHistory(history)
+        await this.receiveHistory(history)
         break
       }
 
-      case message.SEND_ALL_SNAPSHOTS: {
+      case message.SEND_SNAPSHOTS: {
         // they are sending us the latest snapshots for all documents
         const { state, clocks } = msg
-        this.receiveAllSnapshots(state, clocks)
+        this.receiveSnapshots(state, clocks)
         break
-      }
-
-      default: {
-        throw new Error(`Unknown message type: ${msg.type}`)
       }
     }
   }
@@ -215,30 +211,30 @@ export class RepoSync {
   }
 
   /** Send snapshots for all documents */
-  private sendAllSnapshots() {
+  private sendSnapshots() {
     const state = this.repo.getState()
     const clocks = this.repo.getClocks()
-    this.log('sendAllSnapshots', state)
-    this.send({ type: message.SEND_ALL_SNAPSHOTS, state, clocks })
+    this.log('sendSnapshots', state)
+    this.send({ type: message.SEND_SNAPSHOTS, state, clocks })
   }
 
   /** Send all changes for all documents (for initialization) */
-  private async sendAllHistory() {
-    // TODO: for large datasets, send in batches
-    const history = await this.repo.getHistory()
-    this.log('sendAllHistory', history)
-    this.send({ type: message.SEND_ALL_HISTORY, history })
+  private async sendHistory() {
+    for await (const batch of this.repo.getHistory(1000)) {
+      this.log('sendHistory', Object.keys(batch).length)
+      this.send({ type: message.SEND_HISTORY, history: batch })
+    }
   }
 
   /** Load a history of all changes sent by peer */
-  private async receiveAllHistory(history: RepoHistory) {
-    this.log('receiveAllHistory', history)
+  private async receiveHistory(history: RepoHistory) {
+    this.log('receiveHistory', history)
     await this.repo.loadHistory(history)
   }
 
   /** Load a snapshot of the entire repo */
-  private receiveAllSnapshots(state: RepoSnapshot, clocks: ClockMap) {
-    this.log('receiveAllSnapshots', state)
+  private receiveSnapshots(state: RepoSnapshot, clocks: ClockMap) {
+    this.log('receiveSnapshots', state)
     this.repo.loadState(state)
     for (const documentId in clocks) this.updateTheirClock(documentId, clocks[documentId])
   }
@@ -250,7 +246,8 @@ export class RepoSync {
   /** We keep track of their clocks here. */
   private getTheirClock = (documentId: string) => this.theirClock[documentId]
 
-  /** Updates their vector clock by merging in the new vector clock `clock`, setting each node's sequence number to the maximum for that node */
+  /** Updates their vector clock by merging in the new vector clock `clock`, setting each node's
+   * sequence number to the maximum for that node */
   private async updateTheirClock(documentId: string, newClock: Clock) {
     const oldClock = this.theirClock[documentId] || EMPTY_CLOCK
     this.theirClock[documentId] = mergeClocks(oldClock, newClock)

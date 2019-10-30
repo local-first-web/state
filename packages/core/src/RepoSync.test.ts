@@ -32,9 +32,6 @@ const makeConnection = async (key: string, repo: Repo<BirdCount>, channel: TestC
   return sync
 }
 
-// returns a promise that resolves the next time a document is changed on the repo
-const docChanged = (repo: Repo) => new Promise(ok => repo.addHandler(ok))
-
 describe(`RepoSync`, () => {
   describe('Changes after connecting', () => {
     const setup = async () => {
@@ -112,7 +109,7 @@ describe(`RepoSync`, () => {
       await makeConnection('L', localRepo, channel)
 
       localRepo.set('xyz', A.from({ boo: 999 }, 'L'))
-      await docChanged(remoteRepo)
+      await _yield()
       expect(await remoteRepo.get('xyz')).toEqual({ boo: 999 })
     })
 
@@ -123,7 +120,8 @@ describe(`RepoSync`, () => {
       await makeConnection('L', localRepo, channel)
 
       remoteRepo.set('xyz', A.from({ boo: 999 }, 'R'))
-      await docChanged(localRepo)
+      await _yield()
+
       expect(await localRepo.get('xyz')).toEqual({ boo: 999 })
     })
 
