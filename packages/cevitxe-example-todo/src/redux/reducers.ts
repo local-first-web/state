@@ -1,4 +1,4 @@
-import { ProxyReducer } from 'cevitxe'
+import { ProxyReducer } from 'cevitxe-types'
 import { ActionType } from './actions'
 
 const { SET_FILTER, ADD_TODO, DESTROY_TODO, TOGGLE_TODO, EDIT_TODO } = ActionType
