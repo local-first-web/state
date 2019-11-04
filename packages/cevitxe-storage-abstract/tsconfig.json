@@ -2,6 +2,7 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "alwaysStrict": true,
+    "baseUrl": "src",
     "composite": true,
     "declaration": true,
     "downlevelIteration": true,
@@ -11,7 +12,6 @@
     "moduleResolution": "node",
     "noEmit": false,
     "outDir": "dist",
-    "rootDir": ".",
     "sourceMap": true,
     "target": "es5"
   },
