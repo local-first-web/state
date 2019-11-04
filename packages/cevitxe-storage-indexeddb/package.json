@@ -17,7 +17,7 @@
     "cevitxe-storage-abstract": "0",
     "cevitxe-signal-client": "0",
     "debug": "4",
-    "idb": "herbcaudill/idb"
+    "idb": "herbcaudill/idb#add-with-async-ittr-cjs-d-ts"
   },
   "devDependencies": {
     "@types/debug": "4",

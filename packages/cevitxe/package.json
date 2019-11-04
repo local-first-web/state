@@ -26,7 +26,6 @@
     "cevitxe-storage-indexeddb": "0",
     "cuid": "2",
     "debug": "4",
-    "idb": "herbcaudill/idb",
     "immutable": "4.0.0-rc.12",
     "lru-cache": "^5.1.1"
   },
