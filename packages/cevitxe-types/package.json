@@ -1,0 +1,13 @@
+{
+  "name": "cevitxe-types",
+  "private": true,
+  "version": "0.2.3",
+  "license": "MIT",
+  "main": "index.d.ts",
+  "typings": "index.d.ts",
+  "devDependencies": {
+    "automerge": "0",
+    "redux": "4",
+    "typescript": "3"
+  }
+}

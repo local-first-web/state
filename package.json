@@ -21,11 +21,11 @@
     "dev:todo:start": "run-p dev:signal-server watch start:todo",
     "dev:todo:e2e": "run-p dev:todo test:todo:e2e",
     "build": "lerna run build",
-    "build:quick": "tsc -b packages/signal-server packages/toolbar packages/core",
+    "build:quick": "tsc -b packages/cevitxe-signal-server packages/cevitxe-storage-indexeddb packages/cevitxe-toolbar packages/cevitxe",
     "lint": "lerna run lint",
     "publish": "lerna publish --yes",
     "watch": "yarn build:quick --watch",
-    "wait": "wait-on ./packages/core/dist/src/index.js",
+    "wait": "wait-on ./packages/cevitxe/dist/src/index.js",
     "test": "jest",
     "test:todo:e2e": "yarn workspace cevitxe-example-todo test:e2e",
     "test:grid:e2e": "yarn workspace cevitxe-example-grid test:e2e",
@@ -53,8 +53,7 @@
   },
   "workspaces": {
     "packages": [
-      "packages/*",
-      "packages/examples/*"
+      "packages/*"
     ],
     "nohoist": [
       "**/jest/**",
@@ -69,10 +68,11 @@
   },
   "jest": {
     "projects": [
-      "<rootDir>/packages/core",
-      "<rootDir>/packages/signal-client",
-      "<rootDir>/packages/signal-server",
-      "<rootDir>/packages/examples/grid"
+      "<rootDir>/packages/cevitxe",
+      "<rootDir>/packages/cevitxe-storage-indexeddb",
+      "<rootDir>/packages/cevitxe-signal-client",
+      "<rootDir>/packages/cevitxe-signal-server",
+      "<rootDir>/packages/cevitxe-example-grid"
     ]
   }
 }

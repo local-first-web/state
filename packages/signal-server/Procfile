@@ -1,1 +1,0 @@
-web: node -r esm packages/signal-server/dist/start.js
