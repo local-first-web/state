@@ -3,6 +3,7 @@
 node_modules
 dist
 coverage
+build
 
 .DS_Store
 .rts2_cache_cjs
