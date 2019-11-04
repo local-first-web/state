@@ -1,6 +1,8 @@
 ﻿import uuid from 'uuid'
 import faker from 'faker'
 
+let i = 0
+
 export function randomRow() {
   return {
     id: uuid()
@@ -17,5 +19,6 @@ export function randomRow() {
     latitude: +faker.address.latitude(),
     longitude: +faker.address.longitude(),
     paragraph: faker.lorem.paragraph(),
+    displayOrder: Date.now() * 1000 + (i++ % 1000), // so we sort items created in the same millisecond correctly
   }
 }

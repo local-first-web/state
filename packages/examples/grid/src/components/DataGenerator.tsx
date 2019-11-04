@@ -96,5 +96,6 @@ const schema = {
     latitude: {},
     longitude: {},
     paragraph: {},
+    displayOrder: { type: 'number' },
   },
 } as JSONSchema7
