@@ -17,6 +17,5 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false
   },
-  "include": ["src", "@types"],
   "references": [{ "path": "../cevitxe-types" }]
 }
