@@ -4,8 +4,6 @@ import { Server } from 'cevitxe-signal-server'
 import { Peer } from './Peer'
 import { getPortPromise as getAvailablePort } from 'portfinder'
 
-const kill = require('kill-port')
-
 describe('Client', () => {
   const log = debug('cevitxe:signal-client:tests')
   let port: number
@@ -34,7 +32,7 @@ describe('Client', () => {
     log(`TEST ${testId}`)
   })
 
-  afterEach(() => {})
+  afterEach(() => { })
 
   afterAll(() => {
     server.close()
