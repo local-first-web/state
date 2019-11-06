@@ -23,7 +23,7 @@
     "formik": "^2.0.1-rc.13",
     "friendly-words": "1",
     "react": "16",
-    "react-dom": "16",
+    "react-dom": "^16.0.1",
     "redux": "4",
     "use-persisted-state": "0",
     "use-query-params": "0"

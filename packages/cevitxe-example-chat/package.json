@@ -15,7 +15,7 @@
     "cevitxe-toolbar": "^0.2.3",
     "debug": "4",
     "react": "16",
-    "react-dom": "16",
+    "react-dom": "^16.0.1",
     "react-redux": "7",
     "redux": "4",
     "uuid": "3"
