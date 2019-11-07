@@ -7,7 +7,7 @@ const setup = async () => {
 }
 
 describe('IdbAdapter', () => {
-  describe('open & clolse', () => {
+  describe('open & close', () => {
     test(`doesn't crash`, async () => {
       const { storage } = await setup()
       await storage.open()
