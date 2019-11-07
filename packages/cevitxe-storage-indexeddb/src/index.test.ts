@@ -12,12 +12,12 @@ describe('IdbAdapter', () => {
       const { storage } = await setup()
       await storage.open()
       await storage.close()
-      // just making sure nothing blows up
+      // yay nothing blew up
     })
   })
 
   describe('snapshots', () => {
-    test('`snapshots` getter', async () => {
+    test('`snapshots`', async () => {
       const { storage } = await setup()
       await storage.open()
       const documentId = '123'
