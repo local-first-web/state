@@ -55,7 +55,7 @@ export class MongoAdapter extends StorageAdapter {
 
   async hasData() {
     this.ensureOpen()
-    const count = await this.changesCollection!.count()
+    const count = await this.changesCollection!.countDocuments()
     return count > 0
   }
 
