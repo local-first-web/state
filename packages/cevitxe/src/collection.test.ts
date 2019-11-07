@@ -45,7 +45,7 @@ describe('collections', () => {
       // can go back and forth between the two
       const { getCollectionName, getKeyName } = collection
       const collectionName = 'widgets'
-      const keyName = '::widgets'
+      const keyName = '__widgets'
       expect(getCollectionName(getKeyName(collectionName))).toEqual(collectionName)
       expect(getKeyName(getCollectionName(keyName))).toEqual(keyName)
     })

@@ -1,7 +1,7 @@
 import { JSONSchema7 } from 'json-schema'
 import { range } from 'ramda'
 
-const rowCollectionKey = '::rows'
+const rowCollectionKey = '__rows'
 
 export const emptyGrid = (rowCount: number, colCount: number = rowCount) => {
   const rows = range(0, rowCount).map(i => `row_${i + 1}`)
@@ -9,7 +9,7 @@ export const emptyGrid = (rowCount: number, colCount: number = rowCount) => {
 
   const rowReducer = (rowMap: { [id: string]: any }, id: string) => ({
     ...rowMap,
-    [`${rowCollectionKey}::${id}`]: { id },
+    [`${rowCollectionKey}__${id}`]: { id },
   })
 
   const columnReducer = (colMap: JSONSchema7['properties'], id: string, i: number) => ({

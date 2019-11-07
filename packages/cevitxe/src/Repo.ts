@@ -46,7 +46,7 @@ interface RepoOptions {
  * There is one repo (and one database) per discovery key.
  *
  * ```
- * cevitxe::grid::fancy-lizard (DB)
+ * cevitxe_grid_fancy-lizard (DB)
  *   changes (object store)
  *     1: { id:1, documentId: abc123, changeSet: [...]}
  *     2: { id:2, documentId: abc123, changeSet: [...]}
