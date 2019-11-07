@@ -31,6 +31,10 @@
   },
   "jest": {
     "preset": "ts-jest",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ],
     "setupFiles": [
       "fake-indexeddb/auto"
     ]

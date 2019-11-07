@@ -29,5 +29,15 @@
     "ts-jest": "24",
     "tslib": "1",
     "typescript": "3"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ],
+    "setupFiles": [
+      "fake-indexeddb/auto"
+    ]
   }
 }
