@@ -12,7 +12,7 @@ describe('MongoAdapter', () => {
       const { storage } = await setup()
       await storage.open()
       await storage.close()
-      // just making sure nothing blows up
+      // yay nothing blew up
     })
   })
 
