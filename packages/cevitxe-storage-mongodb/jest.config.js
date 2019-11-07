@@ -5,5 +5,5 @@ const presets = R.mergeRight(ts_preset, mongo_preset)
 
 module.exports = {
   ...presets,
-  testMatch: ['src/**/*.test.ts'],
+  testMatch: ['**/src/*.test.ts'],
 }
