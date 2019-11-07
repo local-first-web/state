@@ -50,7 +50,6 @@ export class MongoAdapter extends StorageAdapter {
   async *changes() {
     this.ensureOpen()
     for await (const changeSet of this.changesCollection.find({})) yield changeSet
-    return this.changesCollection!.find({})
   }
 
   async hasData() {
