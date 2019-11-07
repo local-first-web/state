@@ -1,6 +1,6 @@
 {
-  "name": "cevitxe-storage-indexeddb",
-  "description": "IndexedDB storage adapter for Cevitxe",
+  "name": "cevitxe-storage-mongodb",
+  "description": "MongoDB storage adapter for Cevitxe",
   "version": "0.2.3",
   "private": false,
   "license": "MIT",
@@ -17,22 +17,17 @@
     "cevitxe-signal-client": "0",
     "cevitxe-storage-abstract": "0",
     "debug": "4",
-    "idb": "herbcaudill/idb#add-with-async-ittr-cjs-d-ts"
+    "mongodb": "^3.3.3"
   },
   "devDependencies": {
+    "@shelf/jest-mongodb": "^1.1.3",
     "@types/debug": "4",
     "@types/jest": "24",
-    "fake-indexeddb": "2",
+    "@types/mongodb": "^3.3.8",
     "jest": "24",
     "rimraf": "3",
     "ts-jest": "24",
     "tslib": "1",
     "typescript": "3"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "setupFiles": [
-      "fake-indexeddb/auto"
-    ]
   }
 }
