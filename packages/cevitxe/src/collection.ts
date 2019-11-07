@@ -49,10 +49,10 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * individual root-level Automerge document. So a `Repo` might look something like this:
    * ```ts
    * {
-   *   '::teachers::abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill' },
-   *   '::teachers::qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelshon' },
-   *   '::students::lmnopqrs12': {id: 'lmnopqrs12', first: 'Steve', last: 'Jobs' },
-   *   '::students::qwerty1234': {id: 'qwerty1234', first: 'Steve', last: 'Wozniak' },
+   *   '__teachers__abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill' },
+   *   '__teachers__qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelshon' },
+   *   '__students__lmnopqrs12': {id: 'lmnopqrs12', first: 'Steve', last: 'Jobs' },
+   *   '__students__qwerty1234': {id: 'qwerty1234', first: 'Steve', last: 'Wozniak' },
    * }
    * ```
    * There are no index documents, because it's currently impractical to store very large arrays as
@@ -67,8 +67,8 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    *       persisted and propagated to peers.
    *       ```ts
    *       {
-   *         '::teachers::abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill', [DELETED]: true },
-   *         '::teachers::qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelshon' },
+   *         '__teachers__abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill', [DELETED]: true },
+   *         '__teachers__qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelshon' },
    *       }
    *       ```
    *    2. The repo then looks out for the DELETED flag and removes deleted items from the snapshot.
@@ -82,17 +82,17 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * collection name and containing just the DELETE_COLLECTION flag.
    * ```ts
    * {
-   *   '::teachers::abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill', ['::DELETED']: true },
-   *   '::teachers::qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelshon' },
-   *   '::teachers': DELETE_COLLECTION
+   *   '__teachers__abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill', ['__DELETED']: true },
+   *   '__teachers__qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelshon' },
+   *   '__teachers': DELETE_COLLECTION
    * }
    */
 
   const keyName = collection.getKeyName(name)
 
   // these are for converting individual item IDs back and forth
-  const idToKey = (id: string) => `${keyName}::${id}`
-  const keyToId = (key: string) => key.replace(`${keyName}::`, '')
+  const idToKey = (id: string) => `${keyName}__${id}`
+  const keyToId = (key: string) => key.replace(`${keyName}__`, '')
 
   const setDeleteFlag = (s: any) => Object.assign(s, { [DELETED]: true })
 
@@ -102,7 +102,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * Returns true if the given string is a key for this collection
    * @param maybeKey
    */
-  const isCollectionKey = (maybeKey: string) => maybeKey.startsWith(`${keyName}::`)
+  const isCollectionKey = (maybeKey: string) => maybeKey.startsWith(`${keyName}__`)
 
   /**
    * Iterates over all keys for the collection when given the current redux state.
@@ -246,15 +246,15 @@ export namespace collection {
    * Given the collection's name, returns the `keyName` used internally for tracking the collection.
    *
    * @param {string} collectionName The collection name, e.g. `teachers`
-   * @return The key name used internally for the collection (e.g. `::teachers`)
+   * @return The key name used internally for the collection (e.g. `__teachers`)
    */
-  export const getKeyName = (collectionName: string): string => `::${collectionName}`
+  export const getKeyName = (collectionName: string): string => `__${collectionName}`
 
   /**
    * Given a collection's `keyName`, returns the collection's name.
    *
-   * @param {string} keyName The key name used internally for the collection (e.g. `::teachers`)
+   * @param {string} keyName The key name used internally for the collection (e.g. `__teachers`)
    * @return The collection name, e.g. `teachers`
    */
-  export const getCollectionName = (keyName: string): string => keyName.replace(/^::/, '')
+  export const getCollectionName = (keyName: string): string => keyName.replace(/^__/, '')
 }
