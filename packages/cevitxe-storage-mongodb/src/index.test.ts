@@ -2,12 +2,12 @@
 import { newid } from 'cevitxe-signal-client'
 
 const setup = async () => {
-  const storage = new MongoAdapter({ discoveryKey: 'silly-coder', databaseName: `test-${newid()}` })
+  const storage = new MongoAdapter({ discoveryKey: 'mongo-pipes', databaseName: `test-${newid()}` })
   return { storage }
 }
 
-describe('IdbAdapter', () => {
-  describe('open & clolse', () => {
+describe('MongoAdapter', () => {
+  describe('open & close', () => {
     test(`doesn't crash`, async () => {
       const { storage } = await setup()
       await storage.open()
