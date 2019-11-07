@@ -20,7 +20,7 @@ describe('MongoAdapter', () => {
   })
 
   describe('snapshots', () => {
-    test('`snapshots` getter', async () => {
+    test('snapshots', async () => {
       const { storage } = await setup()
       await storage.open()
       const documentId = '123'
@@ -29,8 +29,7 @@ describe('MongoAdapter', () => {
       // add a snapshot
       await storage.putSnapshot({ documentId, snapshot, clock })
       // should be the only one there
-      for await (const cursor of storage.snapshots())
-        expect(cursor.value).toEqual({ documentId, snapshot, clock })
+      for await (const s of storage.snapshots()) expect(s).toEqual({ documentId, snapshot, clock })
     })
 
     test('deleteSnapshot', async () => {
@@ -51,15 +50,14 @@ describe('MongoAdapter', () => {
   })
 
   describe('changes', () => {
-    test('`changes` getter', async () => {
+    test('changes', async () => {
       const { storage } = await setup()
       await storage.open()
       const changeSet = { documentId: '123', changes: [] }
       // add a changeset
       await storage.appendChanges(changeSet)
       // should be the only one there
-      for await (const changeSet of storage.changes())
-        expect(changeSet).toEqual(expect.objectContaining(changeSet))
+      for await (const c of storage.changes()) expect(c).toEqual(expect.objectContaining(changeSet))
     })
 
     test('getChanges', async () => {
