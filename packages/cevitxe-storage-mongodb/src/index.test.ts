@@ -2,7 +2,10 @@
 import { newid } from 'cevitxe-signal-client'
 
 const setup = async () => {
-  const storage = new MongoAdapter({ discoveryKey: 'mongo-pipes', databaseName: `test-${newid()}` })
+  const storage = new MongoAdapter({
+    discoveryKey: 'sly-mongoose',
+    databaseName: `test-${newid()}`,
+  })
   return { storage }
 }
 
@@ -55,8 +58,8 @@ describe('MongoAdapter', () => {
       // add a changeset
       await storage.appendChanges(changeSet)
       // should be the only one there
-      for await (const cursor of storage.changes())
-        expect(cursor.value).toEqual(expect.objectContaining(changeSet))
+      for await (const changeSet of storage.changes())
+        expect(changeSet).toEqual(expect.objectContaining(changeSet))
     })
 
     test('getChanges', async () => {

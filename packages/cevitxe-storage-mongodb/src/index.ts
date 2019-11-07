@@ -14,11 +14,13 @@ export class MongoAdapter extends StorageAdapter {
   }
 
   async open() {
-    // TODO: Connection URL
-    const url = 'mongodb://localhost:27017'
+    const url = process.env.MONGO_URL || 'mongodb://localhost:27017'
 
     // Create a new MongoClient
-    this.client = new MongoClient(url)
+    this.client = new MongoClient(url, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
 
     // Use connect method to connect to the Server
     await this.client.connect()
@@ -28,7 +30,6 @@ export class MongoAdapter extends StorageAdapter {
     this.database
       .collection<SnapshotRecord>('snapshots')
       .createIndex({ documentId: 1 }, { unique: true })
-
     this.changesCollection = this.database.collection<ChangeSet>('changes')
     this.snapshotsCollection = this.database.collection<SnapshotRecord>('snapshots')
   }
