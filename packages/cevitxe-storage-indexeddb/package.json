@@ -1,7 +1,7 @@
 {
   "name": "cevitxe-storage-indexeddb",
   "description": "IndexedDb storage adapter for Cevitxe",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "private": false,
   "license": "MIT",
   "main": "dist/src/index.js",
@@ -14,8 +14,8 @@
   },
   "dependencies": {
     "automerge": "0",
-    "cevitxe-storage-abstract": "0",
-    "cevitxe-signal-client": "0",
+    "cevitxe-signal-client": "^0.3.0",
+    "cevitxe-storage-abstract": "^0.3.0",
     "debug": "4",
     "idb": "herbcaudill/idb#add-with-async-ittr-cjs-d-ts"
   },
