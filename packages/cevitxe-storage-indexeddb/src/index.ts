@@ -38,16 +38,16 @@ export class IdbAdapter extends StorageAdapter {
     }
   }
 
-  get snapshots() {
+  async *snapshots() {
     this.ensureOpen()
     const index = this.database!.transaction('snapshots').store.index('by-documentId')
-    return index.iterate(undefined, 'next')
+    for await (const cursor of index.iterate(undefined, 'next')) yield cursor.value
   }
 
-  get changes() {
+  async *changes() {
     this.ensureOpen()
     const index = this.database!.transaction('changes').store.index('by-documentId')
-    return index.iterate(undefined, 'next')
+    for await (const cursor of index.iterate(undefined, 'next')) yield cursor.value
   }
 
   async hasData() {

@@ -26,8 +26,8 @@ describe('IdbAdapter', () => {
       // add a snapshot
       await storage.putSnapshot({ documentId, snapshot, clock })
       // should be the only one there
-      for await (const cursor of storage.snapshots)
-        expect(cursor.value).toEqual({ documentId, snapshot, clock })
+      for await (const snapshotRecord of storage.snapshots())
+        expect(snapshotRecord).toEqual({ documentId, snapshot, clock })
     })
 
     test('deleteSnapshot', async () => {
@@ -42,7 +42,7 @@ describe('IdbAdapter', () => {
       await storage.deleteSnapshot(documentId)
       // confirm that no snapshots are left
       let count = 0
-      for await (const cursor of storage.snapshots) count++
+      for await (const _ of storage.snapshots()) count++
       expect(count).toBe(0)
     })
   })
@@ -55,8 +55,7 @@ describe('IdbAdapter', () => {
       // add a changeset
       await storage.appendChanges(changeSet)
       // should be the only one there
-      for await (const cursor of storage.changes)
-        expect(cursor.value).toEqual(expect.objectContaining(changeSet))
+      for await (const c of storage.changes()) expect(c).toEqual(expect.objectContaining(changeSet))
     })
 
     test('getChanges', async () => {
