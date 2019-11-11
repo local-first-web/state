@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "bs58": "4",
-    "express": "4",
+    "express": ">=4.5.0",
     "express-ws": "4",
     "ws": "7"
   },
