@@ -10,6 +10,7 @@ import { intersection } from './lib/intersection'
 import { pipeSockets } from './lib/pipeSockets'
 
 const { app } = expressWs(express())
+const fishPage = '<body style="font-size:10em;padding:2em;text-align:center">🐟</body>'
 
 interface ListenOptions {
   silent?: boolean
@@ -185,7 +186,6 @@ export class Server extends EventEmitter {
     return new Promise(ready => {
       // It's nice to be able to hit this server from a browser as a sanity check
       app.get('/', (req, res, next) => {
-        const fishPage = '<body style="font-size:10em;padding:2em;text-align:center">🐟</body>'
         this.log('get /')
         res.send(fishPage)
         res.end()
