@@ -12,16 +12,14 @@ This server provides two services:
 
 ## Deployment
 
-The easiest way to stand one of these up is to use the
-https://github.com/DevResults/cevitxe-signal-server-standalone repo, which is optimized for
-deployment. In that repo you'll find instructions for deploying to Heroku, AWS Elastic Beanstalk,
-Google Cloud Platform, and Glitch.
+The easiest way to stand one of these up is to use the [cevitxe-signal-server-standalone] repo,
+which is optimized for deployment. In that repo you'll find instructions for deploying to Heroku,
+AWS Elastic Beanstalk, Google Cloud Platform, and Glitch.
 
 ## Usage
 
 The client that we've written for this server is the easiest way to use it. See the instructions for
-[cevitxe-signal-client](https://github.com/devresults/cevitxe/packages/../../../../../../cevitxe-signal-client/README.md)
-for details.
+[cevitxe-signal-client] for details.
 
 ## API
 
@@ -57,7 +55,7 @@ This server has two WebSocket endpoints: `introduction` and `connect`.
 
 - I can now use this information to request a connection to this peer.
 
-#### `/connect/:remoteId`
+#### `/connection/:remoteId`
 
 - I make a new connection to this endpoint, e.g. `wss://your.domain.com/connect/bbbb6666`.
 
@@ -82,3 +80,6 @@ MIT
 ## Prior art
 
 Inspired by https://github.com/orionz/discovery-cloud-server
+
+[cevitxe-signal-client]: https://github.com/devresults/cevitxe/blob/master/packages/cevitxe-signal-client/README.md
+[cevitxe-signal-server-standalone]: https://github.com/DevResults/cevitxe-signal-server-standalone
