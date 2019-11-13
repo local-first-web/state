@@ -36,8 +36,7 @@ This server has two WebSocket endpoints: `introduction` and `connect`.
 
   ```ts
   {
-    type: 'Hello',
-    id: 'aaaa4242', // my id (same as `localId`)
+    type: 'Join',
     join: ['abc123', 'qrs987'], // documents I'm interested in
   }
   ```
