@@ -51,7 +51,7 @@ This server has two WebSocket endpoints: `introduction` and `connect`.
   }
   ```
 
-- I can now use this information to request a connection to this peer.
+- I can now use this information to request a connection to this peer:
 
 #### `/connection/:remoteId`
 
