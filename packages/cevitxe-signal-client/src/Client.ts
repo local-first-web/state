@@ -73,8 +73,7 @@ export class Client extends EventEmitter {
       this.retryDelay = initialRetryDelay
 
       this.sendToServer({
-        type: 'Hello',
-        id: this.id,
+        type: 'Join',
         join: [...this.keys],
       })
     }
@@ -115,7 +114,6 @@ export class Client extends EventEmitter {
 
     this.sendToServer({
       type: 'Join',
-      id: this.id,
       join: [key],
     })
   }
@@ -130,7 +128,6 @@ export class Client extends EventEmitter {
 
     this.sendToServer({
       type: 'Leave',
-      id: this.id,
       leave: [key],
     })
   }

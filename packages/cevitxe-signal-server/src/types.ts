@@ -10,24 +10,12 @@ export type ConnectRequestParams = {
 export type KeySet = string[]
 
 export namespace Message {
-  export type ClientToServer = Hello | Join | Leave
-
-  export interface Hello {
-    type: 'Hello'
-    id: string
-    join: string[]
-  }
+  export type ClientToServer = Join
 
   export interface Join {
-    type: 'Join'
-    id: string
-    join: string[]
-  }
-
-  export interface Leave {
-    type: 'Leave'
-    id: string
-    leave: string[]
+    type: 'Join' | 'Leave'
+    join?: string[]
+    leave?: string[]
   }
 
   export type ServerToClient = Introduction
