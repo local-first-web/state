@@ -197,7 +197,7 @@ export class Server extends EventEmitter {
       })
 
       // Connection request
-      app.ws('/connect/:A/:B/:key', (ws, { params: { A, B, key } }) => {
+      app.ws('/connection/:A/:B/:key', (ws, { params: { A, B, key } }) => {
         this.log('received connection request', A, B)
         this.openConnection({ peerA: ws as WebSocket, A, B, key })
       })

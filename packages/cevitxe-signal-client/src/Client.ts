@@ -167,7 +167,7 @@ export class Client extends EventEmitter {
 
   private connectToPeer(id: string): Peer {
     this.log('requesting direct connection to peer', id)
-    const url = `${this.url}/connect/${this.id}`
+    const url = `${this.url}/connection/${this.id}`
     const peer = new Peer({ url, id })
     this.peers.set(id, peer)
     return peer
