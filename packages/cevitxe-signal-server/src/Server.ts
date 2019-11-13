@@ -11,7 +11,7 @@ import { pipeSockets } from './lib/pipeSockets'
 
 const { app } = expressWs(express())
 const fishPage =
-  '<body style="display:flex; justify-content: center; align-items: center; font-size: 10em;">🐟</body>'
+  '<body style="display:flex; justify-content: center; align-items: center; font-size: 12em;">🐟</body>'
 
 interface ListenOptions {
   silent?: boolean
