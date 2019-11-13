@@ -57,7 +57,7 @@ This server has two WebSocket endpoints: `introduction` and `connect`.
 
 To connect to a peer, I make a new connection to this endpoint, e.g. `wss://your.domain.com/connect/qrst7890`. (`:remoteId` is the peer's unique client identifier.)
 
-At this point the server doesn't pay attention to the messages going
+When 
 
 The [server tests] in this repo provide good examples of how to use this API directly.
 
