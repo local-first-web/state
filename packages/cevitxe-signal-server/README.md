@@ -58,12 +58,7 @@ This server has two WebSocket endpoints: `introduction` and `connect`.
 
 #### `/connection/:remoteId`
 
-- I make a new connection to this endpoint, e.g. `wss://your.domain.com/connect/bbbb6666`.
-
-  - `:localId` is my unique ID, same as above
-  - `:remoteId` is theirs
-
--
+- I make a new connection to this endpoint, e.g. `wss://your.domain.com/connect/bbbb6666`. (`:remoteId` is their unique client identifier.)
 
 TODO: Clean up this API.
 
