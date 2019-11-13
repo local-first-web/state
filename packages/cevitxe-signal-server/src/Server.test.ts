@@ -124,6 +124,7 @@ describe('Server', () => {
       })
     })
   })
+
   describe('N-way', () => {
     it('Should make introductions between all the peers', done => {
       const instances = ['a', 'b', 'c', 'd', 'e']
