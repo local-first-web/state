@@ -10,7 +10,8 @@ import { intersection } from './lib/intersection'
 import { pipeSockets } from './lib/pipeSockets'
 
 const { app } = expressWs(express())
-const fishPage = '<body style="display:flex">🐟</body>'
+const fishPage =
+  '<body style="display:flex;justify-content: center; align-items: center;">🐟</body>'
 
 interface ListenOptions {
   silent?: boolean
