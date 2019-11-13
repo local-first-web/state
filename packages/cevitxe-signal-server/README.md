@@ -1,49 +1,76 @@
 # Cevitxe Signal Server
 
-For usage, see the client portion at
-[cevitxe-signal-client](https://github.com/devresults/cevitxe/packages/../../../../../../cevitxe-signal-client/README.md).
+This server provides two services:
 
-## Setup
+- **Introduction** (aka discovery): A client can provide one or more document keys that they're
+  interested in. If any other client is interested in the same key or keys, each will receive
+  an `Introduction` message with the other's id. They can then use that information to connect.
 
-### Heroku
+- **Connection**: Client A can request to connect with Client B on a given document ID (can
+  think of it as a 'channel'). If we get matching connection requests from A and B, we just pipe
+  their sockets together.
 
-This app is intended to be deployable to Heroku out of the box. By its design it should only ever
-run with a single dyno.
+## Usage
 
-```bash
-$ heroku create signal-server-001
-Creating ⬢ signal-server-001... done
-https://signal-server-001.herokuapp.com/ | https://git.heroku.com/signal-server-001.git
+The client that we've written for this server is the easiest way to use it. See the instructions for
+[cevitxe-signal-client](https://github.com/devresults/cevitxe/packages/../../../../../../cevitxe-signal-client/README.md) for details.
 
-$ heroku buildpacks:add -a signal-server-001 https://github.com/heroku/heroku-buildpack-multi-procfile
-Buildpack added. Next release on signal-server-001 will use https://github.com/heroku/heroku-buildpack-multi-procfile.
+## API
 
-$ heroku buildpacks:add -a signal-server-001 https://github.com/heroku/heroku-buildpack-nodejs
-Buildpack added. Next release on signal-server-001 will use:
-  1. https://github.com/heroku/heroku-buildpack-multi-procfile
-  2. https://github.com/heroku/heroku-buildpack-nodejs
-Run git push heroku master to create a new release using these buildpacks.
+This server has two WebSocket endpoints: `introduction` and `connect`.
 
-$ heroku config:set -a signal-server-001 PROCFILE=packages/cevitxe-signal-server/Procfile
-Setting PROCFILE and restarting ⬢ signal-server-001... done, v3
-PROCFILE: packages/cevitxe-signal-server/Procfile
+#### `/introduction/:localId`
 
-$ git push https://git.heroku.com/signal-server-001.git master
+- I connect to this endpoint, e.g. `wss://your.domain.com/introduction/aaaa4242`.
 
+  - `:localId` is a string that identifies me uniquely
 
-```
+- Once a WebSocket connection has been made, I send an introduction request containing one or more document IDs I'm interested in joining:
 
-```bash
-$ git push heroku master
-```
+  ```ts
+  {
+    type: 'Hello',
+    id: 'aaaa4242', // my id (same as `localId`)
+    join: ['abc123', 'qrs987'], // documents I'm interested in
+  }
+  ```
 
-### Glitch
+- If another peer is connected to the same server and interested in one or more of the same documents IDs, the server sends me an introduction message:
 
-This server can run on [Glitch](https://glitch.com); just remix the
-[**discovery-cloud**](https://glitch.com/edit/#!/remix/discovery-cloud) project.
+  ```ts
+  {
+    type: 'Introduction',
+    id: 'bbbb6666', // the peer's id
+    keys: ['abc123'] // documents we're both interested in
+  }
+  ```
 
-## LICENSE
+- I can now use this information to request a connection to this peer.
+
+#### `/connect/:remoteId`
+
+- I make a new connection to this endpoint, e.g. `wss://your.domain.com/connect/bbbb6666`.
+
+  - `:localId` is my unique ID, same as above
+  - `:remoteId` is theirs
+
+-
+
+TODO: Clean up this API.
+
+- Is there any need to pass info in the URL if we're passing it in the body?
+- Are we using message names consistently? Do we need them?
+
+The [tests](https://github.com/DevResults/cevitxe/blob/master/packages/cevitxe-signal-server/src/Server.test.ts) for the
+
+## Deployment
+
+The easiest way to stand one of these up is to use the https://github.com/DevResults/cevitxe-signal-server-standalone repo, which avoids monorepo wrangling. In that repo you'll find instructions for deploying to Heroku, AWS Elastic Beanstalk, Google Cloud Platform, and Glitch.
+
+## License
 
 MIT
 
-Based on https://github.com/orionz/discovery-cloud-server
+## Prior art
+
+Inspired by https://github.com/orionz/discovery-cloud-server
