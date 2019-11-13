@@ -10,6 +10,8 @@ This server provides two services:
   it as a 'channel'). If we get matching connection requests from A and B, we just pipe their
   sockets together.
 
+![diagram](../../images/signal-server.svg)
+
 ## Deployment
 
 The easiest way to stand one of these up is to use the [cevitxe-signal-server-standalone] repo,
