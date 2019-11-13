@@ -10,7 +10,7 @@ This server provides two services:
   it as a 'channel'). If we get matching connection requests from A and B, we just pipe their
   sockets together.
 
-![diagram](../../images/signal-server.svg)
+![diagram](../../images/signal-server.jpg)
 
 ## Deployment
 
