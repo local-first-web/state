@@ -36,7 +36,7 @@ This server has two WebSocket endpoints: `introduction` and `connect`.
   ```ts
   {
     type: 'Join',
-    join: ['abc123', 'qrs987'], // documents I'm interested in
+    join: ['happy-raccoon', 'qrs987'], // documents I'm interested in
   }
   ```
 
@@ -46,8 +46,8 @@ This server has two WebSocket endpoints: `introduction` and `connect`.
   ```ts
   {
     type: 'Introduction',
-    id: 'bbbb6666', // the peer's id
-    keys: ['abc123'] // documents we're both interested in
+    id: 'qrst7890', // the peer's id
+    keys: ['abcd1234'] // documents we're both interested in
   }
   ```
 
@@ -55,16 +55,9 @@ This server has two WebSocket endpoints: `introduction` and `connect`.
 
 #### `/connection/:remoteId`
 
-To connect to a peer, I make a new connection to this endpoint, e.g. `wss://your.domain.com/connect/bbbb6666`. (`:remoteId` is the peer's unique client identifier.)
+To connect to a peer, I make a new connection to this endpoint, e.g. `wss://your.domain.com/connect/qrst7890`. (`:remoteId` is the peer's unique client identifier.)
 
-TODO: Clean up this API.
-
-- Is there any need to pass info in the URL if we're passing it in the body?
-- Are we using message names consistently? Do we need them?
-
-The
-[tests](https://github.com/DevResults/cevitxe/blob/master/packages/cevitxe-signal-server/src/Server.test.ts)
-for the
+The [server tests] in this repo provide good examples of how to use this API directly.
 
 ## License
 
@@ -76,3 +69,4 @@ Inspired by https://github.com/orionz/discovery-cloud-server
 
 [cevitxe-signal-client]: https://github.com/devresults/cevitxe/blob/master/packages/cevitxe-signal-client/README.md
 [cevitxe-signal-server-standalone]: https://github.com/DevResults/cevitxe-signal-server-standalone
+[server tests]: https://github.com/DevResults/cevitxe/blob/master/packages/cevitxe-signal-server/src/Server.test.ts
