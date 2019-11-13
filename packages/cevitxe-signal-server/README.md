@@ -29,10 +29,7 @@ This server has two WebSocket endpoints: `introduction` and `connect`.
 
 #### `/introduction/:localId`
 
-- I connect to this endpoint, e.g. `wss://your.domain.com/introduction/aaaa4242`.
-
-  - `:localId` is a string that identifies me uniquely
-
+- I connect to this endpoint, e.g. `wss://your.domain.com/introduction/aaaa4242`. (`:localId` is a string that identifies me uniquely).
 - Once a WebSocket connection has been made, I send an introduction request containing one or more
   document IDs I'm interested in joining:
 
@@ -58,7 +55,7 @@ This server has two WebSocket endpoints: `introduction` and `connect`.
 
 #### `/connection/:remoteId`
 
-- I make a new connection to this endpoint, e.g. `wss://your.domain.com/connect/bbbb6666`. (`:remoteId` is their unique client identifier.)
+To connect to a peer, I make a new connection to this endpoint, e.g. `wss://your.domain.com/connect/bbbb6666`. (`:remoteId` is the peer's unique client identifier.)
 
 TODO: Clean up this API.
 
