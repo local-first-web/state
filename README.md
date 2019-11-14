@@ -86,6 +86,7 @@ used, but you can use any of the provided adapters, or build your own.
 Cevitxe currently includes the following data storage adapters:
 
 - IndexedDb
+- MongoDb
 
 ## Running the examples
 
