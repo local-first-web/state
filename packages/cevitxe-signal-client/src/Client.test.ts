@@ -32,7 +32,7 @@ describe('Client', () => {
     log(`TEST ${testId}`)
   })
 
-  afterEach(() => { })
+  afterEach(() => {})
 
   afterAll(() => {
     server.close()
