@@ -73,8 +73,7 @@ export class Client extends EventEmitter {
       this.retryDelay = initialRetryDelay
 
       this.sendToServer({
-        type: 'Hello',
-        id: this.id,
+        type: 'Join',
         join: [...this.keys],
       })
     }
@@ -115,7 +114,6 @@ export class Client extends EventEmitter {
 
     this.sendToServer({
       type: 'Join',
-      id: this.id,
       join: [key],
     })
   }
@@ -130,7 +128,6 @@ export class Client extends EventEmitter {
 
     this.sendToServer({
       type: 'Leave',
-      id: this.id,
       leave: [key],
     })
   }
@@ -167,7 +164,7 @@ export class Client extends EventEmitter {
 
   private connectToPeer(id: string): Peer {
     this.log('requesting direct connection to peer', id)
-    const url = `${this.url}/connect/${this.id}`
+    const url = `${this.url}/connection/${this.id}` // remaining parameters are added by peer
     const peer = new Peer({ url, id })
     this.peers.set(id, peer)
     return peer

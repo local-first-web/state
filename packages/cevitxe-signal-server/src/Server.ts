@@ -4,12 +4,14 @@ import express from 'express'
 import expressWs from 'express-ws'
 import { Server as HttpServer, Socket } from 'net'
 import WebSocket, { Data } from 'ws'
-import { ConnectRequestParams, KeySet } from './types'
+import { ConnectRequestParams, KeySet, Message } from './types'
 import { deduplicate } from './lib/deduplicate'
 import { intersection } from './lib/intersection'
 import { pipeSockets } from './lib/pipeSockets'
 
 const { app } = expressWs(express())
+const fishPage =
+  '<body style="background: black; display:flex; justify-content: center; align-items: center; font-size: 18em;">🐟</body>'
 
 interface ListenOptions {
   silent?: boolean
@@ -93,13 +95,13 @@ export class Server extends EventEmitter {
     // If we find another peer interested in the same key(s), we send both peers an introduction,
     // which they can use to connect
     const sendIntroduction = (A: string, B: string, keys: KeySet) => {
-      const message = JSON.stringify({
+      const message = {
         type: 'Introduction',
         id: B, // the id of the other peer
         keys, // the key(s) both are interested in
-      })
-      if (this.peers[A]) this.peers[A].send(message)
-      else this.log(`can't send connect message to unknown peer`, A)
+      } as Message.Introduction
+      if (this.peers[A]) this.peers[A].send(JSON.stringify(message))
+      else this.log(`Can't send connect message to unknown peer`, A)
     }
 
     return (data: Data) => {
@@ -186,7 +188,7 @@ export class Server extends EventEmitter {
       // It's nice to be able to hit this server from a browser as a sanity check
       app.get('/', (req, res, next) => {
         this.log('get /')
-        res.send('<body style="font-size:10em;padding:2em;text-align:center">🐟</body>')
+        res.send(fishPage)
         res.end()
       })
 
@@ -197,13 +199,13 @@ export class Server extends EventEmitter {
       })
 
       // Connection request
-      app.ws('/connect/:A/:B/:key', (ws, { params: { A, B, key } }) => {
+      app.ws('/connection/:A/:B/:key', (ws, { params: { A, B, key } }) => {
         this.log('received connection request', A, B)
         this.openConnection({ peerA: ws as WebSocket, A, B, key })
       })
 
       this.httpServer = app.listen(this.port, () => {
-        const msg = ` 🐟  Listening at http://localhost:${this.port}  `
+        const msg = `🐟 Listening at http://localhost:${this.port}  `
         if (!silent) console.log(msg)
         this.log(msg)
         this.emit('ready')

@@ -1,29 +1,31 @@
-# Cevitxe Signal Client
+# 🐟 cevitxe-signal-client
 
-A simple discovery cloud client library that can be paired with [cevitxe-signal-server](https://github.com/herbcaudill/cevitxe/packages/cevitxe-signal-server) to be used as a cloud-based alternative to [discovery-swarm](https://github.com/mafintosh/discovery-swarm).
+A simple discovery cloud client library that can be paired with [cevitxe-signal-server] .
 
-### Example
+You don't strictly need to use this client - you could interact directly with the server the way we
+do in the [server tests] - but it automates the business of accepting invitations when they're
+received.
 
-Two clients running the following
+The client keeps track of all peers that the server connects you to, and for each peer it keeps
+track of each key (aka discoveryKey, aka channel) that you're working with that peer on.
+
+The simplest workflow is something like this:
 
 ```ts
-import { Repo } from 'hypermerge'
+client = new Client({ id: 'my-peer-id', url })
+client.join('my-document-id')
+client.on('peer', (peer, key) => {
+  const socket = peer.get(key) // `socket` is a WebSocket instance
 
-import Client from 'discovery-cloud-client'
+  // send a message
+  socket.send('Hello!')
 
-const ram: Function = require('random-access-memory')
-
-const repo = new Repo({ storage: ram })
-
-const client = new Client({
-  url: 'wss://fish-monger-9999.herokuapp.com',
-  id: repo.id,
-  stream: repo.stream,
+  // listen for messages
+  socket.onmessage = () => {
+    console.log(messsage)
+  }
 })
-
-repo.replicate(client)
 ```
 
-### License
-
-MIT
+[cevitxe-signal-server]: https://github.com/devresults/cevitxe/blob/master/packages/cevitxe-signal-server
+[server tests]: https://github.com/devresults/cevitxe/blob/master/packages/cevitxe-signal-server/src/Server.test.ts

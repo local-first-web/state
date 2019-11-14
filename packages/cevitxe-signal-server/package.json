@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "tsc",
-    "start": "ts-node src/start.ts",
+    "start": "node dist/start.js",
     "test": "jest",
     "dev": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 ts-node-dev --respawn --transpileOnly src/start.ts"
   },

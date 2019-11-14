@@ -9,7 +9,7 @@ describe('Server', () => {
   let port: number
   let url: string
   let introductionUrl: string
-  let connectUrl: string
+  let connectionUrl: string
 
   let server: Server
   let localId: string
@@ -22,7 +22,7 @@ describe('Server', () => {
     port = await getAvailablePort({ port: 3100 })
     url = `ws://localhost:${port}`
     introductionUrl = `${url}/introduction`
-    connectUrl = `${url}/connect`
+    connectionUrl = `${url}/connection`
 
     server = new Server({ port })
     server.listen({ silent: true })
@@ -70,7 +70,7 @@ describe('Server', () => {
       expect.assertions(4)
 
       const localPeer = makeIntroductionRequest(localId, key)
-      const remotePeer = makeIntroductionRequest(remoteId, key) // need to make request even if we don't use the result
+      const remotePeer = makeIntroductionRequest(remoteId, key)
 
       const localDone = new Promise(resolve => {
         localPeer.once('message', d => {
@@ -106,8 +106,8 @@ describe('Server', () => {
         expect(invitation.id).toEqual(remoteId)
         expect(invitation.keys).toEqual([key])
 
-        const localPeer = new WebSocket(`${connectUrl}/${localId}/${remoteId}/${key}`)
-        const remotePeer = new WebSocket(`${connectUrl}/${remoteId}/${localId}/${key}`)
+        const localPeer = new WebSocket(`${connectionUrl}/${localId}/${remoteId}/${key}`)
+        const remotePeer = new WebSocket(`${connectionUrl}/${remoteId}/${localId}/${key}`)
 
         // send message from local to remote
         localPeer.once('open', () => localPeer.send('DUDE!!'))
@@ -124,6 +124,7 @@ describe('Server', () => {
       })
     })
   })
+
   describe('N-way', () => {
     it('Should make introductions between all the peers', done => {
       const instances = ['a', 'b', 'c', 'd', 'e']
