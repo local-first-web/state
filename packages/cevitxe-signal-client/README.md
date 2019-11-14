@@ -1,4 +1,4 @@
-# cevitxe-signal-client
+# 🐟 cevitxe-signal-client
 
 A simple discovery cloud client library that can be paired with [cevitxe-signal-server] .
 
