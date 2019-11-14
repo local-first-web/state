@@ -7,4 +7,4 @@ export const DEFAULT_SIGNAL_SERVERS = ['ws://localhost:8080'] // default public 
 export const DELETE_COLLECTION = Symbol('DELETE_COLLECTION')
 export const DELETE_ITEM = Symbol('DELETE_ITEM')
 
-export const DELETED = '::DELETED'
+export const DELETED = '__DELETED'

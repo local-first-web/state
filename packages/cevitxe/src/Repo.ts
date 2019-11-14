@@ -46,7 +46,7 @@ interface RepoOptions {
  * There is one repo (and one database) per discovery key.
  *
  * ```
- * cevitxe::grid::fancy-lizard (DB)
+ * cevitxe_grid_fancy-lizard (DB)
  *   changes (object store)
  *     1: { id:1, documentId: abc123, changeSet: [...]}
  *     2: { id:2, documentId: abc123, changeSet: [...]}
@@ -236,8 +236,7 @@ export class Repo<T = any> {
   async *getHistory(batchSize: number = 1000): AsyncGenerator<RepoHistory> {
     let history: RepoHistory = {}
     let i = 0
-    for await (const cursor of this.storage.changes) {
-      const { documentId, changes } = cursor.value
+    for await (const { documentId, changes } of this.storage.changes()) {
       history[documentId] = (history[documentId] || []).concat(changes)
       if (i++ > batchSize) {
         yield history
@@ -376,8 +375,7 @@ export class Repo<T = any> {
   /** Loads all the repo's snapshots into memory */
   private async loadSnapshotsFromDb() {
     // TODO: only problem with this approach is that we're not storing clocks for deleted documents
-    for await (const cursor of this.storage.snapshots) {
-      const { documentId, snapshot, clock } = cursor.value
+    for await (const { documentId, snapshot, clock } of this.storage.snapshots()) {
       this.state[documentId] = snapshot[DELETED] ? null : snapshot
       this.clock[documentId] = clock
     }

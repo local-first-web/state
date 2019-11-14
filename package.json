@@ -71,6 +71,7 @@
     "projects": [
       "<rootDir>/packages/cevitxe",
       "<rootDir>/packages/cevitxe-storage-indexeddb",
+      "<rootDir>/packages/cevitxe-storage-mongodb",
       "<rootDir>/packages/cevitxe-signal-client",
       "<rootDir>/packages/cevitxe-signal-server",
       "<rootDir>/packages/cevitxe-example-grid"

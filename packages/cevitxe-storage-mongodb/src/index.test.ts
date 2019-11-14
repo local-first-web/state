@@ -1,12 +1,15 @@
-﻿import { IdbAdapter } from '.'
+﻿import { MongoAdapter } from '.'
 import { newid } from 'cevitxe-signal-client'
 
 const setup = async () => {
-  const storage = new IdbAdapter({ discoveryKey: 'silly-coder', databaseName: `test-${newid()}` })
+  const storage = new MongoAdapter({
+    discoveryKey: 'sly-mongoose',
+    databaseName: `test-${newid()}`,
+  })
   return { storage }
 }
 
-describe('IdbAdapter', () => {
+describe('MongoAdapter', () => {
   describe('open & close', () => {
     test(`doesn't crash`, async () => {
       const { storage } = await setup()
@@ -17,7 +20,7 @@ describe('IdbAdapter', () => {
   })
 
   describe('snapshots', () => {
-    test('`snapshots`', async () => {
+    test('snapshots', async () => {
       const { storage } = await setup()
       await storage.open()
       const documentId = '123'
@@ -26,8 +29,7 @@ describe('IdbAdapter', () => {
       // add a snapshot
       await storage.putSnapshot({ documentId, snapshot, clock })
       // should be the only one there
-      for await (const snapshotRecord of storage.snapshots())
-        expect(snapshotRecord).toEqual({ documentId, snapshot, clock })
+      for await (const s of storage.snapshots()) expect(s).toEqual({ documentId, snapshot, clock })
     })
 
     test('deleteSnapshot', async () => {
@@ -42,13 +44,13 @@ describe('IdbAdapter', () => {
       await storage.deleteSnapshot(documentId)
       // confirm that no snapshots are left
       let count = 0
-      for await (const _ of storage.snapshots()) count++
+      for await (const cursor of storage.snapshots()) count++
       expect(count).toBe(0)
     })
   })
 
   describe('changes', () => {
-    test('`changes` getter', async () => {
+    test('changes', async () => {
       const { storage } = await setup()
       await storage.open()
       const changeSet = { documentId: '123', changes: [] }
