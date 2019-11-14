@@ -8,6 +8,7 @@
     "start:chat": "yarn workspace cevitxe-example-chat start",
     "start:grid": "yarn workspace cevitxe-example-grid start",
     "start:todo": "yarn workspace cevitxe-example-todo start",
+    "start:signal-server": "yarn workspace cevitxe-signal-server start",
     "dev": "run-p watch test:watch",
     "dev:log": "run-p watch test:log",
     "dev:signal-server": "yarn workspace cevitxe-signal-server dev",
@@ -49,7 +50,7 @@
     "wait-on": "^3.3.0"
   },
   "engines": {
-    "yarn": "1.19.0"
+    "yarn": ">=1.17.0"
   },
   "workspaces": {
     "packages": [

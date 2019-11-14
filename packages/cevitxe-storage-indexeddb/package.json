@@ -1,7 +1,7 @@
 {
   "name": "cevitxe-storage-indexeddb",
   "description": "IndexedDB storage adapter for Cevitxe",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "private": false,
   "license": "MIT",
   "main": "dist/src/index.js",

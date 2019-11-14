@@ -1,6 +1,6 @@
 {
   "name": "cevitxe-signal-server",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "main": "src/index.ts",
   "license": "MIT",
   "scripts": {
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "bs58": "4",
-    "express": "4",
+    "express": ">=4.5.0",
     "express-ws": "4",
     "ws": "7"
   },
@@ -28,7 +28,6 @@
     "cross-env": "6",
     "debug": "4",
     "jest": "24",
-    "kill-port": "1",
     "mock-socket": "9",
     "portfinder": "1",
     "prettier": "1",
