@@ -1,7 +1,7 @@
 {
   "name": "cevitxe-storage-abstract",
   "description": "Abstract base class for Cevitxe storage adapters",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "license": "MIT",
   "private": false,
   "main": "dist/src/index.js",

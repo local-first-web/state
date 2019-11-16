@@ -1,7 +1,7 @@
 {
   "name": "cevitxe-storage-mongodb",
   "description": "MongoDB storage adapter for Cevitxe",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "license": "MIT",
   "private": false,
   "main": "dist/src/index.js",
@@ -14,8 +14,8 @@
   },
   "dependencies": {
     "automerge": "0",
-    "cevitxe-signal-client": "^0.4.0",
-    "cevitxe-storage-abstract": "^0.4.0",
+    "cevitxe-signal-client": "^0.4.1",
+    "cevitxe-storage-abstract": "^0.4.1",
     "debug": "4",
     "jest-environment-node": "^24.9.0",
     "mongodb": "^3.3.3"
