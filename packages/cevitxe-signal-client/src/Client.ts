@@ -170,3 +170,7 @@ export class Client extends EventEmitter {
     return peer
   }
 }
+
+// It's normal for a document with a lot of participants to have a lot of connections, so increase
+// the limit to avoid spurious warnings about emitter leaks.
+EventEmitter.defaultMaxListeners = 500
