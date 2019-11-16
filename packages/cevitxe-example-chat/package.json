@@ -1,7 +1,7 @@
 {
   "name": "cevitxe-example-chat",
   "description": "Chat sample implemented with React-Redux & Cevitxe.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "license": "MIT",
   "main": "src/index.tsx",
@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@emotion/core": "10",
-    "cevitxe": "^0.3.0",
-    "cevitxe-toolbar": "^0.3.0",
+    "cevitxe": "^0.4.0",
+    "cevitxe-toolbar": "^0.4.0",
     "debug": "4",
     "react": "16",
     "react-dom": "^16.0.1",
