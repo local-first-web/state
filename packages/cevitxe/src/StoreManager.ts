@@ -1,17 +1,16 @@
 import A from 'automerge'
+import { newid } from 'cevitxe-signal-client'
+import { ProxyReducer, RepoSnapshot } from 'cevitxe-types'
 import cuid from 'cuid'
 import debug from 'debug'
-import { EventEmitter } from 'events'
 import { applyMiddleware, createStore, Middleware, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
-import { getReducer } from './getReducer'
+import { Client } from './Client'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
+import { getReducer } from './getReducer'
 import { getKnownDiscoveryKeys } from './keys'
 import { Repo } from './Repo'
-import { RepoSnapshot, ProxyReducer } from 'cevitxe-types'
-import { Client } from './Client'
-import { newid } from 'cevitxe-signal-client'
 
 let log = debug('cevitxe:StoreManager')
 
@@ -19,7 +18,7 @@ let log = debug('cevitxe:StoreManager')
  * A StoreManager generates a Redux store with persistence (via the Repo class), networking (via
  * cevitxe-signal-client), and magical synchronization with peers (via automerge)
  */
-export class StoreManager<T> extends EventEmitter {
+export class StoreManager<T> {
   private databaseName: string
   private proxyReducer: ProxyReducer
   private initialState: RepoSnapshot<T>
@@ -37,7 +36,6 @@ export class StoreManager<T> extends EventEmitter {
     urls = DEFAULT_SIGNAL_SERVERS,
     middlewares = [],
   }: StoreManagerOptions<T>) {
-    super()
     this.proxyReducer = proxyReducer
     this.middlewares = middlewares
     this.initialState = initialState
@@ -56,7 +54,6 @@ export class StoreManager<T> extends EventEmitter {
 
     // Create repo for storage
     this.repo = new Repo({ clientId, discoveryKey, databaseName: this.databaseName })
-    this.repo.addHandler(this.onChange)
     const state = await this.repo.init(this.initialState, isCreating)
 
     // Create Redux store to expose to app
@@ -89,15 +86,10 @@ export class StoreManager<T> extends EventEmitter {
     return getKnownDiscoveryKeys(this.databaseName)
   }
 
-  private onChange = (documentId: string, doc: A.Doc<T>) => {
-    this.emit('change', documentId, doc)
-  }
-
   /**
    * Close all connections and the repo's database
    */
   close = async () => {
-    this.removeAllListeners()
     if (this.client) this.client.close()
 
     // TODO: Close repo when closing StoreManager
@@ -127,7 +119,3 @@ export interface StoreManagerOptions<T> {
 
 // Use shorter IDs
 A.uuid.setFactory(cuid)
-
-// It's normal for a document with a lot of participants to have a lot of connections, so increase
-// the limit to avoid spurious warnings about emitter leaks.
-EventEmitter.defaultMaxListeners = 500
