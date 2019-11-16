@@ -2,8 +2,8 @@
   "name": "cevitxe",
   "description": "CRDT-based distributed state management for Redux",
   "version": "0.4.0",
-  "private": false,
   "license": "MIT",
+  "private": false,
   "main": "dist/src/index.js",
   "typings": "dist/src/index.d.ts",
   "scripts": {
