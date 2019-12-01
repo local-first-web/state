@@ -108,7 +108,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * Iterates over all keys for the collection when given the current redux state.
    * @param state The plain JSON representation of the state.
    */
-  function* keys(state: RepoSnapshot<T> = {}) {
+  function* keys(state: RepoSnapshot = {}) {
     for (const key in state) {
       const item = (state as any)[key]
       const shouldInclude = item && !item[DELETED]
@@ -116,7 +116,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
     }
   }
 
-  function* ids(state: RepoSnapshot<T> = {}) {
+  function* ids(state: RepoSnapshot = {}) {
     for (const key of keys(state)) {
       yield keyToId(key)
     }
@@ -126,7 +126,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * Given the redux state, returns an array containing all items in the collection.
    * @param state The plain JSON representation of the state.
    */
-  const getAll = (state: RepoSnapshot<T> = {}) => {
+  const getAll = (state: RepoSnapshot = {}) => {
     let result = []
     for (const key of keys(state)) result.push(state[key])
     return result
@@ -136,7 +136,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * Given the redux state, returns a map keying each item in the collection to its `id`.
    * @param state The plain JSON representation of the state.
    */
-  const getMap = (state: RepoSnapshot<T> = {}): RepoSnapshot<T> => {
+  const getMap = (state: RepoSnapshot = {}): RepoSnapshot => {
     let result = {} as any
     for (const key of keys(state)) result[keyToId(key)] = state[key]
     return result
@@ -146,7 +146,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
    * Returns the number of items in the collection when given the redux state.
    * @param state The plain JSON representation of the state.
    */
-  const count = (state: RepoSnapshot<T> = {}) => {
+  const count = (state: RepoSnapshot = {}) => {
     let i = 0
     for (const _ of keys(state)) i++
     return i
