@@ -4,13 +4,6 @@ import { AnyAction } from 'redux'
 export type ProxyReducer = (state: any, action: AnyAction) => ChangeMap | null
 
 /**
- * Associates documentIds with a change function to be executed by the reducer.
- */
-export interface ChangeMap {
-  [documentId: string]: A.ChangeFn<any> | symbol
-}
-
-/**
  * A keychain maps a discovery key (the id we share to the signal server) with a public/private
  * keypair (which we use for storage etc). The discovery key can be any string that we think is
  * going to be unique on our signal hub servers.
@@ -28,8 +21,54 @@ export interface KeyPair {
   secretKey: CryptoKey
 }
 
-export interface Snapshot<T = any> {
-  [key: string]: T
+/**
+ * A vector clock provides a logical ordering of events and states in a distributed system. It
+ *  associates each actor in a system with a counter that is incremented each time that actor makes a
+ *  change. See https://en.wikipedia.org/wiki/Vector_clock.
+ */
+export declare type Clock = {
+  [actorId: string]: number
+}
+
+/**
+ * For each document, we have a `Clock`. A ClockMap maps all documentIds that we have to the
+ * corresponding `Clock`. */
+export declare type ClockMap = {
+  [documentId: string]: Clock
+}
+
+/**
+ * Associates documentIds with a change function to be executed by the reducer.
+ */
+export interface ChangeMap {
+  [documentId: string]: A.ChangeFn<any> | symbol
+}
+
+/**
+ * Every time one or more changes are made, we store them in a `ChangeSet`.
+ */
+export interface ChangeSet {
+  /** The ID of the document */
+  documentId: string
+  /** The name of the collection this ChangeSet applies to */
+  collection?: string
+  /** One or more Automerge changes made to the document */
+  changes: A.Change[]
+}
+
+/**
+ * `RepoHistory` is an object mapping each `documentId` to an array of changes representing the
+ * corresponding document's entire history.
+ */
+export declare type RepoHistory = {
+  [documentId: string]: A.Change[]
+}
+
+/**
+ * A snapshot is the state of a document at a specific point in time, with no Automerge metadata.
+ */
+export interface Snapshot {
+  [key: string]: any
 }
 
 /**
@@ -37,37 +76,20 @@ export interface Snapshot<T = any> {
  * property of which is also an object; so any primitive values or arrays need to be nested a couple
  * of levels in.
  */
-export interface RepoSnapshot<T = any> {
-  [documentId: string]: T | null
+export interface RepoSnapshot {
+  [documentId: string]: Snapshot
 }
 
 /**
- * A `ChangeSet` is what we record in our storage feed.
+ * We store each `Snapshot` along with some metadata in a `SnapshotRecord`.
  */
-export interface ChangeSet {
+export interface SnapshotRecord {
   /** The ID of the document */
   documentId: string
-  /** One or more Automerge changes made to the document */
-  changes: A.Change[]
-}
-
-/**
- * `RepoHistory` is an object mapping documentIds to the corresponding document's entire change history.
- */
-export type RepoHistory = {
-  [documentId: string]: A.Change[]
-}
-
-export type Clock = {
-  [actorId: string]: number
-}
-
-export type ClockMap = {
-  [documentId: string]: Clock
-}
-
-export interface SnapshotRecord {
-  documentId: string
+  /** The name of the collection this SnapshotRecord applies to */
+  collection?: string
+  /** The snapshot itself */
   snapshot: Snapshot
+  /** The vector clock when the snapshot was taken  */
   clock: Clock
 }
