@@ -1,4 +1,4 @@
-﻿import A from 'automerge'
+import A from 'automerge'
 import { newid } from 'cevitxe-signal-client'
 import debug from 'debug'
 import Cache from 'lru-cache'
@@ -36,28 +36,6 @@ interface RepoOptions {
  *
  * A repo is instantiated by StoreManager when creating or joining a store. Actions coming from the
  * store are passed onto the repo, as are changes received from peers.
- *
- * ### Storage schema
- *
- * We use a single database with two object stores: `changes`, containing changesets in sequential
- * order, indexed by documentId; and `snapshots`, containing the document's current state as a plain
- * JavaScript object.
- *
- * There is one repo (and one database) per discovery key.
- *
- * ```
- * cevitxe_grid_fancy-lizard (DB)
- *   changes (object store)
- *     1: { id:1, documentId: abc123, changeSet: [...]}
- *     2: { id:2, documentId: abc123, changeSet: [...]}
- *     3: { id:3, documentId: abc123, changeSet: [...]}
- *     4: { id:4, documentId: qrs567, changeSet: [...]}
- *     5: { id:5, documentId: qrs567, changeSet: [...]}
- *     6: { id:6, documentId: qrs567, changeSet: [...]}
- *   snapshots (object store)
- *     abc123: { documentId: abc123, snapshot: {...}, clock: {...}}
- *     qrs567: { documentId: qrs567, snapshot: {...}, clock: {...}}
- * ```
  */
 export class Repo<T = any> {
   private log: debug.Debugger
