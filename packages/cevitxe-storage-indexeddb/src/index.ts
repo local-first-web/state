@@ -1,4 +1,4 @@
-import { StorageAdapter } from 'cevitxe-storage-abstract'
+﻿import { StorageAdapter } from 'cevitxe-storage-abstract'
 import { ChangeSet, SnapshotRecord } from 'cevitxe-types'
 import * as idb from 'idb/with-async-ittr-cjs'
 import { DBSchema, IDBPDatabase } from 'idb/with-async-ittr-cjs'
