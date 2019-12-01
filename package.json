@@ -4,10 +4,14 @@
   "license": "MIT",
   "private": true,
   "scripts": {
+    "build": "lerna run build",
+    "build:quick": "tsc -b packages/cevitxe-signal-server packages/cevitxe-storage-indexeddb packages/cevitxe-toolbar packages/cevitxe",
+    "heroku-postbuild": "lerna run build",
     "start": "run-p watch start:grid",
     "start:chat": "yarn workspace cevitxe-example-chat start",
     "start:grid": "yarn workspace cevitxe-example-grid start",
     "start:todo": "yarn workspace cevitxe-example-todo start",
+    "start:signal-server": "yarn workspace cevitxe-signal-server start",
     "dev": "run-p watch test:watch",
     "dev:log": "run-p watch test:log",
     "dev:signal-server": "yarn workspace cevitxe-signal-server dev",
@@ -20,12 +24,10 @@
     "dev:todo:wait": "run-s wait dev:todo:start",
     "dev:todo:start": "run-p dev:signal-server watch start:todo",
     "dev:todo:e2e": "run-p dev:todo test:todo:e2e",
-    "build": "lerna run build",
-    "build:quick": "tsc -b packages/signal-server packages/toolbar packages/core",
     "lint": "lerna run lint",
     "publish": "lerna publish --yes",
     "watch": "yarn build:quick --watch",
-    "wait": "wait-on ./packages/core/dist/src/index.js",
+    "wait": "wait-on ./packages/cevitxe/dist/src/index.js",
     "test": "jest",
     "test:todo:e2e": "yarn workspace cevitxe-example-todo test:e2e",
     "test:grid:e2e": "yarn workspace cevitxe-example-grid test:e2e",
@@ -49,12 +51,11 @@
     "wait-on": "^3.3.0"
   },
   "engines": {
-    "yarn": "1.19.0"
+    "yarn": ">=1.17.0"
   },
   "workspaces": {
     "packages": [
-      "packages/*",
-      "packages/examples/*"
+      "packages/*"
     ],
     "nohoist": [
       "**/jest/**",
@@ -69,10 +70,12 @@
   },
   "jest": {
     "projects": [
-      "<rootDir>/packages/core",
-      "<rootDir>/packages/signal-client",
-      "<rootDir>/packages/signal-server",
-      "<rootDir>/packages/examples/grid"
+      "<rootDir>/packages/cevitxe",
+      "<rootDir>/packages/cevitxe-storage-indexeddb",
+      "<rootDir>/packages/cevitxe-storage-mongodb",
+      "<rootDir>/packages/cevitxe-signal-client",
+      "<rootDir>/packages/cevitxe-signal-server",
+      "<rootDir>/packages/cevitxe-example-grid"
     ]
   }
 }

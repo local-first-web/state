@@ -75,7 +75,7 @@ In the background, whenever you are online, Cevitxe connects to any peers that a
 repository, sending out a stream of changes as the user modifies the dataset, and applying incoming
 changes from peers.
 
-To discover peers, Cevitxe provides a lightweight [signal server](packages/signal-server).
+To discover peers, Cevitxe provides a lightweight [signal server](packages/cevitxe-signal-server).
 
 ### Persistence
 
@@ -86,6 +86,7 @@ used, but you can use any of the provided adapters, or build your own.
 Cevitxe currently includes the following data storage adapters:
 
 - IndexedDb
+- MongoDb
 
 ## Running the examples
 

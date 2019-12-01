@@ -1,0 +1,51 @@
+{
+  "name": "cevitxe-toolbar",
+  "description": "Toolbar component for managing document IDs in Cevitxe examples.",
+  "version": "0.4.2",
+  "license": "MIT",
+  "private": false,
+  "main": "dist/src/Toolbar.js",
+  "typings": "dist/src/Toolbar.d.ts",
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "tsc ",
+    "lint": "tsc -p tsconfig.strict.json --noEmit",
+    "watch": "tsc --watch",
+    "test": "jest"
+  },
+  "resolutions": {
+    "jest": "24.9.0"
+  },
+  "dependencies": {
+    "@emotion/core": "10",
+    "cevitxe": "^0.4.2",
+    "cevitxe-types": "^0.4.2",
+    "formik": "^2.0.1-rc.13",
+    "friendly-words": "1",
+    "react": "16",
+    "react-dom": "^16.0.1",
+    "redux": "4",
+    "use-persisted-state": "0",
+    "use-query-params": "0"
+  },
+  "devDependencies": {
+    "@types/jest": "24",
+    "@types/query-string": "6",
+    "@types/use-persisted-state": "0",
+    "jest": "24",
+    "prettier": "1",
+    "rimraf": "3",
+    "ts-jest": "24",
+    "tslib": "1",
+    "typescript": "3"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "jsdom",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist"
+    ]
+  },
+  "gitHead": "061c22c8e2481fac0ae5bbb70880b11e80c6f31e"
+}

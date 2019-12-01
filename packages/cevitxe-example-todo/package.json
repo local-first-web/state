@@ -1,0 +1,54 @@
+{
+  "name": "cevitxe-example-todo",
+  "description": "TodoMVC implemented with React-Redux & Cevitxe.",
+  "version": "0.4.2",
+  "license": "MIT",
+  "private": true,
+  "main": "src/index.tsx",
+  "scripts": {
+    "start": "react-scripts start",
+    "lint": "tsc -p tsconfig.strict.json --noEmit",
+    "test:e2e": "cypress open",
+    "dev": "run-p start"
+  },
+  "dependencies": {
+    "@emotion/core": "10",
+    "cevitxe": "^0.4.2",
+    "cevitxe-toolbar": "^0.4.2",
+    "classnames": "2",
+    "debug": "4",
+    "npm-run-all": "4",
+    "react": "16",
+    "react-dom": "^16.0.1",
+    "react-redux": "7",
+    "react-scripts": "3",
+    "redux": "4",
+    "uuid": "3"
+  },
+  "devDependencies": {
+    "@testing-library/cypress": "4",
+    "@types/classnames": "2",
+    "@types/debug": "4",
+    "@types/jest": "24",
+    "@types/node": "12",
+    "@types/react": "16",
+    "@types/react-dom": "16",
+    "@types/uuid": "3",
+    "cypress": "3",
+    "prettier": "1",
+    "start-server-and-test": "1",
+    "typescript": "3"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
