@@ -1,4 +1,4 @@
-import A from 'automerge'
+﻿import A from 'automerge'
 import { newid } from 'cevitxe-signal-client'
 import debug from 'debug'
 import Cache from 'lru-cache'
@@ -102,7 +102,7 @@ export class Repo<T = any> {
    * Creates a new repo with the given initial state.
    * @param initialState
    */
-  async createFromSnapshot(state: RepoSnapshot<T>) {
+  async createFromSnapshot(state: RepoSnapshot) {
     for (let documentId in state) {
       const snapshot = state[documentId]
       if (snapshot !== null) {
@@ -142,7 +142,7 @@ export class Repo<T = any> {
    * @param changes (optional) If we're already given the changes (e.g. in `applyChanges`), we can
    * pass them in so we don't have to recalculate them.
    */
-  async set(documentId: string, doc: A.Doc<T>, changes?: A.Change[]) {
+  async set(documentId: string, doc: A.Doc<any>, changes?: A.Change[]) {
     this.log('set', documentId, doc)
 
     // look up old doc and generate diff
@@ -320,7 +320,7 @@ export class Repo<T = any> {
   }
 
   /** Returns the state of the entire repo, containing snapshots of all the documents. */
-  getState(): RepoSnapshot<T> {
+  getState(): RepoSnapshot {
     return this.state
   }
 
@@ -329,7 +329,7 @@ export class Repo<T = any> {
    * > NOTE: This doesn't update the repo's change history or persist anything; this is only used
    * for synchronous updates of the state for UI purposes.
    */
-  loadState(state: RepoSnapshot<T>) {
+  loadState(state: RepoSnapshot) {
     this.state = Object.assign(this.state, state)
   }
 
