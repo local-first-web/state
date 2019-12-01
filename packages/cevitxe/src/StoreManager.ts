@@ -26,6 +26,7 @@ export class StoreManager<T> {
   private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
   private repo?: Repo
   private client?: Client
+  private collections: string[]
 
   public store?: Store
 
@@ -35,12 +36,14 @@ export class StoreManager<T> {
     initialState,
     urls = DEFAULT_SIGNAL_SERVERS,
     middlewares = [],
+    collections = [],
   }: StoreManagerOptions<T>) {
     this.proxyReducer = proxyReducer
     this.middlewares = middlewares
     this.initialState = initialState
     this.databaseName = databaseName
     this.urls = urls
+    this.collections = collections
   }
 
   joinStore = (discoveryKey: string) => this.getStore(discoveryKey, false)
@@ -115,6 +118,8 @@ export interface StoreManagerOptions<T> {
   databaseName: string
   /** The address(es) of one or more signal servers to try. */
   urls?: string[]
+  /** The names of any collections that we need to manage */
+  collections?: string[]
 }
 
 // Use shorter IDs
