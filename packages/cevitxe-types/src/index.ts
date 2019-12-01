@@ -77,7 +77,7 @@ export interface Snapshot {
  * of levels in.
  */
 export interface RepoSnapshot {
-  [documentId: string]: Snapshot
+  [documentId: string]: Snapshot | null
 }
 
 /**

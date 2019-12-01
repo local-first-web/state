@@ -389,8 +389,8 @@ describe('StoreManager', () => {
       await _yield()
 
       // confirm that both stores have the new value
-      expect(teachers.selectors.getMap(remoteStore.getState()).abcxyz.first).toEqual('Herbert')
-      expect(teachers.selectors.getMap(localStore.getState()).abcxyz.first).toEqual('Herbert')
+      expect(teachers.selectors.getMap(remoteStore.getState()).abcxyz!.first).toEqual('Herbert')
+      expect(teachers.selectors.getMap(localStore.getState()).abcxyz!.first).toEqual('Herbert')
 
       // disconnect both stores
       await close()
@@ -400,7 +400,7 @@ describe('StoreManager', () => {
       await _yield()
 
       // confirm that the modified state is still there
-      expect(teachers.selectors.getMap(newRemoteStore.getState()).abcxyz.first).toEqual('Herbert')
+      expect(teachers.selectors.getMap(newRemoteStore.getState()).abcxyz!.first).toEqual('Herbert')
 
       await close()
       expect.assertions(3)
