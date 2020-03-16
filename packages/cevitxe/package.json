@@ -16,7 +16,7 @@
     "test:log": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 yarn test"
   },
   "resolutions": {
-    "jest": "24.9.0"
+    "jest": "25.1.0"
   },
   "dependencies": {
     "automerge": "0",
@@ -31,11 +31,11 @@
   },
   "devDependencies": {
     "@types/debug": "4",
-    "@types/jest": "24",
+    "@types/jest": "25",
     "@types/lru-cache": "5",
     "cevitxe-signal-server": "^0.4.2",
     "fake-indexeddb": "2",
-    "jest": "24",
+    "jest": "25",
     "mock-socket": "8",
     "npm-watch": "0",
     "p-event": "4",
@@ -44,7 +44,7 @@
     "redux": "4",
     "redux-devtools-extension": "2",
     "rimraf": "3",
-    "ts-jest": "24",
+    "ts-jest": "25",
     "tslib": "1",
     "typescript": "3"
   },

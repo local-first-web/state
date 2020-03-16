@@ -42,7 +42,7 @@
     "@testing-library/react": "8",
     "@types/debug": "4",
     "@types/faker": "4",
-    "@types/jest": "24",
+    "@types/jest": "25",
     "@types/json-schema": "7",
     "@types/muibox": "1",
     "@types/node": "12",
