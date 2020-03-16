@@ -45,14 +45,14 @@ export const Grid = () => {
 
   const columns = useSelector((state: any) => {
     if (!ready) return []
-    const { properties = {} } = state.schema
+    const properties = state.schema.properties || {}
     return Object.entries(properties).map(([field, schema]) => buildColumnFromSchema(field, schema))
   })
 
   const dialog = useDialog()
 
-  const [nextRowId, setNextRowId] = useState()
-  const [nextColumn, setNextColumn] = useState()
+  const [nextRowId, setNextRowId] = useState<string>()
+  const [nextColumn, setNextColumn] = useState<string>()
 
   const handleKeyDown = (event: CellKeyPressEvent) => {
     if (event.event) {
