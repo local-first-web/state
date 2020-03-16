@@ -15,15 +15,12 @@
     "test:debug": "node --inspect-brk=11580 node_modules\\jest\\bin\\jest.js --runInBand",
     "test:log": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 yarn test"
   },
-  "resolutions": {
-    "jest": "25.1.0"
-  },
   "dependencies": {
     "automerge": "0",
     "cevitxe-signal-client": "^0.4.2",
     "cevitxe-storage-abstract": "^0.4.2",
     "cevitxe-storage-indexeddb": "^0.4.2",
-    "cevitxe-types": "^0.4.2",
+    "cevitxe-types": "0.4.2",
     "cuid": "2",
     "debug": "4",
     "immutable": "4.0.0-rc.12",

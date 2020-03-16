@@ -12,9 +12,6 @@
     "watch": "tsc --watch"
   },
   "author": "",
-  "resolutions": {
-    "jest": "25.1.0"
-  },
   "dependencies": {
     "debug": "4",
     "ts-node": "8",
@@ -22,7 +19,7 @@
   },
   "devDependencies": {
     "@types/jest": "25",
-    "@types/node": "10",
+    "@types/node": "13",
     "@types/ws": "6",
     "cevitxe-signal-server": "^0.4.2",
     "jest": "25",
