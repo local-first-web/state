@@ -38,17 +38,14 @@
   "dependencies": {
     "esm": "3"
   },
-  "resolutions": {
-    "jest": "24.9.0"
-  },
   "devDependencies": {
-    "@types/jest": "24",
+    "@types/jest": "25",
     "cross-env": "6",
-    "jest": "24",
+    "jest": "25",
     "lerna": "3",
     "npm-run-all": "4",
-    "ts-jest": "24",
-    "wait-on": "^3.3.0"
+    "ts-jest": "25",
+    "wait-on": "3"
   },
   "engines": {
     "yarn": ">=1.17.0"

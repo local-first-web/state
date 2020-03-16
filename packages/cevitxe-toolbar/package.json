@@ -13,9 +13,6 @@
     "watch": "tsc --watch",
     "test": "jest"
   },
-  "resolutions": {
-    "jest": "24.9.0"
-  },
   "dependencies": {
     "@emotion/core": "10",
     "cevitxe": "^0.4.2",
@@ -29,13 +26,13 @@
     "use-query-params": "0"
   },
   "devDependencies": {
-    "@types/jest": "24",
+    "@types/jest": "25",
     "@types/query-string": "6",
     "@types/use-persisted-state": "0",
-    "jest": "24",
+    "jest": "25",
     "prettier": "1",
     "rimraf": "3",
-    "ts-jest": "24",
+    "ts-jest": "25",
     "tslib": "1",
     "typescript": "3"
   },

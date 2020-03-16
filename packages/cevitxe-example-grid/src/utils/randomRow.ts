@@ -7,7 +7,7 @@ export function randomRow() {
   return {
     id: uuid()
       .slice(18, 36)
-      .replace(/\-/gi, ''),
+      .replace(/-/gi, ''),
     name: faker.name.findName(),
     email: faker.internet.email(),
     age: faker.random.number({ min: 18, max: 100 }),

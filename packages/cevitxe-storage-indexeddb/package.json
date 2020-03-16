@@ -21,11 +21,11 @@
   },
   "devDependencies": {
     "@types/debug": "4",
-    "@types/jest": "24",
+    "@types/jest": "25",
     "fake-indexeddb": "2",
-    "jest": "24",
+    "jest": "25",
     "rimraf": "3",
-    "ts-jest": "24",
+    "ts-jest": "25",
     "tslib": "1",
     "typescript": "3"
   },

@@ -6,10 +6,10 @@
   "private": true,
   "main": "src/index.tsx",
   "scripts": {
-    "start": "react-app-rewired start",
+    "start": "react-scripts start",
     "test:e2e": "cypress open",
     "prebuild": "rimraf dist",
-    "build": "react-app-rewired build"
+    "build": "react-scripts build"
   },
   "dependencies": {
     "@emotion/core": "10",
@@ -42,10 +42,10 @@
     "@testing-library/react": "8",
     "@types/debug": "4",
     "@types/faker": "4",
-    "@types/jest": "24",
+    "@types/jest": "25",
     "@types/json-schema": "7",
     "@types/muibox": "1",
-    "@types/node": "12",
+    "@types/node": "13",
     "@types/react": "16",
     "@types/react-dom": "16",
     "@types/react-redux": "7",
@@ -55,7 +55,7 @@
     "cypress": "3",
     "keycode": "2",
     "prettier": "1",
-    "react-app-rewired": "2",
+    "react-scripts": "3",
     "rimraf": "3",
     "tslint-config-prettier": "1",
     "tslint-react": "4",

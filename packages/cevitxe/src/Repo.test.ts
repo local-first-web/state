@@ -101,7 +101,7 @@ describe('Repo', () => {
 
   describe('handlers', () => {
     const setup = async () => {
-      const beforeDoc = A.from({ birds: ['goldfinch'] })
+      const beforeDoc = A.from<any>({ birds: ['goldfinch'] })
       const afterDoc = A.change(beforeDoc, s => (s.birds = ['swallows']))
       const changes = A.getChanges(beforeDoc, afterDoc)
       const repo = new Repo({ discoveryKey: 'jive-panda', databaseName: `testdb-${newid()}` })
