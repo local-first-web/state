@@ -1,7 +1,7 @@
 import A from 'automerge'
 import debug from 'debug'
 import { AnyAction, Reducer } from 'redux'
-import { RECEIVE_MESSAGE_FROM_PEER, DELETE_COLLECTION } from './constants'
+import { RECEIVE_MESSAGE_FROM_PEER, DELETE_COLLECTION, GLOBAL } from './constants'
 import { Repo } from './Repo'
 import { ProxyReducer, RepoSnapshot } from 'cevitxe-types'
 import { collection } from './collection'
@@ -27,28 +27,37 @@ export const getReducer: ReducerConverter = (proxyReducer, repo) => {
   const reducer: Reducer<RepoSnapshot, AnyAction> = (state, { type, payload }): RepoSnapshot => {
     if (type === RECEIVE_MESSAGE_FROM_PEER) {
       // Connection has already updated our repo - nothing to do here.
-
       return repo.getState()
     } else {
       state = state || {}
       const functionMap = proxyReducer(state, { type, payload })
-      if (!functionMap) {
-        // no matching function - return the unmodified state
-        return state
-      }
+
+      // no matching function - return the unmodified state
+      if (!functionMap) return state
+
       repo.loadState({ ...state }) // clone
 
-      // Apply each change function to the corresponding document
-      for (let documentId in functionMap) {
-        const fn = functionMap[documentId] as A.ChangeFn<any> | symbol
+      if (typeof functionMap === 'function') {
+        log('running single change function')
 
-        if (fn === DELETE_COLLECTION) {
-          const name = collection.getCollectionName(documentId)
-          // this updates snapshots synchronously then updates underlying data asynchronously
-          collection(name).removeAllFromSnapshot(repo)
-        } else if (typeof fn === 'function') {
-          // update snapshot synchronously using change function
-          repo.changeSnapshot(documentId, fn)
+        // it's a single function, just run it
+        const fn = functionMap as A.ChangeFn<any>
+        repo.changeSnapshot(GLOBAL, fn)
+      } else {
+        log('running multiple change functions')
+
+        // it's a map of change functions; run each one
+        for (let documentId in functionMap) {
+          const fn = functionMap[documentId] as A.ChangeFn<any> | symbol
+
+          if (fn === DELETE_COLLECTION) {
+            const name = collection.getCollectionName(documentId)
+            // this updates snapshots synchronously then updates underlying data asynchronously
+            collection(name).removeAllFromSnapshot(repo)
+          } else if (typeof fn === 'function') {
+            // update snapshot synchronously using change function
+            repo.changeSnapshot(documentId, fn)
+          }
         }
       }
       return repo.getState()
