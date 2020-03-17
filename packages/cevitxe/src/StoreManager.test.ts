@@ -197,6 +197,7 @@ describe('StoreManager', () => {
 
       // Then we join the same store, which should see the state in the fake db and load it
       const localStore1 = await localStoreManager.joinStore(discoveryKey)
+      await _yield()
 
       // Confirm that the modified state is still there
       const state1 = localStore1.getState()
@@ -229,10 +230,11 @@ describe('StoreManager', () => {
       await localStoreManager.close()
 
       // Then we create a new store, which should see the state in the fake db and load it
-      const state2 = await localStoreManager.joinStore(discoveryKey)
+      const store2 = await localStoreManager.joinStore(discoveryKey)
+      await _yield()
 
       // Confirm that the modified state is still there
-      const newState = state2.getState()
+      const newState = store2.getState()
       expect(teachers.selectors.getMap(newState)).toEqual({ defcba: teacher2 })
 
       await close()
