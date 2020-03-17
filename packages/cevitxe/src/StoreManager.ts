@@ -27,6 +27,7 @@ export class StoreManager<T> {
   private repo?: Repo
   private client?: Client
   private collections: string[]
+  private useCollections: boolean = this.collections?.length > 0
 
   public store?: Store
 
@@ -57,7 +58,10 @@ export class StoreManager<T> {
 
     // Create repo for storage
     this.repo = new Repo({ clientId, discoveryKey, databaseName: this.databaseName })
-    const state = await this.repo.init({ [GLOBAL]: this.initialState }, isCreating)
+
+    const repoState = this.useCollections ? this.initialState : { [GLOBAL]: this.initialState }
+
+    const state = await this.repo.init(repoState, isCreating)
 
     // Create Redux store to expose to app
     this.store = this.createReduxStore(state)
@@ -78,7 +82,7 @@ export class StoreManager<T> {
     const reducer = getReducer(this.proxyReducer, this.repo)
     const cevitxeMiddleware = getMiddleware(this.repo, this.proxyReducer)
     const enhancer = composeWithDevTools(applyMiddleware(...this.middlewares, cevitxeMiddleware))
-    const state = initialState[GLOBAL] as Snapshot
+    const state = this.useCollections ? initialState : (initialState[GLOBAL] as Snapshot)
     return createStore(reducer, state, enhancer)
   }
 
