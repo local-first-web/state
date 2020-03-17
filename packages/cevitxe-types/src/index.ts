@@ -1,7 +1,7 @@
 import A from 'automerge'
 import { AnyAction } from 'redux'
 
-export type ProxyReducer = (state: any, action: AnyAction) => ChangeMap | null
+export type ProxyReducer = (state: any, action: AnyAction) => ChangeMap | A.ChangeFn<any> | null
 
 /**
  * A keychain maps a discovery key (the id we share to the signal server) with a public/private
