@@ -33,7 +33,6 @@ export const getMiddleware: MiddlewareFactory = (repo, proxyReducer) => {
     } else if (typeof functionMap === 'function') {
       log('running single change function')
       const fn = functionMap as A.ChangeFn<any>
-      log('apply change function to GLOBAL')
       await repo.change(GLOBAL, fn)
     } else {
       log('running multiple change functions')
