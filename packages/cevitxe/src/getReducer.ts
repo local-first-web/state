@@ -3,7 +3,7 @@ import debug from 'debug'
 import { AnyAction, Reducer } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER, DELETE_COLLECTION, GLOBAL } from './constants'
 import { Repo } from './Repo'
-import { ProxyReducer, RepoSnapshot } from 'cevitxe-types'
+import { ProxyReducer, RepoSnapshot, Snapshot } from 'cevitxe-types'
 import { collection } from './collection'
 
 export type ReducerConverter = (
@@ -35,7 +35,7 @@ export const getReducer: ReducerConverter = (proxyReducer, repo) => {
       // no matching function - return the unmodified state
       if (!functionMap) return state
 
-      repo.loadState({ ...state }) // clone
+      repo.loadState({ [GLOBAL]: { ...state } }) // clone
 
       if (typeof functionMap === 'function') {
         log('running single change function')
@@ -58,7 +58,7 @@ export const getReducer: ReducerConverter = (proxyReducer, repo) => {
           }
         }
       }
-      return repo.getState()
+      return repo.getState()[GLOBAL] as Snapshot
     }
   }
 
