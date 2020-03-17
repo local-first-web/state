@@ -2,8 +2,9 @@ import debug from 'debug'
 import { Middleware } from 'redux'
 import { collection } from '.'
 import { ProxyReducer } from 'cevitxe-types'
-import { DELETE_COLLECTION, RECEIVE_MESSAGE_FROM_PEER } from './constants'
+import { DELETE_COLLECTION, RECEIVE_MESSAGE_FROM_PEER, GLOBAL } from './constants'
 import { Repo } from './Repo'
+import A from 'automerge'
 
 const log = debug('cevitxe:middleware')
 
@@ -29,7 +30,13 @@ export const getMiddleware: MiddlewareFactory = (repo, proxyReducer) => {
 
     if (action.type === RECEIVE_MESSAGE_FROM_PEER) {
       // changes have already been applied by repo
-    } else if (functionMap) {
+    } else if (typeof functionMap === 'function') {
+      log('running single change function')
+      const fn = functionMap as A.ChangeFn<any>
+      log('apply change function to GLOBAL')
+      await repo.change(GLOBAL, fn)
+    } else {
+      log('running multiple change functions')
       for (let documentId in functionMap) {
         const fn = functionMap[documentId]
         if (fn === DELETE_COLLECTION) {
