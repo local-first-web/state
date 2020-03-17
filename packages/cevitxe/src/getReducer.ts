@@ -40,13 +40,11 @@ export const getReducer: ReducerConverter = (proxyReducer, repo) => {
       if (typeof functionMap === 'function') {
         log('running single change function')
 
-        // it's a single function, just run it
         const fn = functionMap as A.ChangeFn<any>
         repo.changeSnapshot(GLOBAL, fn)
       } else {
         log('running multiple change functions')
 
-        // it's a map of change functions; run each one
         for (let documentId in functionMap) {
           const fn = functionMap[documentId] as A.ChangeFn<any> | symbol
 
