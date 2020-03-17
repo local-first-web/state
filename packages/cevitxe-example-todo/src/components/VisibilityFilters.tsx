@@ -3,11 +3,10 @@ import cn from 'classnames'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { actions } from '../redux/actions'
-import { VisibilityFilter, VisibilityFilterKey, RepoState } from '../types'
+import { VisibilityFilter, VisibilityFilterKey, State } from '../types'
 
 export const VisibilityFilters = () => {
-  const activeFilter = useSelector((repoState: RepoState) => {
-    const state = repoState.root
+  const activeFilter = useSelector((state: State) => {
     if (!state || !state.visibilityFilter) return VisibilityFilter.ALL
     return state.visibilityFilter
   })

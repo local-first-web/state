@@ -17,10 +17,6 @@ export interface State {
   visibilityFilter: VisibilityFilter
 }
 
-export interface RepoState {
-  root: State
-}
-
 export enum VisibilityFilter {
   ALL = 'All',
   INCOMPLETE = 'Active',
