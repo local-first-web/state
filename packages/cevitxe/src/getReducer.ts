@@ -35,16 +35,17 @@ export const getReducer: ReducerConverter = (proxyReducer, repo) => {
       // no matching function - return the unmodified state
       if (!functionMap) return state
 
-      repo.loadState({ [GLOBAL]: { ...state } }) // clone
-
       if (typeof functionMap === 'function') {
         log('running single change function')
 
+        repo.loadState({ [GLOBAL]: { ...state } }) // clone
         const fn = functionMap as A.ChangeFn<any>
         repo.changeSnapshot(GLOBAL, fn)
+        return repo.getState()[GLOBAL] as Snapshot
       } else {
         log('running multiple change functions')
 
+        repo.loadState({ ...state }) // clone
         for (let documentId in functionMap) {
           const fn = functionMap[documentId] as A.ChangeFn<any> | symbol
 
@@ -57,8 +58,8 @@ export const getReducer: ReducerConverter = (proxyReducer, repo) => {
             repo.changeSnapshot(documentId, fn)
           }
         }
+        return repo.getState()
       }
-      return repo.getState()[GLOBAL] as Snapshot
     }
   }
 
