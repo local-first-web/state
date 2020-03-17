@@ -1,12 +1,12 @@
 import A from 'automerge'
 import { newid } from 'cevitxe-signal-client'
-import { ProxyReducer, RepoSnapshot } from 'cevitxe-types'
+import { ProxyReducer, RepoSnapshot, Snapshot } from 'cevitxe-types'
 import cuid from 'cuid'
 import debug from 'debug'
 import { applyMiddleware, createStore, Middleware, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
 import { Client } from './Client'
-import { DEFAULT_SIGNAL_SERVERS } from './constants'
+import { DEFAULT_SIGNAL_SERVERS, GLOBAL } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getReducer } from './getReducer'
 import { getKnownDiscoveryKeys } from './keys'
@@ -21,7 +21,7 @@ let log = debug('cevitxe:StoreManager')
 export class StoreManager<T> {
   private databaseName: string
   private proxyReducer: ProxyReducer
-  private initialState: RepoSnapshot
+  private initialState: Snapshot | RepoSnapshot
   private urls: string[]
   private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
   private repo?: Repo
@@ -57,7 +57,7 @@ export class StoreManager<T> {
 
     // Create repo for storage
     this.repo = new Repo({ clientId, discoveryKey, databaseName: this.databaseName })
-    const state = await this.repo.init(this.initialState, isCreating)
+    const state = await this.repo.init({ [GLOBAL]: this.initialState }, isCreating)
 
     // Create Redux store to expose to app
     this.store = this.createReduxStore(state)
@@ -78,7 +78,8 @@ export class StoreManager<T> {
     const reducer = getReducer(this.proxyReducer, this.repo)
     const cevitxeMiddleware = getMiddleware(this.repo, this.proxyReducer)
     const enhancer = composeWithDevTools(applyMiddleware(...this.middlewares, cevitxeMiddleware))
-    return createStore(reducer, initialState, enhancer)
+    const state = initialState[GLOBAL] as Snapshot
+    return createStore(reducer, state, enhancer)
   }
 
   public get connectionCount() {
@@ -110,14 +111,19 @@ export class StoreManager<T> {
 export interface StoreManagerOptions<T> {
   /** A Cevitxe proxy reducer that returns a ChangeMap (map of change functions) for each action. */
   proxyReducer: ProxyReducer
+
   /** Redux middlewares to add to the store. */
   middlewares?: Middleware[]
+
   /** The starting state of a blank document. */
-  initialState: RepoSnapshot
+  initialState: Snapshot | RepoSnapshot
+
   /** A name for the storage feed, to distinguish this application's data from any other Cevitxe data stored on the same machine. */
   databaseName: string
+
   /** The address(es) of one or more signal servers to try. */
   urls?: string[]
+
   /** The names of any collections that we need to manage */
   collections?: string[]
 }
