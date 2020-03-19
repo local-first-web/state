@@ -3,7 +3,7 @@ import { newid } from 'cevitxe-signal-client'
 import debug from 'debug'
 import Cache from 'lru-cache'
 import * as R from 'ramda'
-import { DELETED } from './constants'
+import { DELETED, GLOBAL } from './constants'
 import { IdbAdapter } from 'cevitxe-storage-indexeddb'
 import { StorageAdapter } from 'cevitxe-storage-abstract'
 import { ChangeSet, RepoHistory, RepoSnapshot, ClockMap, Clock } from 'cevitxe-types'
@@ -81,13 +81,19 @@ export class Repo<T = any> {
    * that we already created locally, or that a peer has)
    * @returns A snapshot of the repo's current state.
    */
-  async init(initialState: any, creating: boolean): Promise<RepoSnapshot> {
+  async init(
+    initialState: any,
+    creating: boolean,
+    collections: string[] = []
+  ): Promise<RepoSnapshot> {
     await this.open()
     const hasData = await this.hasData()
     this.log('hasData', hasData)
     if (creating) {
       this.log('creating a new repo')
-      await this.createFromSnapshot(initialState)
+
+      const repoState = collections.length > 0 ? initialState : { [GLOBAL]: initialState }
+      await this.createFromSnapshot(repoState)
     } else if (!hasData) {
       this.log(`joining a peer's document for the first time`)
       await this.createFromSnapshot({})
