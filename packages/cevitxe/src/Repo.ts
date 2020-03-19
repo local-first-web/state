@@ -26,6 +26,9 @@ interface RepoOptions {
 
   /** Storage adapter to use. Defaults to `IdbAdapter` */
   storage?: StorageAdapter
+
+  /** Collections */
+  collections?: string[]
 }
 
 /**
@@ -41,6 +44,8 @@ interface RepoOptions {
 export class Repo<T = any> {
   private log: debug.Debugger
   private storage: StorageAdapter
+
+  public collections: string[]
 
   public databaseName: string
   public clientId: string
@@ -58,13 +63,14 @@ export class Repo<T = any> {
   private handlers: Set<RepoEventHandler<T>>
 
   constructor(options: RepoOptions) {
-    const { discoveryKey, databaseName, clientId = newid(), storage } = options
+    const { discoveryKey, databaseName, clientId = newid(), storage, collections = [] } = options
     this.log = debug(`cevitxe:repo:${databaseName}`)
 
     this.databaseName = databaseName
     this.handlers = new Set()
     this.docCache = new Cache({ max: 1000 })
     this.clientId = clientId
+    this.collections = collections
 
     // Use IdbAdapter by default
     this.storage = storage || new IdbAdapter({ databaseName, discoveryKey })
@@ -82,17 +88,14 @@ export class Repo<T = any> {
    * that we already created locally, or that a peer has)
    * @returns A snapshot of the repo's current state.
    */
-  async init(
-    initialState: any,
-    creating: boolean,
-    collections: string[] = []
-  ): Promise<RepoSnapshot> {
+  async init(initialState: any, creating: boolean): Promise<RepoSnapshot> {
     await this.open()
     const hasData = await this.hasData()
     this.log('hasData', hasData)
     if (creating) {
       this.log('creating a new repo')
-      await this.createFromSnapshot(normalize(initialState, collections))
+      const normalizedState = normalize(initialState, this.collections)
+      await this.createFromSnapshot(normalizedState)
     } else if (!hasData) {
       this.log(`joining a peer's document for the first time`)
       await this.createFromSnapshot({})
@@ -100,7 +103,7 @@ export class Repo<T = any> {
       this.log('recovering an existing repo from persisted state')
       await this.loadSnapshotsFromDb()
     }
-    return denormalize(this.state, collections)
+    return this.getState()
   }
 
   /**
