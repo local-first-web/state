@@ -222,6 +222,8 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
 
   return {
     keyName,
+    idToKey,
+    keyToId,
     reducers: {
       drop,
       add,
