@@ -8,6 +8,7 @@ import { IdbAdapter } from 'cevitxe-storage-indexeddb'
 import { StorageAdapter } from 'cevitxe-storage-abstract'
 import { ChangeSet, RepoHistory, RepoSnapshot, ClockMap, Clock } from 'cevitxe-types'
 import { mergeClocks, EMPTY_CLOCK, getClock } from './clocks'
+import { normalize, denormalize } from './normalize'
 
 export type RepoEventHandler<T> = (documentId: string, doc: A.Doc<T>) => void | Promise<void>
 
@@ -91,9 +92,7 @@ export class Repo<T = any> {
     this.log('hasData', hasData)
     if (creating) {
       this.log('creating a new repo')
-
-      const repoState = collections.length > 0 ? initialState : { [GLOBAL]: initialState }
-      await this.createFromSnapshot(repoState)
+      await this.createFromSnapshot(normalize(initialState, collections))
     } else if (!hasData) {
       this.log(`joining a peer's document for the first time`)
       await this.createFromSnapshot({})
@@ -101,7 +100,7 @@ export class Repo<T = any> {
       this.log('recovering an existing repo from persisted state')
       await this.loadSnapshotsFromDb()
     }
-    return this.state
+    return denormalize(this.state, collections)
   }
 
   /**
@@ -136,7 +135,6 @@ export class Repo<T = any> {
 
   /** Reconstitutes an Automerge document from its change history  */
   async get(documentId: string): Promise<A.Doc<T> | undefined> {
-    // TODO: reimplement caching
     this.log('get', documentId)
     return await this.rebuildDoc(documentId)
   }
