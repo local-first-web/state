@@ -12,4 +12,4 @@ export const DELETE_ITEM = Symbol('DELETE_ITEM')
 export const DELETED = '__DELETED'
 
 // global documentId
-export const GLOBAL = '__GLOBAL'
+export const GLOBAL = '__global'
