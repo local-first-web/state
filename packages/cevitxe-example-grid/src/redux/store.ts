@@ -11,6 +11,7 @@ const urls = process.env.REACT_APP_SIGNAL_SERVERS
 export const storeManager = new StoreManager({
   databaseName: 'grid',
   proxyReducer,
+  collections: ['rows'],
   initialState,
   urls,
 })
