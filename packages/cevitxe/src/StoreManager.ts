@@ -27,7 +27,7 @@ export class StoreManager<T> {
   private repo?: Repo
   private client?: Client
   private collections: string[]
-  private useCollections: boolean = this.collections?.length > 0
+  private useCollections: boolean
 
   public store?: Store
 
@@ -45,6 +45,7 @@ export class StoreManager<T> {
     this.databaseName = databaseName
     this.urls = urls
     this.collections = collections
+    this.useCollections = collections.length > 0 // assumes this never changes
   }
 
   joinStore = (discoveryKey: string) => this.getStore(discoveryKey, false)
@@ -59,9 +60,7 @@ export class StoreManager<T> {
     // Create repo for storage
     this.repo = new Repo({ clientId, discoveryKey, databaseName: this.databaseName })
 
-    const repoState = this.useCollections ? this.initialState : { [GLOBAL]: this.initialState }
-
-    const state = await this.repo.init(repoState, isCreating)
+    const state = await this.repo.init(this.initialState, isCreating, this.collections)
 
     // Create Redux store to expose to app
     this.store = this.createReduxStore(state)
