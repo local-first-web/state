@@ -41,7 +41,7 @@ export const getReducer: ReducerConverter = (proxyReducer, repo) => {
         repo.loadState({ [GLOBAL]: { ...state } }) // clone
         const fn = functionMap as A.ChangeFn<any>
         repo.changeSnapshot(GLOBAL, fn)
-        return repo.getState()[GLOBAL] as Snapshot
+        return repo.getState()
       } else {
         log('running multiple change functions')
 
