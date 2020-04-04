@@ -9,8 +9,5 @@ To show log messages in the browser console, you can add a `.env` file to the
 - `REACT_APP_DEBUG=sockjs\*,cevitxe\*` will show only cevitxe and sockjs logs
 - `REACT_APP_DEBUG=cevitxe:todo\*` will show just logs from the todo example
 
-To temporarily override the environment setting, you can set a `debug_override`
-value in localStorage.
-
-If you don't want to use an `.env` file, you can just set the `debug` value in localStorage
+If you don't want to use an `.env` file, you can just set the `debug` value in local storage
 directly in the browser. By default, no logs are shown.
