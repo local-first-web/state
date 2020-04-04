@@ -328,7 +328,7 @@ export class Repo<T = any> {
 
   /** Returns the state of the entire repo, containing snapshots of all the documents. */
   getState(): RepoSnapshot {
-    return this.state
+    return denormalize(this.state, this.collections)
   }
 
   /**
