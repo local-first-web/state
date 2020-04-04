@@ -34,6 +34,7 @@ import { GLOBAL } from './constants'
  *   __todos__qrs666: {},
  * }
  *```
+ * @see denormalize
  * @param state The object to be normalized.
  * @param collections An array containing the names of all elements in `state` to be treated as
  * collections.
