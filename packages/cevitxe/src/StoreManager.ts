@@ -45,7 +45,7 @@ export class StoreManager<T> {
     this.databaseName = databaseName
     this.urls = urls
     this.collections = collections
-    this.useCollections = collections.length > 0 // assumes this never changes
+    this.useCollections = collections.length > 0 // TODO: this assumes the set of collections never changes
   }
 
   joinStore = (discoveryKey: string) => this.getStore(discoveryKey, false)
@@ -58,9 +58,14 @@ export class StoreManager<T> {
     localStorage.setItem('clientId', clientId)
 
     // Create repo for storage
-    this.repo = new Repo({ clientId, discoveryKey, databaseName: this.databaseName })
+    this.repo = new Repo({
+      clientId,
+      discoveryKey,
+      databaseName: this.databaseName,
+      collections: this.collections,
+    })
 
-    const state = await this.repo.init(this.initialState, isCreating, this.collections)
+    const state = await this.repo.init(this.initialState, isCreating)
 
     // Create Redux store to expose to app
     this.store = this.createReduxStore(state)
