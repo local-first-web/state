@@ -4,7 +4,6 @@ import { AnyAction, Reducer } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER, DELETE_COLLECTION, GLOBAL } from './constants'
 import { Repo } from './Repo'
 import { ProxyReducer, RepoSnapshot, Snapshot } from 'cevitxe-types'
-import { collection } from './collection'
 
 export type ReducerConverter = (
   proxyReducer: ProxyReducer,
@@ -27,28 +26,23 @@ export const getReducer: ReducerConverter = (proxyReducer, repo) => {
 
   const reducer: Reducer<RepoSnapshot, AnyAction> = (state, { type, payload }): RepoSnapshot => {
     if (type === RECEIVE_MESSAGE_FROM_PEER) {
-      // Connection has already updated our repo - nothing to do here.
+      // RepoSync has already updated our repo - nothing to do here.
     } else {
+      // Apply changes synchronously to repo snapshots
       state = state || {}
       const functionMap = proxyReducer(state, { type, payload })
-
       if (typeof functionMap === 'function') {
-        log('running single change function')
+        // TODO make sure this doesn't bork any collections that exist
         repo.loadState({ [GLOBAL]: { ...state } }) // clone
         const fn = functionMap as A.ChangeFn<any>
         repo.changeSnapshot(GLOBAL, fn)
       } else {
-        log('running multiple change functions')
         repo.loadState({ ...state }) // clone
         for (let documentId in functionMap) {
           const fn = functionMap[documentId] as A.ChangeFn<any> | symbol
-
           if (fn === DELETE_COLLECTION) {
-            const name = collection.getCollectionName(documentId)
-            // this updates snapshots synchronously then updates underlying data asynchronously
-            collection(name).removeAllFromSnapshot(repo)
+            repo.removeCollectionSnapshots(documentId)
           } else if (typeof fn === 'function') {
-            // update snapshot synchronously using change function
             repo.changeSnapshot(documentId, fn)
           }
         }
