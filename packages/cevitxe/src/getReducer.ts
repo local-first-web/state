@@ -24,27 +24,21 @@ export type ReducerConverter = (
  */
 export const getReducer: ReducerConverter = (proxyReducer, repo) => {
   const log = debug(`cevitxe:getReducer:${repo.databaseName}`)
+
   const reducer: Reducer<RepoSnapshot, AnyAction> = (state, { type, payload }): RepoSnapshot => {
     if (type === RECEIVE_MESSAGE_FROM_PEER) {
       // Connection has already updated our repo - nothing to do here.
-      return repo.getState()
     } else {
       state = state || {}
       const functionMap = proxyReducer(state, { type, payload })
 
-      // no matching function - return the unmodified state
-      if (!functionMap) return state
-
       if (typeof functionMap === 'function') {
         log('running single change function')
-
         repo.loadState({ [GLOBAL]: { ...state } }) // clone
         const fn = functionMap as A.ChangeFn<any>
         repo.changeSnapshot(GLOBAL, fn)
-        return repo.getState()
       } else {
         log('running multiple change functions')
-
         repo.loadState({ ...state }) // clone
         for (let documentId in functionMap) {
           const fn = functionMap[documentId] as A.ChangeFn<any> | symbol
@@ -58,9 +52,9 @@ export const getReducer: ReducerConverter = (proxyReducer, repo) => {
             repo.changeSnapshot(documentId, fn)
           }
         }
-        return repo.getState()
       }
     }
+    return repo.getState()
   }
 
   return reducer
