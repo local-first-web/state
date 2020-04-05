@@ -1,34 +1,68 @@
 import { getReducer } from './getReducer'
 import { repoFromSnapshot } from './repoTestHelpers'
-import { ProxyReducer } from 'cevitxe-types'
-import { pause as _yield } from './pause'
-import { Reducer, AnyAction } from 'redux'
-import { Repo } from './Repo'
+import { ProxyReducer } from 'cevitxe-types/src'
+import { collection } from './collection'
 
 describe('getReducer', () => {
-  describe('should return a working reducer', () => {
-    let proxyReducer: ProxyReducer
-    let state: any
-    let repo: Repo
-    let reducer: Reducer<any, AnyAction>
+  describe('single change function', () => {
+    const proxyReducer: ProxyReducer = () => s => (s.settings.foo = 2)
 
-    beforeEach(async () => {
-      proxyReducer = () => ({ settings: s => (s.foo = 2) })
-      state = { settings: {} }
-      repo = await repoFromSnapshot(state)
-      reducer = getReducer(proxyReducer, repo)
+    const setup = async () => {
+      const initialState = { settings: {} }
+      const repo = await repoFromSnapshot(initialState)
+      const reducer = getReducer(proxyReducer, repo)
+      return { initialState, reducer }
+    }
+
+    it('should return a function', async () => {
+      const { reducer } = await setup()
+      expect(typeof reducer).toBe('function')
     })
 
-    it('should return a function', () => expect(typeof reducer).toBe('function'))
-
     it('should not change the original state', async () => {
-      const newState = reducer(state, { type: 'DOESNTMATTER' })
-      expect(state).toEqual({ settings: {} })
+      const { initialState, reducer } = await setup()
+      const _newState = reducer(initialState, { type: 'DOESNTMATTER' })
+      expect(initialState).toEqual({ settings: {} })
     })
 
     it('should return a modified state', async () => {
-      const newState = reducer(state, { type: 'DOESNTMATTER' })
+      const { initialState, reducer } = await setup()
+      const newState = reducer(initialState, { type: 'DOESNTMATTER' })
       expect(newState).toEqual({ settings: { foo: 2 } })
+    })
+  })
+
+  describe('with collection', () => {
+    const proxyReducer: ProxyReducer = ((state, { type, payload }) => {
+      const teachers = collection('teachers')
+      switch (type) {
+        case 'ADD_TEACHER':
+          return teachers.reducers.add(payload)
+      }
+    }) as ProxyReducer
+
+    const setup = async () => {
+      const initialState = { teachers: {} }
+      const repo = await repoFromSnapshot(initialState, ['teachers'])
+      const reducer = getReducer(proxyReducer, repo)
+      return { initialState, reducer }
+    }
+
+    it('should return a function', async () => {
+      const { reducer } = await setup()
+      expect(typeof reducer).toBe('function')
+    })
+
+    it('should not change the original state', async () => {
+      const { initialState, reducer } = await setup()
+      const _newState = reducer(initialState, { type: 'ADD_TEACHER', payload: { id: 1 } })
+      expect(initialState).toEqual({ teachers: {} })
+    })
+
+    it('should return a modified state', async () => {
+      const { initialState, reducer } = await setup()
+      const newState = reducer(initialState, { type: 'ADD_TEACHER', payload: { id: 1 } })
+      expect(newState).toEqual({ teachers: { 1: { id: 1 } } })
     })
   })
 })
