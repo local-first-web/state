@@ -1,5 +1,4 @@
 import { emptyGrid } from './emptyGrid'
-// import { collection } from 'cevitxe'
 
 describe('emptyGrid', () => {
   it('ok', () => expect(emptyGrid(2)).not.toEqual({}))
