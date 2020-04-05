@@ -13,7 +13,6 @@ describe('collections', () => {
 
   const proxyReducer: ProxyReducer = ((state, { type, payload }) => {
     switch (type) {
-      // teachers
       case 'ADD_TEACHER':
         return teachers.reducers.add(payload)
       case 'REMOVE_TEACHER':
