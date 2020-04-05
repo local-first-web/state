@@ -49,7 +49,7 @@ export const proxyReducer: ProxyReducer = (state, { type, payload }) => {
       const changes: ChangeMap = {
         schema: s => delete s.properties![payload.id],
       }
-      for (const key of rows.selectors.keys(state)) {
+      for (const key of state.rows) {
         changes[key] = d => delete d[payload.id]
       }
       return changes
@@ -62,7 +62,7 @@ export const proxyReducer: ProxyReducer = (state, { type, payload }) => {
           fieldSchema.type = payload.type
         },
       }
-      for (const key of rows.selectors.keys(state)) {
+      for (const key of state.rows) {
         const currentValue = state[key][payload.id]
         if (currentValue != null) {
           switch (payload.type) {
