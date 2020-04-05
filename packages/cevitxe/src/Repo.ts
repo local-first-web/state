@@ -8,7 +8,7 @@ import { IdbAdapter } from 'cevitxe-storage-indexeddb'
 import { StorageAdapter } from 'cevitxe-storage-abstract'
 import { ChangeSet, RepoHistory, RepoSnapshot, ClockMap, Clock } from 'cevitxe-types'
 import { mergeClocks, EMPTY_CLOCK, getClock } from './clocks'
-import { normalize, denormalize } from './normalize'
+import { collection } from './collection'
 
 export type RepoEventHandler<T> = (documentId: string, doc: A.Doc<T>) => void | Promise<void>
 
@@ -88,13 +88,13 @@ export class Repo<T = any> {
    * that we already created locally, or that a peer has)
    * @returns A snapshot of the repo's current state.
    */
-  async init(initialState: any, creating: boolean): Promise<RepoSnapshot> {
+  public async init(initialState: any, creating: boolean): Promise<RepoSnapshot> {
     await this.open()
     const hasData = await this.hasData()
     this.log('hasData', hasData)
     if (creating) {
       this.log('creating a new repo')
-      const normalizedState = normalize(initialState, this.collections)
+      const normalizedState = collection.normalize(initialState, this.collections)
       await this.createFromSnapshot(normalizedState)
     } else if (!hasData) {
       this.log(`joining a peer's document for the first time`)
@@ -110,7 +110,7 @@ export class Repo<T = any> {
    * Creates a new repo with the given initial state.
    * @param initialState
    */
-  async createFromSnapshot(state: RepoSnapshot) {
+  public async createFromSnapshot(state: RepoSnapshot) {
     for (let documentId in state) {
       const snapshot = state[documentId]
       if (snapshot !== null) {
@@ -121,23 +121,23 @@ export class Repo<T = any> {
   }
 
   /** Returns all of the repo's document IDs from memory. */
-  get documentIds() {
+  public get documentIds() {
     return Object.keys(this.state)
   }
 
   /** @returns true if this repo has this document (even if it's been deleted) */
-  has(documentId: string): boolean {
+  public has(documentId: string): boolean {
     // if the document has been deleted, its snapshot set to `null`, but the map still contains the entry
     return this.state.hasOwnProperty(documentId)
   }
 
   /** Returns the number of document IDs that this repo has (including deleted) */
-  get count() {
+  public get count() {
     return this.documentIds.length
   }
 
   /** Reconstitutes an Automerge document from its change history  */
-  async get(documentId: string): Promise<A.Doc<T> | undefined> {
+  public async get(documentId: string): Promise<A.Doc<T> | undefined> {
     this.log('get', documentId)
     return await this.rebuildDoc(documentId)
   }
@@ -149,7 +149,7 @@ export class Repo<T = any> {
    * @param changes (optional) If we're already given the changes (e.g. in `applyChanges`), we can
    * pass them in so we don't have to recalculate them.
    */
-  async set(documentId: string, doc: A.Doc<any>, changes?: A.Change[]) {
+  public async set(documentId: string, doc: A.Doc<any>, changes?: A.Change[]) {
     this.log('set', documentId, doc)
 
     // look up old doc and generate diff
@@ -184,7 +184,7 @@ export class Repo<T = any> {
    * @param changeFn An Automerge change function
    * @returns The updated document
    */
-  async change(documentId: string, changeFn: A.ChangeFn<T>) {
+  public async change(documentId: string, changeFn: A.ChangeFn<T>) {
     this.log('change', documentId)
     // apply changes to document
     const oldDoc = (await this.rebuildDoc(documentId)) || A.init()
@@ -203,7 +203,7 @@ export class Repo<T = any> {
    * @param changes A diff in the form of an array of Automerge change objects
    * @returns The updated document
    */
-  async applyChanges(documentId: string, changes: A.Change[]) {
+  public async applyChanges(documentId: string, changes: A.Change[]) {
     // apply changes to document
     const doc = (await this.rebuildDoc(documentId)) || A.init()
     const newDoc = A.applyChanges(doc, changes)
@@ -215,10 +215,36 @@ export class Repo<T = any> {
   }
 
   /**
+   * Marks all documents belonging to the given collection as deleted
+   * @param collectionKey The key of the collection (e.g. `__widgets`)
+   */
+  public async markCollectionAsDeleted(collectionKey: string) {
+    const collectionName = collection.getCollectionName(collectionKey)
+    const setDeleteFlag = (s: any) => Object.assign(s || {}, { [DELETED]: true })
+    console.log({ clientId: this.clientId, state: this.state, collectionName })
+    const { isCollectionKey } = collection(collectionName)
+    for (const documentId of this.documentIds.filter(isCollectionKey)) {
+      console.log('setting delete flag', { documentId })
+      await this.change(documentId, setDeleteFlag)
+    }
+  }
+
+  /**
+   * Removes all snapshots for documents belonging to the given collection
+   * @param collectionKey The key of the collection (e.g. `__widgets`)
+   */
+  public removeCollectionSnapshots(collectionKey: string) {
+    const collectionName = collection.getCollectionName(collectionKey)
+    const { isCollectionKey } = collection(collectionName)
+    for (const documentId of this.documentIds.filter(isCollectionKey))
+      this.removeSnapshot(documentId)
+  }
+
+  /**
    * Used for sending the entire current state of the repo to a new peer.
    * @returns  an object mapping documentIds to an array of changes.
    */
-  async *getHistory(batchSize: number = 1000): AsyncGenerator<RepoHistory> {
+  public async *getHistory(batchSize: number = 1000): AsyncGenerator<RepoHistory> {
     let history: RepoHistory = {}
     let i = 0
     for await (const { documentId, changes } of this.storage.changes()) {
@@ -233,7 +259,7 @@ export class Repo<T = any> {
   }
 
   /** Used when receiving the entire current state of a repo from a peer. */
-  async loadHistory(history: RepoHistory) {
+  public async loadHistory(history: RepoHistory) {
     for (const documentId in history) {
       const changes = history[documentId]
       await this.applyChanges(documentId, changes)
@@ -328,7 +354,7 @@ export class Repo<T = any> {
 
   /** Returns the state of the entire repo, containing snapshots of all the documents. */
   getState(): RepoSnapshot {
-    return denormalize(this.state, this.collections)
+    return collection.denormalize(this.state, this.collections)
   }
 
   /**
