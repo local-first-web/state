@@ -8,7 +8,6 @@ import { Repo } from './Repo'
 
 describe('collections', () => {
   const teachers = collection('teachers')
-  const students = collection('students')
 
   const teacher1 = { id: 'abcxyz', first: 'Herb', last: 'Caudill' }
 
@@ -23,18 +22,6 @@ describe('collections', () => {
         return teachers.reducers.update(payload)
       case 'CLEAR_TEACHERS':
         return teachers.reducers.drop()
-
-      // students
-      case 'ADD_STUDENT':
-        return students.reducers.add(payload)
-      case 'REMOVE_STUDENT':
-        return students.reducers.remove(payload)
-      case 'UPDATE_STUDENT':
-        return students.reducers.update(payload)
-      case 'CLEAR_STUDENTS':
-        return students.reducers.drop()
-      default:
-        return null
     }
   }) as ProxyReducer
 
@@ -45,9 +32,8 @@ describe('collections', () => {
       // can go back and forth between the two
       const { getCollectionName, getKeyName } = collection
       const collectionName = 'widgets'
-      const keyName = '__widgets'
-      expect(getCollectionName(getKeyName(collectionName))).toEqual(collectionName)
-      expect(getKeyName(getCollectionName(keyName))).toEqual(keyName)
+      const keyName = getKeyName(collectionName)
+      expect(getCollectionName(keyName)).toEqual(collectionName)
     })
   })
 
@@ -59,17 +45,18 @@ describe('collections', () => {
       return result
     }
   }
+
   describe('reducers', () => {
     const setupEmpty = async () => {
       let state = {}
-      const repo = await repoFromSnapshot(state)
+      const repo = await repoFromSnapshot(state, ['teachers'])
       const reducer = asyncReducer(proxyReducer, repo)
       return { state, reducer }
     }
 
     const setupWithOneTeacher = async () => {
       let state = {}
-      const repo = await repoFromSnapshot(state)
+      const repo = await repoFromSnapshot(state, ['teachers'])
       const reducer = asyncReducer(proxyReducer, repo)
       const action = { type: 'ADD_TEACHER', payload: teacher1 }
       state = await reducer({}, action)
@@ -79,188 +66,67 @@ describe('collections', () => {
     it('should not change the original state', async () => {
       const { state, reducer } = await setupEmpty()
       const action = { type: 'ADD_TEACHER', payload: teacher1 }
-      const _ = await reducer(state, action)
-      expect(state).toEqual({})
+      const newState = await reducer(state, action) // don't care for this test what newState is
+      expect(state).toEqual({}) // original state object wasn't mutated
     })
 
     it('should add an item', async () => {
       const { state, reducer } = await setupEmpty()
       const action = { type: 'ADD_TEACHER', payload: teacher1 }
       const newState = await reducer(state, action)
-      const allItems = teachers.selectors.getAll(newState)
-      expect(allItems).toEqual([teacher1])
+      expect(newState.teachers).toEqual({
+        abcxyz: { id: 'abcxyz', first: 'Herb', last: 'Caudill' },
+      })
+    })
+
+    it('should add multiple items from an array', async () => {
+      const { state, reducer } = await setupEmpty()
+      const addAction = {
+        type: 'ADD_TEACHER',
+        payload: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
+      }
+      const newState = await reducer(state, addAction)
+      expect(newState.teachers).toEqual({
+        a: { id: 'a' },
+        b: { id: 'b' },
+        c: { id: 'c' },
+      })
     })
 
     it('should update an item', async () => {
       const { state, reducer } = await setupWithOneTeacher()
       const action = { type: 'UPDATE_TEACHER', payload: { id: teacher1.id, first: 'Herbert' } }
       const newState = await reducer(state, action)
-      const allItems = teachers.selectors.getAll(newState)
-      expect(allItems).toEqual([{ id: 'abcxyz', first: 'Herbert', last: 'Caudill' }])
+      expect(newState.teachers).toEqual({
+        abcxyz: { id: 'abcxyz', first: 'Herbert', last: 'Caudill' },
+      })
     })
 
     it('should remove an item', async () => {
       const { state, reducer } = await setupWithOneTeacher()
       const action = { type: 'REMOVE_TEACHER', payload: { id: teacher1.id } }
       const newState = await reducer(state, action)
-      const allItems = teachers.selectors.getAll(newState)
-      expect(allItems).toHaveLength(0)
+      expect(newState.teachers).toEqual({
+        // empty
+      })
     })
 
-    // it('should allow dropping a collection', async () => {
-    //   const { state, reducer } = await setupWithOneTeacher()
-    //   const action = { type: 'CLEAR_TEACHERS' }
-    //   const newState = reducer(state, action)
-    //   const allItems = teachers.toArray(newState)
-    //   expect(allItems).toHaveLength(0)
-    // })
-
-    it('should allow adding multiple items from an array', async () => {
-      const { state, reducer } = await setupWithOneTeacher()
-      const addAction = {
-        type: 'ADD_STUDENT',
-        payload: [{ id: 'student_001' }, { id: 'student_002' }, { id: 'student_003' }],
-      }
-      const newState = await reducer(state, addAction)
-      const allItems = students.selectors.getAll(newState)
-      expect(allItems).toEqual([
-        { id: 'student_001' },
-        { id: 'student_002' },
-        { id: 'student_003' },
-      ])
-    })
-  })
-
-  describe('selectors', () => {
-    const setupTeachers = async () => {
-      let state = {}
-      const repo = await repoFromSnapshot(state)
-      const reducer = asyncReducer(proxyReducer, repo)
+    it('should allow deleting an entire collection', async () => {
+      const { state, reducer } = await setupEmpty()
       const addAction = {
         type: 'ADD_TEACHER',
-        payload: [
-          { id: 'teacher_001' }, //
-          { id: 'teacher_002' },
-          { id: 'teacher_003' },
-        ],
+        payload: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
       }
-      state = await reducer(state, addAction)
-      return { state, reducer }
-    }
-
-    const setupTeachersAndStudents = async () => {
-      let state = {}
-      const repo = await repoFromSnapshot(state)
-      const reducer = asyncReducer(proxyReducer, repo)
-      state = await reducer(state, {
-        type: 'ADD_TEACHER',
-        payload: [
-          { id: 'teacher_001' }, //
-          { id: 'teacher_002' },
-          { id: 'teacher_003' },
-        ],
+      const state1 = await reducer(state, addAction)
+      expect(state1.teachers).toEqual({
+        a: { id: 'a' },
+        b: { id: 'b' },
+        c: { id: 'c' },
       })
-      state = await reducer(state, {
-        type: 'ADD_STUDENT',
-        payload: [
-          { id: 'student_001' }, //
-          { id: 'student_002' },
-        ],
-      })
-      return { state, reducer }
-    }
-
-    describe('getArray', () => {
-      it('should return all the items in the collection', async () => {
-        const { state } = await setupTeachers()
-        const allItems = teachers.selectors.getAll(state)
-        expect(allItems).toEqual(
-          expect.arrayContaining([
-            { id: 'teacher_001' },
-            { id: 'teacher_002' },
-            { id: 'teacher_003' },
-          ])
-        )
-      })
-
-      it('should keep items from different collections separate', async () => {
-        let { state } = await setupTeachersAndStudents()
-        const allTeachers = teachers.selectors.getAll(state)
-        expect(allTeachers).toEqual(
-          expect.arrayContaining([
-            { id: 'teacher_001' },
-            { id: 'teacher_002' },
-            { id: 'teacher_003' },
-          ])
-        )
-        const allStudents = students.selectors.getAll(state)
-        expect(allStudents).toEqual([
-          { id: 'student_001' }, //
-          { id: 'student_002' },
-        ])
-      })
-
-      it('should only return non-deleted items', async () => {
-        // populate with three items
-        const { state, reducer } = await setupTeachers()
-
-        // remove one
-        const action = { type: 'REMOVE_TEACHER', payload: { id: 'teacher_002' } }
-        const newState = await reducer(state, action)
-
-        // check the new list of items
-        const allItems = teachers.selectors.getAll(newState)
-        expect(allItems).toEqual(
-          expect.arrayContaining([
-            { id: 'teacher_001' }, //
-            { id: 'teacher_003' },
-          ])
-        )
-      })
-
-      it('should return empty array if state is undefined', () => {
-        const actual = teachers.selectors.getAll(undefined)
-        expect(actual).toEqual([])
-      })
-    })
-
-    describe('getMap', () => {
-      it('should return all the items in the collection', async () => {
-        const { state } = await setupTeachers()
-        const allItems = teachers.selectors.getMap(state)
-        expect(allItems).toEqual({
-          teacher_001: { id: 'teacher_001' },
-          teacher_002: { id: 'teacher_002' },
-          teacher_003: { id: 'teacher_003' },
-        })
-      })
-    })
-
-    describe('count', () => {
-      it('should return the number of items in the collection', async () => {
-        const { state } = await setupTeachers()
-        const count = teachers.selectors.count(state)
-        expect(count).toEqual(3)
-      })
-
-      it('should only count non-deleted items', async () => {
-        // populate with three items
-        const { state, reducer } = await setupTeachers()
-        const count = teachers.selectors.count(state)
-        expect(count).toEqual(3)
-
-        // remove one
-        const action = { type: 'REMOVE_TEACHER', payload: { id: 'teacher_002' } }
-        const newState = await reducer(state, action)
-
-        // check the new count
-        const newCount = teachers.selectors.count(newState)
-        expect(newCount).toEqual(2)
-      })
-
-      it('should return zero if state is undefined', () => {
-        const count = teachers.selectors.count(undefined)
-        expect(count).toEqual(0)
+      const dropAction = { type: 'CLEAR_TEACHERS' }
+      const state2 = await reducer(state1, dropAction)
+      expect(state2.teachers).toEqual({
+        // empty
       })
     })
   })
