@@ -115,30 +115,6 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
     }
   }
 
-  /**
-   * Marks all items in the collection as deleted.
-   * @param repo
-   */
-  const markAllDeleted = async (repo: Repo<any>) => {
-    for (const documentId of repo.documentIds) {
-      if (isCollectionKey(documentId)) {
-        repo.change(documentId, setDeleteFlag)
-      }
-    }
-  }
-
-  // /**
-  //  * Removes all items in the collection from the snapshot.
-  //  * @param repo
-  //  */
-  // const removeAllFromSnapshot = (repo: Repo<any>) => {
-  //   for (const documentId of repo.documentIds) {
-  //     if (isCollectionKey(documentId)) {
-  //       repo.removeSnapshot(documentId)
-  //     }
-  //   }
-  // }
-
   const reducers = {
     /**
      * Takes one or more new items, and returns a change function for each that adds it to the collection.
@@ -210,9 +186,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
     keys,
     idToKey,
     keyToId,
-    markAllDeleted,
     isCollectionKey,
-    // removeAllFromSnapshot,
   }
 }
 
