@@ -40,54 +40,55 @@ export interface CollectionOptions {
  *  const rowArray = collection('rows').selectors.getAll(state)
  *  const rowMap = collection('rows').selectors.getMap(state)
  * ```
+ *
+ * ## Internals
+ *
+ * ### How collections are stored
+ *
+ * Multiple collections can be stored side-by-side in a single `Repo`, with each item as an
+ * individual root-level Automerge document. So a `Repo` might look something like this:
+ * ```ts
+ * {
+ *   '__teachers__abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill' },
+ *   '__teachers__qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelshon' },
+ *   '__students__lmnopqrs12': {id: 'lmnopqrs12', first: 'Steve', last: 'Jobs' },
+ *   '__students__qwerty1234': {id: 'qwerty1234', first: 'Steve', last: 'Wozniak' },
+ * }
+ * ```
+ * There are no index documents, because it's currently impractical to store very large arrays as
+ * Automerge documents. Instead, to know which docs belong to which collection, we create a key
+ * that prepends the collection name to the document's unique ID.
+ *
+ * ### Deleting documents
+ *
+ * Since we don't have an index, we need to delete documents in two steps:
+ *
+ *    1. We mark them as deleted by adding a special DELETED flag. This allows the deletion to be
+ *       persisted and propagated to peers.
+ *       ```ts
+ *       {
+ *         '__teachers__abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill', [DELETED]: true },
+ *         '__teachers__qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelshon' },
+ *       }
+ *       ```
+ *    2. The repo then looks out for the DELETED flag and removes deleted items from the snapshot.
+ *       (We don't ever delete the underlying change history, in case the document is undeleted.)
+ *
+ *
+ * ### Dropping a collection
+ *
+ * We want to be able to drop a collection in a single action from a reducer, but we don't have an index
+ * So instead of returning reducer functions, we return a new object keyed to the
+ * collection name and containing just the DELETE_COLLECTION flag.
+ * ```ts
+ * {
+ *   '__teachers__abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill', ['__DELETED']: true },
+ *   '__teachers__qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelshon' },
+ *   '__teachers': DELETE_COLLECTION
+ * }
+ * ```
  */
 export function collection<T = any>(name: string, { idField = 'id' }: CollectionOptions = {}) {
-  /**
-   * ## How collections are stored
-   *
-   * Multiple collections can be stored side-by-side in a single `Repo`, with each item as an
-   * individual root-level Automerge document. So a `Repo` might look something like this:
-   * ```ts
-   * {
-   *   '__teachers__abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill' },
-   *   '__teachers__qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelshon' },
-   *   '__students__lmnopqrs12': {id: 'lmnopqrs12', first: 'Steve', last: 'Jobs' },
-   *   '__students__qwerty1234': {id: 'qwerty1234', first: 'Steve', last: 'Wozniak' },
-   * }
-   * ```
-   * There are no index documents, because it's currently impractical to store very large arrays as
-   * Automerge documents. Instead, to know which docs belong to which collection, we create a key
-   * that prepends the collection name to the document's unique ID.
-   *
-   * ### Deleting documents
-   *
-   * Since we don't have an index, we need to delete documents in two steps:
-   *
-   *    1. We mark them as deleted by adding a special DELETED flag. This allows the deletion to be
-   *       persisted and propagated to peers.
-   *       ```ts
-   *       {
-   *         '__teachers__abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill', [DELETED]: true },
-   *         '__teachers__qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelshon' },
-   *       }
-   *       ```
-   *    2. The repo then looks out for the DELETED flag and removes deleted items from the snapshot.
-   *       (We don't ever delete the underlying change history, in case the document is undeleted.)
-   *
-   *
-   * ### Dropping a collection
-   *
-   * We want to be able to drop a collection in a single action from a reducer, but we don't have an index
-   * So instead of returning reducer functions, we return a new object keyed to the
-   * collection name and containing just the DELETE_COLLECTION flag.
-   * ```ts
-   * {
-   *   '__teachers__abcdef1234': {id: 'abcdef1234', first: 'Herb', last: 'Caudill', ['__DELETED']: true },
-   *   '__teachers__qrs7890xyz': {id: 'qrs7890xyz', first: 'Diego', last: 'Mijelshon' },
-   *   '__teachers': DELETE_COLLECTION
-   * }
-   */
-
   const keyName = collection.getKeyName(name)
 
   // these are for converting individual item IDs back and forth
@@ -123,16 +124,6 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
   }
 
   /**
-   * Given the redux state, returns an array containing all items in the collection.
-   * @param state The plain JSON representation of the state.
-   */
-  const getAll = (state: RepoSnapshot = {}) => {
-    let result = []
-    for (const key of keys(state)) result.push(state[key])
-    return result
-  }
-
-  /**
    * Given the redux state, returns a map keying each item in the collection to its `id`.
    * @param state The plain JSON representation of the state.
    */
@@ -140,16 +131,6 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
     let result = {} as any
     for (const key of keys(state)) result[keyToId(key)] = state[key]
     return result
-  }
-
-  /**
-   * Returns the number of items in the collection when given the redux state.
-   * @param state The plain JSON representation of the state.
-   */
-  const count = (state: RepoSnapshot = {}) => {
-    let i = 0
-    for (const _ of keys(state)) i++
-    return i
   }
 
   /**
@@ -176,68 +157,78 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
     }
   }
 
-  // REDUCERS
+  const reducers = {
+    /**
+     * Takes one or more new items, and returns a change function for each that adds it to the collection.
+     * @param item An item (or array of items) to be added
+     * @returns A change function
+     *
+     */
+    add: (item: A.Doc<T> | A.Doc<T>[]) => {
+      const items: A.Doc<T>[] = Array.isArray(item) ? item : [item]
+      const changeFunctions = {} as ChangeMap
+      for (const item of items) {
+        if (!item.hasOwnProperty(idField))
+          throw new Error(`Item doesn't have a property called '${idField}'.`)
+        const key = idToKey((item as any)[idField])
+        changeFunctions[key] = (s: A.Doc<T>) => Object.assign(s, item)
+      }
+      return changeFunctions
+    },
 
-  const drop = () => {
-    return { [keyName]: DELETE_COLLECTION }
+    /**
+     * Takes an updated version of the given doc (can be partial); returns a function merging the
+     * updates with the existing doc, mapped to the collection key corresponding to the id field in
+     * item.
+     * @param item An object containing the id of the item to modify, as well as the values to be
+     * modified. This can be either a modified copy of the whole document, or just the fields to be
+     * changed.
+     */
+    update: (item: A.Doc<any>) => ({
+      [idToKey(item[idField])]: (s: any) => Object.assign(s, item),
+    }),
+
+    /**
+     * Takes an id and a change function, and returns an object with the function mapped to the id.
+     * @param id The id of the item to change
+     * @param fn The change function
+     * @returns The function mapped to the collection key
+     * @example
+     *   ```js
+     *   const markComplete = (s) => { ...s, complete: true }
+     *   return change('abc', markComplete)
+     *   // returns { _tasks_abc: (s) => {...s, complete: true }
+     *   ```
+     */
+    change: (id: string, fn: ChangeFn<T>) => ({
+      [idToKey(id)]: fn,
+    }),
+
+    /**
+     * Takes an id, and returns a delete flag mapped to the collection key.
+     */
+    remove: ({ id }: { id: string }) => ({
+      [idToKey(id)]: setDeleteFlag,
+    }),
+
+    /**
+     * Marks the collection to be dropped.
+     * @returns An object with the keyName of the collection; instead of a change function, the
+     * value is the DELETE_COLLECTION flag. e.g. `{ _widgets: DELETE_COLLECTION }`
+     */
+    drop: () => {
+      return { [keyName]: DELETE_COLLECTION }
+    },
   }
 
-  const add = (item: A.Doc<T> | A.Doc<T>[]) => {
-    const items: A.Doc<T>[] = Array.isArray(item) ? item : [item]
-    const changeFunctions = {} as ChangeMap
-    for (const item of items) {
-      if (!item.hasOwnProperty(idField))
-        throw new Error(`Item doesn't have a property called '${idField}'.`)
-      const key = idToKey((item as any)[idField])
-      changeFunctions[key] = (s: A.Doc<T>) => Object.assign(s, item)
-    }
-    return changeFunctions
-  }
-
-  /**
-   * Takes an updated version of the given doc (can be partial); returns a function merging the
-   * updates with the existing doc, mapped to the collection key corresponding to the id field in
-   * item.
-   * @param item An object containing the id of the item to modify, as well as the values to be
-   * modified. This can be either a modified copy of the whole document, or just the fields to be
-   * changed.
-   */
-  const update = (item: A.Doc<any>) => ({
-    [idToKey(item[idField])]: (s: any) => Object.assign(s, item),
-  })
-
-  /**
-   * Takes a change function and an id, and returns the function mapped to the collection key.
-   */
-  const change = (id: string, fn: ChangeFn<T>) => ({
-    [idToKey(id)]: fn,
-  })
-
-  /**
-   * Takes an id, and returns a delete flag mapped to the collection key.
-   */
-  const remove = ({ id }: { id: string }) => ({
-    [idToKey(id)]: setDeleteFlag,
-  })
+  // COLLECTION OBJECT
 
   return {
+    reducers,
     keyName,
+    getMap,
     idToKey,
     keyToId,
-    reducers: {
-      drop,
-      add,
-      update,
-      change,
-      remove,
-    },
-    selectors: {
-      keys,
-      ids,
-      getAll,
-      getMap,
-      count,
-    },
     markAllDeleted,
     removeAllFromSnapshot,
   }
