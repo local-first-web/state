@@ -2,7 +2,6 @@ import { DELETED, GLOBAL } from './constants'
 import A, { ChangeFn } from 'automerge'
 import { DELETE_COLLECTION } from './constants'
 import { ChangeMap, RepoSnapshot, Snapshot } from 'cevitxe-types'
-import { Repo } from './Repo'
 
 export interface CollectionOptions {
   idField?: string
@@ -95,8 +94,6 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
   const idToKey = (id: string) => `${keyName}__${id}`
   const keyToId = (key: string) => key.replace(`${keyName}__`, '')
 
-  const setDeleteFlag = (s: any) => Object.assign(s, { [DELETED]: true })
-
   /**
    * Returns true if the given string is a key for this collection
    * @param maybeKey
@@ -166,7 +163,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
      * Takes an id, and returns a delete flag mapped to the collection key.
      */
     remove: ({ id }: { id: string }) => ({
-      [idToKey(id)]: setDeleteFlag,
+      [idToKey(id)]: (s: any) => Object.assign(s, { [DELETED]: true }),
     }),
 
     /**
