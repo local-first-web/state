@@ -76,7 +76,7 @@ export const denormalize = (state: Snapshot, collections: string[]): Snapshot =>
   } as Snapshot
 
   // add each collection
-  for (const c of collections) denormalizedState[c] = collection(c).selectors.getMap(_state)
+  for (const c of collections) denormalizedState[c] = collection(c).getMap(_state)
 
   return denormalizedState
 }
