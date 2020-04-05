@@ -221,10 +221,8 @@ export class Repo<T = any> {
   public async markCollectionAsDeleted(collectionKey: string) {
     const collectionName = collection.getCollectionName(collectionKey)
     const setDeleteFlag = (s: any) => Object.assign(s || {}, { [DELETED]: true })
-    console.log({ clientId: this.clientId, state: this.state, collectionName })
     const { isCollectionKey } = collection(collectionName)
     for (const documentId of this.documentIds.filter(isCollectionKey)) {
-      console.log('setting delete flag', { documentId })
       await this.change(documentId, setDeleteFlag)
     }
   }
