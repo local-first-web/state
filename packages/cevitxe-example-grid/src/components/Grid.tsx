@@ -31,8 +31,6 @@ import { Loading } from './Loading'
 
 const log = debug('cevitxe:grid')
 
-const rowsSelector = collection('rows').selectors.getAll
-
 export const Grid = () => {
   const dispatch = useDispatch()
 
@@ -40,7 +38,7 @@ export const Grid = () => {
 
   const rowCollection = useSelector((state: any) => {
     if (!ready) return []
-    return rowsSelector(state)
+    return state.rows
   })
 
   const columns = useSelector((state: any) => {
