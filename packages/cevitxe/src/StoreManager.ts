@@ -66,7 +66,6 @@ export class StoreManager<T> {
     })
 
     const state = await this.repo.init(this.initialState, isCreating)
-
     // Create Redux store to expose to app
     this.store = this.createReduxStore(state)
 
@@ -81,12 +80,11 @@ export class StoreManager<T> {
     return this.store
   }
 
-  private createReduxStore(initialState: RepoSnapshot) {
+  private createReduxStore(state: RepoSnapshot) {
     if (!this.repo) throw new Error(`Can't create Redux store without repo`)
     const reducer = getReducer(this.proxyReducer, this.repo)
     const cevitxeMiddleware = getMiddleware(this.repo, this.proxyReducer)
     const enhancer = composeWithDevTools(applyMiddleware(...this.middlewares, cevitxeMiddleware))
-    const state = this.useCollections ? initialState : (initialState[GLOBAL] as Snapshot)
     return createStore(reducer, state, enhancer)
   }
 
