@@ -28,7 +28,7 @@ export const getMiddleware: MiddlewareFactory = (repo, proxyReducer) => {
     const functionMap = proxyReducer(store.getState(), action)
 
     if (action.type === RECEIVE_MESSAGE_FROM_PEER) {
-      // RepoSync has already updated our repo - nothing to do here
+      // Synchronizer has already updated our repo - nothing to do here
     } else {
       // Apply changes to Repo history
       if (typeof functionMap === 'function') {

@@ -1,7 +1,7 @@
 import A from 'automerge'
 import { TestChannel } from './TestChannel'
 import { Repo } from './Repo'
-import { RepoSync } from './RepoSync'
+import { Synchronizer } from './Synchronizer'
 import { Message } from './Message'
 import { pause as _yield } from './pause'
 import debug from 'debug'
@@ -15,11 +15,11 @@ export interface BirdCount {
 
 const documentId = 'myDoc'
 
-// creates a RepoSync object using a simple channel
+// creates a Synchronizer object using a simple channel
 const makeConnection = async (key: string, repo: Repo<BirdCount>, channel: TestChannel) => {
   // hook up send
   const send = (msg: Message) => channel.write(key, msg)
-  const sync = new RepoSync(repo, send)
+  const sync = new Synchronizer(repo, send)
   await sync.open()
 
   // hook up receive
@@ -32,7 +32,7 @@ const makeConnection = async (key: string, repo: Repo<BirdCount>, channel: TestC
   return sync
 }
 
-describe(`RepoSync`, () => {
+describe(`Synchronizer`, () => {
   describe('Changes after connecting', () => {
     const setup = async () => {
       const discoveryKey = 'angry-cockatoo'
@@ -224,8 +224,8 @@ describe(`RepoSync`, () => {
   })
 
   describe('Intermittent connection', () => {
-    let localConnection: RepoSync
-    let remoteConnection: RepoSync
+    let localConnection: Synchronizer
+    let remoteConnection: Synchronizer
     let localRepo: Repo<BirdCount>
     let remoteRepo: Repo<BirdCount>
     let channel = new TestChannel()
@@ -263,7 +263,10 @@ describe(`RepoSync`, () => {
       await localRepo.open()
 
       await remoteRepo.set(documentId, A.from<BirdCount>({}))
-      await localRepo.set(documentId, A.from<BirdCount>({ swallows: 1 }))
+      await localRepo.set(
+        documentId,
+        A.from<BirdCount>({ swallows: 1 })
+      )
 
       await networkOn()
 

@@ -103,7 +103,7 @@ export class StoreManager<T> {
     if (this.client) this.client.close()
 
     // TODO: Close repo when closing StoreManager
-    // > This is obviously the right thing to do, but it breaks tests. For some reason RepoSync
+    // > This is obviously the right thing to do, but it breaks tests. For some reason Synchronizer
     // continues to respond to messages from the peer after the repo is closed, and then tries to
     // access the closed database.
 

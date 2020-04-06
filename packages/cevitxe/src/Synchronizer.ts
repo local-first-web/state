@@ -7,7 +7,7 @@ import { Repo } from './Repo'
 import { Clock, ClockMap, RepoHistory, RepoSnapshot } from 'cevitxe-types'
 
 /**
- * One instance of `RepoSync` keeps one local document in sync with one remote peer's replica of the
+ * One instance of `Synchronizer` keeps one local document in sync with one remote peer's replica of the
  * same document.
  *
  * This class works with a local `Repo`; it listens for changes to documents, and if it thinks it
@@ -42,7 +42,7 @@ import { Clock, ClockMap, RepoHistory, RepoSnapshot } from 'cevitxe-types'
  * > Note: This class began life as a vendored & refactored copy of the `Automerge.Connection`
  * > class; if you're familiar with that class, this one plays exactly the same role.
  */
-export class RepoSync {
+export class Synchronizer {
   public repo: Repo<any>
   private send: (msg: Message) => void
   private theirClock: ClockMap
@@ -58,7 +58,7 @@ export class RepoSync {
     this.repo = repo
     this.send = send
     this.theirClock = {}
-    this.log = debug(`cevitxe:reposync:${repo.databaseName}`)
+    this.log = debug(`cevitxe:synchronizer:${repo.databaseName}`)
   }
 
   // PUBLIC METHODS

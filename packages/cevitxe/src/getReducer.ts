@@ -26,7 +26,7 @@ export const getReducer: ReducerConverter = (proxyReducer, repo) => {
 
   const reducer: Reducer<RepoSnapshot, AnyAction> = (state, { type, payload }): RepoSnapshot => {
     if (type === RECEIVE_MESSAGE_FROM_PEER) {
-      // RepoSync has already updated our repo - nothing to do here.
+      // Synchronizer has already updated our repo - nothing to do here.
     } else {
       // Apply changes synchronously to repo snapshots
       state = state || {}
