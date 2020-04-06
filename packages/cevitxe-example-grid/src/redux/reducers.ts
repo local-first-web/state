@@ -24,45 +24,43 @@ export const proxyReducer: ProxyReducer = (state, { type, payload }) => {
       return add(payload.collection)
 
     case actions.SCHEMA_LOAD:
-      return { schema: s => Object.assign(s, payload.schema) }
+      return s => (s.schema = payload.schema)
 
     case actions.SCHEMA_INFER:
-      return { schema: s => Object.assign(s, inferSchema(payload.sampleData)) }
+      return s => (s.schema = inferSchema(payload.sampleData))
 
     case actions.FIELD_ADD:
-      return {
-        schema: s => {
-          s.properties = s.properties || {}
-          s.properties[payload.id] = { description: 'New Field' }
-        },
+      return s => {
+        s.schema.properties = s.schema.properties || {}
+        s.schema.properties[payload.id] = { description: 'New Field' }
       }
 
     case actions.FIELD_RENAME:
-      return {
-        schema: s => {
-          const fieldSchema = s.properties![payload.id] as JSONSchema7
-          fieldSchema.description = payload.description
-        },
+      return s => {
+        const fieldSchema = s.schema.properties![payload.id] as JSONSchema7
+        fieldSchema.description = payload.description
       }
 
     case actions.FIELD_DELETE: {
+      // TODO: reducer doesn't support mixing changes to global object with changes to collection items
       const changes: ChangeMap = {
         schema: s => delete s.properties![payload.id],
       }
-      for (const key of state.rows) {
+      for (const key in state.rows) {
         changes[key] = d => delete d[payload.id]
       }
       return changes
     }
 
     case actions.FIELD_SET_TYPE: {
+      // TODO: reducer doesn't support mixing changes to global object with changes to collection items
       const changes: ChangeMap = {
         schema: s => {
           const fieldSchema = s.properties![payload.id] as JSONSchema7
           fieldSchema.type = payload.type
         },
       }
-      for (const key of state.rows) {
+      for (const key in state.rows) {
         const currentValue = state[key][payload.id]
         if (currentValue != null) {
           switch (payload.type) {

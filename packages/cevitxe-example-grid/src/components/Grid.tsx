@@ -37,7 +37,7 @@ export const Grid = () => {
 
   const rowCollection = useSelector((state: any) => {
     if (!ready) return []
-    return state.rows
+    return Object.values(state.rows)
   })
 
   const columns = useSelector((state: any) => {

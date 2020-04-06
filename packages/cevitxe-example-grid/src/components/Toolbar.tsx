@@ -9,8 +9,6 @@ export const Toolbar = () => (
     <DataGenerator />
     <Loading />
     <Rows />
-    {/* <Counter />
-    <CounterProgress /> */}
   </div>
 )
 
