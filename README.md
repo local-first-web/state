@@ -1,152 +1,62 @@
-<img src='logo.svg' width=500 alt=''>
+<img src='logo.svg' width='500' alt='' />
 
-Cevitxe is a wrapper for a Redux store that gives your app offline capabilities
-and secure peer-to-peer synchronization superpowers.
+Cevitxe is a wrapper for a Redux store that gives your app offline capabilities and secure
+peer-to-peer synchronization superpowers.
 
 ## Why?
 
-There are a lot of reasons to build an app that works in a distributed way, without depending on a
-centralized server:
+Distributed, offline-first technologies are promising for a lot of reasons, but they're unfamiliar
+to most web application developers. Cevitxe provides offline storage and peer-to-peer
+synchronization capabilities, and exposes them via a familiar Redux store that can be used in a
+vanilla JS, React, or Electron application.
 
-- Suppose you want to build a web application where the **data doesn't live on a remote host**, but
-  is shared from **peer to peer**.
-
-- Or, you want to create an app that **works offline**, and **syncs up** with changes by other users
-  when it comes back online.
-
-- Or, you want to go **local-first** to **eliminate latency**, by keeping a complete copy of a
-  user's data on their machine, which you then replicate to other users in the background.
-
-| <img src='images/008.jpg'></img>               | <img src='images/023.jpg'></img>                    |
-| ---------------------------------------------- | --------------------------------------------------- |
-| <sub>A typical client-server application</sub> | <sub>A distributed (peer-to-peer) application</sub> |
-
-A typical web application developer today is likely to be comfortable working with databases and API
-endpoints on the server, along with state containers like Redux on the client. A distributed
-architecture is compelling for all the reasons listed above, but it puts us in very unfamiliar territory.
-Without a server, how do peers talk to each other? Where is the data stored? How do we make sure
-that concurrent (and possibly conflicting) changes get replicated correctly between peers?
-
-Cevitxe intends to **bridge that gap** by combining the **familiar interface** of a Redux store with
-**peer-to-peer networking**, **offline capabilities**, and **automatic synchronization** and conflict
-resolution superpowers.
+🡒 [Read more](docs/why.md)
 
 ## How?
 
-### Data replication & synchronization
+Cevitxe provides three services:
 
-What all of the above scenarios have in common is that you need to **keep independent replicas of a
-dataset in sync** with each other, without counting on an all-knowing server to serve as a single
-source of truth.
+- **Data replication & synchronization**, using the [Automerge](https://github.com/automerge/automerge) library
+- **Networking** with peers, via a lightweight [signal server](../packages/cevitxe-signal-server) for discovery and relay
+- **Persistence** to a local or remote data store. You can use the provided adapters for [IndexedDb](../packages/cevitxe-storage-indexeddb) or [MongoDb](../packages/cevitxe-storage-mongodb), or provide your own.
 
-- **Conflict-free replicated data types**
-  ([CRDTs](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)) are data structures that
-  solve this problem in a way that is mathematically proven to **guarantee eventual consistency**.
-
-- [**Automerge**](http://github.com/automerge/automerge) is a
-  JavaScript library that makes it possible to turn any JSON object into a CRDT.
-
-Automerge keeps track of a dataset's history using an append-only log of changes. You can think of
-it as **Git for JSON data structures**. Different actors generate a stream of changes (analogous to
-Git commits). Unlike Git, though, Automerge **automatically resolves conflicts**. Automerge's
-conflict resolution is
-
-- **arbitrary**;
-- **deterministic** (two actors will always resolve any given conflict in the same way, without
-  communicating with each other);
-- **non-destructive** (a record of a conflict is embedded in the document's metadata, so that an
-  application can surface it for human attention if necessary); and
-- **rarely necessary** (conflicts only occur when two actors concurrently modify the same
-  property of the same element of the same document).
-
-Let's assume you have an application that works with one or more JSON documents. For example, a
-single "document" might represent a task list, a row in a spreadsheet-like table, or a chat conversation.
-
-Cevitxe exposes a repository of documents to your application as a **Redux store**. Internally, each
-one is represented by both a snapshot of its current state and a history of Automerge changes.
-
-| <img src='images/redux.2.png'></img> | <img src='images/architecture.png'></img> |
-| ------------------------------------ | ----------------------------------------- |
-| <sub>Redux</sub>                     | <sub>Redux & Cevitxe</sub>                |
-
-### Networking
-
-In the background, whenever you are online, Cevitxe connects to any peers that are using the same
-repository, sending out a stream of changes as the user modifies the dataset, and applying incoming
-changes from peers.
-
-To discover peers, Cevitxe provides a lightweight [signal server](packages/cevitxe-signal-server).
-
-### Persistence
-
-Each peer stores the entire repository locally, in the form of a complete history of changes for
-each document, along with a snapshot of each document's most recent state. By default IndexedDB is
-used, but you can use any of the provided adapters, or build your own.
-
-Cevitxe currently includes the following data storage adapters:
-
-- IndexedDb
-- MongoDb
-
-## Running the examples
-
-Three demo React applications are included. Source code is in the `examples` directory. You can run
-each one with the appropriate `yarn start` command:
-
-| `yarn start:grid`                             | `yarn start:todo`                              | `yarn start:chat`                             |
-| --------------------------------------------- | ---------------------------------------------- | --------------------------------------------- |
-| <img src='images/screen.grid.png' width=600/> | <img src='images/screen.todo.png'  width=600/> | <img src='images/screen.grid.png' width=600/> |
-| <sub>A simple table editor</sub>              | <sub>An implementation of TodoMVC</sub>        | <sub>A chat channel</sub>                     |
-
-If you are working on the Cevitxe code and/or the code for one of the demo apps, you can start in
-watch mode by running `yarn dev` instead:
-
-- `yarn dev:grid`
-- `yarn dev:todo`
-- `yarn dev:chat`
-
-In each case the app will run on `localhost:3000`. (You can only run one example app at a time).
-
-To test the peer-to-peer functionality on a single computer, visit the demo in two different
-browsers (e.g. Chrome and Firefox), or with a normal window and an incognito window of the same
-browser.
-
-(You can of course run in two normal tabs of the same browser, but they'll share the local
-IndexedDb, so you're not really testing their ability to communicate.)
-
-Copy the ID from one browser window and paste it into the other, then press **Join**.
-After a brief delay, you should have the same state visible in both instances, and changes made in
-one should be replicated to the other.
-
-![](images/demo.gif)
+🡒 [Read more](docs/how.md)
 
 ## Getting started
 
-Cevitxe works in the **browser** and in **Node.js**. The examples given are React apps, and the Toolbar
-component they all use is a React component. The store that Cevitxe exposes is a Redux store; it can
-be used by any JavaScript application, not just those using React.
+### Run the examples
 
-> **TODO:** once we settle on a better collections API, update docs to show how this would be used
-> with a single state document, and how it would be used with a collection
+Two demo React applications are included:
 
-#### Add Cevitxe as a dependency
+<table>
+  <tr>
+    <td>
+      <h4><code>cevitxe-example-todo</code></h4>
+      <img src='images/screen.todo.png'  width='400' /> 
+      <p>An implementation of TodoMVC</p> 
+      <p>To run: <code>yarn start:todo</code> </p> 
+    </td>
+    <td>
+      <h4><code>cevitxe-example-grid</code></h4>
+      <img src='images/screen.grid.png' width='400' /> 
+      <p>A simple table editor</p> 
+      <p>To run: <code>yarn start:grid</code> </p>
+    </td>
+  </tr>
+</table>
+
+### Use Cevitxe in your app
 
 ```bash
 yarn add cevitxe
 ```
 
-#### Instantiate Cevitxe
-
-A typical app just needs one instance of Cevitxe, which can be used to manage any number of
-documents.
-
 ```js
 import { StoreManager } from 'cevitxe'
-import { proxyReducer } from '../reducer'
-import { ALL } from '../constants'
+import { Provider } from 'react-redux'
 
-const cevitxe = new Cevitxe({
-  // See below to learn what a proxy reducer is
+const storeManager = new StoreManager({
+  // Pass your reducers
   proxyReducer,
 
   // Pass an initial state, just like you would for Redux
@@ -155,38 +65,13 @@ const cevitxe = new Cevitxe({
     todoMap: {},
     filter: ALL,
   },
-
-  // Point it to known signal server instances
-  peerHubs: [
-    'https://signalserver.myapplication.com/',
-    'https://signalserver-qrsxyz.now.sh/', //..
-  ],
 })
-```
 
-> **TODO:** example with all the options that you can pass the Cevitxe constructor
-
-#### Use Cevitxe to create your store
-
-The Cevitxe object creates your Redux store. It's a plain old Redux store that you can use in your
-app the way you always have.
-
-There are two ways to get a store: You can **create** one, or you can **join** one.
-
-Either way you need a **discovery key**. This key can be any string that uniquely identifies a
-document. Typically this is a UUID, but it doesn't have to be as long as you're confident it's
-unique. It's your app's responsibility to give the user the option of creating a new document or
-joining an existing one, and managing the keys associated with documents.
-
-```js
-export const App = () => {
-  // if you're creating a store
-  const store = cevitxe.createStore(discoveryKey)
-
-  // OR if you're joining a store
-  // const store = cevitxe.joinStore(discoveryKey)
-
+export const Index = () => {
+  // Obtain a Redux store
+  const store = storeManager.createStore(discoveryKey)
   return (
+    // Pass the store to your app
     <Provider store={store}>
       <App />
     </Provider>
@@ -194,131 +79,7 @@ export const App = () => {
 }
 ```
 
-#### Proxy reducers for Automerge are different from ordinary Redux reducers
-
-Automerge and Redux both treat state as immutable, but use different mechanisms for modifying state.
-
-Redux reducers take a previous state object and an action, and construct a new state object to return.
-
-```js
-const reducer = (state, {type, payload}) =>
-  switch (type) {
-    case SET_FILTER:
-      return {
-        ...state
-        filter: payload.filter
-      })
-
-    case ADD_TODO: {
-      const { id, content } = payload
-      return {
-        ...state,
-        todoList: state.todoList.concat(id),
-        todoMap: {
-          ...state.todoMap,
-          [id]: {
-            content: content,
-            completed: false,
-          },
-        }
-      }
-    }
-
-    // ... etc.
-
-    default:
-      return state
-
-  }
-}
-```
-
-In an Automerge change callback, you're given a
-[proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) to
-the current state. Inside the callback, you modify the state as if it were mutable. You don't need
-to return anything; Automerge translates your modifications to a set of changes, and uses that to
-construct the new state.
-
-If you were using Automerge directly, this is what that would look like:
-
-```js
-newState = A.change(prevState, s => {
-  // `s` is a mutable proxy to the contents of `prevState`
-  s.filter = someNewValue
-})
-```
-
-(For more details on how you would use Automerge directly, see [here](https://github.com/automerge/automerge#manipulating-and-inspecting-state).)
-
-With Cevitxe, you collect these change functions into something that looks a lot like a Redux
-reducer.
-
-```js
-const proxyReducer = ({ type, payload }) => {
-  switch (type) {
-    case SET_FILTER:
-      return state => (state.visibilityFilter = payload.filter)
-
-    case ADD_TODO: {
-      const { id, content } = payload
-      return state => {
-        state.todoList.push(id)
-        state.todoMap[id] = { id, content, completed: false }
-      }
-    }
-
-    // ... etc.
-
-    default:
-      return null
-  }
-}
-```
-
-But there are three important differences between a proxy reducer and an ordinary Redux reducer:
-
-- A **Redux reducer**'s signature is `(state, action) => state`: You take the old state and an action,
-  and you **return the new state**. The **proxy reducer**'s signature is `action => state => void`: You take
-  the action and **return a change function**, which in turn recieves a proxy to the old state. You
-  modify the proxy, and the proxy communicates the changes you make to the framework.
-- The fallthrough case in a proxy reducer is `null` (no change function found), rather than the original
-  `state` value.
-- Since you don't need to return anything, you don't need to reconstruct all the bits of the state
-  tree that aren't affected by any given reducer. In Redux you might end up having to do something
-  like this to modify a deeply nested bit of state while leaving the rest unchanged:
-
-  ```js
-  case TOGGLE_TODO: {
-    const { id } = payload
-    return {
-      ...state,
-      todoMap: {
-        ...state.todoMap,
-        [id]: {
-          ...state.todoMap[id],
-          completed: !state.todoMap[id].completed,
-        },
-      }
-    }
-  }
-  ```
-
-  A proxy reducer just modifies what it needs to:
-
-  ```js
-    case TOGGLE_TODO: {
-      const { id } = payload
-      return state => (state.todoMap[id].completed = !state.todoMap[id].completed)
-    }
-  ```
-
-Internally, Cevitxe turns the proxy into a straight-up Redux reducer.
-
-## Limitations
-
-Cevitxe requires that the entire repository be present on each peer's machine. That means that it is
-limited to datasets that can fit comfortably within the disk space on a single computer. In 2019,
-that means something on the order of 1-10 GB.
+🡒 [More on how to use Cevitxe in your app](docs/getting-started.md)
 
 ## Work in progress
 
@@ -348,7 +109,7 @@ that means something on the order of 1-10 GB.
   - [ ] Sqlite
   - [ ] File system
   - [ ] Redis
-  - [ ] MongoDB
+  - [x] MongoDB
   - [ ] AWS DynamoDB
 
 * [ ] **Security** The signal server currently doesn't require authentication; anyone who knows its
@@ -374,6 +135,22 @@ that means something on the order of 1-10 GB.
       don't know anything about each other. We'd like to implement a swarm such that any number of
       signal servers can be deployed, and the user will be directed to the best one. [#27](https://github.com/DevResults/cevitxe/issues/27)
 
+## Limitations
+
+Cevitxe requires that the entire repository be present on each peer's machine. That means that it is
+limited to datasets that can fit comfortably within the disk space on a single computer. In 2019,
+that means something on the order of 1-10 GB.
+
+## Further reading
+
+- [CRDTs and the Quest for Distributed
+  Consistency](https://www.youtube.com/watch?v=B5NULPSiOGw), a great talk by [Martin Kleppman](@ept), the
+  author of Automerge.
+- [Local-first software: You own your data, in spite of the
+  cloud](https://www.inkandswitch.com/local-first.html), a manifesto published by Ink & Switch, the
+  industrial research lab created by Heroku alumni that is behind Automerge.
+- [A web application with no web server?](https://medium.com/all-the-things/a-web-application-with-no-web-server-61000a6aed8f)
+
 ## Alternatives
 
 All of these projects are working in similar problem space, in JavaScript. All work in Node.js and
@@ -389,33 +166,3 @@ the browser unless otherwise noted.
 - [HyperDB](https://github.com/mafintosh/hyperdb) From the DAT Project. Showcased in a cool sample
   app by @jimpick: [Dat Shopping List](https://blog.datproject.org/2018/05/14/dat-shopping-list/).
 - [GunDB](https://gun.eco) Distributed graph database.
-
-## Frequently asked questions
-
-#### Where can I learn more about this whole CRDT/distributed/local-first thing?
-
-Here are some articles and videos:
-
-- [CRDTs and the Quest for Distributed
-  Consistency](https://www.youtube.com/watch?v=B5NULPSiOGw), a great talk by [Martin Kleppman](@ept), the
-  author of Automerge.
-- [Local-first software: You own your data, in spite of the
-  cloud](https://www.inkandswitch.com/local-first.html), a manifesto published by Ink & Switch, the
-  industrial research lab created by Heroku alumni that is behind Automerge.
-- [A web application with no web server?](https://medium.com/all-the-things/a-web-application-with-no-web-server-61000a6aed8f)
-
-#### Why is this package called Cevitxe?
-
-- [CVI.CHE 105](https://www.google.com/search?q=cvi.che+105&tbm=isch) is a restaurant in Miami, where
-  the authors of this package ate the night before starting it.
-- [Ceviche](https://en.wikipedia.org/wiki/Ceviche) is the Peruvian style of preparing raw fish
-  marinated in citrus along with _ají_, onions, and cilantro.
-- [Cevitxe](https://www.facebook.com/bentrobats/videos/1492898280822955/) is the Catalan spelling of
-  the same word, and is pronounced the same way. (@herbcaudill lives in Barcelona; and the
-  distinctive spelling was free on NPM and makes the project easier to Google.)
-
-## Maintainers
-
-- @brentkeller
-- @diegose
-- @herbcaudill
