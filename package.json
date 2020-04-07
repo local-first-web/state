@@ -47,6 +47,9 @@
     "ts-jest": "25",
     "wait-on": "3"
   },
+  "resolutions": {
+    "jest": "25.2.7"
+  },
   "engines": {
     "yarn": ">=1.17.0"
   },
