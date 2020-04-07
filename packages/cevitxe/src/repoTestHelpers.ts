@@ -11,6 +11,9 @@ export const repoFromSnapshot = async (
     collections,
   })
   await repo.open()
-  await repo.createFromSnapshot(obj)
+
+  const creating = true
+  await repo.init(obj, creating)
+
   return repo
 }
