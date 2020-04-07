@@ -43,7 +43,7 @@ export const getMiddleware: MiddlewareFactory = (repo, proxyReducer) => {
         for (const fnMapOrFn of toArray(reducerOutput)) {
           if (typeof fnMapOrFn === 'function') {
             // Single function - apply to global object
-            const fn = fnMapOrFn as A.ChangeFn<any>
+            const fn = fnMapOrFn as ChangeFn<any>
             await repo.change(GLOBAL, fn)
           } else {
             // Multiple functions - apply to each document
