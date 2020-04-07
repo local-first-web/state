@@ -16,7 +16,9 @@
     // strictness: exceptions for development (must be reversed in tsconfig.build.json)
     "strict": true,
     "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
+    // fix for ts-jest issue https://github.com/kulshekhar/ts-jest/issues/1336
+    "preserveSymlinks": true
   },
   "include": ["src", "@types"],
   "references": [{ "path": "../cevitxe-signal-client" }, { "path": "../cevitxe-types" }]
