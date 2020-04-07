@@ -9,18 +9,21 @@ import { Repo } from './Repo'
 describe('collections', () => {
   const teachers = collection('teachers')
 
-  const teacher1 = { id: 'abcxyz', first: 'Herb', last: 'Caudill' }
+  const teacher1 = { id: 'abcxyz', first: 'Herb', last: 'Caudill', phones: [] }
 
   const proxyReducer: ProxyReducer = ((state, { type, payload }) => {
+    const { add, remove, update, change, drop } = teachers.reducers
     switch (type) {
       case 'ADD_TEACHER':
-        return teachers.reducers.add(payload)
+        return add(payload)
       case 'REMOVE_TEACHER':
-        return teachers.reducers.remove(payload)
+        return remove(payload)
       case 'UPDATE_TEACHER':
-        return teachers.reducers.update(payload)
+        return update(payload)
+      case 'ADD_PHONE':
+        return change(payload.id, s => s.phones.push(payload.phone))
       case 'CLEAR_TEACHERS':
-        return teachers.reducers.drop()
+        return drop()
     }
   }) as ProxyReducer
 
@@ -75,7 +78,7 @@ describe('collections', () => {
         const action = { type: 'ADD_TEACHER', payload: teacher1 }
         const newState = await reducer(state, action)
         expect(newState.teachers).toEqual({
-          abcxyz: { id: 'abcxyz', first: 'Herb', last: 'Caudill' },
+          abcxyz: teacher1,
         })
       })
 
@@ -100,7 +103,18 @@ describe('collections', () => {
         const action = { type: 'UPDATE_TEACHER', payload: { id: teacher1.id, first: 'Herbert' } }
         const newState = await reducer(state, action)
         expect(newState.teachers).toEqual({
-          abcxyz: { id: 'abcxyz', first: 'Herbert', last: 'Caudill' },
+          abcxyz: { id: 'abcxyz', first: 'Herbert', last: 'Caudill', phones: [] },
+        })
+      })
+    })
+
+    describe('change', () => {
+      it('should apply a change function', async () => {
+        const { state, reducer } = await setupWithOneTeacher()
+        const action = { type: 'ADD_PHONE', payload: { id: teacher1.id, phone: '609 889 984' } }
+        const newState = await reducer(state, action)
+        expect(newState.teachers).toEqual({
+          abcxyz: { id: 'abcxyz', first: 'Herb', last: 'Caudill', phones: ['609 889 984'] },
         })
       })
     })
