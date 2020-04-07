@@ -190,7 +190,7 @@ But there are three important differences between a proxy reducer and an ordinar
 
 - A **Redux reducer**'s signature is `(state, action) => state`: You take the old state and an action,
   and you **return the new state**. The **proxy reducer**'s signature is `action => state => void`: You take
-  the action and **return a change function**, which in turn recieves a proxy to the old state. You
+  the action and **return a change function**, which in turn receives a proxy to the old state. You
   modify the proxy, and the proxy communicates the changes you make to the framework.
 - The fallthrough case in a proxy reducer is `null` (no change function found), rather than the original
   `state` value.
