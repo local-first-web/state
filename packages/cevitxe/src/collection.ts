@@ -34,12 +34,6 @@ export interface CollectionOptions {
  * }
  * ```
  *
- * To access the items in a collection, use the selector methods.
- * ```ts
- *  const rowArray = collection('rows').selectors.getAll(state)
- *  const rowMap = collection('rows').selectors.getMap(state)
- * ```
- *
  * ## Internals
  *
  * ### How collections are stored
@@ -117,7 +111,16 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
      * Takes one or more new items, and returns a change function for each that adds it to the collection.
      * @param item An item (or array of items) to be added
      * @returns A change function
-     *
+     * @example
+     *   ```js
+     *   // add a single item
+     *   return add('abc', { task: 'Buy groceries'})
+     *   ```
+     * @example
+     *   ```js
+     *   // add multiple items
+     *   return add('abc', [{ task: 'Buy groceries'}, { task: 'Feed cat' }])
+     *   ```
      */
     add: (item: A.Doc<T> | A.Doc<T>[]) => {
       const items: A.Doc<T>[] = Array.isArray(item) ? item : [item]
@@ -138,6 +141,10 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
      * @param item An object containing the id of the item to modify, as well as the values to be
      * modified. This can be either a modified copy of the whole document, or just the fields to be
      * changed.
+     * @example
+     *   ```js
+     *   return update('abc', { complete: true })
+     *   ```
      */
     update: (item: A.Doc<any>) => ({
       [idToKey(item[idField])]: (s: any) => Object.assign(s, item),
@@ -150,9 +157,7 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
      * @returns The function mapped to the collection key
      * @example
      *   ```js
-     *   const markComplete = (s) => { ...s, complete: true }
-     *   return change('abc', markComplete)
-     *   // returns { _tasks_abc: (s) => {...s, complete: true }
+     *   return change('abc', d => d.complete = true)
      *   ```
      */
     change: (id: string, fn: ChangeFn<T>) => ({
@@ -187,6 +192,8 @@ export function collection<T = any>(name: string, { idField = 'id' }: Collection
   }
 }
 
+// STATIC METHODS
+
 export namespace collection {
   /**
    * Given the collection's name, returns the `keyName` used internally for tracking the collection.
@@ -217,7 +224,8 @@ export namespace collection {
    * For example:
    *
    * ```js
-   * const state = {
+   * // denormalized state (exposed to application)
+   * {
    *   visibilityFilter: 'all',
    *   todos: {
    *     abc123: {},
@@ -225,14 +233,11 @@ export namespace collection {
    *   },
    * }
    *
-   * const result = normalize(state) // returns:
-   *
+   * // normalized state (for storage)
    * {
-   *   __global: {
-   *     visibilityFilter: 'all',
-   *   },
-   *   __todos__abc123: {},
-   *   __todos__qrs666: {},
+   *   __global: { visibilityFilter: 'all' }, // 🡐 Automerge doc
+   *   __todos__abc123: {}, // 🡐 Automerge doc
+   *   __todos__qrs666: {}, // 🡐 Automerge doc
    * }
    *```
    * @see denormalize
