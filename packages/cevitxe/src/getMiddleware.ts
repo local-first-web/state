@@ -1,9 +1,9 @@
+import { ChangeFn } from 'automerge'
+import { ProxyReducer } from 'cevitxe-types'
 import debug from 'debug'
 import { Middleware } from 'redux'
-import { ProxyReducer, ChangeMap } from 'cevitxe-types'
-import { DELETE_COLLECTION, RECEIVE_MESSAGE_FROM_PEER, GLOBAL } from './constants'
+import { DELETE_COLLECTION, GLOBAL, RECEIVE_MESSAGE_FROM_PEER } from './constants'
 import { Repo } from './Repo'
-import A, { ChangeFn } from 'automerge'
 import { toArray } from './toArray'
 
 const log = debug('cevitxe:middleware')
