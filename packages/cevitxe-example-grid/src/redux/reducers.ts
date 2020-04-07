@@ -1,12 +1,13 @@
 import { collection } from 'cevitxe'
-import { ChangeMap, ProxyReducer } from 'cevitxe-types'
+import { ChangeFn, ChangeMap, ProxyReducer } from 'cevitxe-types'
 import { inferSchema } from 'inferSchema'
 import { JSONSchema7 } from 'json-schema'
 import * as actions from './actions'
+import { GridState } from 'types'
 
 const rows = collection('rows')
-export const proxyReducer: ProxyReducer = (state, { type, payload }) => {
-  const { add, update, remove, drop } = rows.reducers
+export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) => {
+  const { add, update, change, remove, drop } = rows.reducers
   switch (type) {
     case actions.ITEM_ADD:
       return add(payload)
@@ -42,42 +43,48 @@ export const proxyReducer: ProxyReducer = (state, { type, payload }) => {
       }
 
     case actions.FIELD_DELETE: {
-      // TODO: reducer doesn't support mixing changes to global object with changes to collection items
-      const changes: ChangeMap = {
-        schema: s => delete s.properties![payload.id],
+      const { id: fieldId } = payload
+
+      // remove field from schema
+      const schemaChanges: ChangeFn<GridState> = s => {
+        delete s.schema.properties![fieldId]
       }
-      for (const key in state.rows) {
-        changes[key] = d => delete d[payload.id]
-      }
-      return changes
+
+      // delete each value from each row
+      const documentIds = Object.keys(state.rows)
+      const deleteField = (documentId: string) => change(documentId, d => delete d[fieldId])
+
+      return [schemaChanges, ...documentIds.map(deleteField)]
     }
 
     case actions.FIELD_SET_TYPE: {
-      // TODO: reducer doesn't support mixing changes to global object with changes to collection items
-      const changes: ChangeMap = {
-        schema: s => {
-          const fieldSchema = s.properties![payload.id] as JSONSchema7
-          fieldSchema.type = payload.type
-        },
+      const { id: fieldId, type: newType } = payload
+
+      // update schema
+      const schemaChanges: ChangeFn<GridState> = s => {
+        const fieldSchema = s.schema.properties![fieldId] as JSONSchema7
+        fieldSchema.type = newType
       }
-      for (const key in state.rows) {
-        const currentValue = state[key][payload.id]
-        if (currentValue != null) {
-          switch (payload.type) {
-            case 'number':
-              const number = Number(currentValue)
-              changes[key] = d => {
-                if (Number.isNaN(number)) delete d[payload.id]
-                else d[payload.id] = number
-              }
-              break
-            case 'string':
-              changes[key] = s => (s[payload.id] = String(currentValue))
-              break
+
+      // update the column value in each row
+      const documentIds = Object.keys(state.rows)
+      const updateFieldType = (documentId: string) =>
+        change(documentId, d => {
+          if (d[fieldId] !== null) {
+            switch (newType) {
+              case 'number':
+                const number = Number(d[fieldId])
+                if (Number.isNaN(number)) d[fieldId] = ''
+                else d[fieldId] = number
+                break
+              case 'string':
+                d[fieldId] = String(d[fieldId])
+                break
+            }
           }
-        }
-      }
-      return changes
+        })
+
+      return [schemaChanges, ...documentIds.map(updateFieldType)]
     }
 
     default:
