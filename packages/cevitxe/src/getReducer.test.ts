@@ -5,10 +5,19 @@ import { collection } from './collection'
 
 describe('getReducer', () => {
   describe('single change function', () => {
-    const proxyReducer: ProxyReducer = () => s => (s.settings.foo = 2)
+    const proxyReducer: ProxyReducer = (state, { type, payload }) => {
+      switch (type) {
+        case 'WHATEVER':
+          return s => {
+            s.settings.foo = payload
+          }
+        default:
+          return null
+      }
+    }
 
     const setup = async () => {
-      const initialState = { settings: {} }
+      const initialState = { settings: { foo: 0 } }
       const repo = await repoFromSnapshot(initialState)
       const reducer = getReducer(proxyReducer, repo)
       return { initialState, reducer }
@@ -21,13 +30,13 @@ describe('getReducer', () => {
 
     it('should not change the original state', async () => {
       const { initialState, reducer } = await setup()
-      const _newState = reducer(initialState, { type: 'DOESNTMATTER' })
-      expect(initialState).toEqual({ settings: {} })
+      const _newState = reducer(initialState, { type: 'WHATEVER', payload: 2 })
+      expect(initialState).toEqual({ settings: { foo: 0 } })
     })
 
     it('should return a modified state', async () => {
       const { initialState, reducer } = await setup()
-      const newState = reducer(initialState, { type: 'DOESNTMATTER' })
+      const newState = reducer(initialState, { type: 'WHATEVER', payload: 2 })
       expect(newState).toEqual({ settings: { foo: 2 } })
     })
   })
