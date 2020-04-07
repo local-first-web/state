@@ -72,6 +72,7 @@ export class StoreManager<T> {
 
   private createReduxStore(initialState: RepoSnapshot<T>) {
     if (!this.repo) throw new Error(`Can't create Redux store without repo`)
+    // TODO put arguments in the same order (this.proxyReducer, this.repo)
     const reducer = getReducer(this.proxyReducer, this.repo)
     const cevitxeMiddleware = getMiddleware(this.repo, this.proxyReducer)
     const enhancer = composeWithDevTools(applyMiddleware(...this.middlewares, cevitxeMiddleware))
