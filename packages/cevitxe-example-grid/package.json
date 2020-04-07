@@ -7,9 +7,7 @@
   "main": "src/index.tsx",
   "scripts": {
     "start": "react-scripts start",
-    "test:e2e": "cypress open",
-    "prebuild": "rimraf dist",
-    "build": "react-scripts build"
+    "test:e2e": "cypress open"
   },
   "dependencies": {
     "@emotion/core": "10",
@@ -55,7 +53,6 @@
     "cypress": "3",
     "keycode": "2",
     "prettier": "1",
-    "react-scripts": "3",
     "rimraf": "3",
     "tslint-config-prettier": "1",
     "tslint-react": "4",
