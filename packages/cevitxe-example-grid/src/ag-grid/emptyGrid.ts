@@ -20,6 +20,5 @@ export const emptyGrid = (rowCount: number, colCount: number = rowCount) => {
     schema: { properties: cols.reduce(columnReducer, {}) },
   }
 
-  console.log('emptygrid', result)
   return result
 }
