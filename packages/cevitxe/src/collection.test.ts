@@ -62,70 +62,78 @@ describe('collections', () => {
       return { state, reducer }
     }
 
-    it('should not change the original state', async () => {
-      const { state, reducer } = await setupEmpty()
-      const action = { type: 'ADD_TEACHER', payload: teacher1 }
-      const newState = await reducer(state, action) // don't care for this test what newState is
-      expect(state).toEqual({}) // original state object wasn't mutated
-    })
+    describe('add', () => {
+      it('should not change the original state', async () => {
+        const { state, reducer } = await setupEmpty()
+        const action = { type: 'ADD_TEACHER', payload: teacher1 }
+        const newState = await reducer(state, action) // don't care for this test what newState is
+        expect(state).toEqual({}) // original state object wasn't mutated
+      })
 
-    it('should add an item', async () => {
-      const { state, reducer } = await setupEmpty()
-      const action = { type: 'ADD_TEACHER', payload: teacher1 }
-      const newState = await reducer(state, action)
-      expect(newState.teachers).toEqual({
-        abcxyz: { id: 'abcxyz', first: 'Herb', last: 'Caudill' },
+      it('should add an item', async () => {
+        const { state, reducer } = await setupEmpty()
+        const action = { type: 'ADD_TEACHER', payload: teacher1 }
+        const newState = await reducer(state, action)
+        expect(newState.teachers).toEqual({
+          abcxyz: { id: 'abcxyz', first: 'Herb', last: 'Caudill' },
+        })
+      })
+
+      it('should add multiple items from an array', async () => {
+        const { state, reducer } = await setupEmpty()
+        const addAction = {
+          type: 'ADD_TEACHER',
+          payload: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
+        }
+        const newState = await reducer(state, addAction)
+        expect(newState.teachers).toEqual({
+          a: { id: 'a' },
+          b: { id: 'b' },
+          c: { id: 'c' },
+        })
       })
     })
 
-    it('should add multiple items from an array', async () => {
-      const { state, reducer } = await setupEmpty()
-      const addAction = {
-        type: 'ADD_TEACHER',
-        payload: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
-      }
-      const newState = await reducer(state, addAction)
-      expect(newState.teachers).toEqual({
-        a: { id: 'a' },
-        b: { id: 'b' },
-        c: { id: 'c' },
+    describe('update', () => {
+      it('should update an item', async () => {
+        const { state, reducer } = await setupWithOneTeacher()
+        const action = { type: 'UPDATE_TEACHER', payload: { id: teacher1.id, first: 'Herbert' } }
+        const newState = await reducer(state, action)
+        expect(newState.teachers).toEqual({
+          abcxyz: { id: 'abcxyz', first: 'Herbert', last: 'Caudill' },
+        })
       })
     })
 
-    it('should update an item', async () => {
-      const { state, reducer } = await setupWithOneTeacher()
-      const action = { type: 'UPDATE_TEACHER', payload: { id: teacher1.id, first: 'Herbert' } }
-      const newState = await reducer(state, action)
-      expect(newState.teachers).toEqual({
-        abcxyz: { id: 'abcxyz', first: 'Herbert', last: 'Caudill' },
+    describe('remove', () => {
+      it('should remove an item', async () => {
+        const { state, reducer } = await setupWithOneTeacher()
+        const action = { type: 'REMOVE_TEACHER', payload: { id: teacher1.id } }
+        const newState = await reducer(state, action)
+        expect(newState.teachers).toEqual({
+          // empty
+        })
       })
     })
 
-    it('should remove an item', async () => {
-      const { state, reducer } = await setupWithOneTeacher()
-      const action = { type: 'REMOVE_TEACHER', payload: { id: teacher1.id } }
-      const newState = await reducer(state, action)
-      expect(newState.teachers).toEqual({
-        // empty
-      })
-    })
-
-    it('should allow deleting an entire collection', async () => {
-      const { state, reducer } = await setupEmpty()
-      const addAction = {
-        type: 'ADD_TEACHER',
-        payload: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
-      }
-      const state1 = await reducer(state, addAction)
-      expect(state1.teachers).toEqual({
-        a: { id: 'a' },
-        b: { id: 'b' },
-        c: { id: 'c' },
-      })
-      const dropAction = { type: 'CLEAR_TEACHERS' }
-      const state2 = await reducer(state1, dropAction)
-      expect(state2.teachers).toEqual({
-        // empty
+    describe('drop', () => {
+      it('should allow deleting an entire collection', async () => {
+        const { state, reducer } = await setupEmpty()
+        const addAction = {
+          type: 'ADD_TEACHER',
+          payload: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
+        }
+        const state1 = await reducer(state, addAction)
+        expect(state1.teachers).toEqual({
+          a: { id: 'a' },
+          b: { id: 'b' },
+          c: { id: 'c' },
+        })
+        const dropAction = { type: 'CLEAR_TEACHERS' }
+        const state2 = await reducer(state1, dropAction)
+        expect(state2.teachers).toEqual({
+          // empty
+        })
       })
     })
   })
