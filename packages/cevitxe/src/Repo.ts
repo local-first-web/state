@@ -1,14 +1,13 @@
 ﻿import A from 'automerge'
 import { newid } from 'cevitxe-signal-client'
-import debug from 'debug'
-import Cache from 'lru-cache'
-import * as R from 'ramda'
-import { DELETED, GLOBAL } from './constants'
-import { IdbAdapter } from 'cevitxe-storage-indexeddb'
 import { StorageAdapter } from 'cevitxe-storage-abstract'
-import { ChangeSet, RepoHistory, RepoSnapshot, ClockMap, Clock } from 'cevitxe-types'
-import { mergeClocks, EMPTY_CLOCK, getClock } from './clocks'
+import { IdbAdapter } from 'cevitxe-storage-indexeddb'
+import { ChangeSet, Clock, ClockMap, RepoHistory, RepoSnapshot } from 'cevitxe-types'
+import debug from 'debug'
+import * as R from 'ramda'
+import { EMPTY_CLOCK, getClock, mergeClocks } from './clocks'
 import { collection } from './collection'
+import { DELETED } from './constants'
 
 export type RepoEventHandler<T> = (documentId: string, doc: A.Doc<T>) => void | Promise<void>
 
@@ -56,9 +55,6 @@ export class Repo<T = any> {
   /** In-memory map of document clocks */
   public clock: ClockMap = {}
 
-  /** LRU cache of recently accessed Docs */
-  private docCache: Cache<string, any>
-
   /** Document change event listeners. Each handler fires every time a document is set or removed. */
   private handlers: Set<RepoEventHandler<T>>
 
@@ -68,7 +64,6 @@ export class Repo<T = any> {
 
     this.databaseName = databaseName
     this.handlers = new Set()
-    this.docCache = new Cache({ max: 1000 })
     this.clientId = clientId
     this.collections = collections
 
@@ -162,8 +157,6 @@ export class Repo<T = any> {
         changes = []
       }
     }
-    // cache the doc
-    this.docCache.set(documentId, doc)
 
     // only if Automerge actually found changes in the new document...
     if (changes.length > 0) {
