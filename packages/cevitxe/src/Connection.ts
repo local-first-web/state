@@ -36,14 +36,9 @@ export class Connection extends EventEmitter {
     const message = JSON.parse(data.toString())
     log('receive %o', message)
     this.emit('receive', message)
-    await this.Synchronizer.receive(message) // this updates the doc
-    // dispatch the changes from the peer
-    this.dispatch({
-      type: RECEIVE_MESSAGE_FROM_PEER,
-      payload: {
-        message,
-      },
-    })
+    await this.Synchronizer.receive(message) // Synchronizer will update repo directly
+    // hit the dispatcher to force it to pick up
+    this.dispatch({ type: RECEIVE_MESSAGE_FROM_PEER })
   }
 
   send = (message: Message) => {
