@@ -33,6 +33,8 @@ export const getReducer: ReducerConverter = (proxyReducer, repo) => {
         // Nothing for us to do (could be an action handled elsewhere)
       } else {
         state = state || {}
+
+        // Replace all snapshots in the repo with the state we're given
         repo.loadState({ ...state }) // clone
 
         // Here we apply changes synchronously to repo snapshots, so the user gets immediate
@@ -61,6 +63,7 @@ export const getReducer: ReducerConverter = (proxyReducer, repo) => {
         }
       }
     }
+
     return repo.getState()
   }
 
