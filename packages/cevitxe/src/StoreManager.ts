@@ -5,7 +5,7 @@ import cuid from 'cuid'
 import debug from 'debug'
 import { applyMiddleware, createStore, Middleware, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
-import { Client } from './Client'
+import { ConnectionManager } from './ConnectionManager'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getReducer } from './getReducer'
@@ -25,7 +25,7 @@ export class StoreManager<T> {
   private urls: string[]
   private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
   private repo?: Repo
-  private client?: Client
+  private client?: ConnectionManager
   private collections: string[]
   private useCollections: boolean
 
@@ -70,7 +70,7 @@ export class StoreManager<T> {
     this.store = this.createReduxStore(state)
 
     // Connect to discovery server to find peers and sync up with them
-    this.client = new Client({
+    this.client = new ConnectionManager({
       discoveryKey,
       dispatch: this.store.dispatch,
       repo: this.repo,

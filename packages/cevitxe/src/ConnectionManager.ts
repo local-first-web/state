@@ -9,7 +9,7 @@ const log = debug('cevitxe:client')
 /**
  * Wraps a SignalClient and creates a Connection instance for each peer we connect to.
  */
-export class Client {
+export class ConnectionManager {
   private clientId = newid()
   private signalClient: SignalClient
   private connections: { [peerId: string]: Connection } = {}
@@ -31,7 +31,7 @@ export class Client {
     if (!this.dispatch || !this.repo) return
     log('connecting to peer', peer.id)
     const socket = peer.get(discoveryKey)
-    this.connections[peer.id] = new Connection(this.repo, socket, this.dispatch)
+    if (socket) this.connections[peer.id] = new Connection(this.repo, socket, this.dispatch)
     peer.on('close', () => this.removePeer(peer.id))
   }
 
