@@ -399,11 +399,9 @@ case DROP_TEACHERS: {
 
 ###### Combining different types of reducers
 
-You might need a reducer that changes collection data as well as non-collection data. For example, in the grid example, [this reducer](https://github.com/DevResults/cevitxe/blob/68d89dd3d11b4a134b9ca0408eef6ab6978d3b3f/packages/cevitxe-example-grid/src/redux/reducers.ts#L75-L93) modifies a global schema object to delete a field, and then deletes the corresponding data from each row. 
+You might need a reducer that changes collection data as well as non-collection data. For example, in the grid example, [this reducer](https://github.com/DevResults/cevitxe/blob/68d89dd3d11b4a134b9ca0408eef6ab6978d3b3f/packages/cevitxe-example-grid/src/redux/reducers.ts#L75-L93) modifies a global schema object to delete a field, and then deletes the corresponding data from each row.
 
 In this case you can return an array that combines change functions (for the global changes) and change manifests (for the changes to collection items).
-
-https://github.com/DevResults/cevitxe/blob/68d89dd3d11b4a134b9ca0408eef6ab6978d3b3f/packages/cevitxe-example-grid/src/redux/reducers.ts#L75-L93
 
 ```js
 case actions.FIELD_DELETE: {
