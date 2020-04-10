@@ -61,8 +61,9 @@ export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) 
 
     case actions.FIELD_ADD:
       return s => {
+        const fieldId = payload.id
         s.schema.properties = s.schema.properties || {}
-        s.schema.properties[payload.id] = { description: 'New Field' }
+        s.schema.properties[fieldId] = { description: 'New Field' }
       }
 
     case actions.FIELD_RENAME:
@@ -79,17 +80,13 @@ export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) 
         delete s.schema.properties![fieldId]
       }
 
-      // delete the value from one row
-      const deleteField = (row: any) => {
+      // change function: delete the value from one row
+      const fn = (row: any) => {
         delete row[fieldId]
       }
 
       const rowIds = Object.keys(state.rows)
-      const rowChanges = rowIds.map((id: string) => ({
-        collection,
-        id,
-        fn: deleteField,
-      }))
+      const rowChanges = rowIds.map((id: string) => ({ collection, id, fn }))
 
       return [schemaChange, ...rowChanges]
     }
@@ -103,28 +100,24 @@ export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) 
         fieldSchema.type = newType
       }
 
-      // update the column value in one row
-      const migrateField = (row: any) => {
+      // change function: update the column value in one row
+      const fn = (row: any) => {
         if (row[fieldId] !== null) {
           switch (newType) {
-            case 'number': {
+            case 'number':
               const number = Number(row[fieldId])
               if (Number.isNaN(number)) row[fieldId] = ''
               else row[fieldId] = number
-            }
-            case 'string': {
+              break
+            case 'string':
               row[fieldId] = String(row[fieldId])
-            }
+              break
           }
         }
       }
 
       const rowIds = Object.keys(state.rows)
-      const rowChanges = rowIds.map((id: string) => ({
-        collection,
-        id,
-        fn: migrateField,
-      }))
+      const rowChanges = rowIds.map((id: string) => ({ collection, id, fn }))
 
       return [schemaChange, ...rowChanges]
     }
