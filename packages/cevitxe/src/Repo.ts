@@ -210,6 +210,17 @@ export class Repo<T = any> {
   }
 
   /**
+   * Marks all documents belonging to the given collection as deleted
+   * @param collectionName The name of the collection (e.g. `widgets`)
+   */
+  public async drop(collectionName: string, snapshotOnly: boolean = false) {
+    const isInCollection = collection(collectionName).isCollectionKey
+    for (const documentId of this.ids.filter(isInCollection))
+      if (snapshotOnly) this.deleteSnapshot(documentId)
+      else await this.change(documentId, setDeleteFlag)
+  }
+
+  /**
    * Updates a document from a change manifest. This is called either
    * - from a reducer (in which case `snapshotOnly` will be true and this will happen
    *   synchronously); or
@@ -235,17 +246,6 @@ export class Repo<T = any> {
       const collectionName = isFunction(cm) ? undefined : cm.collection
       await this.change(id, fn, { collectionName, snapshotOnly })
     }
-  }
-
-  /**
-   * Marks all documents belonging to the given collection as deleted
-   * @param collectionName The name of the collection (e.g. `widgets`)
-   */
-  public async drop(collectionName: string, snapshotOnly: boolean = false) {
-    const isInCollection = collection(collectionName).isCollectionKey
-    for (const documentId of this.ids.filter(isInCollection))
-      if (snapshotOnly) this.deleteSnapshot(documentId)
-      else await this.change(documentId, setDeleteFlag)
   }
 
   /**
