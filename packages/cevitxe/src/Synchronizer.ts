@@ -212,7 +212,7 @@ export class Synchronizer {
 
   /** Send snapshots for all documents */
   private sendSnapshots() {
-    const state = this.repo.getAllSnapshots()
+    const state = this.repo.getState()
     const clocks = this.repo.getAllClocks()
     this.log('sendSnapshots', state)
     this.send({ type: message.SEND_SNAPSHOTS, state, clocks })
@@ -235,7 +235,7 @@ export class Synchronizer {
   /** Load a snapshot of the entire repo */
   private receiveSnapshots(state: RepoSnapshot, clocks: ClockMap) {
     this.log('receiveSnapshots', state)
-    this.repo.setAllSnapshots(state)
+    this.repo.setState(state)
     for (const documentId in clocks) this.updateTheirClock(documentId, clocks[documentId])
   }
 

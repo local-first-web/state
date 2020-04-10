@@ -19,7 +19,7 @@ describe('Repo', () => {
   describe('createFromSnapshot', () => {
     it('creates a repo from a snapshot', async () => {
       const { repo, doc1, doc2 } = await setup()
-      const state = repo.getAllSnapshots()
+      const state = repo.getState()
       expect(state['123']).toEqual(doc1)
       expect(state['456']).toEqual(doc2)
     })

@@ -35,7 +35,7 @@ export const getReducer: ReducerAdapter = (proxyReducer, repo) => {
         // Nothing for us to do (could be an action handled elsewhere)
       } else {
         // Replace all snapshots in the repo with the state we're given
-        repo.setAllSnapshots(state || {})
+        repo.setState(state || {})
 
         // Update snapshots synchronously
         const snapshotOnly = true
@@ -44,7 +44,7 @@ export const getReducer: ReducerAdapter = (proxyReducer, repo) => {
       }
     }
 
-    return repo.getAllSnapshots()
+    return repo.getState()
   }
 
   return reducer

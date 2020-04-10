@@ -94,7 +94,7 @@ export class Repo<T = any> {
       this.log('recovering an existing repo from persisted state')
       await this.loadSnapshotsFromDb()
     }
-    return this.getAllSnapshots()
+    return this.getState()
   }
 
   private get ids() {
@@ -309,7 +309,7 @@ export class Repo<T = any> {
   }
 
   /** Returns the state of the entire repo, containing snapshots of all the documents. */
-  getAllSnapshots(): RepoSnapshot {
+  getState(): RepoSnapshot {
     return collection.denormalize(this.state, this.collections)
   }
 
@@ -318,7 +318,7 @@ export class Repo<T = any> {
    * > NOTE: This doesn't update the repo's change history or persist anything; this is only used
    * for synchronous updates of the state for UI purposes.
    */
-  setAllSnapshots(state: RepoSnapshot) {
+  setState(state: RepoSnapshot) {
     this.state = Object.assign(this.state, state)
   }
 
