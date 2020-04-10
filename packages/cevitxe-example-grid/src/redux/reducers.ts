@@ -99,27 +99,28 @@ export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) 
       }
 
       // update the column value in each row
-      const updateFieldType = (id: string) => ({
-        collection: 'rows',
-        id,
-        fn: (row: any) => {
-          if (row[fieldId] !== null) {
-            switch (newType) {
-              case 'number': {
-                const number = Number(row[fieldId])
-                if (Number.isNaN(number)) row[fieldId] = ''
-                else row[fieldId] = number
-              }
-              case 'string': {
-                row[fieldId] = String(row[fieldId])
-              }
+      const migrateField = (row: any) => {
+        if (row[fieldId] !== null) {
+          switch (newType) {
+            case 'number': {
+              const number = Number(row[fieldId])
+              if (Number.isNaN(number)) row[fieldId] = ''
+              else row[fieldId] = number
+            }
+            case 'string': {
+              row[fieldId] = String(row[fieldId])
             }
           }
-        },
-      })
+        }
+      }
 
       const ids = Object.keys(state.rows)
-      return [schemaChanges, ...ids.map(updateFieldType)]
+      const fieldTypeChanges = ids.map((id: string) => ({
+        collection: 'rows',
+        id,
+        fn: migrateField,
+      }))
+      return [schemaChanges, ...fieldTypeChanges]
     }
 
     default:
