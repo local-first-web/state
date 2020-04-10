@@ -3,16 +3,15 @@ import { newid } from 'cevitxe-signal-client'
 import { StorageAdapter } from 'cevitxe-storage-abstract'
 import { IdbAdapter } from 'cevitxe-storage-indexeddb'
 import {
+  ChangeManifest,
   ChangeSet,
   Clock,
   ClockMap,
-  RepoHistory,
-  RepoSnapshot,
-  ChangeManifest,
-  isFunction,
-  isChange,
   isDeleteFlag,
   isDropFlag,
+  isFunction,
+  RepoHistory,
+  RepoSnapshot,
 } from 'cevitxe-types'
 import debug from 'debug'
 import { clone } from 'ramda'
@@ -159,20 +158,38 @@ export class Repo<T = any> {
    * @param changeFn An Automerge change function
    * @returns The updated document
    */
-  public async change(documentId: string, changeFn: A.ChangeFn<T>, collectionName?: string) {
+  public async change(
+    documentId: string,
+    changeFn: A.ChangeFn<T>,
+    {
+      collectionName,
+      snapshotOnly = false,
+    }: { collectionName?: string; snapshotOnly?: boolean } = {}
+  ) {
     this.log('change', documentId)
 
     const key = collectionName ? collection(collectionName).idToKey(documentId) : documentId
 
-    // apply changes to document
-    const oldDoc = (await this.reconstruct(key)) || A.init()
-    const newDoc = A.change(oldDoc, changeFn)
+    if (snapshotOnly) {
+      // create a new throw-away automerge object from the current version's snapshot
+      const oldDoc = A.from(clone(this.getSnapshot(key) || {}))
 
-    // save the new document, snapshot, etc.
-    await this.set(key, newDoc)
+      // apply the change
+      const newDoc = A.change(oldDoc, changeFn)
 
-    // return the modified document
-    return newDoc
+      // convert the result back to a plain object
+      const snapshot = clone(newDoc)
+
+      this.setSnapshot(key, snapshot)
+      this.log('changed snapshot', key, snapshot)
+    } else {
+      // apply changes to document
+      const oldDoc = (await this.reconstruct(key)) || A.init()
+      const newDoc = A.change(oldDoc, changeFn)
+
+      // save the new document, snapshot, etc.
+      await this.set(key, newDoc)
+    }
   }
 
   /**
@@ -192,17 +209,31 @@ export class Repo<T = any> {
     return newDoc
   }
 
-  public applyChangeManifest(cm: ChangeManifest<any>, snapshotOnly: boolean = false) {
+  /**
+   * Updates a document from a change manifest. This is called either
+   * - from a reducer (in which case `snapshotOnly` will be true and this will happen
+   *   synchronously); or
+   * - from middleware (in which case `snapshotOnly` will be false and this will happen
+   *   asynchronously).
+   * @param cm The ChangeManifest contains information about what needs to change. Can be:
+   * - a function that is applied to the GLOBAL document
+   * - an object containing a function, along with the name of the collection and the id of the
+   *   document to apply it to
+   * - an object containing the name of a collection, and id, and a `delete` flag, indicating that
+   *   the item should be deleted
+   * - an object containing the name of a collection and a `drop` flag, indicating that the
+   *   collection should be dropped
+   * @param snapshotOnly Indicates whether the changes should be made to snapshots (synchronously),
+   * or to the change history (asynchronously)
+   */
+  public async applyChangeManifest(cm: ChangeManifest<any>, snapshotOnly: boolean = false) {
     if (isDropFlag(cm)) {
-      const collectionName = cm.collection
-      if (snapshotOnly) this.dropSnapshots(collectionName)
-      else this.drop(collectionName)
+      await this.drop(cm.collection, snapshotOnly)
     } else {
       const fn = isFunction(cm) ? (cm as A.ChangeFn<any>) : isDeleteFlag(cm) ? setDeleteFlag : cm.fn
       const id = isFunction(cm) ? GLOBAL : cm.id
       const collectionName = isFunction(cm) ? undefined : cm.collection
-      if (snapshotOnly) this.changeSnapshot(id, fn, collectionName)
-      else this.change(id, fn, collectionName)
+      await this.change(id, fn, { collectionName, snapshotOnly })
     }
   }
 
@@ -210,10 +241,11 @@ export class Repo<T = any> {
    * Marks all documents belonging to the given collection as deleted
    * @param collectionName The name of the collection (e.g. `widgets`)
    */
-  public async drop(collectionName: string) {
-    const { isCollectionKey } = collection(collectionName)
-    for (const documentId of this.ids.filter(isCollectionKey))
-      await this.change(documentId, setDeleteFlag)
+  public async drop(collectionName: string, snapshotOnly: boolean = false) {
+    const isInCollection = collection(collectionName).isCollectionKey
+    for (const documentId of this.ids.filter(isInCollection))
+      if (snapshotOnly) this.deleteSnapshot(documentId)
+      else await this.change(documentId, setDeleteFlag)
   }
 
   /**
@@ -266,30 +298,6 @@ export class Repo<T = any> {
   }
 
   /**
-   * Changes the snapshot of a document synchronously, without modifying the underlying Automerge
-   * changes. This is used to quickly update the UI; the change history can be updated later.
-   * @param documentId
-   * @param fn The change function (usually comes from a ProxyReducer)
-   */
-  changeSnapshot(documentId: string, fn: A.ChangeFn<T>, collectionName?: string) {
-    const key = collectionName ? collection(collectionName).idToKey(documentId) : documentId
-
-    // create a new throw-away automerge object from the current version's snapshot
-    const oldDoc = this.getSnapshot(key) || {}
-
-    const doc: A.Doc<any> = A.from(clone(oldDoc))
-
-    // apply the change
-    const newDoc = A.change(doc, fn)
-
-    // convert the result back to a plain object
-    const snapshot = clone(newDoc)
-
-    this.setSnapshot(key, snapshot)
-    this.log('changed snapshot', key, snapshot)
-  }
-
-  /**
    * Removes the snapshot with the given `documentId` from in-memory state. (More precisely, sets it
    * to `null`, so we don't forget that we've seen the document before.)
    * @param documentId
@@ -297,16 +305,6 @@ export class Repo<T = any> {
   deleteSnapshot(documentId: string) {
     this.log('removeSnapshot', documentId)
     this.state[documentId] = null
-  }
-
-  /**
-   * Removes all snapshots for documents belonging to the given collection
-   * @param collectionKey The key of the collection (e.g. `__widgets`)
-   */
-  public dropSnapshots(collectionKey: string) {
-    const collectionName = collection.getCollectionName(collectionKey)
-    const isInCollection = collection(collectionName).isCollectionKey
-    for (const documentId of this.ids.filter(isInCollection)) this.deleteSnapshot(documentId)
   }
 
   /** Returns the state of the entire repo, containing snapshots of all the documents. */
