@@ -1,16 +1,10 @@
 import { RepoSnapshot, Snapshot } from 'cevitxe-types'
 import { DELETED, GLOBAL } from './constants'
 
-export interface CollectionOptions {
-  idField?: string
-}
-
 /**
  * @param name The name of the collection.
  * @param idField The property of an object containing a unique identifier, normally a uuid.
  * Optional; defaults to 'id'.
- *
- *
  */
 export function collection<T = any>(name: string) {
   const keyName = collection.getKeyName(name)
