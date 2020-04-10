@@ -34,7 +34,7 @@
     "@types/react": "16",
     "@types/react-dom": "16",
     "@types/uuid": "3",
-    "cypress": "4.2",
+    "cypress": "4",
     "prettier": "1",
     "start-server-and-test": "1",
     "typescript": "3"
