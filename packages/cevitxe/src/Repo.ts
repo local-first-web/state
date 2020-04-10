@@ -16,7 +16,7 @@ import {
 import debug from 'debug'
 import { clone } from 'ramda'
 import { EMPTY_CLOCK, getClock, mergeClocks } from './clocks'
-import { collection } from './collection'
+import { Collection } from './Collection'
 import { DELETED, GLOBAL } from './constants'
 
 /**
@@ -80,7 +80,7 @@ export class Repo<T = any> {
     this.log('hasData', hasData)
     if (create) {
       this.log('creating a new repo')
-      const normalizedState = collection.normalize(initialState, this.collections)
+      const normalizedState = Collection.normalize(initialState, this.collections)
       for (let documentId in normalizedState) {
         const snapshot = normalizedState[documentId]
         if (snapshot !== null) {
@@ -168,7 +168,7 @@ export class Repo<T = any> {
   ) {
     this.log('change', documentId)
 
-    const key = collectionName ? collection(collectionName).idToKey(documentId) : documentId
+    const key = collectionName ? new Collection(collectionName).idToKey(documentId) : documentId
 
     if (snapshotOnly) {
       // create a new throw-away automerge object from the current version's snapshot
@@ -214,7 +214,7 @@ export class Repo<T = any> {
    * @param collectionName The name of the collection (e.g. `widgets`)
    */
   public async drop(collectionName: string, snapshotOnly: boolean = false) {
-    const isInCollection = collection(collectionName).isCollectionKey
+    const isInCollection = (k: string) => new Collection(collectionName).isCollectionKey(k)
     for (const documentId of this.ids.filter(isInCollection))
       if (snapshotOnly) this.deleteSnapshot(documentId)
       else await this.change(documentId, setDeleteFlag)
@@ -310,7 +310,7 @@ export class Repo<T = any> {
 
   /** Returns the state of the entire repo, containing snapshots of all the documents. */
   getState(): RepoSnapshot {
-    return collection.denormalize(this.state, this.collections)
+    return Collection.denormalize(this.state, this.collections)
   }
 
   /**

@@ -1,4 +1,4 @@
-import { collection } from './collection'
+import { Collection } from './Collection'
 
 describe('collections', () => {
   describe('collection names and keyNames', () => {
@@ -6,7 +6,7 @@ describe('collections', () => {
       // Collection names are prefixed to minimize the chance of collisions with other state
       // properties. We don't care how key names are generated from collection names, just that we
       // can go back and forth between the two
-      const { getCollectionName, getKeyName } = collection
+      const { getCollectionName, getKeyName } = Collection
       const collectionName = 'widgets'
       const keyName = getKeyName(collectionName)
       expect(getCollectionName(keyName)).toEqual(collectionName)
@@ -14,7 +14,7 @@ describe('collections', () => {
   })
 
   describe('normalize, denormalize', () => {
-    const { normalize, denormalize } = collection
+    const { normalize, denormalize } = Collection
 
     test('todos', () => {
       const state = {

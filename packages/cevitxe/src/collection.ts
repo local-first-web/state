@@ -6,51 +6,47 @@ import { DELETED, GLOBAL } from './constants'
  * @param idField The property of an object containing a unique identifier, normally a uuid.
  * Optional; defaults to 'id'.
  */
-export function collection<T = any>(name: string) {
-  const keyName = collection.getKeyName(name)
+export class Collection<T = any> {
+  private name: string
+  private keyName: string
+  constructor(name: string) {
+    this.name = name
+    this.keyName = Collection.getKeyName(name)
+  }
 
   // these are for converting individual item IDs back and forth
-  const idToKey = (id: string) => `${keyName}__${id}`
-  const keyToId = (key: string) => key.replace(`${keyName}__`, '')
+  public idToKey = (id: string) => `${this.keyName}__${id}`
+  public keyToId = (key: string) => key.replace(`${this.keyName}__`, '')
 
   /**
    * Returns true if the given string is a key for this collection
    * @param maybeKey
    */
-  const isCollectionKey = (maybeKey: string) => maybeKey.startsWith(`${keyName}__`)
+  public isCollectionKey(maybeKey: string) {
+    return maybeKey.startsWith(`${this.keyName}__`)
+  }
 
   /**
    * Iterates over all keys for the collection when given the current redux state.
    * @param state The plain JSON representation of the state.
    */
-  function* keys(state: RepoSnapshot = {}) {
+  *keys(state: RepoSnapshot = {}) {
     for (const key in state) {
       const item = (state as any)[key]
       const shouldInclude = item && !item[DELETED]
-      if (isCollectionKey(key) && shouldInclude) yield key
+      if (this.isCollectionKey(key) && shouldInclude) yield key
     }
   }
 
-  // COLLECTION OBJECT
-
-  return {
-    keys,
-    idToKey,
-    keyToId,
-    isCollectionKey,
-  }
-}
-
-// STATIC METHODS
-
-export namespace collection {
   /**
    * Given the collection's name, returns the `keyName` used internally for tracking the collection.
    *
    * @param {string} collectionName The collection name, e.g. `teachers`
    * @return The key name used internally for the collection (e.g. `__teachers`)
    */
-  export const getKeyName = (collectionName: string): string => `__${collectionName}`
+  static getKeyName(collectionName: string): string {
+    return `__${collectionName}`
+  }
 
   /**
    * Given a collection's `keyName`, returns the collection's name.
@@ -58,7 +54,9 @@ export namespace collection {
    * @param {string} keyName The key name used internally for the collection (e.g. `__teachers`)
    * @return The collection name, e.g. `teachers`
    */
-  export const getCollectionName = (keyName: string): string => keyName.replace(/^__/, '')
+  static getCollectionName(keyName: string): string {
+    return keyName.replace(/^__/, '')
+  }
 
   /**
    * Normalizes a state object into a map of objects that can be turned into Automerge documents.
@@ -95,7 +93,7 @@ export namespace collection {
    * collections.
    * @returns the normalized state
    */
-  export const normalize = (state: Snapshot, collections: string[]): Snapshot => {
+  static normalize(state: Snapshot, collections: string[]): Snapshot {
     const _state = { ...state } // shallow clone
     let normalizedState = {} as Snapshot
 
@@ -103,7 +101,7 @@ export namespace collection {
     for (const c of collections) {
       const collectionElements = _state[c] // e.g. state.todos
       for (const id in collectionElements) {
-        const key = collection(c).idToKey(id) // e.g. abc123 => __todos__abc123
+        const key = new Collection(c).idToKey(id) // e.g. abc123 => __todos__abc123
         normalizedState[key] = collectionElements[id]
       }
 
@@ -123,7 +121,7 @@ export namespace collection {
    * @param state The normalized state to denormalize
    * @param collections An array containing the names of all collections used in normalizing `state`.
    */
-  export const denormalize = (state: Snapshot, collections: string[]): Snapshot => {
+  static denormalize(state: Snapshot, collections: string[]): Snapshot {
     // get everything from the global document
     const denormalizedState = {
       ...state[GLOBAL],
@@ -132,8 +130,9 @@ export namespace collection {
     // add each collection
     for (const c of collections) {
       const denormalizedMap = {} as Snapshot
-      for (const key of collection(c).keys(state)) {
-        const id = collection(c).keyToId(key)
+      const collection = new Collection(c)
+      for (const key of collection.keys(state)) {
+        const id = collection.keyToId(key)
         if (state[key] && state[key][DELETED] !== true) {
           denormalizedMap[id] = state[key]
         }
