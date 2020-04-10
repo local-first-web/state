@@ -93,7 +93,7 @@ export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) 
       const { id: fieldId, type: newType } = payload
 
       // update schema
-      const schemaChanges: ChangeFn<GridState> = s => {
+      const schemaChange: ChangeFn<GridState> = s => {
         const fieldSchema = s.schema.properties![fieldId] as JSONSchema7
         fieldSchema.type = newType
       }
@@ -114,14 +114,14 @@ export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) 
         }
       }
 
-      const ids = Object.keys(state.rows)
-      const fieldTypeChanges = ids.map((id: string) => ({
+      const rowIds = Object.keys(state.rows)
+      const rowChanges = rowIds.map((id: string) => ({
         collection: 'rows',
         id,
         fn: migrateField,
       }))
 
-      return [schemaChanges, ...fieldTypeChanges]
+      return [schemaChange, ...rowChanges]
     }
 
     default:
