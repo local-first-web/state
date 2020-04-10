@@ -250,7 +250,9 @@ describe('StoreManager', () => {
           return newTeachers.map(newTeacher => ({
             collection: 'teachers',
             id: newTeacher.id,
-            fn: teacher => Object.assign(teacher, newTeacher),
+            fn: teacher => {
+              Object.assign(teacher, newTeacher)
+            },
           }))
         }
         case 'REMOVE_TEACHER':
@@ -264,7 +266,9 @@ describe('StoreManager', () => {
           return {
             collection: 'teachers',
             id: updatedTeacher.id,
-            fn: teacher => Object.assign(teacher, updatedTeacher),
+            fn: teacher => {
+              Object.assign(teacher, updatedTeacher)
+            },
           }
         }
         case 'ADD_PHONE': {
@@ -272,7 +276,9 @@ describe('StoreManager', () => {
           return {
             collection: 'teachers',
             id,
-            fn: teacher => teacher.phones.push(phone),
+            fn: teacher => {
+              teacher.phones.push(phone)
+            },
           }
         }
         case 'DROP_TEACHERS':
