@@ -1,12 +1,40 @@
 import A from 'automerge'
 import { AnyAction } from 'redux'
-
 export { ChangeFn } from 'automerge'
+
+// change function operating on a specific item in a collection
+type CollectionChange<T> = {
+  collection: string
+  id: string
+  fn: A.ChangeFn<T>
+}
+
+// delete a specific item in a collection
+type DeleteFlag = {
+  collection: string
+  id: string
+  delete: true
+}
+
+// drop an entire collection
+type DropFlag = {
+  collection: string
+  drop: true
+}
+
+export type ChangeManifest<T> = A.ChangeFn<T> | CollectionChange<T> | DeleteFlag | DropFlag
+
+// type guards
+type CM<T> = ChangeManifest<T> // shorthand
+export const isFunction = <T>(x: CM<T>): x is A.ChangeFn<T> => typeof x === 'function'
+export const isChange = <T>(x: CM<T>): x is CollectionChange<T> => x.hasOwnProperty('fn')
+export const isDeleteFlag = (x: CM<any>): x is DeleteFlag => x.hasOwnProperty('delete')
+export const isDropFlag = (x: CM<any>): x is DropFlag => x.hasOwnProperty('drop')
 
 export type ProxyReducer<T = any> = (
   state: T,
   action: AnyAction
-) => ChangeMap | A.ChangeFn<T> | null | (ChangeMap | A.ChangeFn<T>)[]
+) => null | ChangeManifest<T> | ChangeManifest<T>[]
 
 /**
  * A keychain maps a discovery key (the id we share to the signal server) with a public/private
