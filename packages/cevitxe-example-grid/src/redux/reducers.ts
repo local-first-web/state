@@ -99,7 +99,6 @@ export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) 
       }
 
       // update the column value in each row
-      const ids = Object.keys(state.rows)
       const updateFieldType = (id: string) => ({
         collection: 'rows',
         id,
@@ -119,6 +118,7 @@ export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) 
         },
       })
 
+      const ids = Object.keys(state.rows)
       return [schemaChanges, ...ids.map(updateFieldType)]
     }
 
