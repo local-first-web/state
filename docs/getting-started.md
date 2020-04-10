@@ -181,16 +181,16 @@ newState = Automerge.change(prevState, s => {
 With Cevitxe, you collect these change functions into something that looks a lot like a Redux reducer.
 
 ```js
-// Proxy reducer 
+// Proxy reducer
 const proxyReducer = ({ type, payload }) => {
   switch (type) {
     case SET_FILTER:
-      // act directly on a proxy 
+      // act directly on a proxy
       return state => (state.visibilityFilter = payload.filter)
 
     case ADD_TODO: {
       const { id, content } = payload
-      // act directly on a proxy 
+      // act directly on a proxy
       return state => {
         state.todoList.push(id)
         state.todoMap[id] = { id, content, completed: false }
@@ -279,13 +279,14 @@ export const storeManager = new StoreManager({
 })
 ```
 
-The data in collections must look like the example above. Specifically:
+> The data in collections must look like the example above. Specifically:
+>
+> - The **collection** must be in the form of an object that maps identifiers to records. (It can't be an array.)
+> - Each **item** in a collection must be an object. (Not a scalar, not an array.)
+> - Each item must include its **unique identfier** as an `id` property.
+> - The collections must live at the **root** of your state. (They can't be nested under another object.)
 
-- Your data must be in the form of an object that maps identifiers to records. (It can't be an array.)
-- The records must include the identifier as an `id` property.
-- The collections objects must live at the root of your state.
-
-##### Selectors
+##### Collection selectors
 
 To **read** from anything in a collection, your selectors don't change: you can just access the map directly.
 
@@ -293,32 +294,134 @@ To **read** from anything in a collection, your selectors don't change: you can 
 const thisTeacher = useSelector(state => state.teachers[id])
 ```
 
-##### Reducers
+##### Collection reducers
 
-To **write** to a collection, you'll need to return one reducer per item being changed, along with metadata identifying the collection and the item being modified.
+To **write** to a collection in a reducer, rather than returning a change function, you return one or more change functions, each wrapped in an object containing metadata.
 
-Without a collection, you might update an item like this:
+###### Creating and updating
+
+To add or update items in collections, instead of returning just a function, you return one or more change manifests of this form:
 
 ```js
-// with no collections
-case UPDATE_TEACHER: {
-    const { id  } = payload
-    const teacher = s.teachers[id]
-    // return a single change function
-    return s => (s.teachers[id] = Object.assign(teacher, payload))
+{
+    collection, // the name of the collection
+    id, // the id of the item in the collection
+    fn, // the change function
 }
 ```
 
-Using collections, you return one or more objects, each with the properties `collection`, `id`, and `fn`:
+Some examples:
 
 ```js
-// with teachers collection
-case UPDATE_TEACHER: {
-    // return one or more change functions with metadata
-    return [{
+case ADD_TEACHER: {
+    const newTeacher = payload
+    const { id } = newTeacher
+    // return change function with metadata
+    return {
         collection: 'teachers',
-        id: payload.id,
-        fn: s => Object.assign(s, payload)
-    }]
+        id,
+        fn: teacher => {
+          Object.assign(teacher, newTeacher) // here `s` is `{}`
+        }
+    }
+}
+case ADD_TEACHERS: {
+	const newTeachers = payload // array of objects to add
+    // return array of change functions with metadata
+    return newTeachers.map(newTeacher => ({
+        collection: 'teachers',
+        id,
+        fn: teacher => {
+          Object.assign(teacher, newTeacher)
+        }
+    }))
+}
+case UPDATE_TEACHER: {
+    const updatedTeacher = payload // object with data to modify
+    const { id } = updatedTeacher
+    // return change function with metadata
+    return {
+        collection: 'teachers',
+        id,
+        fn: teacher => {
+          Object.assign(teacher, updatedTeacher)
+        }
+    }
+}
+```
+
+###### Deleting
+
+To delete an item from a collection, return an object of this form:
+
+```js
+{
+    collection, // the name of the collection
+    id, // the id of the item to delete
+	delete: true // special flag
+}
+```
+
+Example:
+
+```js
+case DELETE_TEACHER: {
+    const { id } = payload.id
+    // return delete flag
+    return {
+        collection: 'teachers',
+        id,
+        delete: true
+    }
+}
+```
+
+To delete all items from a collection, return an object of this form:
+
+```js
+{
+    collection, // the name of the collection
+	drop: true // special flag
+}
+```
+
+Example:
+
+```js
+case DROP_TEACHERS: {
+    // return drop flag
+    return {
+        collection: 'teachers',
+        drop: true
+    }
+}
+```
+
+###### Combining different types of reducers
+
+You might need a reducer that changes collection data as well as non-collection data. For example, in the grid example, [this reducer](https://github.com/DevResults/cevitxe/blob/68d89dd3d11b4a134b9ca0408eef6ab6978d3b3f/packages/cevitxe-example-grid/src/redux/reducers.ts#L75-L93) modifies a global schema object to delete a field, and then deletes the corresponding data from each row. 
+
+In this case you can return an array that combines change functions (for the global changes) and change manifests (for the changes to collection items).
+
+https://github.com/DevResults/cevitxe/blob/68d89dd3d11b4a134b9ca0408eef6ab6978d3b3f/packages/cevitxe-example-grid/src/redux/reducers.ts#L75-L93
+
+```js
+case actions.FIELD_DELETE: {
+  const { id: fieldId } = payload
+
+  // remove field from schema
+  const schemaChange = s => {
+    delete s.schema.properties![fieldId]
+  }
+
+  // change function: delete the value from one row
+  const fn = row => {
+    delete row[fieldId]
+  }
+
+  const rowIds = Object.keys(state.rows)
+  const rowChanges = rowIds.map(id => ({ collection, id, fn }))
+
+  return [schemaChange, ...rowChanges]
 }
 ```
