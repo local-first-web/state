@@ -80,16 +80,17 @@ export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) 
       }
 
       // delete the value from one row
-      const deleteField = (id: string) => ({
-        collection,
-        id,
-        fn: (row: any) => {
-          delete row[fieldId]
-        },
-      })
+      const deleteField = (row: any) => {
+        delete row[fieldId]
+      }
 
       const rowIds = Object.keys(state.rows)
-      const rowChanges = rowIds.map(deleteField)
+      const rowChanges = rowIds.map((id: string) => ({
+        collection,
+        id,
+        fn: deleteField,
+      }))
+
       return [schemaChange, ...rowChanges]
     }
 
