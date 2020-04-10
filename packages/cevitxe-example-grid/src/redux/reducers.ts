@@ -98,7 +98,7 @@ export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) 
         fieldSchema.type = newType
       }
 
-      // update the column value in each row
+      // update the column value in one row
       const migrateField = (row: any) => {
         if (row[fieldId] !== null) {
           switch (newType) {
@@ -120,6 +120,7 @@ export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) 
         id,
         fn: migrateField,
       }))
+
       return [schemaChanges, ...fieldTypeChanges]
     }
 
