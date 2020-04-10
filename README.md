@@ -39,11 +39,12 @@ Two demo React applications are included:
     <td>
       <h4><code>cevitxe-example-grid</code></h4>
       <img src='images/screen.grid.png' width='400' /> 
-      <p>A simple table editor</p> 
+      <p>A simple table editorx</p> 
       <p>To run: <code>yarn start:grid</code> </p>
     </td>
   </tr>
 </table>
+
 
 ### Use Cevitxe in your app
 

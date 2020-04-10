@@ -2,8 +2,7 @@
 
 ### Peer-to-peer, offline-first applications...
 
-There are a lot of reasons to build an app that works in a distributed way, without depending on a
-centralized server:
+There are a lot of reasons to build an app that works in a distributed way, without depending on a centralized server:
 
 - Suppose you want to build a web application where the **data doesn't live on a remote host**, but
   is shared from **peer to peer**.
@@ -14,14 +13,21 @@ centralized server:
 - Or, you want to go **local-first** to **eliminate latency**, by keeping a complete copy of a
   user's data on their machine, which you then replicate to other users in the background.
 
-| <img src='../images/008.jpg' />                | <img src='../images/023.jpg' />                     |
-| ---------------------------------------------- | --------------------------------------------------- |
-| <sub>A typical client-server application</sub> | <sub>A distributed (peer-to-peer) application</sub> |
+<table>
+<tr>
+<td><img src='../images/008.jpg' /> 
+<p>A typical client-server application</p>
+</td>
+<td><img src='../images/023.jpg' />
+<p>A distributed (peer-to-peer) application</p>
+</td>
+</tr>
+</table>
 
 ### ...using the familiar Redux API
 
 A typical web application developer today is likely to be comfortable working with databases and API
-endpoints on the server, along with state containers like Redux on the client.
+endpoints on the server, along with state containers like [Redux](https://redux.js.org/) on the client.
 
 A distributed architecture is compelling for all the reasons listed above, but it puts us in very
 unfamiliar territory. Without a server, how do peers talk to each other? Where is the data stored?
