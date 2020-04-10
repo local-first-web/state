@@ -1,11 +1,10 @@
-import A from 'automerge'
+import { ProxyReducer, RepoSnapshot } from 'cevitxe-types'
 import { AnyAction, Reducer } from 'redux'
-import { RECEIVE_MESSAGE_FROM_PEER, DELETE_COLLECTION, GLOBAL } from './constants'
+import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
 import { Repo } from './Repo'
-import { ProxyReducer, RepoSnapshot, Snapshot, ChangeMap } from 'cevitxe-types'
 import { toArray } from './toArray'
 
-export type ReducerConverter = (
+export type ReducerAdapter = (
   proxyReducer: ProxyReducer,
   repo: Repo<any>
 ) => Reducer<RepoSnapshot, AnyAction>
@@ -21,50 +20,31 @@ export type ReducerConverter = (
  * @param proxyReducer The proxyReducer to be converted
  * @param repo The store's repo
  */
-export const getReducer: ReducerConverter = (proxyReducer, repo) => {
-  const reducer: Reducer<RepoSnapshot, AnyAction> = (state, { type, payload }): RepoSnapshot => {
-    if (type === RECEIVE_MESSAGE_FROM_PEER) {
+export const getReducer: ReducerAdapter = (proxyReducer, repo) => {
+  const reducer: Reducer<RepoSnapshot, AnyAction> = (state, action): RepoSnapshot => {
+    if (action.type === RECEIVE_MESSAGE_FROM_PEER) {
       // Synchronizer has already updated our repo - nothing to do here.
     } else {
-      // A reducer can return a function, a map of functions, or an array combining the two
-      const reducerOutput = proxyReducer(state, { type, payload })
+      const reducerOutput = proxyReducer(state, action)
+
+      // Here we apply changes synchronously to repo snapshots, so the user gets immediate
+      // feedback. In `getMiddleware` we will persist the Automerge changes, which will also
+      // trigger synchronization with any peers we're connected to.
 
       if (reducerOutput === null) {
         // Nothing for us to do (could be an action handled elsewhere)
       } else {
-        state = state || {}
-
         // Replace all snapshots in the repo with the state we're given
-        repo.loadState({ ...state }) // clone
+        repo.setAllSnapshots(state || {})
 
-        // Here we apply changes synchronously to repo snapshots, so the user gets immediate
-        // feedback. In `getMiddleware` we will persist the Automerge changes, which will also
-        // trigger synchronization with any peers we're connected to.
-
-        for (const fnMapOrFn of toArray(reducerOutput)) {
-          if (typeof fnMapOrFn === 'function') {
-            // Single function - apply to global object
-            const fn = fnMapOrFn as A.ChangeFn<any>
-            repo.changeSnapshot(GLOBAL, fn)
-          } else {
-            // Multiple functions - apply to each document
-            for (let documentId in fnMapOrFn) {
-              const fnOrSymbol = fnMapOrFn[documentId]
-              if (fnOrSymbol === DELETE_COLLECTION) {
-                // Implement collection deletion flag
-                repo.removeCollectionSnapshots(documentId)
-              } else if (typeof fnOrSymbol === 'function') {
-                // Apply change to each document
-                const fn = fnOrSymbol as A.ChangeFn<any>
-                repo.changeSnapshot(documentId, fn)
-              }
-            }
-          }
-        }
+        // Update snapshots synchronously
+        const snapshotOnly = true
+        for (const changeManifest of toArray(reducerOutput))
+          repo.applyChangeManifest(changeManifest, snapshotOnly)
       }
     }
 
-    return repo.getState()
+    return repo.getAllSnapshots()
   }
 
   return reducer

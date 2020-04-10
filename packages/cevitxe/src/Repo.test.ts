@@ -11,36 +11,17 @@ describe('Repo', () => {
     const snapshot = { '123': doc1, '456': doc2 }
     const repo = new Repo({ discoveryKey: 'quiet-meerkat', databaseName: `testdb-${newid()}` })
     await repo.open()
-    await repo.createFromSnapshot(snapshot)
+    const create = true
+    await repo.init(snapshot, create)
     return { doc1, doc2, repo }
   }
-
-  describe('init', () => {})
 
   describe('createFromSnapshot', () => {
     it('creates a repo from a snapshot', async () => {
       const { repo, doc1, doc2 } = await setup()
-      expect(await repo.get('123')).toEqual(doc1)
-      expect(await repo.get('456')).toEqual(doc2)
-    })
-  })
-
-  describe('documentIds', () => {
-    it('returns the correct list of documentIds', async () => {
-      const { repo } = await setup()
-      expect(repo.documentIds).toEqual(['123', '456'])
-    })
-  })
-
-  describe('has', () => {
-    it('returns true when a document is present', async () => {
-      const { repo } = await setup()
-      expect(repo.has('123')).toBe(true)
-    })
-
-    it('returns false when a document is not present', async () => {
-      const { repo } = await setup()
-      expect(repo.has('xyz')).toBe(false)
+      const state = repo.getAllSnapshots()
+      expect(state['123']).toEqual(doc1)
+      expect(state['456']).toEqual(doc2)
     })
   })
 
@@ -48,31 +29,31 @@ describe('Repo', () => {
     it('returns zero for an empty repo', async () => {
       const repo = new Repo({ discoveryKey: 'quiet-meerkat', databaseName: `testdb-${newid()}` })
       await repo.open()
+      const create = true
+      await repo.init({}, create)
       expect(repo.count).toEqual(0)
     })
 
-    it('returns the correct number of documents in the repo', async () => {
+    it('returns non-zero for a non-empty repo', async () => {
       const { repo } = await setup()
-      expect(repo.count).toEqual(2)
+      expect(repo.count).not.toEqual(0)
     })
   })
 
   describe('set & get', () => {
-    const setup = async () => {
-      const doc = A.from({ birds: ['goldfinch'] })
+    it('returns undefined for a nonexistent doc', async () => {
       const repo = new Repo({ discoveryKey: 'swell-pancake', databaseName: `testdb-${newid()}` })
       await repo.open()
+      const doc = A.from({ birds: ['goldfinch'] })
       await repo.set(ID, doc)
-      return { doc, repo }
-    }
-
-    it('returns undefined for a nonexistent doc', async () => {
-      const { repo } = await setup()
       expect(await repo.get('123')).toEqual(undefined)
     })
 
     it("gets a document that's been set", async () => {
-      const { doc, repo } = await setup()
+      const repo = new Repo({ discoveryKey: 'swell-pancake', databaseName: `testdb-${newid()}` })
+      await repo.open()
+      const doc = A.from({ birds: ['goldfinch'] })
+      await repo.set(ID, doc)
       expect(await repo.get(ID)).toEqual(doc)
     })
   })
@@ -88,16 +69,6 @@ describe('Repo', () => {
       expect(await repo.get('123')).toEqual({ birds: ['goldfinch', 'swallow'] })
     })
   })
-
-  describe('applyChanges', () => {})
-  describe('getHistory', () => {})
-  describe('loadHistory', () => {})
-  describe('getSnapshot', () => {})
-  describe('changeSnapshot', () => {})
-  describe('setSnapshot', () => {})
-  describe('removeSnapshot', () => {})
-  describe('getState', () => {})
-  describe('loadState', () => {})
 
   describe('handlers', () => {
     const setup = async () => {

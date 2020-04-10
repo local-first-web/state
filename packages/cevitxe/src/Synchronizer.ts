@@ -198,7 +198,7 @@ export class Synchronizer {
   /** Sends a single message containing each documentId along with our clock value for it */
   private async advertiseAll() {
     this.log('advertiseAll')
-    const clocks = Object.keys(this.repo.getClocks()).map(documentId => ({
+    const clocks = Object.keys(this.repo.getAllClocks()).map(documentId => ({
       documentId,
       clock: this.getOurClock(documentId),
     }))
@@ -212,8 +212,8 @@ export class Synchronizer {
 
   /** Send snapshots for all documents */
   private sendSnapshots() {
-    const state = this.repo.getState()
-    const clocks = this.repo.getClocks()
+    const state = this.repo.getAllSnapshots()
+    const clocks = this.repo.getAllClocks()
     this.log('sendSnapshots', state)
     this.send({ type: message.SEND_SNAPSHOTS, state, clocks })
   }
@@ -235,7 +235,7 @@ export class Synchronizer {
   /** Load a snapshot of the entire repo */
   private receiveSnapshots(state: RepoSnapshot, clocks: ClockMap) {
     this.log('receiveSnapshots', state)
-    this.repo.loadState(state)
+    this.repo.setAllSnapshots(state)
     for (const documentId in clocks) this.updateTheirClock(documentId, clocks[documentId])
   }
 

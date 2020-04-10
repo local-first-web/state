@@ -2,33 +2,23 @@
 import { newid } from 'cevitxe-signal-client'
 import { StorageAdapter } from 'cevitxe-storage-abstract'
 import { IdbAdapter } from 'cevitxe-storage-indexeddb'
-import { ChangeSet, Clock, ClockMap, RepoHistory, RepoSnapshot } from 'cevitxe-types'
+import {
+  ChangeSet,
+  Clock,
+  ClockMap,
+  RepoHistory,
+  RepoSnapshot,
+  ChangeManifest,
+  isFunction,
+  isChange,
+  isDeleteFlag,
+  isDropFlag,
+} from 'cevitxe-types'
 import debug from 'debug'
-import * as R from 'ramda'
+import { clone } from 'ramda'
 import { EMPTY_CLOCK, getClock, mergeClocks } from './clocks'
 import { collection } from './collection'
-import { DELETED } from './constants'
-
-export type RepoEventHandler<T> = (documentId: string, doc: A.Doc<T>) => void | Promise<void>
-
-interface RepoOptions {
-  /** The discovery key is a unique ID for this dataset, used to identify it when seeking peers with
-   *  whom to synchronize. In the example apps we use randomly generated two-word names like
-   *  `golden-lizard`. It could also be a UUID. */
-  discoveryKey: string
-
-  /** Name to distinguish this application's data from others that this browser might have stored; * e.g. `grid` or `todos`. */
-  databaseName: string
-
-  /** Unique identifier representing this peer */
-  clientId?: string
-
-  /** Storage adapter to use. Defaults to `IdbAdapter` */
-  storage?: StorageAdapter
-
-  /** Collections */
-  collections?: string[]
-}
+import { DELETED, GLOBAL } from './constants'
 
 /**
  * A Repo manages a set of Automerge documents. For each document, it persists:
@@ -56,19 +46,21 @@ export class Repo<T = any> {
   public clock: ClockMap = {}
 
   /** Document change event listeners. Each handler fires every time a document is set or removed. */
-  private handlers: Set<RepoEventHandler<T>>
+  private handlers: Set<RepoEventHandler<T>> = new Set()
 
-  constructor(options: RepoOptions) {
-    const { discoveryKey, databaseName, clientId = newid(), storage, collections = [] } = options
+  constructor({
+    discoveryKey,
+    databaseName,
+    clientId = newid(),
+    storage = new IdbAdapter({ databaseName, discoveryKey }),
+    collections = [],
+  }: RepoOptions) {
     this.log = debug(`cevitxe:repo:${databaseName}`)
 
     this.databaseName = databaseName
-    this.handlers = new Set()
     this.clientId = clientId
     this.collections = collections
-
-    // Use IdbAdapter by default
-    this.storage = storage || new IdbAdapter({ databaseName, discoveryKey })
+    this.storage = storage
   }
 
   // PUBLIC METHODS
@@ -79,44 +71,34 @@ export class Repo<T = any> {
   /**
    * Initializes the repo and returns a snapshot of its current state.
    * @param initialState The starting state to use when creating a new repo.
-   * @param creating Use `true` if creating a new repo, `false` if joining an existing repo (one
+   * @param create Use `true` if creating a new repo, `false` if joining an existing repo (one
    * that we already created locally, or that a peer has)
    * @returns A snapshot of the repo's current state.
    */
-  public async init(initialState: any, creating: boolean): Promise<RepoSnapshot> {
+  public async init(initialState: any, create: boolean): Promise<RepoSnapshot> {
     await this.open()
     const hasData = await this.hasData()
     this.log('hasData', hasData)
-    if (creating) {
+    if (create) {
       this.log('creating a new repo')
       const normalizedState = collection.normalize(initialState, this.collections)
-      await this.createFromSnapshot(normalizedState)
+      for (let documentId in normalizedState) {
+        const snapshot = normalizedState[documentId]
+        if (snapshot !== null) {
+          const document = A.from(snapshot)
+          await this.set(documentId, document)
+        }
+      }
     } else if (!hasData) {
       this.log(`joining a peer's document for the first time`)
-      await this.createFromSnapshot({})
     } else {
       this.log('recovering an existing repo from persisted state')
       await this.loadSnapshotsFromDb()
     }
-    return this.getState()
+    return this.getAllSnapshots()
   }
 
-  /**
-   * Creates a new repo with the given initial state.
-   * @param initialState
-   */
-  public async createFromSnapshot(state: RepoSnapshot) {
-    for (let documentId in state) {
-      const snapshot = state[documentId]
-      if (snapshot !== null) {
-        const document = A.from(snapshot)
-        await this.set(documentId, document)
-      }
-    }
-  }
-
-  /** Returns all of the repo's document IDs from memory. */
-  public get documentIds() {
+  private get ids() {
     return Object.keys(this.state)
   }
 
@@ -128,13 +110,13 @@ export class Repo<T = any> {
 
   /** Returns the number of document IDs that this repo has (including deleted) */
   public get count() {
-    return this.documentIds.length
+    return this.ids.length
   }
 
   /** Reconstitutes an Automerge document from its change history  */
   public async get(documentId: string): Promise<A.Doc<T> | undefined> {
     this.log('get', documentId)
-    return await this.rebuildDoc(documentId)
+    return await this.reconstruct(documentId)
   }
 
   /**
@@ -149,7 +131,7 @@ export class Repo<T = any> {
 
     // look up old doc and generate diff
     if (!changes) {
-      const oldDoc = (await this.rebuildDoc(documentId)) || A.init()
+      const oldDoc = (await this.reconstruct(documentId)) || A.init()
       try {
         changes = A.getChanges(oldDoc, doc)
       } catch (error) {
@@ -161,7 +143,7 @@ export class Repo<T = any> {
     // only if Automerge actually found changes in the new document...
     if (changes.length > 0) {
       // append changes to this document's history
-      await this.appendChangeSet({ documentId, changes })
+      await this.appendChanges({ documentId, changes })
 
       // save snapshot
       await this.saveSnapshot(documentId, doc)
@@ -177,14 +159,17 @@ export class Repo<T = any> {
    * @param changeFn An Automerge change function
    * @returns The updated document
    */
-  public async change(documentId: string, changeFn: A.ChangeFn<T>) {
+  public async change(documentId: string, changeFn: A.ChangeFn<T>, collectionName?: string) {
     this.log('change', documentId)
+
+    const key = collectionName ? collection(collectionName).idToKey(documentId) : documentId
+
     // apply changes to document
-    const oldDoc = (await this.rebuildDoc(documentId)) || A.init()
+    const oldDoc = (await this.reconstruct(key)) || A.init()
     const newDoc = A.change(oldDoc, changeFn)
 
     // save the new document, snapshot, etc.
-    await this.set(documentId, newDoc)
+    await this.set(key, newDoc)
 
     // return the modified document
     return newDoc
@@ -198,7 +183,7 @@ export class Repo<T = any> {
    */
   public async applyChanges(documentId: string, changes: A.Change[]) {
     // apply changes to document
-    const doc = (await this.rebuildDoc(documentId)) || A.init()
+    const doc = (await this.reconstruct(documentId)) || A.init()
     const newDoc = A.applyChanges(doc, changes)
 
     await this.set(documentId, newDoc, changes)
@@ -207,28 +192,28 @@ export class Repo<T = any> {
     return newDoc
   }
 
-  /**
-   * Marks all documents belonging to the given collection as deleted
-   * @param collectionKey The key of the collection (e.g. `__widgets`)
-   */
-  public async markCollectionAsDeleted(collectionKey: string) {
-    const collectionName = collection.getCollectionName(collectionKey)
-    const setDeleteFlag = (s: any) => Object.assign(s || {}, { [DELETED]: true })
-    const { isCollectionKey } = collection(collectionName)
-    for (const documentId of this.documentIds.filter(isCollectionKey)) {
-      await this.change(documentId, setDeleteFlag)
+  public applyChangeManifest(cm: ChangeManifest<any>, snapshotOnly: boolean = false) {
+    if (isDropFlag(cm)) {
+      const collectionName = cm.collection
+      if (snapshotOnly) this.dropSnapshots(collectionName)
+      else this.drop(collectionName)
+    } else {
+      const fn = isFunction(cm) ? (cm as A.ChangeFn<any>) : isDeleteFlag(cm) ? setDeleteFlag : cm.fn
+      const id = isFunction(cm) ? GLOBAL : cm.id
+      const collectionName = isFunction(cm) ? undefined : cm.collection
+      if (snapshotOnly) this.changeSnapshot(id, fn, collectionName)
+      else this.change(id, fn, collectionName)
     }
   }
 
   /**
-   * Removes all snapshots for documents belonging to the given collection
-   * @param collectionKey The key of the collection (e.g. `__widgets`)
+   * Marks all documents belonging to the given collection as deleted
+   * @param collectionName The name of the collection (e.g. `widgets`)
    */
-  public removeCollectionSnapshots(collectionKey: string) {
-    const collectionName = collection.getCollectionName(collectionKey)
+  public async drop(collectionName: string) {
     const { isCollectionKey } = collection(collectionName)
-    for (const documentId of this.documentIds.filter(isCollectionKey))
-      this.removeSnapshot(documentId)
+    for (const documentId of this.ids.filter(isCollectionKey))
+      await this.change(documentId, setDeleteFlag)
   }
 
   /**
@@ -257,6 +242,89 @@ export class Repo<T = any> {
     }
   }
 
+  // SNAPSHOTS
+
+  /**
+   * Gets the in-memory snapshot of a document
+   * @param documentId
+   * @returns  a plain JS object
+   */
+  getSnapshot(documentId: string) {
+    return this.state[documentId]
+  }
+
+  /**
+   * Sets the in-memory snapshot of a document.
+   * > NOTE: This does not update the document's change history or persist anything; it's just to
+   * allow synchronous updates of the state for UI purposes.
+   * @param documentId
+   * @param snapshot
+   */
+  setSnapshot(documentId: string, snapshot: any) {
+    if (snapshot.DELETED) this.deleteSnapshot(documentId)
+    else this.state[documentId] = snapshot
+  }
+
+  /**
+   * Changes the snapshot of a document synchronously, without modifying the underlying Automerge
+   * changes. This is used to quickly update the UI; the change history can be updated later.
+   * @param documentId
+   * @param fn The change function (usually comes from a ProxyReducer)
+   */
+  changeSnapshot(documentId: string, fn: A.ChangeFn<T>, collectionName?: string) {
+    const key = collectionName ? collection(collectionName).idToKey(documentId) : documentId
+
+    // create a new throw-away automerge object from the current version's snapshot
+    const oldDoc = this.getSnapshot(key) || {}
+
+    const doc: A.Doc<any> = A.from(clone(oldDoc))
+
+    // apply the change
+    const newDoc = A.change(doc, fn)
+
+    // convert the result back to a plain object
+    const snapshot = clone(newDoc)
+
+    this.setSnapshot(key, snapshot)
+    this.log('changed snapshot', key, snapshot)
+  }
+
+  /**
+   * Removes the snapshot with the given `documentId` from in-memory state. (More precisely, sets it
+   * to `null`, so we don't forget that we've seen the document before.)
+   * @param documentId
+   */
+  deleteSnapshot(documentId: string) {
+    this.log('removeSnapshot', documentId)
+    this.state[documentId] = null
+  }
+
+  /**
+   * Removes all snapshots for documents belonging to the given collection
+   * @param collectionKey The key of the collection (e.g. `__widgets`)
+   */
+  public dropSnapshots(collectionKey: string) {
+    const collectionName = collection.getCollectionName(collectionKey)
+    const isInCollection = collection(collectionName).isCollectionKey
+    for (const documentId of this.ids.filter(isInCollection)) this.deleteSnapshot(documentId)
+  }
+
+  /** Returns the state of the entire repo, containing snapshots of all the documents. */
+  getAllSnapshots(): RepoSnapshot {
+    return collection.denormalize(this.state, this.collections)
+  }
+
+  /**
+   * Replaces the (snapshot) state of the entire repo.
+   * > NOTE: This doesn't update the repo's change history or persist anything; this is only used
+   * for synchronous updates of the state for UI purposes.
+   */
+  setAllSnapshots(state: RepoSnapshot) {
+    this.state = Object.assign(this.state, state)
+  }
+
+  // CLOCKS
+
   /**
    * Accessor for a document's clock
    * @param documentId
@@ -266,13 +334,8 @@ export class Repo<T = any> {
     return this.clock[documentId] || EMPTY_CLOCK
   }
 
-  /** Returns true if we have a clock in memory for this document */
-  public hasClock(documentId: string) {
-    return this.clock.hasOwnProperty(documentId)
-  }
-
   /** Returns our entire ClockMap as-is */
-  public getClocks() {
+  public getAllClocks() {
     return this.clock
   }
 
@@ -287,75 +350,7 @@ export class Repo<T = any> {
     this.clock[documentId] = mergeClocks(oldClock, newClock)
   }
 
-  /**
-   * Gets the in-memory snapshot of a document
-   * @param documentId
-   * @returns  a plain JS object
-   */
-  getSnapshot(documentId: string) {
-    return this.state[documentId]
-  }
-
-  /**
-   * Changes the snapshot of a document synchronously, without modifying the underlying Automerge
-   * changes. This is used to quickly update the UI; the change history can be updated later.
-   * @param documentId
-   * @param fn The change function (usually comes from a ProxyReducer)
-   */
-  changeSnapshot(documentId: string, fn: A.ChangeFn<T>) {
-    // create a new throw-away automerge object from the current version's snapshot
-    const oldDoc = this.getSnapshot(documentId) || {}
-
-    const doc: A.Doc<any> = A.from(clone(oldDoc))
-
-    // apply the change
-    const newDoc = A.change(doc, fn)
-
-    // convert the result back to a plain object
-    const snapshot = clone(newDoc)
-
-    this.setSnapshot(documentId, snapshot)
-    this.log('changed snapshot', documentId, snapshot)
-  }
-
-  /**
-   * Sets the in-memory snapshot of a document.
-   * > NOTE: This does not update the document's change history or persist anything; it's just to
-   * allow synchronous updates of the state for UI purposes.
-   * @param documentId
-   * @param snapshot
-   */
-  setSnapshot(documentId: string, snapshot: any) {
-    if (snapshot.DELETED) {
-      this.removeSnapshot(documentId)
-    } else {
-      this.state[documentId] = snapshot
-    }
-  }
-
-  /**
-   * Removes the snapshot with the given `documentId` from in-memory state. (More precisely, sets it
-   * to `null` as a marker that we've seen the document before.)
-   * @param documentId
-   */
-  removeSnapshot(documentId: string) {
-    this.log('removeSnapshot', documentId)
-    this.state[documentId] = null
-  }
-
-  /** Returns the state of the entire repo, containing snapshots of all the documents. */
-  getState(): RepoSnapshot {
-    return collection.denormalize(this.state, this.collections)
-  }
-
-  /**
-   * Replaces the (snapshot) state of the entire repo.
-   * > NOTE: This doesn't update the repo's change history or persist anything; this is only used
-   * for synchronous updates of the state for UI purposes.
-   */
-  loadState(state: RepoSnapshot) {
-    this.state = Object.assign(this.state, state)
-  }
+  // HANDLERS
 
   /** Adds a change event listener */
   addHandler(handler: RepoEventHandler<T>) {
@@ -384,18 +379,18 @@ export class Repo<T = any> {
   }
 
   /** Recreates an Automerge document from its change history */
-  private async rebuildDoc(documentId: string): Promise<A.Doc<T> | undefined> {
+  private async reconstruct(documentId: string): Promise<A.Doc<T> | undefined> {
     if (!this.has(documentId)) return undefined
     let doc = A.init<T>({ actorId: this.clientId })
-    const changeSets = await this.getDocumentChanges(documentId)
+    const changeSets = await this.getChanges(documentId)
     for (const { changes } of changeSets) //
       if (changes) doc = A.applyChanges(doc, changes)
     return doc
   }
 
   /** Adds a set of changes to the document's append-only history. */
-  private async appendChangeSet(changeSet: ChangeSet) {
-    this.log('appending changeset', changeSet.documentId, changeSet.changes.length)
+  private async appendChanges(changeSet: ChangeSet) {
+    this.log('appendChangeSet', changeSet.documentId, changeSet.changes.length)
     this.storage.appendChanges(changeSet)
   }
 
@@ -404,8 +399,8 @@ export class Repo<T = any> {
    * @param documentId The ID of the requested document.
    * @returns An array of changesets in order of application.
    */
-  private async getDocumentChanges(documentId: string): Promise<ChangeSet[]> {
-    this.log('getChangeSets', documentId)
+  private async getChanges(documentId: string): Promise<ChangeSet[]> {
+    this.log('getDocumentChanges', documentId)
     return this.storage.getChanges(documentId)
   }
 
@@ -416,7 +411,7 @@ export class Repo<T = any> {
     this.updateClock(documentId, clock)
 
     if (snapshot[DELETED]) {
-      this.removeSnapshot(documentId)
+      this.deleteSnapshot(documentId)
       await this.storage.deleteSnapshot(documentId)
     } else {
       this.log('saveSnapshot', documentId, document)
@@ -426,5 +421,27 @@ export class Repo<T = any> {
   }
 }
 
-// deep clone without Automerge metadata
-const clone = (o: any) => R.clone(o)
+const setDeleteFlag = (s: any) => Object.assign(s || {}, { [DELETED]: true })
+
+// TYPES
+
+export type RepoEventHandler<T> = (documentId: string, doc: A.Doc<T>) => void | Promise<void>
+
+interface RepoOptions {
+  /** The discovery key is a unique ID for this dataset, used to identify it when seeking peers with
+   *  whom to synchronize. In the example apps we use randomly generated two-word names like
+   *  `golden-lizard`. It could also be a UUID. */
+  discoveryKey: string
+
+  /** Name to distinguish this application's data from others that this browser might have stored; * e.g. `grid` or `todos`. */
+  databaseName: string
+
+  /** Unique identifier representing this peer */
+  clientId?: string
+
+  /** Storage adapter to use. Defaults to `IdbAdapter` */
+  storage?: StorageAdapter
+
+  /** Collections */
+  collections?: string[]
+}

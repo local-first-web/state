@@ -1,7 +1,6 @@
 import { getReducer } from './getReducer'
 import { repoFromSnapshot } from './repoTestHelpers'
-import { ProxyReducer } from 'cevitxe-types/src'
-import { collection } from './collection'
+import { ProxyReducer, ChangeManifest } from 'cevitxe-types/src'
 
 describe('getReducer', () => {
   describe('single change function', () => {
@@ -42,11 +41,14 @@ describe('getReducer', () => {
   })
 
   describe('with collection', () => {
-    const proxyReducer: ProxyReducer = ((state, { type, payload }) => {
-      const teachers = collection('teachers')
+    const proxyReducer: ProxyReducer = ((_, { type, payload }) => {
       switch (type) {
         case 'ADD_TEACHER':
-          return teachers.reducers.add(payload)
+          return {
+            collection: 'teachers',
+            id: payload.id,
+            fn: row => Object.assign(row, payload),
+          } as ChangeManifest<any>
       }
     }) as ProxyReducer
 
