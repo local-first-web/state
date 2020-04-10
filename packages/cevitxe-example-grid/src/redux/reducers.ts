@@ -7,44 +7,47 @@ import * as actions from './actions'
 const toArray = <T>(x: T | T[] | null) => (x === null ? [] : Array.isArray(x) ? x : [x])
 
 export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) => {
+  const collection = 'rows'
   switch (type) {
     case actions.ITEM_ADD: {
       const newRows = toArray(payload)
-      return newRows.map(newRow => ({
-        collection: 'rows',
-        id: newRow.id,
-        fn: row => Object.assign(row, newRow),
-      }))
+      return newRows.map(newRow => {
+        const { id } = newRow
+        const fn = (row: any) => Object.assign(row, newRow)
+        return { collection, id, fn }
+      })
     }
 
     case actions.ITEM_UPDATE: {
       const updatedRow = payload
-      return {
-        collection: 'rows',
-        id: payload.id,
-        fn: row => Object.assign(row, updatedRow),
+      const { id } = updatedRow
+      const fn = (row: any) => {
+        Object.assign(row, updatedRow)
       }
+      return { collection, id, fn }
     }
 
     case actions.ITEM_REMOVE:
       return {
-        collection: 'rows',
+        collection,
         id: payload.id,
         delete: true,
       }
 
     case actions.COLLECTION_CLEAR:
       return {
-        collection: 'rows',
+        collection,
         drop: true,
       }
 
-    case actions.COLLECTION_LOAD:
-      return toArray(payload.collection).map(newRow => ({
-        collection: 'rows',
-        id: newRow.id,
-        fn: row => Object.assign(row, newRow),
-      }))
+    case actions.COLLECTION_LOAD: {
+      const newRows = toArray(payload.collection)
+      return newRows.map(newRow => {
+        const { id } = newRow
+        const fn = (row: any) => Object.assign(row, newRow)
+        return { collection, id, fn }
+      })
+    }
 
     case actions.SCHEMA_LOAD:
       return (s: GridState) => {
@@ -72,21 +75,22 @@ export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) 
       const { id: fieldId } = payload
 
       // remove field from schema
-      const schemaChanges = (s: GridState) => {
+      const schemaChange = (s: GridState) => {
         delete s.schema.properties![fieldId]
       }
 
-      // delete each value from each row
-      const ids = Object.keys(state.rows)
+      // delete the value from one row
       const deleteField = (id: string) => ({
-        collection: 'rows',
+        collection,
         id,
         fn: (row: any) => {
           delete row[fieldId]
         },
       })
 
-      return [schemaChanges, ...ids.map(deleteField)]
+      const rowIds = Object.keys(state.rows)
+      const rowChanges = rowIds.map(deleteField)
+      return [schemaChange, ...rowChanges]
     }
 
     case actions.FIELD_SET_TYPE: {
@@ -116,7 +120,7 @@ export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) 
 
       const rowIds = Object.keys(state.rows)
       const rowChanges = rowIds.map((id: string) => ({
-        collection: 'rows',
+        collection,
         id,
         fn: migrateField,
       }))
