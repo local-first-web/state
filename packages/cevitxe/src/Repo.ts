@@ -250,6 +250,7 @@ export class Repo<T = any> {
 
   /**
    * Used for sending the entire current state of the repo to a new peer.
+   * @batchSize The number of items to send at once
    * @returns  an object mapping documentIds to an array of changes.
    */
   public async *getHistory(batchSize: number = 1000): AsyncGenerator<RepoHistory> {
