@@ -27,7 +27,6 @@ export class StoreManager<T> {
   private repo?: Repo
   private client?: ConnectionManager
   private collections: string[]
-  private useCollections: boolean
 
   public store?: Store
 
@@ -45,7 +44,6 @@ export class StoreManager<T> {
     this.databaseName = databaseName
     this.urls = urls
     this.collections = collections
-    this.useCollections = collections.length > 0 // TODO: this assumes the set of collections never changes
   }
 
   joinStore = (discoveryKey: string) => this.getStore(discoveryKey, false)
