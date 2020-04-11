@@ -14,7 +14,6 @@
   "dependencies": {
     "@emotion/core": "10",
     "@material-ui/core": "3",
-    "@types/ramda": "0.26.18",
     "ag-grid-community": "21",
     "ag-grid-enterprise": "21",
     "ag-grid-react": "21",
@@ -37,7 +36,7 @@
     "uuid": "3"
   },
   "devDependencies": {
-    "@testing-library/cypress": "4",
+    "@testing-library/cypress": "6",
     "@testing-library/jest-dom": "4",
     "@testing-library/react": "8",
     "@types/debug": "4",
@@ -46,6 +45,7 @@
     "@types/json-schema": "7",
     "@types/muibox": "1",
     "@types/node": "13",
+    "@types/ramda": "0.26.18",
     "@types/react": "16",
     "@types/react-dom": "16",
     "@types/react-redux": "7",
