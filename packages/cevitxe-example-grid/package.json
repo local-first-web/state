@@ -7,9 +7,7 @@
   "main": "src/index.tsx",
   "scripts": {
     "start": "react-app-rewired start",
-    "test:e2e": "cypress open",
-    "prebuild": "rimraf dist",
-    "build": "react-app-rewired build"
+    "test:e2e": "cypress open"
   },
   "dependencies": {
     "@emotion/core": "10",
