@@ -68,14 +68,14 @@ export class Synchronizer {
 
     this.isOpen = true
 
-    this.repo.addHandler(this.onDocChanged.bind(this))
+    this.repo.addListener(this.onDocChanged.bind(this))
     await this.sendHello()
   }
 
   close() {
     this.log('close')
     this.isOpen = false
-    this.repo.removeHandler(this.onDocChanged.bind(this))
+    this.repo.removeListener(this.onDocChanged.bind(this))
   }
 
   /** Called by the network stack whenever it receives a message from a peer */

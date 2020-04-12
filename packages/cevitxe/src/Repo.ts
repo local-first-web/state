@@ -44,8 +44,8 @@ export class Repo<T = any> {
   /** In-memory map of document clocks */
   public clock: ClockMap = {}
 
-  /** Document change event listeners. Each handler fires every time a document is set or removed. */
-  private handlers: Set<RepoEventHandler<T>> = new Set()
+  /** Document change event listeners. Each listener fires every time a document is set or removed. */
+  private listeners: Set<RepoEventListener<T>> = new Set()
 
   constructor({
     discoveryKey,
@@ -77,7 +77,6 @@ export class Repo<T = any> {
   public async init(initialState: any, create: boolean): Promise<RepoSnapshot> {
     await this.open()
     const hasData = await this.hasData()
-    this.log('hasData', hasData)
     if (create) {
       this.log('creating a new repo')
       const normalizedState = Collection.normalize(initialState, this.collections)
@@ -92,7 +91,7 @@ export class Repo<T = any> {
       this.log(`joining a peer's document for the first time`)
     } else {
       this.log('recovering an existing repo from persisted state')
-      await this.loadSnapshotsFromDb()
+      await this.loadFromDb()
     }
     return this.getState()
   }
@@ -114,7 +113,6 @@ export class Repo<T = any> {
 
   /** Reconstitutes an Automerge document from its change history  */
   public async get(documentId: string): Promise<A.Doc<T> | undefined> {
-    this.log('get', documentId)
     return await this.reconstruct(documentId)
   }
 
@@ -126,8 +124,6 @@ export class Repo<T = any> {
    * pass them in so we don't have to recalculate them.
    */
   public async set(documentId: string, doc: A.Doc<any>, changes?: A.Change[]) {
-    this.log('set', documentId, doc)
-
     // look up old doc and generate diff
     if (!changes) {
       const oldDoc = (await this.reconstruct(documentId)) || A.init()
@@ -147,8 +143,8 @@ export class Repo<T = any> {
       // save snapshot
       await this.saveSnapshot(documentId, doc)
 
-      // call handlers
-      for (const fn of this.handlers) await fn(documentId, doc)
+      // call listeners
+      for (const fn of this.listeners) await fn(documentId, doc)
     }
   }
 
@@ -166,8 +162,6 @@ export class Repo<T = any> {
       snapshotOnly = false,
     }: { collectionName?: string; snapshotOnly?: boolean } = {}
   ) {
-    this.log('change', documentId)
-
     const key = collectionName ? new Collection(collectionName).idToKey(documentId) : documentId
 
     if (snapshotOnly) {
@@ -181,7 +175,6 @@ export class Repo<T = any> {
       const snapshot = clone(newDoc)
 
       this.setSnapshot(key, snapshot)
-      this.log('changed snapshot', key, snapshot)
     } else {
       // apply changes to document
       const oldDoc = (await this.reconstruct(key)) || A.init()
@@ -304,7 +297,6 @@ export class Repo<T = any> {
    * @param documentId
    */
   deleteSnapshot(documentId: string) {
-    this.log('removeSnapshot', documentId)
     this.state[documentId] = null
   }
 
@@ -349,16 +341,16 @@ export class Repo<T = any> {
     this.clock[documentId] = mergeClocks(oldClock, newClock)
   }
 
-  // HANDLERS
+  // LISTENERS
 
   /** Adds a change event listener */
-  addHandler(handler: RepoEventHandler<T>) {
-    this.handlers.add(handler)
+  addListener(listener: RepoEventListener<T>) {
+    this.listeners.add(listener)
   }
 
   /** Removes a change event listener */
-  removeHandler(handler: RepoEventHandler<T>) {
-    this.handlers.delete(handler)
+  removeListener(listener: RepoEventListener<T>) {
+    this.listeners.delete(listener)
   }
 
   // PRIVATE METHODS
@@ -368,8 +360,8 @@ export class Repo<T = any> {
     return this.storage.hasData()
   }
 
-  /** Loads all the repo's snapshots into memory */
-  private async loadSnapshotsFromDb() {
+  /** Loads all the repo's snapshots and clocks into memory */
+  private async loadFromDb() {
     // TODO: only problem with this approach is that we're not storing clocks for deleted documents
     for await (const { documentId, snapshot, clock } of this.storage.snapshots()) {
       this.state[documentId] = snapshot[DELETED] ? null : snapshot
@@ -389,7 +381,6 @@ export class Repo<T = any> {
 
   /** Adds a set of changes to the document's append-only history. */
   private async appendChanges(changeSet: ChangeSet) {
-    this.log('appendChangeSet', changeSet.documentId, changeSet.changes.length)
     this.storage.appendChanges(changeSet)
   }
 
@@ -399,7 +390,6 @@ export class Repo<T = any> {
    * @returns An array of changesets in order of application.
    */
   private async getChanges(documentId: string): Promise<ChangeSet[]> {
-    this.log('getDocumentChanges', documentId)
     return this.storage.getChanges(documentId)
   }
 
@@ -413,7 +403,6 @@ export class Repo<T = any> {
       this.deleteSnapshot(documentId)
       await this.storage.deleteSnapshot(documentId)
     } else {
-      this.log('saveSnapshot', documentId, document)
       this.setSnapshot(documentId, snapshot)
       await this.storage.putSnapshot({ documentId, snapshot, clock })
     }
@@ -424,7 +413,7 @@ const setDeleteFlag = (s: any) => Object.assign(s || {}, { [DELETED]: true })
 
 // TYPES
 
-export type RepoEventHandler<T> = (documentId: string, doc: A.Doc<T>) => void | Promise<void>
+export type RepoEventListener<T> = (documentId: string, doc: A.Doc<T>) => void | Promise<void>
 
 interface RepoOptions {
   /** The discovery key is a unique ID for this dataset, used to identify it when seeking peers with

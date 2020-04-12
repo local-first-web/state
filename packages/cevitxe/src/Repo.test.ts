@@ -70,7 +70,7 @@ describe('Repo', () => {
     })
   })
 
-  describe('handlers', () => {
+  describe('listeners', () => {
     const setup = async () => {
       const beforeDoc = A.from<any>({ birds: ['goldfinch'] })
       const afterDoc = A.change(beforeDoc, s => (s.birds = ['swallows']))
@@ -79,12 +79,12 @@ describe('Repo', () => {
       await repo.open()
       await repo.set(ID, beforeDoc)
       const callback = jest.fn((_documentId, _doc) => {})
-      repo.addHandler(callback)
+      repo.addListener(callback)
       return { beforeDoc, afterDoc, changes, repo, callback }
     }
 
-    describe('addHandler', () => {
-      it('should call the handler via set', async () => {
+    describe('addListener', () => {
+      it('should call the listener via set', async () => {
         const { afterDoc, repo, callback } = await setup()
         await repo.set(ID, afterDoc)
         expect(callback).toBeCalledTimes(1)
@@ -92,7 +92,7 @@ describe('Repo', () => {
         expect(await repo.get(ID)).toEqual(afterDoc)
       })
 
-      it('should call the handler via change', async () => {
+      it('should call the listener via change', async () => {
         const { afterDoc, repo, callback } = await setup()
         await repo.change(ID, s => (s.birds = ['swallows']))
         expect(callback).toBeCalledTimes(1)
@@ -100,7 +100,7 @@ describe('Repo', () => {
         expect(await repo.get(ID)).toEqual(afterDoc)
       })
 
-      it('should call the handler via applyChanges', async () => {
+      it('should call the listener via applyChanges', async () => {
         const { afterDoc, repo, callback, changes } = await setup()
         await repo.applyChanges(ID, changes)
         expect(callback).toBeCalledTimes(1)
@@ -109,10 +109,10 @@ describe('Repo', () => {
       })
     })
 
-    describe('removeHandler', () => {
-      it('should allow removing the handler', async () => {
+    describe('removeListener', () => {
+      it('should allow removing the listener', async () => {
         const { repo, callback, changes } = await setup()
-        repo.removeHandler(callback)
+        repo.removeListener(callback)
         repo.applyChanges(ID, changes)
         expect(callback).not.toBeCalled()
       })
