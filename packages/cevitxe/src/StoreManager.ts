@@ -25,7 +25,7 @@ export class StoreManager<T> {
   private urls: string[]
   private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
   private repo?: Repo
-  private client?: ConnectionManager
+  private connectionManager?: ConnectionManager
   private collections: string[]
 
   public store?: Store
@@ -68,7 +68,7 @@ export class StoreManager<T> {
     this.store = this.createReduxStore(state)
 
     // Connect to discovery server to find peers and sync up with them
-    this.client = new ConnectionManager({
+    this.connectionManager = new ConnectionManager({
       discoveryKey,
       dispatch: this.store.dispatch,
       repo: this.repo,
@@ -88,7 +88,7 @@ export class StoreManager<T> {
   }
 
   public get connectionCount() {
-    return this.client ? this.client.connectionCount : 0
+    return this.connectionManager ? this.connectionManager.connectionCount : 0
   }
 
   public get knownDiscoveryKeys() {
@@ -99,7 +99,7 @@ export class StoreManager<T> {
    * Close all connections and the repo's database
    */
   close = async () => {
-    if (this.client) this.client.close()
+    if (this.connectionManager) await this.connectionManager.close()
 
     // TODO: Close repo when closing StoreManager
     // > This is obviously the right thing to do, but it breaks tests. For some reason Synchronizer
