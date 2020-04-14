@@ -13,11 +13,10 @@ export function ClearCompletedButton() {
   const completedTodos = useSelector(getFilteredTodos(VisibilityFilter.COMPLETED))
   if (completedTodos.length === 0) return null
 
-  const destroyCompletedTodos = () =>
-    completedTodos.forEach(({ id }) => dispatch(actions.destroyTodo(id)))
+  const clearCompleted = () => dispatch(actions.clearCompleted())
 
   return (
-    <button className="clear-completed" onClick={destroyCompletedTodos}>
+    <button className="clear-completed" onClick={clearCompleted}>
       Clear completed
     </button>
   )
