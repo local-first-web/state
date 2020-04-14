@@ -6,10 +6,10 @@
   "private": true,
   "main": "src/index.tsx",
   "scripts": {
-    "start": "react-scripts start",
+    "start": "cross-env SKIP_PREFLIGHT_CHECK=true react-scripts start",
     "lint": "tsc -p tsconfig.strict.json --noEmit",
     "test:e2e": "cypress open",
-    "dev": "run-p start"
+    "dev": "yarn start"
   },
   "dependencies": {
     "@emotion/core": "10",
