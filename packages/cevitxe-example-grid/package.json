@@ -35,8 +35,8 @@
   },
   "devDependencies": {
     "@testing-library/cypress": "6",
-    "@testing-library/jest-dom": "4",
-    "@testing-library/react": "8",
+    "@testing-library/jest-dom": "5",
+    "@testing-library/react": "10",
     "@types/debug": "4",
     "@types/faker": "4",
     "@types/jest": "25",
