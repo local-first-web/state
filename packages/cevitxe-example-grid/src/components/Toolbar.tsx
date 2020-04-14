@@ -1,6 +1,5 @@
 ﻿/** @jsx jsx */
 import { jsx } from '@emotion/core'
-import { collection } from 'cevitxe'
 import { styles } from 'cevitxe-toolbar'
 import { useSelector } from 'react-redux'
 import { DataGenerator } from './DataGenerator'
@@ -10,14 +9,12 @@ export const Toolbar = () => (
     <DataGenerator />
     <Loading />
     <Rows />
-    {/* <Counter />
-    <CounterProgress /> */}
   </div>
 )
 
 const Rows = () => {
   const rows = useSelector((state: any) => {
-    return collection('rows').selectors.count(state)
+    return Object.keys(state.rows).length
   })
   return (
     <div css={styles.toolbarGroup}>

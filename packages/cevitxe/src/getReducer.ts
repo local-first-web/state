@@ -1,12 +1,10 @@
-import A from 'automerge'
-import debug from 'debug'
-import { AnyAction, Reducer } from 'redux'
-import { RECEIVE_MESSAGE_FROM_PEER, DELETE_COLLECTION } from './constants'
-import { Repo } from './Repo'
 import { ProxyReducer, RepoSnapshot } from 'cevitxe-types'
-import { collection } from './collection'
+import { AnyAction, Reducer } from 'redux'
+import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
+import { Repo } from './Repo'
+import { toArray } from './toArray'
 
-export type ReducerConverter = (
+export type ReducerAdapter = (
   proxyReducer: ProxyReducer,
   repo: Repo<any>
 ) => Reducer<RepoSnapshot, AnyAction>
@@ -16,43 +14,37 @@ export type ReducerConverter = (
  * garden-variety Redux reducer.
  *
  * When we initialize a `StoreManager`, we give it a `proxyReducer`, which is like a Redux reducer,
- * except it's designed to work with Automerge objects instead of plain JavaScript objects. Instead
- * of returning a modified state, it returns one or more change functions.
+ * except it's designed to work with Automerge objects instead of plain JavaScript objects. It takes
+ * a state, but instead of returning a modified state, it returns one or more change functions.
  *
- * @param proxyReducer The proxyReducer to be adapted
+ * @param proxyReducer The proxyReducer to be converted
  * @param repo The store's repo
  */
-export const getReducer: ReducerConverter = (proxyReducer, repo) => {
-  const log = debug(`cevitxe:getReducer:${repo.databaseName}`)
-  const reducer: Reducer<RepoSnapshot, AnyAction> = (state, { type, payload }): RepoSnapshot => {
-    if (type === RECEIVE_MESSAGE_FROM_PEER) {
-      // Connection has already updated our repo - nothing to do here.
-
-      return repo.getState()
+export const getReducer: ReducerAdapter = (proxyReducer, repo) => {
+  const reducer: Reducer<RepoSnapshot, AnyAction> = (state, action): RepoSnapshot => {
+    if (action.type === RECEIVE_MESSAGE_FROM_PEER) {
+      // Synchronizer has already updated our repo - nothing to do here.
     } else {
-      state = state || {}
-      const functionMap = proxyReducer(state, { type, payload })
-      if (!functionMap) {
-        // no matching function - return the unmodified state
-        return state
-      }
-      repo.loadState({ ...state }) // clone
+      const reducerOutput = proxyReducer(state, action)
 
-      // Apply each change function to the corresponding document
-      for (let documentId in functionMap) {
-        const fn = functionMap[documentId] as A.ChangeFn<any> | symbol
+      // Here we apply changes synchronously to repo snapshots, so the user gets immediate
+      // feedback. In `getMiddleware` we will persist the Automerge changes, which will also
+      // trigger synchronization with any peers we're connected to.
 
-        if (fn === DELETE_COLLECTION) {
-          const name = collection.getCollectionName(documentId)
-          // this updates snapshots synchronously then updates underlying data asynchronously
-          collection(name).removeAllFromSnapshot(repo)
-        } else if (typeof fn === 'function') {
-          // update snapshot synchronously using change function
-          repo.changeSnapshot(documentId, fn)
-        }
+      if (reducerOutput === null) {
+        // Nothing for us to do (could be an action handled elsewhere)
+      } else {
+        // Replace all snapshots in the repo with the state we're given
+        repo.setState(state || {})
+
+        // Update snapshots synchronously
+        const snapshotOnly = true
+        for (const changeManifest of toArray(reducerOutput))
+          repo.applyChangeManifest(changeManifest, snapshotOnly)
       }
-      return repo.getState()
     }
+
+    return repo.getState()
   }
 
   return reducer

@@ -1,11 +1,11 @@
 import A from 'automerge'
 import { newid } from 'cevitxe-signal-client'
-import { ProxyReducer, RepoSnapshot } from 'cevitxe-types'
+import { ProxyReducer, RepoSnapshot, Snapshot } from 'cevitxe-types'
 import cuid from 'cuid'
 import debug from 'debug'
 import { applyMiddleware, createStore, Middleware, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
-import { Client } from './Client'
+import { ConnectionManager } from './ConnectionManager'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getReducer } from './getReducer'
@@ -21,11 +21,12 @@ let log = debug('cevitxe:StoreManager')
 export class StoreManager<T> {
   private databaseName: string
   private proxyReducer: ProxyReducer
-  private initialState: RepoSnapshot<T>
+  private initialState: Snapshot | RepoSnapshot
   private urls: string[]
   private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
   private repo?: Repo
-  private client?: Client
+  private connectionManager?: ConnectionManager
+  private collections: string[]
 
   public store?: Store
 
@@ -35,12 +36,14 @@ export class StoreManager<T> {
     initialState,
     urls = DEFAULT_SIGNAL_SERVERS,
     middlewares = [],
+    collections = [],
   }: StoreManagerOptions<T>) {
     this.proxyReducer = proxyReducer
     this.middlewares = middlewares
     this.initialState = initialState
     this.databaseName = databaseName
     this.urls = urls
+    this.collections = collections
   }
 
   joinStore = (discoveryKey: string) => this.getStore(discoveryKey, false)
@@ -53,14 +56,19 @@ export class StoreManager<T> {
     localStorage.setItem('clientId', clientId)
 
     // Create repo for storage
-    this.repo = new Repo({ clientId, discoveryKey, databaseName: this.databaseName })
-    const state = await this.repo.init(this.initialState, isCreating)
+    this.repo = new Repo({
+      clientId,
+      discoveryKey,
+      databaseName: this.databaseName,
+      collections: this.collections,
+    })
 
+    const state = await this.repo.init(this.initialState, isCreating)
     // Create Redux store to expose to app
     this.store = this.createReduxStore(state)
 
     // Connect to discovery server to find peers and sync up with them
-    this.client = new Client({
+    this.connectionManager = new ConnectionManager({
       discoveryKey,
       dispatch: this.store.dispatch,
       repo: this.repo,
@@ -70,17 +78,17 @@ export class StoreManager<T> {
     return this.store
   }
 
-  private createReduxStore(initialState: RepoSnapshot<T>) {
+  private createReduxStore(state: RepoSnapshot) {
     if (!this.repo) throw new Error(`Can't create Redux store without repo`)
     // TODO put arguments in the same order (this.proxyReducer, this.repo)
     const reducer = getReducer(this.proxyReducer, this.repo)
     const cevitxeMiddleware = getMiddleware(this.repo, this.proxyReducer)
     const enhancer = composeWithDevTools(applyMiddleware(...this.middlewares, cevitxeMiddleware))
-    return createStore(reducer, initialState, enhancer)
+    return createStore(reducer, state, enhancer)
   }
 
   public get connectionCount() {
-    return this.client ? this.client.connectionCount : 0
+    return this.connectionManager ? this.connectionManager.connectionCount : 0
   }
 
   public get knownDiscoveryKeys() {
@@ -91,10 +99,10 @@ export class StoreManager<T> {
    * Close all connections and the repo's database
    */
   close = async () => {
-    if (this.client) this.client.close()
+    if (this.connectionManager) await this.connectionManager.close()
 
     // TODO: Close repo when closing StoreManager
-    // > This is obviously the right thing to do, but it breaks tests. For some reason RepoSync
+    // > This is obviously the right thing to do, but it breaks tests. For some reason Synchronizer
     // continues to respond to messages from the peer after the repo is closed, and then tries to
     // access the closed database.
 
@@ -108,14 +116,21 @@ export class StoreManager<T> {
 export interface StoreManagerOptions<T> {
   /** A Cevitxe proxy reducer that returns a ChangeMap (map of change functions) for each action. */
   proxyReducer: ProxyReducer
+
   /** Redux middlewares to add to the store. */
   middlewares?: Middleware[]
+
   /** The starting state of a blank document. */
-  initialState: RepoSnapshot<T>
+  initialState: Snapshot | RepoSnapshot
+
   /** A name for the storage feed, to distinguish this application's data from any other Cevitxe data stored on the same machine. */
   databaseName: string
+
   /** The address(es) of one or more signal servers to try. */
   urls?: string[]
+
+  /** The names of any collections that we need to manage */
+  collections?: string[]
 }
 
 // Use shorter IDs

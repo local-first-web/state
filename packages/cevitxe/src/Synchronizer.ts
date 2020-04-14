@@ -7,7 +7,7 @@ import { Repo } from './Repo'
 import { Clock, ClockMap, RepoHistory, RepoSnapshot } from 'cevitxe-types'
 
 /**
- * One instance of `RepoSync` keeps one local document in sync with one remote peer's replica of the
+ * One instance of `Synchronizer` keeps one local document in sync with one remote peer's replica of the
  * same document.
  *
  * This class works with a local `Repo`; it listens for changes to documents, and if it thinks it
@@ -42,7 +42,7 @@ import { Clock, ClockMap, RepoHistory, RepoSnapshot } from 'cevitxe-types'
  * > Note: This class began life as a vendored & refactored copy of the `Automerge.Connection`
  * > class; if you're familiar with that class, this one plays exactly the same role.
  */
-export class RepoSync {
+export class Synchronizer {
   public repo: Repo<any>
   private send: (msg: Message) => void
   private theirClock: ClockMap
@@ -58,7 +58,7 @@ export class RepoSync {
     this.repo = repo
     this.send = send
     this.theirClock = {}
-    this.log = debug(`cevitxe:reposync:${repo.databaseName}`)
+    this.log = debug(`cevitxe:synchronizer:${repo.databaseName}`)
   }
 
   // PUBLIC METHODS
@@ -68,14 +68,14 @@ export class RepoSync {
 
     this.isOpen = true
 
-    this.repo.addHandler(this.onDocChanged.bind(this))
+    this.repo.addListener(this.onDocChanged.bind(this))
     await this.sendHello()
   }
 
   close() {
     this.log('close')
     this.isOpen = false
-    this.repo.removeHandler(this.onDocChanged.bind(this))
+    this.repo.removeListener(this.onDocChanged.bind(this))
   }
 
   /** Called by the network stack whenever it receives a message from a peer */
@@ -198,7 +198,7 @@ export class RepoSync {
   /** Sends a single message containing each documentId along with our clock value for it */
   private async advertiseAll() {
     this.log('advertiseAll')
-    const clocks = Object.keys(this.repo.getClocks()).map(documentId => ({
+    const clocks = Object.keys(this.repo.getAllClocks()).map(documentId => ({
       documentId,
       clock: this.getOurClock(documentId),
     }))
@@ -213,7 +213,7 @@ export class RepoSync {
   /** Send snapshots for all documents */
   private sendSnapshots() {
     const state = this.repo.getState()
-    const clocks = this.repo.getClocks()
+    const clocks = this.repo.getAllClocks()
     this.log('sendSnapshots', state)
     this.send({ type: message.SEND_SNAPSHOTS, state, clocks })
   }
@@ -235,7 +235,7 @@ export class RepoSync {
   /** Load a snapshot of the entire repo */
   private receiveSnapshots(state: RepoSnapshot, clocks: ClockMap) {
     this.log('receiveSnapshots', state)
-    this.repo.loadState(state)
+    this.repo.setState(state)
     for (const documentId in clocks) this.updateTheirClock(documentId, clocks[documentId])
   }
 

@@ -6,16 +6,16 @@
     "declaration": true,
     "esModuleInterop": true,
     "lib": ["dom", "esnext"],
+    "module": "commonjs",
     "moduleResolution": "node",
     "noEmit": false,
-    "outDir": "dist",
-    "sourceMap": true,
-    "target": "es6",
-    "module": "commonjs",
-    // strictness: exceptions for development (reverse in tsconfig.build.json)
-    "strict": true,
     "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
+    "outDir": "dist",
+    "skipLibCheck": true, // see note in cevitxe-types/tsconfig.json
+    "sourceMap": true,
+    "strict": true,
+    "target": "es6"
   },
   "references": [{ "path": "../cevitxe-types" }]
 }

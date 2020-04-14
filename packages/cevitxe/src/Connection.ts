@@ -3,18 +3,18 @@ import { EventEmitter } from 'events'
 import { AnyAction, Dispatch } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
 import { Repo } from './Repo'
-import { RepoSync } from './RepoSync'
+import { Synchronizer } from './Synchronizer'
 import { Message } from './Message'
 
 const log = debug('cevitxe:connection')
 
 /**
  * A `Connection` keeps one local document synchronized with one peer's replica of the same
- * document. It uses `RepoSync` for the synchronization logic, and integrates it with Cevitxe's
+ * document. It uses `Synchronizer` for the synchronization logic, and integrates it with Cevitxe's
  * networking stack and with the Redux store.
  */
 export class Connection extends EventEmitter {
-  private repoSync: RepoSync
+  private Synchronizer: Synchronizer
   private peerSocket: WebSocket | null
   private dispatch: Dispatch<AnyAction>
   private repo: Repo<any>
@@ -28,22 +28,17 @@ export class Connection extends EventEmitter {
 
     this.peerSocket.onmessage = this.receive.bind(this)
 
-    this.repoSync = new RepoSync(this.repo, this.send)
-    this.repoSync.open().then(() => this.emit('ready'))
+    this.Synchronizer = new Synchronizer(this.repo, this.send)
+    this.Synchronizer.open().then(() => this.emit('ready'))
   }
 
   receive = async ({ data }: any) => {
     const message = JSON.parse(data.toString())
     log('receive %o', message)
     this.emit('receive', message)
-    await this.repoSync.receive(message) // this updates the doc
-    // dispatch the changes from the peer
-    this.dispatch({
-      type: RECEIVE_MESSAGE_FROM_PEER,
-      payload: {
-        message,
-      },
-    })
+    await this.Synchronizer.receive(message) // Synchronizer will update repo directly
+    // hit the dispatcher to force it to pick up
+    this.dispatch({ type: RECEIVE_MESSAGE_FROM_PEER })
   }
 
   send = (message: Message) => {

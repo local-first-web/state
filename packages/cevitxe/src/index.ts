@@ -1,2 +1,1 @@
-export { StoreManagerOptions, StoreManager } from './StoreManager'
-export { collection } from './collection'
+export { StoreManager } from './StoreManager'

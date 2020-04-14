@@ -1,85 +1,125 @@
-import { collection } from 'cevitxe'
-import { ChangeMap, ProxyReducer } from 'cevitxe-types'
+import { ChangeFn, ProxyReducer } from 'cevitxe-types'
 import { inferSchema } from 'inferSchema'
 import { JSONSchema7 } from 'json-schema'
+import { GridState } from 'types'
 import * as actions from './actions'
 
-const rows = collection('rows')
-export const proxyReducer: ProxyReducer = (state, { type, payload }) => {
-  const { add, update, remove, drop } = rows.reducers
-  switch (type) {
-    case actions.ITEM_ADD:
-      return add(payload)
+const toArray = <T>(x: T | T[] | null) => (x === null ? [] : Array.isArray(x) ? x : [x])
 
-    case actions.ITEM_UPDATE:
-      return update(payload)
+export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) => {
+  const collection = 'rows'
+  switch (type) {
+    case actions.ITEM_ADD: {
+      const newRows = toArray(payload)
+      return newRows.map(newRow => {
+        const { id } = newRow
+        const fn = (row: any) => Object.assign(row, newRow)
+        return { collection, id, fn }
+      })
+    }
+
+    case actions.ITEM_UPDATE: {
+      const updatedRow = payload
+      const { id } = updatedRow
+      const fn = (row: any) => {
+        Object.assign(row, updatedRow)
+      }
+      return { collection, id, fn }
+    }
 
     case actions.ITEM_REMOVE:
-      return remove(payload)
+      return {
+        collection,
+        id: payload.id,
+        delete: true,
+      }
 
     case actions.COLLECTION_CLEAR:
-      return drop()
+      return {
+        collection,
+        drop: true,
+      }
 
-    case actions.COLLECTION_LOAD:
-      return add(payload.collection)
+    case actions.COLLECTION_LOAD: {
+      const newRows = toArray(payload.collection)
+      return newRows.map(newRow => {
+        const { id } = newRow
+        const fn = (row: any) => Object.assign(row, newRow)
+        return { collection, id, fn }
+      })
+    }
 
     case actions.SCHEMA_LOAD:
-      return { schema: s => Object.assign(s, payload.schema) }
+      return (s: GridState) => {
+        s.schema = payload.schema
+      }
 
     case actions.SCHEMA_INFER:
-      return { schema: s => Object.assign(s, inferSchema(payload.sampleData)) }
+      return s => {
+        s.schema = inferSchema(payload.sampleData)
+      }
 
     case actions.FIELD_ADD:
-      return {
-        schema: s => {
-          s.properties = s.properties || {}
-          s.properties[payload.id] = { description: 'New Field' }
-        },
+      return s => {
+        const fieldId = payload.id
+        s.schema.properties = s.schema.properties || {}
+        s.schema.properties[fieldId] = { description: 'New Field' }
       }
 
     case actions.FIELD_RENAME:
-      return {
-        schema: s => {
-          const fieldSchema = s.properties![payload.id] as JSONSchema7
-          fieldSchema.description = payload.description
-        },
+      return s => {
+        const fieldSchema = s.schema.properties![payload.id] as JSONSchema7
+        fieldSchema.description = payload.description
       }
 
     case actions.FIELD_DELETE: {
-      const changes: ChangeMap = {
-        schema: s => delete s.properties![payload.id],
+      const { id: fieldId } = payload
+
+      // remove field from schema
+      const schemaChange = (s: GridState) => {
+        delete s.schema.properties![fieldId]
       }
-      for (const key of rows.selectors.keys(state)) {
-        changes[key] = d => delete d[payload.id]
+
+      // change function: delete the value from one row
+      const fn = (row: any) => {
+        delete row[fieldId]
       }
-      return changes
+
+      const rowIds = Object.keys(state.rows)
+      const rowChanges = rowIds.map((id: string) => ({ collection, id, fn }))
+
+      return [schemaChange, ...rowChanges]
     }
 
     case actions.FIELD_SET_TYPE: {
-      const changes: ChangeMap = {
-        schema: s => {
-          const fieldSchema = s.properties![payload.id] as JSONSchema7
-          fieldSchema.type = payload.type
-        },
+      const { id: fieldId, type: newType } = payload
+
+      // update schema
+      const schemaChange: ChangeFn<GridState> = s => {
+        const fieldSchema = s.schema.properties![fieldId] as JSONSchema7
+        fieldSchema.type = newType
       }
-      for (const key of rows.selectors.keys(state)) {
-        const currentValue = state[key][payload.id]
-        if (currentValue != null) {
-          switch (payload.type) {
+
+      // change function: update the column value in one row
+      const fn = (row: any) => {
+        if (row[fieldId] !== null) {
+          switch (newType) {
             case 'number':
-              const number = Number(currentValue)
-              changes[key] = d => {
-                if (Number.isNaN(number)) delete d[payload.id]
-                else d[payload.id] = number
-              }
+              const number = Number(row[fieldId])
+              if (Number.isNaN(number)) row[fieldId] = ''
+              else row[fieldId] = number
               break
             case 'string':
-              changes[key] = s => (s[payload.id] = String(currentValue))
+              row[fieldId] = String(row[fieldId])
               break
           }
         }
       }
-      return changes
+
+      const rowIds = Object.keys(state.rows)
+      const rowChanges = rowIds.map((id: string) => ({ collection, id, fn }))
+
+      return [schemaChange, ...rowChanges]
     }
 
     default:

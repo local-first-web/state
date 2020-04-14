@@ -23,13 +23,11 @@
     "cevitxe-types": "0.4.2",
     "cuid": "2",
     "debug": "4",
-    "immutable": "4.0.0-rc.12",
-    "lru-cache": "^5.1.1"
+    "immutable": "4.0.0-rc.12"
   },
   "devDependencies": {
     "@types/debug": "4",
     "@types/jest": "25",
-    "@types/lru-cache": "5",
     "cevitxe-signal-server": "^0.4.2",
     "fake-indexeddb": "2",
     "jest": "25",

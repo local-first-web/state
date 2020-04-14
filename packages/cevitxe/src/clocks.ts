@@ -2,6 +2,7 @@
 import { Clock } from 'cevitxe-types'
 import A from 'automerge'
 import { Map } from 'immutable'
+
 /**
  * A vector clock is a map, where the keys are the actorIds of all actors that have been active on a
  * particular document, and the values are the most recent sequence number for that actor. The

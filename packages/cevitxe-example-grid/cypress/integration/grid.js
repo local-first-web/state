@@ -44,7 +44,7 @@ describe('grid', () => {
       cy.rows().should('have.length', 4)
     })
 
-    it('allows selecting cells', () => {
+    it('selects cells', () => {
       cy.selectedCells().should('have.length', 0)
 
       // start in first cell, hit shift-down twice
@@ -56,7 +56,7 @@ describe('grid', () => {
       cy.selectedCells().should('have.length', 3)
     })
 
-    it('allows deleting rows', () => {
+    it('deletes rows', () => {
       // confirm number of rows
       cy.rows().should('have.length', 3)
 
@@ -73,7 +73,7 @@ describe('grid', () => {
       cy.rows().should('have.length', 1)
     })
 
-    it('allows deleting columns', () => {
+    it('deletes columns', () => {
       // confirm number of columns
       cy.columns().should('have.length', 3)
 
@@ -89,6 +89,26 @@ describe('grid', () => {
       cy.columns()
         .eq(1)
         .should('contain.text', 'Field 3')
+    })
+
+    it.only('changes column type', () => {
+      cy.cell(0, 0)
+        .typeInCell('qrs')
+        .enter()
+        .typeInCell('1')
+        .enter()
+        .typeInCell('2.3')
+        .enter()
+      
+      cy.columnTypeMenu(0)
+        .queryByText('Number')
+        .click()
+
+      cy.get('#root > div:first > div:first').click()
+
+      cy.cell(0, 1).should('contain.text', '1')
+
+      cy.cell(0, 2).should('contain.text', '2.3')
     })
   })
 

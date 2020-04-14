@@ -12,7 +12,6 @@ import 'ag-grid-community/dist/styles/ag-grid.css'
 import 'ag-grid-community/dist/styles/ag-theme-balham.css'
 import 'ag-grid-enterprise'
 import { AgGridReact } from 'ag-grid-react'
-import { collection } from 'cevitxe'
 import { debug } from 'debug'
 import { useDialog } from 'muibox'
 import { useState } from 'react'
@@ -31,8 +30,6 @@ import { Loading } from './Loading'
 
 const log = debug('cevitxe:grid')
 
-const rowsSelector = collection('rows').selectors.getAll
-
 export const Grid = () => {
   const dispatch = useDispatch()
 
@@ -40,7 +37,7 @@ export const Grid = () => {
 
   const rowCollection = useSelector((state: any) => {
     if (!ready) return []
-    return rowsSelector(state)
+    return Object.values(state.rows)
   })
 
   const columns = useSelector((state: any) => {

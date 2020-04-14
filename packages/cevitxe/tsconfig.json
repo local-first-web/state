@@ -6,20 +6,26 @@
     "declaration": true,
     "esModuleInterop": true,
     "lib": ["dom", "esnext"],
+    "module": "commonjs",
     "moduleResolution": "node",
     "noEmit": false,
-    "outDir": "dist",
-    "sourceMap": true,
-    "target": "es6",
-    "typeRoots": ["../node_modules/@types", "node_modules/@types", "@types"],
-    "module": "commonjs",
-    // strictness: exceptions for development (must be reversed in tsconfig.build.json)
-    "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    // fix for ts-jest issue https://github.com/kulshekhar/ts-jest/issues/1336
-    "preserveSymlinks": true
+    "outDir": "dist",
+    "preserveSymlinks": true,
+    "skipLibCheck": true, // see note in cevitxe-types/tsconfig.json
+    "sourceMap": true,
+    "strict": true,
+    "target": "es6",
+    "typeRoots": ["../node_modules/@types", "node_modules/@types", "@types"]
   },
   "include": ["src", "@types"],
-  "references": [{ "path": "../cevitxe-signal-client" }, { "path": "../cevitxe-types" }]
+  "references": [
+    {
+      "path": "../cevitxe-signal-client"
+    },
+    {
+      "path": "../cevitxe-types"
+    }
+  ]
 }
