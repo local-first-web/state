@@ -8140,9 +8140,9 @@ icss-utils@^4.0.0, icss-utils@^4.1.1:
   dependencies:
     postcss "^7.0.14"
 
-idb@herbcaudill/idb#add-with-async-ittr-cjs-d-ts:
-  version "4.0.5"
-  resolved "https://codeload.github.com/herbcaudill/idb/tar.gz/7dc1cd4c38291a04e4e9f2103c362684d2a21ac7"
+idb@jakearchibald/idb:
+  version "5.0.2"
+  resolved "https://codeload.github.com/jakearchibald/idb/tar.gz/54c8ec7c4d9356e2b31c48385b07e9bb17e8c450"
 
 identity-obj-proxy@3.0.0:
   version "3.0.0"
