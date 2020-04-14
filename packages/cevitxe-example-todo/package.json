@@ -16,7 +16,7 @@
     "cevitxe": "^0.4.2",
     "cevitxe-toolbar": "^0.4.2",
     "classnames": "2",
-    "cypress": "^4.4.0",
+    "cypress": "4",
     "debug": "4",
     "npm-run-all": "4",
     "react": "16",
