@@ -22,6 +22,8 @@ jobs:
       - run: yarn install
       - run: yarn build
       - run: yarn test
+        env:
+          CI: true
       - name: Run e2e tests (todo app)
         uses: cypress-io/github-action@v1
         with:
@@ -31,3 +33,4 @@ jobs:
           wait-on: 'http://localhost:3000'
         env:
           CI: true
+          SKIP_PREFLIGHT_CHECK: true
