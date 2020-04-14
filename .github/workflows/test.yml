@@ -27,7 +27,7 @@ jobs:
         with:
           install: false
           working-directory: packages/cevitxe-example-todo
-          start: yarn start:todo
+          start: yarn start
           wait-on: 'http://localhost:3000'
         env:
           CI: true
