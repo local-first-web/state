@@ -6,17 +6,16 @@
   "private": true,
   "main": "src/index.tsx",
   "scripts": {
-    "start": "react-scripts start",
+    "start": "cross-env SKIP_PREFLIGHT_CHECK=true react-scripts start",
     "lint": "tsc -p tsconfig.strict.json --noEmit",
     "test:e2e": "cypress open",
-    "dev": "run-p start"
+    "dev": "yarn start"
   },
   "dependencies": {
     "@emotion/core": "10",
     "cevitxe": "^0.4.2",
     "cevitxe-toolbar": "^0.4.2",
     "classnames": "2",
-    "cypress": "4",
     "debug": "4",
     "npm-run-all": "4",
     "react": "16",
