@@ -1,13 +1,10 @@
 import { ProxyReducer } from 'cevitxe-types'
 import { ActionType } from './actions'
 
-const { SET_FILTER, ADD_TODO, DESTROY_TODO, TOGGLE_TODO, EDIT_TODO } = ActionType
+const { SET_FILTER, ADD_TODO, DESTROY_TODO, TOGGLE_TODO, EDIT_TODO, CLEAR_COMPLETED } = ActionType
 
 export const proxyReducer: ProxyReducer = (state, { type, payload }) => {
   switch (type) {
-    case SET_FILTER:
-      return s => (s.visibilityFilter = payload.filter)
-
     case ADD_TODO: {
       const { id, content } = payload
       return s => {
@@ -33,6 +30,17 @@ export const proxyReducer: ProxyReducer = (state, { type, payload }) => {
       const { id, content } = payload
       return s => (s.todoMap[id].content = content)
     }
+
+    case SET_FILTER:
+      return s => (s.visibilityFilter = payload.filter)
+
+    case CLEAR_COMPLETED:
+      return s => {
+        s.todoList = s.todoList.filter((id: string) => !s.todoMap[id].completed)
+        for (const id in s.todoMap) {
+          if (!s.todoList.includes(id)) delete s.todoMap[id]
+        }
+      }
 
     default:
       return null
