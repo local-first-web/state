@@ -7,6 +7,7 @@ export enum ActionType {
   EDIT_TODO = 'EDIT_TODO',
   DESTROY_TODO = 'DESTROY_TODO',
   SET_FILTER = 'SET_FILTER',
+  CLEAR_COMPLETED = 'CLEAR_COMPLETED',
 }
 
 export const actions = {
@@ -33,5 +34,10 @@ export const actions = {
   setFilter: (filter: VisibilityFilter) => ({
     type: ActionType.SET_FILTER, //
     payload: { filter },
+  }),
+
+  clearCompleted: () => ({
+    type: ActionType.CLEAR_COMPLETED, //
+    payload: {},
   }),
 }
