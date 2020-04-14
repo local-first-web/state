@@ -27,10 +27,11 @@ jobs:
       - name: Run e2e tests (todo app)
         uses: cypress-io/github-action@v1
         with:
+          browser: chrome
+          headless: true
           install: false
           working-directory: packages/cevitxe-example-todo
           start: yarn start
           wait-on: 'http://localhost:3000'
         env:
           CI: true
-          SKIP_PREFLIGHT_CHECK: true
