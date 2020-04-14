@@ -6,7 +6,6 @@
   "scripts": {
     "build": "lerna run build",
     "build:quick": "tsc -b packages/cevitxe-signal-server packages/cevitxe-storage-indexeddb packages/cevitxe-toolbar packages/cevitxe",
-    "heroku-postbuild": "lerna run build",
     "start": "run-p watch start:grid",
     "start:grid": "yarn workspace cevitxe-example-grid start",
     "start:todo": "yarn workspace cevitxe-example-todo start",
