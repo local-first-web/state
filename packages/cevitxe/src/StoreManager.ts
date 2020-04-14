@@ -100,13 +100,7 @@ export class StoreManager<T> {
    */
   close = async () => {
     if (this.connectionManager) await this.connectionManager.close()
-
-    // TODO: Close repo when closing StoreManager
-    // > This is obviously the right thing to do, but it breaks tests. For some reason Synchronizer
-    // continues to respond to messages from the peer after the repo is closed, and then tries to
-    // access the closed database.
-
-    // if (this.repo) this.repo.close()
+    if (this.repo) await this.repo.close()
 
     delete this.repo
     delete this.store

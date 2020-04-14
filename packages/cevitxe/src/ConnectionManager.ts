@@ -3,6 +3,7 @@ import debug from 'debug'
 import * as Redux from 'redux'
 import { Connection } from './Connection'
 import { Repo } from './Repo'
+import { pause } from './pause'
 
 const log = debug('cevitxe:client')
 
@@ -10,18 +11,17 @@ const log = debug('cevitxe:client')
  * Wraps a SignalClient and creates a Connection instance for each peer we connect to.
  */
 export class ConnectionManager {
-  private clientId = newid()
   private signalClient: SignalClient
   private connections: { [peerId: string]: Connection } = {}
   private dispatch: Redux.Dispatch
   private repo: Repo
 
-  constructor({ repo, dispatch, discoveryKey, urls }: ClientOptions) {
+  constructor({ repo, dispatch, discoveryKey, urls, clientId = newid() }: ClientOptions) {
     this.repo = repo
     this.dispatch = dispatch
 
     // TODO: randomly select a URL if more than one is provided? select best based on ping?
-    this.signalClient = new SignalClient({ id: this.clientId, url: urls[0] })
+    this.signalClient = new SignalClient({ id: clientId, url: urls[0] })
 
     this.signalClient.join(discoveryKey)
     this.signalClient.on('peer', this.addPeer)
@@ -57,4 +57,5 @@ interface ClientOptions {
   dispatch: Redux.Dispatch
   discoveryKey: string
   urls: string[]
+  clientId?: string
 }

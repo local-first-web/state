@@ -34,7 +34,6 @@ export class Repo<T = any> {
   private storage: StorageAdapter
 
   public collections: string[]
-
   public databaseName: string
   public clientId: string
 
@@ -65,7 +64,7 @@ export class Repo<T = any> {
   // PUBLIC METHODS
 
   open = async () => await this.storage.open()
-  close = () => this.storage.close()
+  close = async () => await this.storage.close()
 
   /**
    * Initializes the repo and returns a snapshot of its current state.
@@ -78,26 +77,14 @@ export class Repo<T = any> {
     await this.open()
     const hasData = await this.hasData()
     if (create) {
-      this.log('creating a new repo')
-      const normalizedState = Collection.normalize(initialState, this.collections)
-      for (let documentId in normalizedState) {
-        const snapshot = normalizedState[documentId]
-        if (snapshot !== null) {
-          const document = A.from(snapshot)
-          await this.set(documentId, document)
-        }
-      }
+      await this.create(initialState)
     } else if (!hasData) {
       this.log(`joining a peer's document for the first time`)
+      // we'll get data from connection
     } else {
-      this.log('recovering an existing repo from persisted state')
-      await this.loadFromDb()
+      await this.load()
     }
     return this.getState()
-  }
-
-  private get ids() {
-    return Object.keys(this.state)
   }
 
   /** @returns true if this repo has this document (even if it's been deleted) */
@@ -355,13 +342,31 @@ export class Repo<T = any> {
 
   // PRIVATE METHODS
 
+  private get ids() {
+    return Object.keys(this.state)
+  }
+
   /** @returns `true` if there is any stored data in the repo. */
   private async hasData() {
     return this.storage.hasData()
   }
 
+  /** Takes a (denormalized) initial state, and creates a new repo  */
+  private async create(initialState: any) {
+    this.log('creating a new repo from initial state')
+    const normalizedState = Collection.normalize(initialState, this.collections)
+    for (let documentId in normalizedState) {
+      const snapshot = normalizedState[documentId]
+      if (snapshot !== null) {
+        const document = A.from(snapshot)
+        await this.set(documentId, document)
+      }
+    }
+  }
+
   /** Loads all the repo's snapshots and clocks into memory */
-  private async loadFromDb() {
+  private async load() {
+    this.log('recovering an existing repo from persisted state')
     // TODO: only problem with this approach is that we're not storing clocks for deleted documents
     for await (const { documentId, snapshot, clock } of this.storage.snapshots()) {
       this.state[documentId] = snapshot[DELETED] ? null : snapshot
