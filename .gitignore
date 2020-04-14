@@ -13,5 +13,5 @@ build
 .env
 .vscode/settings.json
 
-cypress/videos
-cypress/screenshots
+**/cypress/videos
+**/cypress/screenshots
