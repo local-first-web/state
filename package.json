@@ -58,8 +58,6 @@
       "packages/*"
     ],
     "nohoist": [
-      "**/@testing-library/cypress/**",
-      "**/cypress/**",
       "**/jest/**",
       "**/jest"
     ]

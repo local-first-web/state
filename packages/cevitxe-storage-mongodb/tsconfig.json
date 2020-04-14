@@ -12,6 +12,7 @@
     "moduleResolution": "node",
     "noEmit": false,
     "outDir": "dist",
+    "skipLibCheck": true, // see note in cevitxe-types/tsconfig.json
     "sourceMap": true,
     "target": "es5"
   },
