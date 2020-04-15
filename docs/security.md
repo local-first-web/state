@@ -1,4 +1,4 @@
-﻿This is a placeholder PR to propose one approach to meeting the authentication & authorization requirements specified in #37.
+This is a placeholder PR to propose one approach to meeting the authentication & authorization requirements specified in #37.
 
 ## Overview
 
@@ -25,10 +25,10 @@ Step by step:
 
 1. Alice tells the signal server that she has repository `raw-fish`, and that she is willing to connect with anyone who can prove they are Bob.
 2. Bob connects to the signal server and says he is interested in `raw-fish`.
-3. The signal server sends Bob to the auth server, which tells Bob to go to Google and come back with a token proving his identity.
+3. The signal server sends Bob to the authentication server, which tells Bob to go to Google and come back with a token proving his identity.
 4. Bob provides his credentials (password + 2FA) to Google's satisfaction.
-5. Google sends Bob back to the auth server along with a JWT that can only be decrypted with a private key known to the auth server.
-6. The auth server sends Bob back to the signal server along with a new JWT that includes the role-specific encryption keys he will need.
+5. Google sends Bob back to the authentication server along with a JWT that can only be decrypted with a private key known to the authentication server.
+6. The authentication server sends Bob back to the signal server along with a new JWT that includes the role-specific encryption keys he will need.
 7. The signal server is now satisfied that Bob is who he says he is, and can vouch for him to Alice (and anyone else, as long as Bob's token hasn't expired)
 
 ## Authorization
@@ -41,7 +41,7 @@ This system relies on three types of keypairs:
 2. **Role**: One per role, used to decrypt sensitive field-level data
 3. **Actor**: One per actor, used to sign changes
 
-These keys are generated and stored by the auth server, and provided to actors when they successfully authenticate.
+These keys are generated and stored by the authentication server, and provided to actors when they successfully authenticate.
 
 #### Encrypting for readers with different keys
 
@@ -67,7 +67,7 @@ When Alice synchronizes with Dan, she has two ways to hide information from him:
     **field-level permissions**: Alice can encrypt the contents of the salary field using a key that
     Dan doesn't have, but that authorized readers (Carol, Frank, and Gloria) do.
 
-In a client/server setup, read permissions are typically enforced by omission; so that's the model we're familiar with.
+In a traditional client/server setup, read permissions are typically enforced by omission; so that's the model we're familiar with.
 
 In our distributed network, this works for document-level permissions. But Automerge does its magic by keeping the history of an entire document in sync. So any sensitive information _within_ a document needs to be passed around in encrypted form, such that everyone can see it's there, resolve conflicting versions, and so on; but only authorized readers can decrypt it.
 
@@ -75,7 +75,7 @@ In our distributed network, this works for document-level permissions. But Autom
 
 In a client/server model, enforcing write permissions is straightforward, since a central server can simply reject changes coming from unauthorized clients.
 
-In this distributed model, changes might be passed from one actor to another several times before we receive them. Suppose Alice receives Bob's changes via Carol. She needs to be confident that Carol hasn't modified those changes before passing them on. In fact, she needs to be confident that Carol isn't making her own changes and claiming they're Bob's!
+In this distributed model, changes might be passed from one actor to another several times before we receive them. Suppose Alice receives Bob's changes via Carol. She needs to be confident that Carol hasn't modified those changes before passing them on. In fact, she needs to be confident that Carol isn't creating change sets and claiming they're Bob's!
 
 To properly enforce `write` permissions, each actor needs to digitally sign their own changes. Step by step:
 
@@ -131,7 +131,7 @@ For example:
 
 ```json
 {
-  "CEVITXE_ACCESS-CONTROL": {
+  "__ACCESS_CONTROL": {
     "roles": {
       "hr": { "isAdmin": true },
       "it": { "isAdmin": true },
@@ -158,7 +158,7 @@ For example:
       "Dan": { "role": "civilian", "publicKey": "AA292…" },
       "Frank": { "role": "civilian-hr", "publicKey": "29A32…" },
       "Gloria": { "role": "civilian-manager", "publicKey": "999ZZ…" },
-      "ImNotAServer": { "role": "connector", "publicKey": "39220…" }
+      "HeadlessPeer": { "role": "connector", "publicKey": "39220…" }
     },
     "documentExclusions": {
       "agent": "[?(@.jobTitle!=='Agent')]"
@@ -167,10 +167,10 @@ For example:
       "salary": {
         "path": "salary",
         "keys": {
-          "hr": "g*Lß|º}þbóüA…",
-          "it": "¹6úí*zïóYÜáQÒ…",
-          "civilian-hr": "?26ïtm#êéH)…",
-          "auditor": "JR¢L²ÈÜ<ë3?&^Ù…"
+          "hr": "g*Lß|º}þbóüA…",
+          "it": "¹6úí*zïóYÜáQÒ…",
+          "civilian-hr": "?26ïtm#êéH)…",
+          "auditor": "JR¢L²ÈÜ<ë3?&^Ù…"
         }
       }
     },
@@ -224,7 +224,7 @@ Dictionary mapping unique actor IDs to actor definitions. An actor definition ca
 - `role` is a reference to a role ID from the `roles` element.
 - `publicKey` is the shared half of a keypair selected by the actor.
 
-<!-- TODO: how/when is the actor's keypair set?  -->
+>  TODO: how/when is the actor's keypair set?  
 
 ```js
 "actors": {
@@ -257,10 +257,10 @@ Dictionary mapping exclusion IDs to field exclusion definitions. A field exclusi
   "salary": {
     "path": "salary",
     "keys": {
-      "hr": "g*Lß|º}þbóüA…",
-      "it": "¹6úí*zïóYÜáQÒ…",
-      "civilian-hr": "?26ïtm#êéH)…",
-      "auditor": "JR¢L²ÈÜ<ë3?&^Ù…"
+      "hr": "g*Lß|º}þbóüA…",
+      "it": "¹6úí*zïóYÜáQÒ…",
+      "civilian-hr": "?26ïtm#êéH)…",
+      "auditor": "JR¢L²ÈÜ<ë3?&^Ù…"
     }
   }
 ```
