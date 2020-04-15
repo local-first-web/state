@@ -23,7 +23,9 @@
     "cevitxe-types": "0.4.2",
     "cuid": "2",
     "debug": "4",
-    "immutable": "4.0.0-rc.12"
+    "immutable": "4.0.0-rc.12",
+    "isomorphic-textencoder": "^1.0.1",
+    "isomorphic-webcrypto": "^2.3.6"
   },
   "devDependencies": {
     "@types/debug": "4",
