@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "alwaysStrict": true,
+    "baseUrl": "src",
+    "declaration": true,
+    "esModuleInterop": true,
+    "lib": ["dom", "esnext"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noEmit": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "outDir": "dist",
+    "skipLibCheck": true, // see note in cevitxe-types/tsconfig.json
+    "sourceMap": true,
+    "strict": true,
+    "target": "es6"
+  },
+  "references": [{ "path": "../cevitxe-types" }]
+}

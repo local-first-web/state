@@ -8,7 +8,17 @@
       "url": "http://localhost:3000",
       "preLaunchTask": "Start Grid example",
       "sourceMapPathOverrides": {
-        "${workspaceRoot}/packages/core/dist/src/*.js": "${workspaceRoot}/packages/core/src/*.ts"
+        "${workspaceRoot}/packages/cevitxe/dist/src/*.js": "${workspaceRoot}/packages/cevitxe/src/*.ts"
+      }
+    },
+    {
+      "name": "Start Todo example",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "preLaunchTask": "Start Todo example",
+      "sourceMapPathOverrides": {
+        "${workspaceRoot}/packages/cevitxe/dist/src/*.js": "${workspaceRoot}/packages/cevitxe/src/*.ts"
       }
     }
   ]

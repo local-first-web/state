@@ -1,9 +1,8 @@
-FOR /d /r . %%d IN (node_modules) DO @IF EXIST "%%d" rd /s /q "%%d"
-FOR /d /r . %%d IN (dist) DO @IF EXIST "%%d" rd /s /q "%%d"
+@if exist "yarn.lock" del yarn.lock
 
+for /d /r . %%d in (node_modules) do @if exist "%%d" del /f/s/q "%%d" > nul
+for /d /r . %%d in (node_modules) do @if exist "%%d" rd /s /q "%%d"
 
-FOR /d /r . %%d IN (node_modules) DO @IF EXIST "%%d" rd /s /q "%%d"
-FOR /d /r . %%d IN (dist) DO @IF EXIST "%%d" rd /s /q "%%d"
-
-
+for /d /r . %%d in (dist) do @if exist "%%d" del /f/s/q "%%d" > nul
+for /d /r . %%d in (dist) do @if exist "%%d" rd /s /q "%%d"
 

@@ -1,0 +1,1 @@
+web: yarn workspace cevitxe-signal-server start

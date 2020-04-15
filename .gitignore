@@ -1,12 +1,17 @@
 *.log
-.DS_Store
+*.tsbuildinfo
+
 node_modules
 dist
+coverage
+build
+
+.DS_Store
 .rts2_cache_cjs
 .rts2_cache_es
 .rts2_cache_umd
 .env
 .vscode/settings.json
 
-cypress/videos
-cypress/screenshots
+**/cypress/videos
+**/cypress/screenshots
