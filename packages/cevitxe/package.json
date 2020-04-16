@@ -24,10 +24,12 @@
     "cuid": "2",
     "debug": "4",
     "immutable": "4.0.0-rc.12",
-    "isomorphic-textencoder": "^1.0.1",
-    "isomorphic-webcrypto": "^2.3.6"
+    "scryptsy": "^2.1.0",
+    "tweetnacl": "^1.0.3",
+    "tweetnacl-util": "^0.15.1"
   },
   "devDependencies": {
+    "@types/scryptsy": "^2.0.0",
     "@types/debug": "4",
     "@types/jest": "25",
     "cevitxe-signal-server": "^0.4.2",
