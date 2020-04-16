@@ -46,29 +46,36 @@ describe('crypto', () => {
   })
 
   describe('sign', () => {
-    const keys = {
-      publicKey: 'OH8olQvUFfxqjd+A4FkPQZq0mSb9GGKIOfuCFLDd0B0=',
-      secretKey:
-        'TVTqqajwDkAMlztAJEkgcnEd1KzWheaDQE6sxPGlUlY4fyiVC9QV/GqN34DgWQ9BmrSZJv0YYog5+4IUsN3QHQ==',
-    }
-
-    const knownSignature =
+    const message = 'One if by land, two if by sea'
+    const publicKey = 'OH8olQvUFfxqjd+A4FkPQZq0mSb9GGKIOfuCFLDd0B0='
+    const secretKey =
+      'TVTqqajwDkAMlztAJEkgcnEd1KzWheaDQE6sxPGlUlY4fyiVC9QV/GqN34DgWQ9BmrSZJv0YYog5+4IUsN3QHQ=='
+    const signature =
       '/SO4d59oLiCkEG57ZubXLsMaaNzk91ujZjXkS9doP2vCAFimKvKdgjyyPJd9FrjyzqLQwa25AUyJlhN8veVIBQ=='
 
-    const message = 'One if by land, two if by sea'
     it('signs', () => {
-      const signature = sign(message, keys.secretKey)
-      expect(signature).toEqual(knownSignature)
+      const signature = sign(message, secretKey)
+      expect(signature).toEqual(signature)
     })
 
     it('verifies', () => {
-      expect(verify(message, knownSignature, keys.publicKey)).toBe(true)
+      expect(verify(message, signature, publicKey)).toBe(true)
+    })
+
+    it(`fails verification if message has changed`, () => {
+      const badMessage = 'Twenty-seven if by land, fourteen if by sea'
+      expect(verify(badMessage, signature, publicKey)).toBe(false)
+    })
+
+    it(`fails verification if signature is wrong`, () => {
+      const badSignature =
+        'Iamabadbadsignature+JlhN8veVIBQ/SO4d59oLiCkEG57ZubXLsMaaNzk91ujZjXkS9doP2vCAFimKvKdgjy=='
+      expect(verify(message, badSignature, publicKey)).toBe(false)
+    })
+
+    it(`fails verification if public key is wrong`, () => {
+      const badKey = 'NachoKeySb9GGKIOfuCFLDd0B0OH8olQvUFfxqjd+A4='
+      expect(verify(message, signature, badKey)).toBe(false)
     })
   })
 })
-
-type Case = {
-  s?: string
-  pw?: string
-  label: string
-}
