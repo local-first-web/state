@@ -426,7 +426,7 @@ describe('StoreManager', () => {
         expect.assertions(2)
       })
 
-      it.only('should persist state between sessions', async () => {
+      it('should persist state between sessions', async () => {
         const { close, localStoreManager, localStore, discoveryKey } = await open()
 
         // change something in the local store
