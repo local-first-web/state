@@ -1,8 +1,7 @@
-import A from 'automerge'
-import { isChange, isDeleteFlag, isDropFlag, isFunction, ProxyReducer } from 'cevitxe-types'
+import { ProxyReducer } from 'cevitxe-types'
 import debug from 'debug'
 import { Middleware } from 'redux'
-import { DELETED, GLOBAL, RECEIVE_MESSAGE_FROM_PEER } from './constants'
+import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
 import { Repo } from './Repo'
 import { toArray } from './toArray'
 
@@ -40,7 +39,7 @@ export const getMiddleware: MiddlewareFactory = (repo, proxyReducer) => {
       } else {
         // Apply changes to Repo history asynchronously
         for (const changeManifest of toArray(reducerOutput))
-          repo.applyChangeManifest(changeManifest)
+          await repo.applyChangeManifest(changeManifest)
       }
     }
 
