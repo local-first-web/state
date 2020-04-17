@@ -27,6 +27,7 @@ export class StoreManager<T> {
   private repo?: Repo
   private connectionManager?: ConnectionManager
   private collections: string[]
+  private log: debug.Debugger
 
   public store?: Store
 
@@ -44,13 +45,14 @@ export class StoreManager<T> {
     this.databaseName = databaseName
     this.urls = urls
     this.collections = collections
+    this.log = debug(`cevitxe:storemanager`)
   }
 
   joinStore = (discoveryKey: string) => this.getStore(discoveryKey, false)
   createStore = (discoveryKey: string) => this.getStore(discoveryKey, true)
 
   private getStore = async (discoveryKey: string, isCreating: boolean = false) => {
-    log = debug(`cevitxe:${isCreating ? 'createStore' : 'joinStore'}:${discoveryKey}`)
+    this.log(`${isCreating ? 'creating' : 'joining'} ${discoveryKey}`)
 
     const clientId = localStorage.getItem('clientId') || newid()
     localStorage.setItem('clientId', clientId)
@@ -88,7 +90,8 @@ export class StoreManager<T> {
   }
 
   public get connectionCount() {
-    return this.connectionManager ? this.connectionManager.connectionCount : 0
+    if (!this.connectionManager) throw new Error('no connectionManager')
+    return this.connectionManager.connectionCount
   }
 
   public get knownDiscoveryKeys() {
@@ -99,8 +102,9 @@ export class StoreManager<T> {
    * Close all connections and the repo's database
    */
   close = async () => {
+    this.log('closing')
     if (this.connectionManager) await this.connectionManager.close()
-    if (this.repo) await this.repo.close()
+    // if (this.repo) await this.repo.close()
 
     delete this.repo
     delete this.store
