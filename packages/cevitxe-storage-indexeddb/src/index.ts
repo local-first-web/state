@@ -1,7 +1,7 @@
 ﻿import { StorageAdapter } from 'cevitxe-storage-abstract'
 import { ChangeSet, SnapshotRecord } from 'cevitxe-types'
-import * as idb from 'idb/with-async-ittr-cjs'
-import { DBSchema, IDBPDatabase } from 'idb/with-async-ittr-cjs'
+import { IDBPDatabase, openDB, DBSchema } from 'idb/with-async-ittr-cjs'
+import debug from 'debug'
 
 /**
  * We use a single database with two object stores: `changes`, containing changesets in sequential
@@ -26,13 +26,15 @@ import { DBSchema, IDBPDatabase } from 'idb/with-async-ittr-cjs'
  */
 export class IdbAdapter extends StorageAdapter {
   private database?: IDBPDatabase<RepoSchema>
+  private log: debug.Debugger
 
   constructor(options: { discoveryKey: string; databaseName: string }) {
     super(options)
+    this.log = debug(`cevitxe:idbadapter:${this.storageKey}`)
   }
 
   async open() {
-    this.database = await idb.openDB<RepoSchema>(this.storageKey, DB_VERSION, {
+    this.database = await openDB<RepoSchema>(this.storageKey, DB_VERSION, {
       upgrade(db) {
         // changes
         const changes = db.createObjectStore('changes', {
@@ -50,12 +52,14 @@ export class IdbAdapter extends StorageAdapter {
         // TODO: use unique index?
       },
     })
+    this.log('opened', this.database.name)
   }
 
   async close() {
     if (this.database) {
       this.database.close()
       delete this.database
+      this.log('closed')
     }
   }
 
