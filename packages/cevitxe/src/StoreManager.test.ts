@@ -427,41 +427,43 @@ describe('StoreManager', () => {
       })
 
       it('should persist state between sessions', async () => {
-        const { close, localStoreManager, localStore, discoveryKey } = await open()
+        const { localStoreManager, localStore, discoveryKey } = await open()
 
-        // change something in the local store
+        // change something
         localStore.dispatch({ type: 'ADD_TEACHER', payload: [teacher1] })
-
-        // wait for addition to take
         await _yield()
 
-        // confirm that the changes took locally
+        // confirm that the changes took
         const state0 = localStore.getState()
         expect(state0.teachers).toEqual({ abcxyz: teacher1 })
 
         // disconnect store
         await localStoreManager.close()
+        await _yield()
 
-        // Then we join the same store, which should see the state in the fake db and load it
+        // rejoin the store
         const localStore1 = await localStoreManager.joinStore(discoveryKey)
         await _yield()
 
-        // Confirm that the modified state is still there
+        // confirm that the modified state is still there
         const state1 = localStore1.getState()
         expect(state1.teachers).toEqual({ abcxyz: teacher1 })
-        await close()
+        await localStoreManager.close()
         expect.assertions(2)
       })
 
       it('should persist deletions', async () => {
         const { localStoreManager, localStore, discoveryKey } = await open()
+
+        // add 2 teachers
         localStore.dispatch({ type: 'ADD_TEACHER', payload: [teacher1, teacher2] })
         await _yield()
 
+        // confirm they're both there
         const state0 = localStore.getState()
         expect(state0.teachers).toEqual({ abcxyz: teacher1, defcba: teacher2 })
 
-        // delete something in the local store
+        // delete one teacher
         localStore.dispatch({ type: 'REMOVE_TEACHER', payload: teacher1 })
         await _yield()
 
@@ -473,16 +475,16 @@ describe('StoreManager', () => {
         await localStoreManager.close()
         await _yield()
 
-        // Then we create a new store, which should see the state in the fake db and load it
-        const store2 = await localStoreManager.joinStore(discoveryKey)
+        // rejoin the store
+        const localStore2 = await localStoreManager.joinStore(discoveryKey)
         await _yield()
 
-        // // Confirm that the modified state is still there
-        // const state2 = store2.getState()
-        // expect(state2.teachers).toEqual({ defcba: teacher2 })
+        // Confirm that the modified state is still there
+        const state2 = localStore2.getState()
+        expect(state2.teachers).toEqual({ defcba: teacher2 })
 
-        // await localStoreManager.close()
-        // expect.assertions(3)
+        await localStoreManager.close()
+        expect.assertions(3)
       })
     })
 
@@ -522,7 +524,8 @@ describe('StoreManager', () => {
 
         // include a teardown function in the return values
         const close = async () => {
-          await Promise.all([localStoreManager.close, remoteStoreManager.close])
+          await localStoreManager.close()
+          await remoteStoreManager.close()
         }
 
         return {
@@ -695,6 +698,7 @@ describe('StoreManager', () => {
         expect(localStoreManager.connectionCount).toBe(1)
 
         await close()
+        await _yield()
 
         // confirm that we no longer have a connection
         expect(localStoreManager.connectionCount).toBe(0)
