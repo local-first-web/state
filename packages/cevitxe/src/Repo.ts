@@ -221,9 +221,17 @@ export class Repo<T = any> {
     if (isDropFlag(cm)) {
       await this.drop(cm.collection, snapshotOnly)
     } else {
-      const fn = isFunction(cm) ? (cm as A.ChangeFn<any>) : isDeleteFlag(cm) ? setDeleteFlag : cm.fn
-      const id = isFunction(cm) ? GLOBAL : cm.id
-      const collectionName = isFunction(cm) ? undefined : cm.collection
+      const fn = isFunction(cm)
+        ? (cm as A.ChangeFn<any>) // global change function
+        : isDeleteFlag(cm)
+        ? setDeleteFlag // delete function
+        : cm.fn // collection item change function
+      const id = isFunction(cm)
+        ? GLOBAL // global id
+        : cm.id // collection item id
+      const collectionName = isFunction(cm)
+        ? undefined // global
+        : cm.collection // collection name
       await this.change(id, fn, { collectionName, snapshotOnly })
     }
   }
