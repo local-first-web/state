@@ -3,9 +3,8 @@ import debug from 'debug'
 import * as Redux from 'redux'
 import { Connection } from './Connection'
 import { Repo } from './Repo'
-import { pause } from './pause'
 
-const log = debug('cevitxe:client')
+const log = debug('cevitxe:connectionmanager')
 
 /**
  * Wraps a SignalClient and creates a Connection instance for each peer we connect to.
@@ -29,16 +28,16 @@ export class ConnectionManager {
 
   private addPeer = (peer: Peer, discoveryKey: string) => {
     if (!this.dispatch || !this.repo) return
-    log('connecting to peer', peer.id)
     const socket = peer.get(discoveryKey)
     if (socket) this.connections[peer.id] = new Connection(this.repo, socket, this.dispatch)
     peer.on('close', () => this.removePeer(peer.id))
+    log('added peer', peer.id)
   }
 
   private removePeer = (peerId: string) => {
-    log('removing peer', peerId)
     if (this.connections[peerId]) this.connections[peerId].close()
     delete this.connections[peerId]
+    log('removed peer', peerId)
   }
 
   public get connectionCount() {
