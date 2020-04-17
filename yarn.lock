@@ -8042,10 +8042,9 @@ icss-utils@^4.0.0, icss-utils@^4.1.1:
   dependencies:
     postcss "^7.0.14"
 
-idb@5:
-  version "5.0.2"
-  resolved "https://registry.yarnpkg.com/idb/-/idb-5.0.2.tgz#294e5dd0f1930519dd07393a793cd4edfac93834"
-  integrity sha512-53yU1RbSPkSkQxufmNgcBkxxnbsTMGaYCv2NwQDmBP75muYj4Z75DsvCqhCCivYcC1XaXDi9tZSUOfDQFxuABA==
+idb@herbcaudill/idb#add-with-async-ittr-cjs-d-ts:
+  version "4.0.5"
+  resolved "https://codeload.github.com/herbcaudill/idb/tar.gz/7dc1cd4c38291a04e4e9f2103c362684d2a21ac7"
 
 identity-obj-proxy@3.0.0:
   version "3.0.0"
