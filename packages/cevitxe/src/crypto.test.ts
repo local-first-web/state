@@ -1,4 +1,4 @@
-import { symmetric, deriveKey, signatures, asymmetric } from './crypto'
+import { symmetric, deriveKey, signatures, asymmetric, SignedMessage } from './crypto'
 
 const plaintext = 'The leopard pounces at noon'
 const zalgoText = 'ẓ̴̇a̷̰̚l̶̥͑g̶̼͂o̴̅͜ ̸̻̏í̴͜s̵̜͠ ̴̦̃u̸̼̎p̵̘̔o̵̦͑ǹ̵̰ ̶̢͘u̵̇ͅș̷̏'
@@ -120,46 +120,55 @@ describe('crypto', () => {
         'TVTqqajwDkAMlztAJEkgcnEd1KzWheaDQE6sxPGlUlY4fyiVC9QV/GqN34DgWQ9BmrSZJv0YYog5+4IUsN3QHQ==',
     }
 
-    const signedMessage = {
-      contents: 'one if by day, two if by night',
+    const signedMessage: SignedMessage = {
+      content: 'one if by day, two if by night',
       signature:
         'Qd9f/Xgk9QFG9nVNb/QkHqKTNF0JQCEy848m4w8UmxSRwnuomBZz6Bi8wDopz//iKwHq3ipMvA2AGAw8Oo19Dw==',
+      publicKey: alice.publicKey,
     }
 
     test('alice signs with her secret key', () => {
-      const { contents, signature: knownSignature } = signedMessage
-      const signature = signatures.sign(contents, alice.secretKey)
+      const { content, signature: knownSignature } = signedMessage
+      const signature = signatures.sign(content, alice.secretKey)
       expect(signature).toEqual(knownSignature)
     })
 
     test(`bob verifies using alice's public key`, () => {
-      const { contents, signature } = signedMessage
-      const result = signatures.verify(contents, signature, alice.publicKey)
-      expect(result).toBe(true)
+      const isLegit = signatures.verify(signedMessage)
+      expect(isLegit).toBe(true)
     })
 
     test(`eve tampers with the message, but bob is not fooled`, () => {
+      const tamperedContents = signedMessage.content
+        .replace('one', 'forty-two')
+        .replace('two', 'seventy-twelve')
       const tamperedMessage = {
         ...signedMessage,
-        contents: signedMessage.contents
-          .replace('one', 'forty-two')
-          .replace('two', 'seventy-twelve'),
+        contents: tamperedContents,
       }
-      const { contents, signature } = tamperedMessage
-      const result = signatures.verify(contents, signature, alice.publicKey)
-      expect(result).toBe(false)
+      const isLegit = signatures.verify(tamperedMessage)
+      expect(isLegit).toBe(false)
     })
 
     test(`fails verification if signature is wrong`, () => {
       const badSignature =
         'Iamabadbadsignature+JlhN8veVIBQ/SO4d59oLiCkEG57ZubXLsMaaNzk91ujZjXkS9doP2vCAFimKvKdgjy=='
-      expect(signatures.verify(plaintext, badSignature, alice.publicKey)).toBe(false)
+      const badMessage = {
+        ...signedMessage,
+        signature: badSignature,
+      }
+      const isLegit = signatures.verify(badMessage)
+      expect(isLegit).toBe(false)
     })
 
     test(`fails verification if public key is wrong`, () => {
       const badKey = 'NachoKeySb9GGKIOfuCFLDd0B0OH8olQvUFfxqjd+A4='
-      const { contents, signature } = signedMessage
-      expect(signatures.verify(contents, signature, badKey)).toBe(false)
+      const badMessage = {
+        ...signedMessage,
+        publicKey: badKey,
+      }
+      const isLegit = signatures.verify(badMessage)
+      expect(isLegit).toBe(false)
     })
 
     test('fwiw: cannot use encryption keys to sign', () => {
