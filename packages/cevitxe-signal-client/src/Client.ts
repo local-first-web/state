@@ -122,9 +122,7 @@ export class Client extends EventEmitter {
     this.log('leaving', key)
 
     this.keys.delete(key)
-    this.peers.forEach(peer => {
-      if (peer.has(key)) peer.close(key)
-    })
+    this.peers.forEach(peer => peer.close(key))
 
     this.sendToServer({
       type: 'Leave',
