@@ -5,52 +5,170 @@ import scrypt from 'scryptsy'
 import nacl from 'tweetnacl'
 
 // These are straightforward implementations of NaCl crypto functions, accepting and returning
-// base64 strings rather than byte arrays. The symmetric `encrypt` and `decrypt` functions take
-// passwords and expand them to 32-byte keys using the [scrypt](https://en.wikipedia.org/wiki/Scrypt) algorithm.
+// base64 strings rather than byte arrays. The symmetric `encrypt` and `decrypt` functions can take
+// passwords instead of 32-byte keys; the password is expanded using the
+// [scrypt](https://en.wikipedia.org/wiki/Scrypt) algorithm.
 
-/**
- * Symmetrically encrypts a string of text.
- * @param plaintext The plaintext to encrypt
- * @param password The password to use as a seed for an encryption key
- * @returns The encrypted data, encoded as a base64 string. The first 24 characters are the nonce;
- * the rest of the string is the encrypted message.
- * @see decrypt
- */
-export const encrypt = (plaintext: string, password: string) => {
-  const key = deriveKey(password)
+export const symmetric = {
+  /**
+   * Symmetrically encrypts a string of text.
+   * @param plaintext The plaintext to encrypt
+   * @param password The password to use as a seed for an encryption key
+   * @returns The encrypted data, encoded as a base64 string. The first 24 characters are the nonce;
+   * the rest of the string is the encrypted message.
+   * @see symmetric.decrypt
+   */
+  encrypt: (plaintext: string, password: string) => {
+    const key = deriveKey(password)
 
-  const nonce = nacl.randomBytes(nacl.secretbox.nonceLength)
-  const message = utf8.encode(plaintext)
-  const box = nacl.secretbox(message, nonce, key)
+    const nonce = newNonce()
+    const message = utf8.encode(plaintext)
+    const box = nacl.secretbox(message, nonce, key)
 
-  const fullMessage = new Uint8Array(nonce.length + box.length)
-  fullMessage.set(nonce)
-  fullMessage.set(box, nonce.length)
+    const cipherBytes = new Uint8Array(nonceLength + box.length)
+    // the first 24 characters are the nonce
+    cipherBytes.set(nonce)
+    // the rest is the message
+    cipherBytes.set(box, nonceLength)
 
-  return base64.encode(fullMessage)
+    return base64.encode(cipherBytes)
+  },
+
+  /**
+   * Symmetrically decrypts a message encrypted by `symmetric.encrypt`.
+   * @param cipher The encrypted data, encoded as a base64 string (the first 24 characters are the nonce;
+   * the rest of the string is the encrypted message)
+   * @param password The password used as a seed for an encryption key
+   * @returns The original plaintext
+   * @see symmetric.encrypt
+   */
+  decrypt: (cipher: string, password: string) => {
+    const key = deriveKey(password)
+    const cipherBytes = base64.decode(cipher)
+
+    // the first 24 characters are the nonce
+    const nonce = cipherBytes.slice(0, nonceLength)
+    // the rest is the message
+    const message = cipherBytes.slice(nonceLength, cipher.length)
+
+    const decrypted = nacl.secretbox.open(message, nonce, key)
+    if (!decrypted) throw new Error('Could not decrypt message')
+
+    return utf8.decode(decrypted)
+  },
 }
 
-/**
- * Symmetrically decrypts a message encrypted by `encrypt`.
- * @param cipher The encrypted data, encoded as a base64 string (the first 24 characters are the nonce;
- * the rest of the string is the encrypted message)
- * @param password The password used as a seed for an encryption key
- * @returns The original plaintext
- * @see encrypt
- */
-export const decrypt = (cipher: string, password: string) => {
-  const key = deriveKey(password)
-  const cipherbytes = base64.decode(cipher)
+export const asymmetric = {
+  /**
+   * @returns A key pair consisting of a public key and a secret key, encoded as base64 strings, to
+   * use for asymmetric encryption and decryption. (Note that asymmetric encryption keys cannot be
+   * used for signatures, and vice versa.)
+   */
+  keyPair: () => {
+    const keys = nacl.box.keyPair()
+    return {
+      publicKey: base64.encode(keys.publicKey),
+      secretKey: base64.encode(keys.secretKey),
+    }
+  },
 
-  // the first 24 characters are the nonce
-  const nonce = cipherbytes.slice(0, nacl.secretbox.nonceLength)
-  // the rest is the message
-  const message = cipherbytes.slice(nacl.secretbox.nonceLength, cipher.length)
+  /**
+   * Asymmetrically encrypts a string of text.
+   * @param plaintext The plaintext to encrypt
+   * @param recipientPublicKey The public key of the intended recipient
+   * @param senderSecretKey The secret key of the sender
+   * @returns The encrypted data, encoded as a base64 string. The first 24 characters are the nonce;
+   * the rest of the string is the encrypted message.
+   * @see asymmetric.decrypt
+   */
+  encrypt: (plaintext: string, recipientPublicKey: string, senderSecretKey: string) => {
+    const nonce = newNonce()
+    const messageBytes = utf8.encode(plaintext)
+    const encrypted = nacl.box(
+      messageBytes,
+      nonce,
+      base64.decode(recipientPublicKey),
+      base64.decode(senderSecretKey)
+    )
 
-  const decrypted = nacl.secretbox.open(message, nonce, key)
-  if (!decrypted) throw new Error('Could not decrypt message')
+    const cipherBytes = new Uint8Array(nonceLength + encrypted.length)
+    // the first 24 characters are the nonce
+    cipherBytes.set(nonce)
+    // the rest is the message
+    cipherBytes.set(encrypted, nonceLength)
 
-  return utf8.decode(decrypted)
+    return base64.encode(cipherBytes)
+  },
+
+  /**
+   * Asymmetrically decrypts a message encrypted by `asymmetric.encrypt`.
+   * @param cipher The encrypted data, encoded as a base64 string (the first 24 characters are the nonce;
+   * the rest of the string is the encrypted message)
+   * @param senderPublicKey The public key of the sender
+   * @param recipientSecretKey The secret key of the recipient
+   * @returns The original plaintext
+   * @see asymmetric.encrypt
+   */
+  decrypt: (cipher: string, senderPublicKey: string, recipientSecretKey: string) => {
+    const cipherBytes = base64.decode(cipher)
+
+    // the first 24 characters are the nonce
+    const nonce = cipherBytes.slice(0, nonceLength)
+    // the rest is the message
+    const message = cipherBytes.slice(nonceLength, cipher.length)
+
+    const decrypted = nacl.box.open(
+      message,
+      nonce,
+      base64.decode(senderPublicKey),
+      base64.decode(recipientSecretKey)
+    )
+
+    if (!decrypted) throw new Error('Could not decrypt message')
+
+    return utf8.decode(decrypted)
+  },
+}
+
+export const signatures = {
+  /**
+   * @returns A key pair consisting of a public key and a secret key, encoded as base64 strings, to
+   * use for signing and verifying messages. (Note that signature keys cannot be used for asymmetric
+   * encryption, and vice versa.)
+   */
+  keyPair: () => {
+    const keys = nacl.sign.keyPair()
+    return {
+      publicKey: base64.encode(keys.publicKey),
+      secretKey: base64.encode(keys.secretKey),
+    }
+  },
+
+  /**
+   * @param message The plaintext message to sign
+   * @param secretKey The signer's secret key, encoded as a base64 string
+   * @returns A signature, encoded as a base64 string
+   */
+  sign: (message: string, secretKey: string) =>
+    base64.encode(
+      nacl.sign.detached(
+        utf8.encode(message), //
+        base64.decode(secretKey)
+      )
+    ),
+
+  /**
+   * @param message The plaintext message to be verified
+   * @param signature The signature provided along with the message, encoded as a base64 string
+   * @param publicKey The signer's public key, encoded as a base64 string
+   * @returns true if verification succeeds, false otherwise
+   */
+  verify: (message: string, signature: string, publicKey: string) =>
+    nacl.sign.detached.verify(
+      utf8.encode(message),
+      base64.decode(signature),
+      base64.decode(publicKey)
+    ),
 }
 
 /**
@@ -74,44 +192,9 @@ export const deriveKey = memoize((password: string) => {
     costFactor,
     blockSizeFactor,
     parallelizationFactor,
-    nacl.secretbox.keyLength // 32
+    nacl.secretbox.keyLength // = 32
   )
 })
 
-/**
- * @returns A key pair consisting of a public key and a secret key to use for signing and verifying
- * messages, encoded as base64 strings
- */
-export const keyPair = () => {
-  const keys = nacl.sign.keyPair()
-  return {
-    publicKey: base64.encode(keys.publicKey),
-    secretKey: base64.encode(keys.secretKey),
-  }
-}
-
-/**
- * @param message The plaintext message to sign
- * @param secretKey The signer's secret key, encoded as a base64 string
- * @returns A signature, encoded as a base64 string
- */
-export const sign = (message: string, secretKey: string) =>
-  base64.encode(
-    nacl.sign.detached(
-      utf8.encode(message), //
-      base64.decode(secretKey)
-    )
-  )
-
-/**
- * @param message The plaintext message to verify
- * @param signature The signature provided along with the message, encoded as a base64 string
- * @param publicKey The signer's public key, encoded as a base64 string
- * @returns true if verification succeeds, false otherwise
- */
-export const verify = (message: string, signature: string, publicKey: string) =>
-  nacl.sign.detached.verify(
-    utf8.encode(message),
-    base64.decode(signature),
-    base64.decode(publicKey)
-  )
+const nonceLength = nacl.box.nonceLength // = 24
+const newNonce = () => nacl.randomBytes(nonceLength)
