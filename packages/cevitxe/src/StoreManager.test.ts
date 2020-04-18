@@ -427,7 +427,7 @@ describe('StoreManager', () => {
       })
 
       it('should persist state between sessions', async () => {
-        const { close, localStoreManager, localStore, discoveryKey } = await open()
+        const { localStoreManager, localStore, discoveryKey } = await open()
 
         // change something
         localStore.dispatch({ type: 'ADD_TEACHER', payload: [teacher1] })
