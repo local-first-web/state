@@ -1,6 +1,14 @@
 import { decrypt, deriveKey, encrypt, sign, verify } from './crypto'
 
 describe('crypto', () => {
+  describe('deriveKey', () => {
+    test('returns a 32-byte key', () => {
+      const password = 'secret'
+      const key = deriveKey(password)
+      expect(key).toHaveLength(32)
+    })
+  })
+
   describe('encrypt/decrypt', () => {
     const plaintext = 'The leopard pounces at noon'
     const password = 'hello123'
@@ -76,14 +84,6 @@ describe('crypto', () => {
     it(`fails verification if public key is wrong`, () => {
       const badKey = 'NachoKeySb9GGKIOfuCFLDd0B0OH8olQvUFfxqjd+A4='
       expect(verify(message, signature, badKey)).toBe(false)
-    })
-  })
-
-  describe('deriveKey', () => {
-    test('returns a 32-byte key', () => {
-      const password = 'secret'
-      const key = deriveKey(password)
-      expect(key).toHaveLength(32)
     })
   })
 })
