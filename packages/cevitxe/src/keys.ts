@@ -1,3 +1,5 @@
+// ignore file coverage
+
 import { Keychain } from 'cevitxe-types'
 
 const keychainId = (databaseName: string) => `cevitxe/${databaseName}/keychain`
@@ -30,21 +32,3 @@ const getKeychain = (databaseName: string): Keychain => {
 const saveKeychain = (databaseName: string, keychain: Keychain) => {
   localStorage.setItem(keychainId(databaseName), JSON.stringify(keychain))
 }
-
-// TODO - reimplement encryption at rest?
-// const keyPair = async (): Promise<KeyPair> => {
-// const { publicKey, privateKey } = await crypto.subtle.generateKey(
-//   {
-//     name: 'RSA-OAEP',
-//     modulusLength: 4096,
-//     publicExponent: new Uint8Array([1, 0, 1]),
-//     hash: 'SHA-256',
-//   },
-//   true,
-//   ['encrypt', 'decrypt']
-// )
-// return {
-//   key: publicKey,
-//   secretKey: privateKey,
-// }
-// }
