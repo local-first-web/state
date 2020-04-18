@@ -1,4 +1,4 @@
-import { encrypt, decrypt, sign, verify, keyPair } from './crypto'
+import { decrypt, deriveKey, encrypt, sign, verify } from './crypto'
 
 describe('crypto', () => {
   describe('encrypt/decrypt', () => {
@@ -76,6 +76,26 @@ describe('crypto', () => {
     it(`fails verification if public key is wrong`, () => {
       const badKey = 'NachoKeySb9GGKIOfuCFLDd0B0OH8olQvUFfxqjd+A4='
       expect(verify(message, signature, badKey)).toBe(false)
+    })
+  })
+
+  describe('deriveKey', () => {
+    test('returns a 32-byte key', () => {
+      const password = 'secret'
+      const key = deriveKey(password)
+      expect(key).toHaveLength(32)
+    })
+
+    test.skip('derivation time', () => {
+      const randomNumber = (N: number) => Math.floor(Math.random() * N)
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+      const N = chars.length
+      const randomText = (length: number) => {
+        let result = ''
+        for (let i = 0; i < length; i++) result += chars.charAt(randomNumber(N))
+        return result
+      }
+      for (let i = 0; i < 100; i++) deriveKey(randomText(100))
     })
   })
 })
