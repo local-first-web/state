@@ -1,8 +1,8 @@
-import debug from 'debug'
-import { Client } from './Client'
 import { Server } from 'cevitxe-signal-server'
-import { Peer } from './Peer'
+import debug from 'debug'
 import { getPortPromise as getAvailablePort } from 'portfinder'
+import { Client } from './Client'
+import { Peer } from './Peer'
 
 describe('Client', () => {
   const log = debug('cevitxe:signal-client:tests')
