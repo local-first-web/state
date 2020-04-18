@@ -158,14 +158,14 @@ export const signatures = {
     ),
 
   /**
-   * @param message The plaintext message to be verified
+   * @param content The plaintext message to be verified
    * @param signature The signature provided along with the message, encoded as a base64 string
    * @param publicKey The signer's public key, encoded as a base64 string
    * @returns true if verification succeeds, false otherwise
    */
-  verify: (message: string, signature: string, publicKey: string) =>
+  verify: ({ content, signature, publicKey }: SignedMessage) =>
     nacl.sign.detached.verify(
-      utf8.encode(message),
+      utf8.encode(content),
       base64.decode(signature),
       base64.decode(publicKey)
     ),
@@ -198,3 +198,9 @@ export const deriveKey = memoize((password: string) => {
 
 const nonceLength = nacl.box.nonceLength // = 24
 const newNonce = () => nacl.randomBytes(nonceLength)
+
+export type SignedMessage = {
+  content: string
+  signature: string
+  publicKey: string
+}
