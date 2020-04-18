@@ -123,6 +123,34 @@ describe('Server', () => {
         })
       })
     })
+
+    it('should close a peer when asked to', done => {
+      expect.assertions(1)
+
+      const localIntroductionPeer = makeIntroductionRequest(localId, key)
+      const remoteIntroductionPeer = makeIntroductionRequest(remoteId, key) // need to make request even if we don't use the result
+
+      localIntroductionPeer.once('message', d => {
+        const localPeer = new WebSocket(`${connectionUrl}/${localId}/${remoteId}/${key}`)
+        const remotePeer = new WebSocket(`${connectionUrl}/${remoteId}/${localId}/${key}`)
+
+        localPeer.once('open', () => {
+          localPeer.send('DUDE!!')
+          // close local after sending
+          localPeer.close()
+        })
+
+        remotePeer.once('message', d => {
+          expect(d).toEqual('DUDE!!')
+
+          remotePeer.send('hello')
+          localPeer.once('message', d => {
+            throw new Error('should never get here')
+          })
+          done()
+        })
+      })
+    })
   })
 
   describe('N-way', () => {
