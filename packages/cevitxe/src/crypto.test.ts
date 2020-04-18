@@ -95,7 +95,8 @@ describe('crypto', () => {
 
     test(`can't decrypt with the wrong public key`, () => {
       const cipherFromAlice = knownCipher
-      expect(() => decrypt(cipherFromAlice, eve.publicKey, bob.secretKey)).toThrow()
+      const attemptToDecrypt = () => decrypt(cipherFromAlice, eve.publicKey, bob.secretKey)
+      expect(attemptToDecrypt).toThrow()
     })
 
     test.each`
