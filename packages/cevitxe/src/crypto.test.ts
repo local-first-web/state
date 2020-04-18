@@ -25,7 +25,7 @@ describe('crypto', () => {
 
     test('alice encrypts using a password they both know', () => {
       const cipher = encrypt(plaintext, password)
-      expect(cipher).toHaveLength(24 + 68) // IV + ciphertext
+      expect(cipher).toHaveLength(24 + 68) // nonce + ciphertext
       expect(cipher).not.toEqual(knownCipher) // each encryption is different
     })
 
@@ -52,6 +52,9 @@ describe('crypto', () => {
     `('round trip: $label', ({ message, password }) => {
       const cipher = encrypt(message, password)
       expect(decrypt(cipher, password)).toEqual(message)
+
+      const attemptToDecrypt = () => decrypt(cipher, 'nachopassword')
+      expect(attemptToDecrypt).toThrow()
     })
   })
 
@@ -110,6 +113,9 @@ describe('crypto', () => {
       const encrypted = encrypt(message, bob.publicKey, alice.secretKey)
       const decrypted = decrypt(encrypted, alice.publicKey, bob.secretKey)
       expect(decrypted).toEqual(message)
+
+      const attemptToDecrypt = () => decrypt(encrypted, alice.publicKey, eve.secretKey)
+      expect(attemptToDecrypt).toThrow()
     })
 
     test('fwiw: cannot use signature keys to encrypt', () => {
