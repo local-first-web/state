@@ -139,12 +139,12 @@ describe('crypto', () => {
     })
 
     test(`eve tampers with the message, but bob is not fooled`, () => {
-      const tamperedContents = signedMessage.content
+      const tamperedContent = signedMessage.content
         .replace('one', 'forty-two')
         .replace('two', 'seventy-twelve')
       const tamperedMessage = {
         ...signedMessage,
-        contents: tamperedContents,
+        content: tamperedContent,
       }
       const isLegit = signatures.verify(tamperedMessage)
       expect(isLegit).toBe(false)
