@@ -85,17 +85,5 @@ describe('crypto', () => {
       const key = deriveKey(password)
       expect(key).toHaveLength(32)
     })
-
-    test.skip('derivation time', () => {
-      const randomNumber = (N: number) => Math.floor(Math.random() * N)
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-      const N = chars.length
-      const randomText = (length: number) => {
-        let result = ''
-        for (let i = 0; i < length; i++) result += chars.charAt(randomNumber(N))
-        return result
-      }
-      for (let i = 0; i < 100; i++) deriveKey(randomText(100))
-    })
   })
 })
