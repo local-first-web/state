@@ -4,10 +4,10 @@ import express from 'express'
 import expressWs from 'express-ws'
 import { Server as HttpServer, Socket } from 'net'
 import WebSocket, { Data } from 'ws'
-import { ConnectRequestParams, KeySet, Message } from './types'
 import { deduplicate } from './lib/deduplicate'
 import { intersection } from './lib/intersection'
 import { pipeSockets } from './lib/pipeSockets'
+import { ConnectRequestParams, KeySet, Message } from './types'
 
 const { app } = expressWs(express())
 const fishPage =
@@ -184,7 +184,7 @@ export class Server extends EventEmitter {
   // SERVER
 
   listen({ silent = false }: ListenOptions = {}) {
-    return new Promise(ready => {
+    return new Promise(resolve => {
       // It's nice to be able to hit this server from a browser as a sanity check
       app.get('/', (req, res, next) => {
         this.log('get /')
@@ -209,21 +209,21 @@ export class Server extends EventEmitter {
         if (!silent) console.log(msg)
         this.log(msg)
         this.emit('ready')
-        ready()
+        resolve()
       })
       this.httpServer.on('connection', socket => this.sockets.push(socket))
     })
   }
 
   close() {
-    return new Promise(closed => {
+    return new Promise(resolve => {
       if (this.httpServer) {
         this.log('attempting httpServer.close')
         this.sockets.forEach(socket => socket.destroy())
         this.httpServer.close(() => {
           this.log('closed')
           this.emit('closed')
-          closed()
+          resolve()
         })
       } else this.log('nothing to close!')
     })
