@@ -20,5 +20,12 @@
     "typeRoots": ["../node_modules/@types", "node_modules/@types", "@types"]
   },
   "include": ["src", "@types"],
-  "references": [{ "path": "../cevitxe-signal-client" }, { "path": "../cevitxe-types" }]
+  "references": [
+    {
+      "path": "../cevitxe-signal-client"
+    },
+    {
+      "path": "../cevitxe-types"
+    }
+  ]
 }
