@@ -8,8 +8,9 @@ import React, { useEffect, useRef, useState } from 'react'
 import Redux from 'redux'
 import { StringParam, useQueryParam } from 'use-query-params'
 import { wordPair } from './wordPair'
+import { Status } from './Status'
 
-export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
+export const Toolbar = ({ storeManager, onStoreReady, children }: React.PropsWithChildren<ToolbarProps<any>>) => {
   // Hooks
   const [discoveryKey, setDiscoveryKey] = useQueryParam('id', StringParam)
   const [, setAppStore] = useState()
@@ -153,6 +154,8 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
           )
         }}
       </Formik>
+      <Status storeManager={storeManager} />
+      {children}
     </div>
   )
 }

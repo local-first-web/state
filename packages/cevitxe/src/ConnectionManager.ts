@@ -1,4 +1,5 @@
-﻿import { Client as SignalClient, newid, Peer } from 'cevitxe-signal-client'
+﻿import { EventEmitter } from 'events'
+import { Client as SignalClient, newid, Peer } from 'cevitxe-signal-client'
 import debug from 'debug'
 import * as Redux from 'redux'
 import { Connection } from './Connection'
@@ -9,13 +10,14 @@ const log = debug('cevitxe:connectionmanager')
 /**
  * Wraps a SignalClient and creates a Connection instance for each peer we connect to.
  */
-export class ConnectionManager {
+export class ConnectionManager extends EventEmitter {
   private signalClient: SignalClient
   private connections: { [peerId: string]: Connection } = {}
   private dispatch: Redux.Dispatch
   private repo: Repo
 
   constructor({ repo, dispatch, discoveryKey, urls, clientId = newid() }: ClientOptions) {
+    super()
     this.repo = repo
     this.dispatch = dispatch
 
@@ -32,12 +34,14 @@ export class ConnectionManager {
     if (socket) this.connections[peer.id] = new Connection(this.repo, socket, this.dispatch)
     peer.on('close', () => this.removePeer(peer.id))
     log('added peer', peer.id)
+    this.emit(CONNECTION.PEER_ADDED, Object.keys(this.connections))
   }
 
   private removePeer = (peerId: string) => {
     if (this.connections[peerId]) this.connections[peerId].close()
     delete this.connections[peerId]
     log('removed peer', peerId)
+    this.emit(CONNECTION.PEER_REMOVED, Object.keys(this.connections))
   }
 
   public get connectionCount() {
@@ -57,4 +61,9 @@ interface ClientOptions {
   discoveryKey: string
   urls: string[]
   clientId?: string
+}
+
+export enum CONNECTION {
+  PEER_ADDED = 'peer_added',
+  PEER_REMOVED = 'peer_removed'
 }
