@@ -76,6 +76,7 @@ export class Client extends EventEmitter {
         type: 'Join',
         join: [...this.keys],
       })
+      this.emit('open')
     }
 
     const onclose = () => {
@@ -84,6 +85,7 @@ export class Client extends EventEmitter {
         `signal server connection closed... reconnecting in ${Math.floor(this.retryDelay / 1000)}s`
       )
       setTimeout(() => this.connectToServer(), this.retryDelay)
+      this.emit('close')
     }
 
     const onmessage = ({ data }: { data: string }) => {
@@ -94,6 +96,7 @@ export class Client extends EventEmitter {
 
     const onerror = (args: any) => {
       this.log('signal server error')
+      this.emit('error', args)
     }
 
     this.serverConnection.onopen = onopen.bind(this)

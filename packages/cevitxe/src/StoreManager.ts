@@ -79,8 +79,10 @@ export class StoreManager<T> extends EventEmitter {
       urls: this.urls,
     })
 
-    this.connectionManager.on(CONNECTION.PEER_ADDED, (payload) => this.emit(CONNECTION.PEER_ADDED, payload))
-    this.connectionManager.on(CONNECTION.PEER_REMOVED, (payload) => this.emit(CONNECTION.PEER_REMOVED, payload))
+    this.connectionManager.on(CONNECTION.OPEN, (payload) => this.emit(CONNECTION.OPEN, payload))
+    this.connectionManager.on(CONNECTION.CLOSE, (payload) => this.emit(CONNECTION.CLOSE, payload))
+    this.connectionManager.on(CONNECTION.PEER_ADD, (payload) => this.emit(CONNECTION.PEER_ADD, payload))
+    this.connectionManager.on(CONNECTION.PEER_REMOVE, (payload) => this.emit(CONNECTION.PEER_REMOVE, payload))
 
     return this.store
   }

@@ -26,6 +26,8 @@ export class ConnectionManager extends EventEmitter {
 
     this.signalClient.join(discoveryKey)
     this.signalClient.on('peer', this.addPeer)
+    this.signalClient.on('open', () => this.emit(CONNECTION.OPEN))
+    this.signalClient.on('close', () => this.emit(CONNECTION.CLOSE))
   }
 
   private addPeer = (peer: Peer, discoveryKey: string) => {
@@ -34,14 +36,14 @@ export class ConnectionManager extends EventEmitter {
     if (socket) this.connections[peer.id] = new Connection(this.repo, socket, this.dispatch)
     peer.on('close', () => this.removePeer(peer.id))
     log('added peer', peer.id)
-    this.emit(CONNECTION.PEER_ADDED, Object.keys(this.connections))
+    this.emit(CONNECTION.PEER_ADD, Object.keys(this.connections))
   }
 
   private removePeer = (peerId: string) => {
     if (this.connections[peerId]) this.connections[peerId].close()
     delete this.connections[peerId]
     log('removed peer', peerId)
-    this.emit(CONNECTION.PEER_REMOVED, Object.keys(this.connections))
+    this.emit(CONNECTION.PEER_REMOVE, Object.keys(this.connections))
   }
 
   public get connectionCount() {
@@ -64,6 +66,8 @@ interface ClientOptions {
 }
 
 export enum CONNECTION {
-  PEER_ADDED = 'peer_added',
-  PEER_REMOVED = 'peer_removed'
+  OPEN = 'open',
+  CLOSE = 'close',
+  PEER_ADD = 'peer_add',
+  PEER_REMOVE = 'peer_remove'
 }
