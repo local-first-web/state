@@ -47,14 +47,18 @@ export const Status = ({ storeManager }: StatusProps) => {
 
   useEffect(addListeners, [storeManager]) // fires when storeManager changes
 
-  const title = !online
-    ? 'offline'
-    : `online; ${peers.length} other ${peers.length === 1 ? 'peer is' : 'peers are'} connected`
+  const peerCountMessage =
+    peers.length === 0
+      ? 'no peers are connected'
+      : peers.length === 1
+      ? `one peer is connected`
+      : `${peers.length} other peers are connected`
+  const statusMessage = online ? `online; ${peerCountMessage}` : 'offline'
   return (
-    <div css={styles.toolbarGroup} title={title}>
+    <div css={styles.toolbarGroup} title={statusMessage}>
       <label>
         <StatusLight online={online} />
-        {peers.length}
+        {online ? <span css={{ marginLeft: '.5em' }}>{peers.length}</span> : ''}
       </label>
     </div>
   )
