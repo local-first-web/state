@@ -9,6 +9,9 @@ import { ConnectionEvent } from 'cevitxe-types'
 
 const { OPEN, CLOSE, PEER } = ConnectionEvent
 
+const initialRetryDelay = 1000
+const backoffCoeff = 1.5 + Math.random() * 0.1
+
 /**
  * This is a client for `cevitxe-signal-server` that makes it easier to interact with it.
  *
@@ -82,7 +85,7 @@ export class Client extends EventEmitter {
     const onclose = () => {
       this.retryDelay *= backoffCoeff
       this.log(
-        `signal server connection closed... reconnecting in ${Math.floor(this.retryDelay / 1000)}s`
+        `signal server connection closed... retrying in ${Math.floor(this.retryDelay / 1000)}s`
       )
       setTimeout(() => this.connectToServer(), this.retryDelay)
       this.emit(CLOSE)
