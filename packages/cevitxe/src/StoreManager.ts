@@ -1,12 +1,12 @@
-import { EventEmitter } from 'events'
 import A from 'automerge'
 import { newid } from 'cevitxe-signal-client'
-import { ProxyReducer, RepoSnapshot, Snapshot } from 'cevitxe-types'
+import { ConnectionEvent, ProxyReducer, RepoSnapshot, Snapshot } from 'cevitxe-types'
 import cuid from 'cuid'
 import debug from 'debug'
+import { EventEmitter } from 'events'
 import { applyMiddleware, createStore, Middleware, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
-import { ConnectionManager, CONNECTION } from './ConnectionManager'
+import { ConnectionManager } from './ConnectionManager'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getReducer } from './getReducer'
@@ -15,6 +15,7 @@ import { Repo } from './Repo'
 
 let log = debug('cevitxe:StoreManager')
 
+const { OPEN, CLOSE, PEER: PEER_ADD, PEER_REMOVE } = ConnectionEvent
 /**
  * A StoreManager generates a Redux store with persistence (via the Repo class), networking (via
  * cevitxe-signal-client), and magical synchronization with peers (via automerge)
@@ -79,10 +80,11 @@ export class StoreManager<T> extends EventEmitter {
       urls: this.urls,
     })
 
-    this.connectionManager.on(CONNECTION.OPEN, (payload) => this.emit(CONNECTION.OPEN, payload))
-    this.connectionManager.on(CONNECTION.CLOSE, (payload) => this.emit(CONNECTION.CLOSE, payload))
-    this.connectionManager.on(CONNECTION.PEER_ADD, (payload) => this.emit(CONNECTION.PEER_ADD, payload))
-    this.connectionManager.on(CONNECTION.PEER_REMOVE, (payload) => this.emit(CONNECTION.PEER_REMOVE, payload))
+    pipeEvents({
+      source: this.connectionManager,
+      target: this,
+      events: [OPEN, CLOSE, PEER_ADD, PEER_REMOVE],
+    })
 
     return this.store
   }
@@ -140,3 +142,13 @@ export interface StoreManagerOptions<T> {
 
 // Use shorter IDs
 A.uuid.setFactory(cuid)
+
+const pipeEvents = ({
+  source,
+  target,
+  events,
+}: {
+  source: EventEmitter
+  target: EventEmitter
+  events: ConnectionEvent[]
+}) => events.forEach(event => source.on(event, payload => target.emit(event, payload)))
