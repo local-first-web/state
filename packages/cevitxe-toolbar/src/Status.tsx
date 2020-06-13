@@ -16,7 +16,9 @@ export const Status = ({ storeManager }: StatusProps) => {
   const [online, setOnline] = useState<boolean>(false)
   const [peers, setPeers] = useState<string[]>([])
 
-  const onPeer = (updatedPeers: string[]) => setPeers(updatedPeers)
+  const onPeer = (updatedPeers: string[]) => {
+    setPeers(updatedPeers)
+  }
 
   const onOpen = () => {
     setOnline(true)
