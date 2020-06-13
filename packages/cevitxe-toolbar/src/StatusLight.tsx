@@ -7,7 +7,7 @@ export const StatusLight = ({ online }: { online: boolean }) => (
   </div>
 )
 
-const styles = (connected: boolean) => ({
+const styles = (online: boolean) => ({
   statusLight: {
     display: 'inline-block',
     marginRight: '1em',
@@ -17,7 +17,7 @@ const styles = (connected: boolean) => ({
       height: 10,
       borderRadius: '50%',
       border: '1px solid white',
-      background: connected ? 'green' : 'silver',
+      background: online ? 'green' : 'silver',
     },
   },
 })
