@@ -10,7 +10,6 @@ export const StatusLight = ({ online }: { online: boolean }) => (
 const styles = (online: boolean) => ({
   statusLight: {
     display: 'inline-block',
-    marginRight: '1em',
     span: {
       display: 'block',
       width: 10,
