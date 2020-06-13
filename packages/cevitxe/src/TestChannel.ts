@@ -1,6 +1,9 @@
 ﻿import { EventEmitter } from 'events'
 import { Message } from './Message'
 import debug from 'debug'
+import { ConnectionEvent } from 'cevitxe-types'
+
+const { DATA } = ConnectionEvent
 
 const log = debug('HIDE:cevitxe:testchannel')
 /**
@@ -16,23 +19,25 @@ const log = debug('HIDE:cevitxe:testchannel')
  * ```
  */
 export class TestChannel extends EventEmitter {
+  private peers: number = 0
+  private buffer: { id: string; msg: Message }[] = []
+
   addPeer() {
     this.peers++
     if (this.peers > 1) {
       log('sending buffer')
       for (const { id, msg } of this.buffer) {
         log('emitting', id, msg)
-        this.emit('data', id, msg)
+        this.emit(DATA, id, msg)
       }
       this.buffer = []
     }
   }
-  private peers: number = 0
-  private buffer: { id: string; msg: Message }[] = []
+
   write(id: string, msg: Message) {
     if (this.peers > 1) {
       log('emitting', id, msg)
-      this.emit('data', id, msg)
+      this.emit(DATA, id, msg)
     } else {
       log('buffering', id, msg)
       this.buffer.push({ id, msg })
