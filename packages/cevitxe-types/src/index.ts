@@ -126,3 +126,17 @@ export interface SnapshotRecord {
   /** The vector clock when the snapshot was taken  */
   clock: Clock
 }
+
+// connection events
+
+export enum ConnectionEvent {
+  OPEN = 'open',
+  READY = 'ready',
+  CONNECTION = 'connection',
+  CLOSE = 'close',
+  ERROR = 'error',
+  PEER = 'peer',
+  PEER_REMOVE = 'peer_remove',
+  MESSAGE = 'message',
+  DATA = 'data',
+}

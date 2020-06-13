@@ -11,6 +11,7 @@
     "dev": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 ts-node-dev --respawn --transpileOnly src/start.ts"
   },
   "dependencies": {
+    "cevitxe-types": "^0.4.2",
     "bs58": "4",
     "express": ">=4.5.0",
     "express-ws": "4",

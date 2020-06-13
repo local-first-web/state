@@ -2,8 +2,10 @@ import debug from 'debug'
 import WebSocket from 'ws'
 import { Server } from './Server'
 import { getPortPromise as getAvailablePort } from 'portfinder'
+import { ConnectionEvent } from 'cevitxe-types'
 
 const log = debug('cevitxe:signal-server:tests')
+const { MESSAGE, OPEN } = ConnectionEvent
 
 describe('Server', () => {
   let port: number
@@ -45,7 +47,7 @@ describe('Server', () => {
   const makeIntroductionRequest = (id: string, key: string) => {
     const peer = new WebSocket(`${introductionUrl}/${id}`)
     const joinMessage = { type: 'Join', id: id, join: [key] }
-    peer.once('open', () => peer.send(JSON.stringify(joinMessage)))
+    peer.once(OPEN, () => peer.send(JSON.stringify(joinMessage)))
     return peer
   }
 
@@ -59,7 +61,7 @@ describe('Server', () => {
 
       const localPeer = new WebSocket(`${introductionUrl}/${localId}`)
 
-      localPeer.once('open', () => {
+      localPeer.once(OPEN, () => {
         expect(server.peers).toHaveProperty(localId)
         expect(server.keys).toEqual({})
         done()
@@ -73,7 +75,7 @@ describe('Server', () => {
       const remotePeer = makeIntroductionRequest(remoteId, key)
 
       const localDone = new Promise(resolve => {
-        localPeer.once('message', d => {
+        localPeer.once(MESSAGE, d => {
           const invitation = JSON.parse(d.toString())
           expect(invitation.id).toEqual(remoteId)
           expect(invitation.keys).toEqual([key])
@@ -81,7 +83,7 @@ describe('Server', () => {
         })
       })
       const remoteDone = new Promise(resolve => {
-        remotePeer.once('message', d => {
+        remotePeer.once(MESSAGE, d => {
           const invitation = JSON.parse(d.toString())
           expect(invitation.id).toEqual(localId)
           expect(invitation.keys).toEqual([key])
@@ -99,7 +101,7 @@ describe('Server', () => {
       const localIntroductionPeer = makeIntroductionRequest(localId, key)
       const remoteIntroductionPeer = makeIntroductionRequest(remoteId, key) // need to make request even if we don't use the result
 
-      localIntroductionPeer.once('message', d => {
+      localIntroductionPeer.once(MESSAGE, d => {
         // recap of previous test: we'll get an invitation to connect to the remote peer
         const invitation = JSON.parse(d.toString())
 
@@ -110,14 +112,14 @@ describe('Server', () => {
         const remotePeer = new WebSocket(`${connectionUrl}/${remoteId}/${localId}/${key}`)
 
         // send message from local to remote
-        localPeer.once('open', () => localPeer.send('DUDE!!'))
-        remotePeer.once('message', d => {
+        localPeer.once(OPEN, () => localPeer.send('DUDE!!'))
+        remotePeer.once(MESSAGE, d => {
           expect(d).toEqual('DUDE!!')
         })
 
         // send message from remote to local
-        remotePeer.once('open', () => remotePeer.send('hello'))
-        localPeer.once('message', d => {
+        remotePeer.once(OPEN, () => remotePeer.send('hello'))
+        localPeer.once(MESSAGE, d => {
           expect(d).toEqual('hello')
           done()
         })
@@ -130,21 +132,21 @@ describe('Server', () => {
       const localIntroductionPeer = makeIntroductionRequest(localId, key)
       const remoteIntroductionPeer = makeIntroductionRequest(remoteId, key) // need to make request even if we don't use the result
 
-      localIntroductionPeer.once('message', d => {
+      localIntroductionPeer.once(MESSAGE, d => {
         const localPeer = new WebSocket(`${connectionUrl}/${localId}/${remoteId}/${key}`)
         const remotePeer = new WebSocket(`${connectionUrl}/${remoteId}/${localId}/${key}`)
 
-        localPeer.once('open', () => {
+        localPeer.once(OPEN, () => {
           localPeer.send('DUDE!!')
           // close local after sending
           localPeer.close()
         })
 
-        remotePeer.once('message', d => {
+        remotePeer.once(MESSAGE, d => {
           expect(d).toEqual('DUDE!!')
 
           remotePeer.send('hello')
-          localPeer.once('message', d => {
+          localPeer.once(MESSAGE, d => {
             throw new Error('should never get here')
           })
           done()
@@ -162,7 +164,7 @@ describe('Server', () => {
       const introductionPeers = ids.map(d => makeIntroductionRequest(d, key))
       let invitations = 0
       introductionPeers.forEach(introductionPeer => {
-        introductionPeer.on('message', data => {
+        introductionPeer.on(MESSAGE, data => {
           const introduction = JSON.parse(data.toString())
           expect(introduction.type).toBe('Introduction')
           invitations++

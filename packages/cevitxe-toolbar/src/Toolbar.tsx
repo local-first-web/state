@@ -8,8 +8,13 @@ import React, { useEffect, useRef, useState } from 'react'
 import Redux from 'redux'
 import { StringParam, useQueryParam } from 'use-query-params'
 import { wordPair } from './wordPair'
+import { Status } from './Status'
 
-export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
+export const Toolbar = ({
+  storeManager,
+  onStoreReady,
+  children,
+}: React.PropsWithChildren<ToolbarProps<any>>) => {
   // Hooks
   const [discoveryKey, setDiscoveryKey] = useQueryParam('id', StringParam)
   const [, setAppStore] = useState()
@@ -153,6 +158,8 @@ export const Toolbar = ({ storeManager, onStoreReady }: ToolbarProps<any>) => {
           )
         }}
       </Formik>
+      <Status storeManager={storeManager} />
+      {children}
     </div>
   )
 }
@@ -210,7 +217,7 @@ export const styles: Stylesheet = {
   },
   input: {
     boxSizing: 'border-box',
-    marginRight: 5,
+    margin: '0 5px',
     padding: '6px 15px',
     border: '1px solid #eee',
     borderRadius: '3px',
@@ -249,4 +256,4 @@ export const styles: Stylesheet = {
   },
 }
 
-type Stylesheet = { [k: string]: CSSObject | ((...args: any[]) => CSSObject) }
+export type Stylesheet = { [k: string]: CSSObject | ((...args: any[]) => CSSObject) }

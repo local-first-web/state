@@ -2,7 +2,10 @@ import Debug from 'debug'
 import { PeerOptions } from './types'
 import { EventEmitter } from 'events'
 
+import { ConnectionEvent } from 'cevitxe-types'
+
 const log = Debug('cevitxe:signal-client:peer')
+const { OPEN, CLOSE } = ConnectionEvent
 
 /**
  * The Peer class holds one or more sockets, one per key (aka discoveryKey aka channel).
@@ -14,7 +17,7 @@ const log = Debug('cevitxe:signal-client:peer')
  * You interact with that socket just like you would any socket:
  * ```ts
  * socket.send('hello!')
- * socket.on('message', message => {...})
+ * socket.on(MESSAGE, message => {...})
  * ```
  */
 export class Peer extends EventEmitter {
@@ -39,11 +42,11 @@ export class Peer extends EventEmitter {
 
     const onopen = () => {
       log('open', key)
-      this.emit('open', key)
+      this.emit(OPEN, key)
     }
     const onclose = () => {
       log('socket.onclose')
-      this.emit('close')
+      this.emit(CLOSE)
       this.remove(key)
     }
     const onerror = ({ err }: any) => {

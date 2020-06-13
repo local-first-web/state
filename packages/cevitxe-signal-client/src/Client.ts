@@ -5,9 +5,12 @@ import { Peer } from './Peer'
 import { Message } from 'cevitxe-signal-server'
 import { ClientOptions } from './types'
 import { newid } from './newid'
+import { ConnectionEvent } from 'cevitxe-types'
 
-const initialRetryDelay = 5000
-const backoffCoeff = 1.5
+const { OPEN, CLOSE, PEER } = ConnectionEvent
+
+const initialRetryDelay = 1000
+const backoffCoeff = 1.5 + Math.random() * 0.1
 
 /**
  * This is a client for `cevitxe-signal-server` that makes it easier to interact with it.
@@ -76,14 +79,16 @@ export class Client extends EventEmitter {
         type: 'Join',
         join: [...this.keys],
       })
+      this.emit(OPEN)
     }
 
     const onclose = () => {
       this.retryDelay *= backoffCoeff
       this.log(
-        `signal server connection closed... reconnecting in ${Math.floor(this.retryDelay / 1000)}s`
+        `signal server connection closed... retrying in ${Math.floor(this.retryDelay / 1000)}s`
       )
       setTimeout(() => this.connectToServer(), this.retryDelay)
+      this.emit(CLOSE)
     }
 
     const onmessage = ({ data }: { data: string }) => {
@@ -93,7 +98,7 @@ export class Client extends EventEmitter {
     }
 
     const onerror = (args: any) => {
-      this.log('signal server error')
+      this.log('signal server error', args)
     }
 
     this.serverConnection.onopen = onopen.bind(this)
@@ -149,9 +154,9 @@ export class Client extends EventEmitter {
           const peer = this.peers.get(id) || this.connectToPeer(id)
           const newKeys = keys.filter(key => !peer.has(key))
           newKeys.forEach(key => {
-            peer.on('open', peerKey => {
+            peer.on(OPEN, peerKey => {
               this.log('found peer', id, peerKey)
-              this.emit('peer', peer, key)
+              this.emit(PEER, peer, key)
             })
             peer.add(key)
           })

@@ -8,6 +8,9 @@ import { deduplicate } from './lib/deduplicate'
 import { intersection } from './lib/intersection'
 import { pipeSockets } from './lib/pipeSockets'
 import { ConnectRequestParams, KeySet, Message } from './types'
+import { ConnectionEvent } from 'cevitxe-types'
+
+const { READY, CONNECTION, CLOSE, MESSAGE } = ConnectionEvent
 
 const { app } = expressWs(express())
 const fishPage =
@@ -74,8 +77,8 @@ export class Server extends EventEmitter {
     this.log('introduction connection', id)
     this.peers[id] = peer
 
-    peer.on('message', this.receiveIntroductionRequest(id))
-    peer.on('close', this.closeIntroductionConnection(id))
+    peer.on(MESSAGE, this.receiveIntroductionRequest(id))
+    peer.on(CLOSE, this.closeIntroductionConnection(id))
 
     this.emit('introductionConnection', id)
   }
@@ -153,12 +156,12 @@ export class Server extends EventEmitter {
       this.holding[AseeksB] = peerA // hold A's socket ready
       this.messages[AseeksB] = [] // hold any messages A sends to B in the meantime
 
-      peerA.on('message', (message: Data) => {
+      peerA.on(MESSAGE, (message: Data) => {
         // hold on to incoming message from A for B
         if (this.messages[AseeksB]) this.messages[AseeksB].push(message)
       })
 
-      peerA.on('close', () => {
+      peerA.on(CLOSE, () => {
         // clean up
         delete this.holding[AseeksB]
         delete this.messages[AseeksB]
@@ -208,10 +211,10 @@ export class Server extends EventEmitter {
         const msg = `🐟 Listening at http://localhost:${this.port}  `
         if (!silent) console.log(msg)
         this.log(msg)
-        this.emit('ready')
+        this.emit(READY)
         resolve()
       })
-      this.httpServer.on('connection', socket => this.sockets.push(socket))
+      this.httpServer.on(CONNECTION, socket => this.sockets.push(socket))
     })
   }
 
@@ -222,7 +225,7 @@ export class Server extends EventEmitter {
         this.sockets.forEach(socket => socket.destroy())
         this.httpServer.close(() => {
           this.log('closed')
-          this.emit('closed')
+          this.emit(CLOSE)
           resolve()
         })
       } else this.log('nothing to close!')

@@ -3,6 +3,9 @@ import debug from 'debug'
 import { getPortPromise as getAvailablePort } from 'portfinder'
 import { Client } from './Client'
 import { Peer } from './Peer'
+import { ConnectionEvent } from 'cevitxe-types'
+
+const { PEER } = ConnectionEvent
 
 describe('Client', () => {
   const log = debug('cevitxe:signal-client:tests')
@@ -60,13 +63,13 @@ describe('Client', () => {
 
       await Promise.all([
         new Promise(resolve => {
-          localClient.on('peer', peer => {
+          localClient.on(PEER, peer => {
             expect(peer.id).toEqual(remoteId)
             resolve()
           })
         }),
         new Promise(resolve => {
-          remoteClient.on('peer', peer => {
+          remoteClient.on(PEER, peer => {
             expect(peer.id).toEqual(localId)
             resolve()
           })
@@ -86,12 +89,12 @@ describe('Client', () => {
       localClient.join(key)
       remoteClient.join(key)
 
-      localClient.on('peer', (peer: Peer) => {
+      localClient.on(PEER, (peer: Peer) => {
         const connection = peer.get(key)
         connection.send('hello')
       })
 
-      remoteClient.on('peer', (peer: Peer) => {
+      remoteClient.on(PEER, (peer: Peer) => {
         const socket = peer.get(key)
 
         socket.onmessage = ({ data }) => {

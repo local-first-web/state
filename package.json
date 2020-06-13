@@ -15,7 +15,7 @@
     "dev:signal-server": "yarn workspace cevitxe-signal-server dev",
     "dev:grid": "run-p watch dev:grid:wait",
     "dev:grid:wait": "run-s wait dev:grid:start",
-    "dev:grid:start": "run-p dev:signal-server start",
+    "dev:grid:start": "run-p dev:signal-server watch start:grid",
     "dev:grid:e2e": "run-p dev:grid test:grid:e2e",
     "dev:todo": "run-p watch dev:todo:wait",
     "dev:todo:wait": "run-s wait dev:todo:start",
