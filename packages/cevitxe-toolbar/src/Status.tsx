@@ -1,76 +1,59 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
 import { StoreManager } from 'cevitxe'
-import { Component, Fragment } from 'react'
+import { ConnectionEvent } from 'cevitxe-types'
+import { useEffect, useState } from 'react'
 import { StatusLight } from './StatusLight'
 import { styles } from './Toolbar'
-import { ConnectionEvent } from 'cevitxe-types'
 
 const { OPEN, CLOSE, PEER, PEER_REMOVE } = ConnectionEvent
 
-interface StatusProps<T> {
-  storeManager: StoreManager<T>
+interface StatusProps {
+  storeManager: StoreManager<any>
 }
 
-interface StatusState {
-  peers?: String[]
-}
+export const Status = ({ storeManager }: StatusProps) => {
+  const [online, setOnline] = useState<boolean>(false)
+  const [peers, setPeers] = useState<string[]>([])
 
-export class Status extends Component<StatusProps<any>, StatusState> {
-  constructor(props: StatusProps<any>) {
-    super(props)
-    this.state = { peers: undefined }
-    this.peerHandler = this.peerHandler.bind(this)
-    this.openHandler = this.openHandler.bind(this)
-    this.closeHandler = this.closeHandler.bind(this)
+  const onPeer = (updatedPeers: string[]) => setPeers(updatedPeers)
+
+  const onOpen = () => {
+    setOnline(true)
+    setPeers([])
   }
 
-  peerHandler(peers: String[]) {
-    this.setState({ peers })
+  const onClose = () => {
+    setOnline(false)
+    setPeers([])
   }
 
-  openHandler() {
-    this.setState({ peers: [] })
+  const addListeners = () => {
+    storeManager.on(OPEN, onOpen)
+    storeManager.on(CLOSE, onClose)
+    storeManager.on(PEER, onPeer)
+    storeManager.on(PEER_REMOVE, onPeer)
+    return removeListeners // return cleanup function
   }
 
-  closeHandler() {
-    this.setState({ peers: undefined })
+  const removeListeners = () => {
+    storeManager.off(OPEN, onOpen)
+    storeManager.off(CLOSE, onClose)
+    storeManager.off(PEER, onPeer)
+    storeManager.off(PEER_REMOVE, onPeer)
   }
 
-  componentDidMount() {
-    const m = this.props.storeManager
-    m.on(OPEN, this.openHandler)
-    m.on(CLOSE, this.closeHandler)
-    m.on(PEER, this.peerHandler)
-    m.on(PEER_REMOVE, this.peerHandler)
-  }
+  useEffect(addListeners, [storeManager]) // fires when storeManager changes
 
-  componentWillUnmount() {
-    const m = this.props.storeManager
-    m.off(OPEN, this.openHandler)
-    m.off(CLOSE, this.closeHandler)
-    m.off(PEER, this.peerHandler)
-    m.off(PEER_REMOVE, this.peerHandler)
-  }
-
-  render() {
-    const { peers } = this.state
-    return (
-      <div
-        css={styles.toolbarGroup}
-        title={
-          !peers
-            ? 'offline'
-            : `online; ${peers.length} other ${
-                peers.length === 1 ? 'peer is' : 'peers are'
-              } connected`
-        }
-      >
-        <label>
-          <StatusLight connected={!!peers} />
-          {peers && <Fragment>{peers.length}</Fragment>}
-        </label>
-      </div>
-    )
-  }
+  const title = !online
+    ? 'offline'
+    : `online; ${peers.length} other ${peers.length === 1 ? 'peer is' : 'peers are'} connected`
+  return (
+    <div css={styles.toolbarGroup} title={title}>
+      <label>
+        <StatusLight online={online} />
+        {peers.length}
+      </label>
+    </div>
+  )
 }

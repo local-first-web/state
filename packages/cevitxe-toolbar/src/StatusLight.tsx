@@ -1,8 +1,8 @@
 ﻿/** @jsx jsx */
 import { jsx } from '@emotion/core'
 
-export const StatusLight = ({ connected }: { connected: boolean }) => (
-  <div css={styles(connected).statusLight}>
+export const StatusLight = ({ online }: { online: boolean }) => (
+  <div css={styles(online).statusLight}>
     <span></span>
   </div>
 )
