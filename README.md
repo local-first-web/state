@@ -167,3 +167,4 @@ the browser unless otherwise noted.
 - [HyperDB](https://github.com/mafintosh/hyperdb) From the DAT Project. Showcased in a cool sample
   app by @jimpick: [Dat Shopping List](https://blog.datproject.org/2018/05/14/dat-shopping-list/).
 - [GunDB](https://gun.eco) Distributed graph database.
+- [Logux](https://logux.io/) similar to Cevitxe, but will use [Logux Data](https://github.com/logux/logux/issues/11) instead of Automerge.
