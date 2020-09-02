@@ -4,8 +4,8 @@
   "version": "0.4.2",
   "license": "MIT",
   "private": false,
-  "main": "dist/src/Toolbar.js",
-  "typings": "dist/src/Toolbar.d.ts",
+  "main": "dist/src/index.js",
+  "typings": "dist/src/index.d.ts",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "tsc ",
@@ -22,6 +22,7 @@
     "react": "16",
     "react-dom": "^16.0.1",
     "redux": "4",
+    "taco-js": "*",
     "use-persisted-state": "0",
     "use-query-params": "0"
   },

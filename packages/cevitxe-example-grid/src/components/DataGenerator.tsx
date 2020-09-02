@@ -1,6 +1,5 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
-import { menu, styles } from 'cevitxe-toolbar'
 import { JSONSchema7 } from 'json-schema'
 import { Fragment, useState } from 'react'
 import { useDispatch } from 'react-redux'
@@ -9,6 +8,7 @@ import { clearCollection, loadCollection, loadSchema } from 'redux/actions'
 import { nextFrame } from '../utils/nextFrame'
 import GeneratorWorker from './dataGenerator.worker'
 import { ProgressBar } from './ProgressBar'
+import { Button, Group, MenuWrapper, Menu, MenuItem } from 'cevitxe-toolbar'
 
 /**
  * The actual generation of random data is performed in a worker
@@ -45,22 +45,15 @@ export function DataGenerator() {
   }
 
   return (
-    <div css={styles.toolbarGroup}>
-      <div css={styles.menuWrapper}>
-        <button
-          type="button"
-          onFocus={toggleMenu}
-          onBlur={hideMenu}
-          css={styles.button}
-          disabled={progress > 0}
-        >
-          {progress ? 'Generating...' : 'Generate data'}
-        </button>
-        <div css={menu(menuOpen)}>
+    <Group>
+      <MenuWrapper>
+        <Button onFocus={toggleMenu} onBlur={hideMenu} disabled={progress > 0}>
+          {progress ? '⌚ Generating...' : '🧮 Generate data'}
+        </Button>
+        <Menu open={menuOpen}>
           {[10, 100, 1000, 10000, 100000, 200000, 500000, 1000000].map(rows => (
-            <button
+            <MenuItem
               key={rows}
-              css={styles.menuItem}
               type="button"
               disabled={progress > 0}
               onClick={() => {
@@ -68,17 +61,17 @@ export function DataGenerator() {
               }}
             >
               {rows.toLocaleString()} rows
-            </button>
+            </MenuItem>
           ))}
-        </div>
-      </div>
+        </Menu>
+      </MenuWrapper>
       {progress > 0 && (
         <Fragment>
           <ProgressBar percentComplete={progress} />
           <label>{`${progress}%`}</label>
         </Fragment>
       )}
-    </div>
+    </Group>
   )
 }
 

@@ -4,7 +4,7 @@ import { StoreManager } from 'cevitxe'
 import { ConnectionEvent } from 'cevitxe-types'
 import { useEffect, useState } from 'react'
 import { StatusLight } from './StatusLight'
-import { styles } from './Toolbar'
+import { Group } from './Group'
 
 const { OPEN, CLOSE, PEER, PEER_REMOVE } = ConnectionEvent
 
@@ -55,11 +55,11 @@ export const Status = ({ storeManager }: StatusProps) => {
       : `${peers.length} other peers are connected`
   const statusMessage = online ? `online; ${peerCountMessage}` : 'offline'
   return (
-    <div css={styles.toolbarGroup} title={statusMessage}>
+    <Group title={statusMessage}>
       <label>
         <StatusLight online={online} />
         {online ? <span css={{ marginLeft: '.5em' }}>{peers.length}</span> : ''}
       </label>
-    </div>
+    </Group>
   )
 }
