@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "build": "lerna run build",
+    "build:css": "yarn workspace cevitxe-toolbar run build:css",
     "build:quick": "tsc -b packages/cevitxe-signal-server packages/cevitxe-storage-indexeddb packages/cevitxe-toolbar packages/cevitxe",
     "start": "run-p watch start:grid",
     "start:grid": "yarn workspace cevitxe-example-grid start",
@@ -23,7 +24,9 @@
     "dev:todo:e2e": "run-p dev:todo test:todo:e2e",
     "lint": "lerna run lint",
     "publish": "lerna publish --yes",
-    "watch": "yarn build:quick --watch",
+    "watch": "run-p watch:build:quick watch:build:css",
+    "watch:build:quick": "yarn build:quick --watch",
+    "watch:build:css": "yarn build:css --watch",
     "wait": "wait-on ./packages/cevitxe/dist/src/index.js",
     "test": "jest",
     "test:todo:e2e": "yarn workspace cevitxe-example-todo test:e2e",

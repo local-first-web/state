@@ -83,7 +83,7 @@ export const Toolbar = ({
   return (
     <Container>
       <Group>
-        <label>Welcome, {localUser.userName}</label>
+        <label>Welcome, {localUser.userName}!</label>
       </Group>
       {/* New button */}
       <Group>

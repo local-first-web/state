@@ -8,9 +8,13 @@
   "typings": "dist/src/index.d.ts",
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "tsc ",
+    "build": "run-p build:*",
+    "build:ts": "tsc",
+    "build:css": "postcss src/styles.postcss -o dist/styles.css",
     "lint": "tsc -p tsconfig.strict.json --noEmit",
-    "watch": "tsc --watch",
+    "watch": "run-p watch:*",
+    "watch:ts": "yarn build:ts --watch",
+    "watch:css": "yarn build:css --watch",
     "test": "jest"
   },
   "dependencies": {
@@ -23,6 +27,7 @@
     "react-dom": "^16.0.1",
     "redux": "4",
     "taco-js": "*",
+    "tailwindcss": "^1.7.6",
     "use-persisted-state": "0",
     "use-query-params": "0"
   },
@@ -31,6 +36,7 @@
     "@types/query-string": "6",
     "@types/use-persisted-state": "0",
     "jest": "25",
+    "postcss-cli": "^7.1.2",
     "prettier": "1",
     "rimraf": "3",
     "ts-jest": "25",

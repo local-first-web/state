@@ -2,36 +2,17 @@
 import { jsx } from '@emotion/core'
 import { FunctionComponent } from 'react'
 
-export const Button: FunctionComponent<any> = ({ children, css, ...props }) => {
+export const Button: FunctionComponent<any> = ({ children, className, ...props }) => {
   return (
     <button
       role="button"
       type="button"
-      css={{
-        ...css,
-        background: 'white',
-        border: '1px solid #ddd',
-        boxSizing: 'border-box',
-        color: 'black',
-        cursor: 'pointer',
-        display: 'block',
-        fontFamily: 'inconsolata, monospace',
-        fontSize: 14,
-        ':hover': {
-          background: 'lightBlue',
-        },
-        ':focus': {
-          outline: '1px inset blue',
-        },
-        height: 30,
-        lineHeight: 1,
-        padding: '6px 15px',
-        textDecoration: 'none',
-        textAlign: 'left',
-        margin: '0 5px',
-        borderRadius: 3,
-        textTransform: 'uppercase',
-      }}
+      className={`block py-2 px-4 mx-2 
+        font-mono text-sm leading-none uppercase text-gray-900 
+        bg-white hover:bg-blue-100 
+        rounded-md border border-gray-400 focus:outline-none focus:border-blue-500
+        cursor-pointer 
+        ${className}`}
       {...props}
     >
       {children}

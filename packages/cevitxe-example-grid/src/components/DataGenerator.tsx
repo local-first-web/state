@@ -48,7 +48,7 @@ export function DataGenerator() {
     <Group>
       <MenuWrapper>
         <Button onFocus={toggleMenu} onBlur={hideMenu} disabled={progress > 0}>
-          {progress ? '⌚ Generating...' : '🧮 Generate data'}
+          {progress ? '⌚ Generating...' : '⚙ Generate data'}
         </Button>
         <Menu open={menuOpen}>
           {[10, 100, 1000, 10000, 100000, 200000, 500000, 1000000].map(rows => (
