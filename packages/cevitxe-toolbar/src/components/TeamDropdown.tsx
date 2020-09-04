@@ -15,7 +15,7 @@ export const TeamDropdown: React.FunctionComponent<any> = () => {
         <Item>little.snake</Item>
         <Item>mysterious.mongoose</Item>
         <div className="py-2 px-4">
-          <Button>✉ Invite</Button>
+          <Button>💌 Invite</Button>
         </div>
       </DropdownWrapper>
     </Group>
