@@ -6,7 +6,7 @@ export const Container: FunctionComponent = ({ children }) => {
   return (
     <div
       className="
-        flex flex-row relative z-10
+        flex flex-row 
         bg-gray-100
         border-b border-gray-400
         text-sm font-mono"

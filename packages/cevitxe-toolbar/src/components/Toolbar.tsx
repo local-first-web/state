@@ -8,9 +8,11 @@ import { StringParam, useQueryParam } from 'use-query-params'
 import { localUser } from '../lib/localUser'
 import { randomDiscoveryKey } from '../lib/randomName'
 import { Button } from './Button'
-import { Container } from './Container'
 import { Group } from './Group'
 import { Status } from './Status'
+import { TeamDropdown } from './TeamDropdown'
+import { Container } from './ToolbarRow'
+import { WelcomeMessage } from './WelcomeMessage'
 
 export const Toolbar = ({
   storeManager,
@@ -32,11 +34,6 @@ export const Toolbar = ({
     else createStore()
   }, []) // only runs on first render
 
-  // select on focus
-  useEffect(() => {
-    if (inputHasFocus && input.current) input.current.select()
-  }, [inputHasFocus])
-
   const log = debug(`cevitxe:toolbar:${discoveryKey}`)
   log('render')
 
@@ -53,7 +50,6 @@ export const Toolbar = ({
     return newDiscoveryKey
   }
 
-  // 'join' button click
   const joinStore = async (newDiscoveryKey?: string) => {
     if (!newDiscoveryKey) return
     if (busy) return
@@ -82,12 +78,8 @@ export const Toolbar = ({
 
   return (
     <Container>
-      <Group>
-        <label>Welcome, {localUser.userName}</label>
-      </Group>
-      <Group>
-        <Button>👪 Team</Button>
-      </Group>
+      <WelcomeMessage name={localUser.userName} />
+      <TeamDropdown></TeamDropdown>
       <Group>
         <Button onClick={newClick}>📄 New</Button>
       </Group>

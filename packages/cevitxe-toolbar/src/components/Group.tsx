@@ -5,7 +5,7 @@ import { FunctionComponent } from 'react'
 export const Group: FunctionComponent<any> = ({ children, ...props }) => {
   return (
     <div
-      className="h-10 p-1 justify-center flex border-r border-gray-400"
+      className="h-10 py-1 px-3 border-r border-gray-400 justify-center flex "
       css={{
         minWidth: 40,
         label: {

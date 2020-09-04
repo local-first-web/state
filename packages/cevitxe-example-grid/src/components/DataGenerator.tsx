@@ -1,14 +1,13 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
-import { JSONSchema7 } from 'json-schema'
+import { DropdownWrapper, Group, MenuItem } from 'cevitxe-toolbar'
 import { Fragment, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { clearCollection, loadCollection, loadSchema } from 'redux/actions'
-
 import { nextFrame } from '../utils/nextFrame'
 import GeneratorWorker from './dataGenerator.worker'
+import { dataGeneratorSchema } from './dataGeneratorSchema'
 import { ProgressBar } from './ProgressBar'
-import { Button, Group, MenuWrapper, Menu, MenuItem } from 'cevitxe-toolbar'
 
 /**
  * The actual generation of random data is performed in a worker
@@ -17,16 +16,12 @@ const generator = new GeneratorWorker()
 
 export function DataGenerator() {
   const dispatch = useDispatch()
-  const [menuOpen, setMenuOpen] = useState(false)
   const [progress, setProgress] = useState(0)
-
-  const toggleMenu = () => setTimeout(() => setMenuOpen(!menuOpen))
-  const hideMenu = () => setTimeout(() => setMenuOpen(false), 500)
 
   const generate = async (rows: number) => {
     setProgress(0)
     dispatch(clearCollection())
-    dispatch(loadSchema(schema))
+    dispatch(loadSchema(dataGeneratorSchema))
 
     generator.onmessage = async event => {
       const { progress: reportedProgress, result } = event.data
@@ -44,27 +39,25 @@ export function DataGenerator() {
     generator.postMessage(rows)
   }
 
+  const datasetSizes = [10, 100, 1000, 10000, 100000, 200000, 500000, 1000000]
+
   return (
     <Group>
-      <MenuWrapper>
-        <Button onFocus={toggleMenu} onBlur={hideMenu} disabled={progress > 0}>
-          {progress ? '⌚ Generating...' : '⚙ Generate data'}
-        </Button>
-        <Menu open={menuOpen}>
-          {[10, 100, 1000, 10000, 100000, 200000, 500000, 1000000].map(rows => (
-            <MenuItem
-              key={rows}
-              type="button"
-              disabled={progress > 0}
-              onClick={() => {
-                generate(rows)
-              }}
-            >
-              {rows.toLocaleString()} rows
-            </MenuItem>
-          ))}
-        </Menu>
-      </MenuWrapper>
+      <DropdownWrapper
+        buttonText={progress ? '⌚ Generating...' : '⚙ Generate data'}
+        disabled={progress > 0}
+      >
+        {datasetSizes.map(nRows => (
+          <MenuItem
+            key={nRows}
+            type="button"
+            disabled={progress > 0}
+            onClick={() => generate(nRows)}
+          >
+            {nRows.toLocaleString()} rows
+          </MenuItem>
+        ))}
+      </DropdownWrapper>
       {progress > 0 && (
         <Fragment>
           <ProgressBar percentComplete={progress} />
@@ -74,21 +67,3 @@ export function DataGenerator() {
     </Group>
   )
 }
-
-const schema = {
-  type: 'object',
-  properties: {
-    name: {},
-    email: { format: 'email' },
-    age: { type: 'number' },
-    street: {},
-    city: {},
-    state: {},
-    zip: {},
-    gender: {},
-    latitude: {},
-    longitude: {},
-    paragraph: {},
-    displayOrder: { type: 'number' },
-  },
-} as JSONSchema7
