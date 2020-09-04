@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from './Button'
-import { Group } from './Group'
 import { DropdownWrapper } from './DropdownWrapper'
+import { Group } from './Group'
 import { Item } from './Item'
 
 export const TeamDropdown: React.FunctionComponent<any> = () => {
