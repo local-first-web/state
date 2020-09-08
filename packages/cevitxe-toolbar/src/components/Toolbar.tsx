@@ -6,6 +6,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import Redux from 'redux'
 import { StringParam, useQueryParam } from 'use-query-params'
 import { localUser } from '../lib/localUser'
+import { getTeam } from '../lib/team'
 import { randomDiscoveryKey } from '../lib/randomName'
 import { Button } from './Button'
 import { Group } from './Group'
@@ -13,6 +14,8 @@ import { Status } from './Status'
 import { TeamDropdown } from './TeamDropdown'
 import { Container } from './ToolbarRow'
 import { WelcomeMessage } from './WelcomeMessage'
+
+// NEXT: get team & use it to populate team dropdown
 
 export const Toolbar = ({
   storeManager,
@@ -22,10 +25,7 @@ export const Toolbar = ({
   // Hooks
   const [discoveryKey, setDiscoveryKey] = useQueryParam('id', StringParam)
   const [, setAppStore] = useState()
-  const [inputHasFocus, setInputHasFocus] = useState(false)
   const [busy, setBusy] = useState(false)
-
-  const input = useRef<HTMLInputElement>() as React.RefObject<HTMLInputElement>
 
   // join or create store on load
   useEffect(() => {
