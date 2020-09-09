@@ -1,15 +1,11 @@
-﻿import React from 'react'
-import { useState } from 'react'
-import { Transition } from '@tailwindui/react'
+﻿import { Transition } from '@tailwindui/react'
+import React, { useState } from 'react'
 import { Button } from './Button'
 
 export const InviteButton: React.FunctionComponent<any> = () => {
-  const [isOpen, setIsOpen] = useState(true)
+  const [isOpen, setIsOpen] = useState(false)
   // const toggle = () => setTimeout(() => setOpen(!open))
-  const open = () =>
-    setTimeout(() => {
-      setIsOpen(true)
-    })
+  const open = () => setTimeout(() => setIsOpen(true))
   const close = () => setTimeout(() => setIsOpen(false))
   return (
     <div className="relative">
@@ -43,7 +39,7 @@ export const InviteButton: React.FunctionComponent<any> = () => {
             enterTo="opacity-100 translate-y-0 sm:scale-100"
             leave="transition ease-in duration-200"
             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-            leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-9"5
+            leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-9"
           >
             {ref => (
               <div
