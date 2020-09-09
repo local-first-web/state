@@ -14,8 +14,8 @@ import { Status } from './Status'
 import { TeamDropdown } from './TeamDropdown'
 import { Container } from './ToolbarRow'
 import { WelcomeMessage } from './WelcomeMessage'
-
-// NEXT: get team & use it to populate team dropdown
+import { Team } from 'taco-js'
+import { InviteButton } from './InviteButton'
 
 export const Toolbar = ({
   storeManager,
@@ -26,12 +26,15 @@ export const Toolbar = ({
   const [discoveryKey, setDiscoveryKey] = useQueryParam('id', StringParam)
   const [, setAppStore] = useState()
   const [busy, setBusy] = useState(false)
+  const [team, setTeam] = useState<Team | undefined>(undefined)
 
   // join or create store on load
   useEffect(() => {
     log('setup')
     if (discoveryKey) joinStore(discoveryKey)
     else createStore()
+    const _team = getTeam(discoveryKey!, { user: localUser })
+    setTeam(_team)
   }, []) // only runs on first render
 
   const log = debug(`cevitxe:toolbar:${discoveryKey}`)
@@ -79,7 +82,12 @@ export const Toolbar = ({
   return (
     <Container>
       <WelcomeMessage name={localUser.userName} />
-      <TeamDropdown></TeamDropdown>
+      <Group>
+        <TeamDropdown team={team}></TeamDropdown>
+      </Group>
+      <Group>
+        <InviteButton />
+      </Group>
       <Group>
         <Button onClick={newClick}>📄 New</Button>
       </Group>

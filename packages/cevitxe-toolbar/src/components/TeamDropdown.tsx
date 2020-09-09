@@ -3,21 +3,31 @@ import { Button } from './Button'
 import { DropdownWrapper } from './DropdownWrapper'
 import { Group } from './Group'
 import { Item } from './Item'
+import { Team } from 'taco-js'
+import pluralize from 'pluralize'
+import { InviteButton } from './InviteButton'
 
-export const TeamDropdown: React.FunctionComponent<any> = () => {
+export const TeamDropdown: React.FunctionComponent<{ team?: Team }> = ({ team }) => {
+  if (team === undefined) return <React.Fragment />
+
+  const members = team.members()
+  const memberCount = members.length
   return (
-    <Group>
-      <DropdownWrapper buttonText="👪 Team" disabled={false}>
-        <div className="py-2 px-4">
-          <h3 className="font-bold">3 members</h3>
-        </div>
-        <Item>funny.coyote 👑</Item>
-        <Item>little.snake</Item>
-        <Item>mysterious.mongoose</Item>
-        <div className="py-2 px-4">
-          <Button>💌 Invite</Button>
-        </div>
-      </DropdownWrapper>
-    </Group>
+    <DropdownWrapper buttonText="👪 Team" disabled={false}>
+      <div className="py-2 px-4">
+        <h3 className="font-bold">
+          {memberCount} {pluralize('members', memberCount)}
+        </h3>
+      </div>
+      {members.map(member => (
+        <Item>
+          {member.userName}
+          {member.roles?.includes('admin') ? ' 👑' : ''}
+        </Item>
+      ))}
+      <div className="py-2 px-4">
+        <InviteButton />
+      </div>
+    </DropdownWrapper>
   )
 }
