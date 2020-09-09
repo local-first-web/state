@@ -3,7 +3,7 @@
 import { css, jsx } from '@emotion/core'
 import { Toolbar } from 'cevitxe-toolbar'
 import debug from 'debug'
-import { DialogProvider } from 'muibox'
+// import { DialogProvider } from 'muibox'
 import { useState } from 'react'
 import { Provider } from 'react-redux'
 import Redux from 'redux'
@@ -28,9 +28,9 @@ export const Shell = () => {
         <Loading />
       ) : (
         <Provider store={appStore}>
-          <DialogProvider>
-            <App />
-          </DialogProvider>
+          {/* <DialogProvider> */}
+          <App />
+          {/* </DialogProvider> */}
         </Provider>
       )}
     </div>
