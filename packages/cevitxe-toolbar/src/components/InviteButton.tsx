@@ -31,6 +31,7 @@ export const InviteButton: React.FunctionComponent<any> = () => {
           </Transition>
           {/* This element is to trick the browser into centering the modal contents. */}
           <span className="hidden sm:inline-block sm:align-middle sm:h-screen"></span>&#8203;
+          {/* TODO extract modal */}
           {/* Modal panel */}
           <Transition
             show={isOpen}

@@ -22,7 +22,7 @@ import {
   addField,
   addItem,
   deleteField,
-  renameField,
+  // renameField,
   setFieldType,
   updateItem,
 } from '../redux/actions'
@@ -121,8 +121,9 @@ export const Grid = () => {
   const renameColumnCommand = (params: GetMainMenuItemsParams) => ({
     name: 'Rename',
     action: () => {
-      const colDef = params.column.getColDef()
-      const current = colDef.headerName
+      // TODO reimplement this with tailwind modal
+      // const colDef = params.column.getColDef()
+      // const current = colDef.headerName
       // dialog
       //   .prompt({
       //     message: 'Rename Field',

@@ -2,20 +2,19 @@
 import { jsx } from '@emotion/core'
 import { StoreManager } from 'cevitxe'
 import debug from 'debug'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Redux from 'redux'
+import { Team } from 'taco-js'
 import { StringParam, useQueryParam } from 'use-query-params'
 import { localUser } from '../lib/localUser'
-import { getTeam } from '../lib/team'
 import { randomDiscoveryKey } from '../lib/randomName'
+import { getTeam } from '../lib/team'
 import { Button } from './Button'
 import { Group } from './Group'
 import { Status } from './Status'
 import { TeamDropdown } from './TeamDropdown'
 import { Container } from './ToolbarRow'
 import { WelcomeMessage } from './WelcomeMessage'
-import { Team } from 'taco-js'
-import { InviteButton } from './InviteButton'
 
 export const Toolbar = ({
   storeManager,
@@ -84,9 +83,6 @@ export const Toolbar = ({
       <WelcomeMessage name={localUser.userName} />
       <Group>
         <TeamDropdown team={team}></TeamDropdown>
-      </Group>
-      <Group>
-        <InviteButton />
       </Group>
       <Group>
         <Button onClick={newClick}>📄 New</Button>
