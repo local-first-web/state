@@ -1,15 +1,15 @@
 /** @jsx jsx */
 
 import { css, jsx } from '@emotion/core'
-import { Toolbar } from 'cevitxe-toolbar'
 import debug from 'debug'
-// import { DialogProvider } from 'muibox'
 import { useState } from 'react'
 import { Provider } from 'react-redux'
 import Redux from 'redux'
 import { storeManager } from '../redux/store'
 import { App } from './App'
 import { Loading } from './Loading'
+import { Toolbar } from 'cevitxe-toolbar'
+import { Toolbar as GridToolbar } from './Toolbar'
 
 const log = debug('cevitxe:grid:shell')
 
@@ -23,14 +23,20 @@ export const Shell = () => {
 
   return (
     <div css={styles.shell}>
-      <Toolbar storeManager={storeManager} onStoreReady={onStoreReady} />
+      <div className="z-toolbar">
+        <Toolbar storeManager={storeManager} onStoreReady={onStoreReady} />
+        {appStore === undefined ? null : (
+          <Provider store={appStore}>
+            <GridToolbar />
+          </Provider>
+        )}
+      </div>
+
       {appStore === undefined ? (
         <Loading />
       ) : (
         <Provider store={appStore}>
-          {/* <DialogProvider> */}
           <App />
-          {/* </DialogProvider> */}
         </Provider>
       )}
     </div>

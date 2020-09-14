@@ -1,6 +1,7 @@
 ﻿/** @jsx jsx */
 import { jsx } from '@emotion/core'
 import { StoreManager } from 'cevitxe'
+import { InviteButton } from './InviteButton'
 import debug from 'debug'
 import React, { useEffect, useState } from 'react'
 import Redux from 'redux'
@@ -23,7 +24,7 @@ export const Toolbar = ({
 }: React.PropsWithChildren<ToolbarProps<any>>) => {
   // Hooks
   const [discoveryKey, setDiscoveryKey] = useQueryParam('id', StringParam)
-  const [, setAppStore] = useState()
+  const [_appStore, setAppStore] = useState<Redux.Store>()
   const [busy, setBusy] = useState(false)
   const [team, setTeam] = useState<Team | undefined>(undefined)
 
@@ -83,6 +84,9 @@ export const Toolbar = ({
       <WelcomeMessage name={localUser.userName} />
       <Group>
         <TeamDropdown team={team}></TeamDropdown>
+      </Group>
+      <Group>
+        <InviteButton />
       </Group>
       <Group>
         <Button onClick={newClick}>📄 New</Button>

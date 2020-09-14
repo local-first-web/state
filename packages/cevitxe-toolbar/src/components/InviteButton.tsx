@@ -2,16 +2,23 @@
 import React, { useState } from 'react'
 import { Button } from './Button'
 
-export const InviteButton: React.FunctionComponent<any> = () => {
+export const InviteButton = () => {
   const [isOpen, setIsOpen] = useState(false)
-  // const toggle = () => setTimeout(() => setOpen(!open))
-  const open = () => setTimeout(() => setIsOpen(true))
-  const close = () => setTimeout(() => setIsOpen(false))
+  const open = (e: any) => {
+    e.stopPropagation()
+    setTimeout(() => setIsOpen(true))
+  }
+  const close = (e: any) => {
+    e.stopPropagation()
+    setTimeout(() => setIsOpen(false))
+  }
   return (
     <div className="relative">
       <Button onFocus={open}>💌 Invite</Button>
       {/* Modal */}
-      <div className={`${isOpen ? 'block' : 'hidden'} fixed z-10 inset-0 overflow-y-auto`}>
+      <div
+        className={`${isOpen ? 'block' : 'hidden'} fixed inset-0 overflow-y-auto z-modal-backdrop`}
+      >
         <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
           {/* Background overlay */}
           <Transition
@@ -24,7 +31,7 @@ export const InviteButton: React.FunctionComponent<any> = () => {
             leaveTo="opacity-0"
           >
             {ref => (
-              <div ref={ref} onClick={close} className="fixed inset-0 transition-opacity">
+              <div ref={ref} onClick={close} className="fixed inset-0 transition-opacity ">
                 <div className="absolute inset-0 bg-gray-500 opacity-25"></div>
               </div>
             )}
@@ -45,7 +52,11 @@ export const InviteButton: React.FunctionComponent<any> = () => {
             {ref => (
               <div
                 ref={ref}
-                className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+                className="
+                  inline-block align-bottom 
+                  bg-white rounded-lg text-left 
+                  overflow-hidden shadow-xl transform transition-all 
+                  sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="modal-headline"
@@ -60,9 +71,9 @@ export const InviteButton: React.FunctionComponent<any> = () => {
                   >
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
                         d="M6 18L18 6M6 6l12 12"
                       />
                     </svg>

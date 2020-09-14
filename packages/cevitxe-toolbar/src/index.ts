@@ -2,6 +2,5 @@
 export * from './components/ToolbarRow'
 export * from './components/Group'
 export * from './components/Dropdown'
-export * from './components/DropdownWrapper'
 export * from './components/MenuItem'
 export * from './components/Toolbar'

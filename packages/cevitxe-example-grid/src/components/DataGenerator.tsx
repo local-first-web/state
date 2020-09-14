@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
-import { DropdownWrapper, Group, MenuItem } from 'cevitxe-toolbar'
+import { Dropdown, Group, MenuItem } from 'cevitxe-toolbar'
 import { Fragment, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { clearCollection, loadCollection, loadSchema } from 'redux/actions'
@@ -43,7 +43,7 @@ export function DataGenerator() {
 
   return (
     <Group>
-      <DropdownWrapper
+      <Dropdown
         buttonText={progress ? '⌚ Generating...' : '⚙ Generate data'}
         disabled={progress > 0}
       >
@@ -57,7 +57,7 @@ export function DataGenerator() {
             {nRows.toLocaleString()} rows
           </MenuItem>
         ))}
-      </DropdownWrapper>
+      </Dropdown>
       {progress > 0 && (
         <Fragment>
           <ProgressBar percentComplete={progress} />
