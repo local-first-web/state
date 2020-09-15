@@ -1,4 +1,4 @@
-﻿const defaultTheme = require('tailwindcss/defaultTheme')
+﻿const { colors } = require('tailwindcss/defaultTheme')
 
 module.exports = {
   purge: ['./src/**/*.tsx', './src/**/*.jsx', './public/**/*.html'],
@@ -16,6 +16,11 @@ module.exports = {
         dropdown: 110,
         'modal-backdrop': 119,
         modal: 120,
+      },
+      colors: {
+        primary: colors.indigo,
+        secondary: colors.blue,
+        neutral: colors.gray,
       },
     },
   },
