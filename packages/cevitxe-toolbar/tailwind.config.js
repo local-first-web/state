@@ -5,7 +5,10 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        mono: ['Consolas', '"Segoe UI Emoji"', ...defaultTheme.fontFamily.sans],
+        mono: ['IBM Plex Mono', 'Segoe UI Emoji', 'monospace'],
+        sans: ['IBM Plex Sans', 'Segoe UI Emoji', 'sans-serif'],
+        condensed: ['IBM Plex Sans Condensed', 'Segoe UI Emoji', 'sans-serif'],
+        serif: ['IBM Plex Serif', 'Segoe UI Emoji', 'serif'],
       },
       zIndex: {
         toolbar: 100,

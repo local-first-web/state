@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@emotion/core": "10",
+    "@ibm/plex": "^5.1.3",
     "@tailwindcss/ui": "^0.6.0",
     "@tailwindui/react": "^0.1.1",
     "@types/pluralize": "^0.0.29",

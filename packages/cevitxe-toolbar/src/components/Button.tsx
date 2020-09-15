@@ -8,7 +8,7 @@ export const Button: FunctionComponent<any> = ({ children, className, ...props }
       role="button"
       type="button"
       className={`block py-2 px-4  
-        font-mono text-sm leading-none uppercase text-gray-900 
+        font-sans font-bold text-xs leading-none text-gray-900 
         bg-white 
         outline-none
         hover:bg-blue-100 

@@ -9,7 +9,7 @@ export const Container: FunctionComponent = ({ children }) => {
         flex flex-row 
         bg-gray-100
         border-b border-gray-400
-        text-sm font-mono"
+        text-sm font-sans"
     >
       {children}
     </div>

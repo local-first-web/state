@@ -17,6 +17,8 @@ import { TeamDropdown } from './TeamDropdown'
 import { Container } from './ToolbarRow'
 import { WelcomeMessage } from './WelcomeMessage'
 
+import '@ibm/plex/css/ibm-plex.min.css'
+
 export const Toolbar = ({
   storeManager,
   onStoreReady,
