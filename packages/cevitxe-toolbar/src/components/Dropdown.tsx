@@ -41,7 +41,7 @@ export const Dropdown: FunctionComponent<any> = ({ children, buttonText, disable
               >
                 <div className="rounded-md bg-white shadow-xs">
                   <div
-                    className="py-1 divide-y divide-gray-400 "
+                    className="py-1 "
                     role="menu"
                     aria-orientation="vertical"
                     aria-labelledby="options-menu"
