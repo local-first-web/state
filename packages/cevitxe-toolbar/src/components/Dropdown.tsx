@@ -27,14 +27,18 @@ export const Dropdown: FunctionComponent<any> = ({ children, buttonText, disable
           <Transition
             show={isOpen}
             enter="transition ease-out duration-100"
-            enterFrom="transform opacity-0 scale-95 -translate-y-10"
-            enterTo="transform opacity-100 scale-100 translate-y-0"
-            leave="transition ease-in duration-300 "
-            leaveFrom="transform opacity-100 scale-100 translate-y-0"
-            leaveTo="transform opacity-0 scale-95 -translate-y-5"
+            enterFrom="transform opacity-0 scale-y-75 -translate-y-10"
+            enterTo="transform opacity-100 scale-y-100 translate-y-0"
+            leave="transition ease-in duration-100 "
+            leaveFrom="transform opacity-100 scale-y-100 translate-y-0"
+            leaveTo="transform opacity-0 scale-y-75 -translate-y-5"
           >
             {ref => (
-              <div ref={ref} className="absolute mt-2 w-56 border-gray-400 rounded-md shadow-lg">
+              <div
+                ref={ref}
+                className="absolute mt-2 w-56 border-gray-400 rounded-md shadow-lg "
+                css={{ transformOrigin: 'top left' }}
+              >
                 <div className="rounded-md bg-white shadow-xs">
                   <div
                     className="py-1 divide-y divide-gray-400 "
