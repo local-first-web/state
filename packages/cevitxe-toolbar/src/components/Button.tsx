@@ -2,7 +2,7 @@
 
 export const Button: React.FC<ButtonProps & ExtendElement<'button'>> = ({
   variant = 'default',
-  size = 'default',
+  size = 'md',
   className = '',
   children,
   ...props
@@ -31,11 +31,11 @@ export const Button: React.FC<ButtonProps & ExtendElement<'button'>> = ({
 }
 
 const sizes = {
-  xs: 'px-2.5 py-1.5 text-xs leading-4 rounded',
-  sm: 'px-3 py-2 text-sm leading-4 rounded-md',
-  default: 'px-4 py-2 text-sm leading-5 rounded-md',
-  lg: 'px-4 py-2 text-base leading-6 rounded-md',
-  xl: 'px-6 py-3 text-base leading-6 rounded-md',
+  xs: 'px-2.5 py-1.5 text-xs   leading-4 h-7 rounded',
+  sm: 'px-3   py-2   text-sm   leading-4 h-7 rounded-md',
+  md: 'px-4   py-2   text-sm   leading-5 h-8 rounded-md',
+  lg: 'px-4   py-2   text-base leading-6 h-9 rounded-md',
+  xl: 'px-6   py-3   text-base leading-6 h-9 rounded-md',
 }
 type ButtonSize = keyof typeof sizes
 
