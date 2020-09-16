@@ -11,7 +11,7 @@
     "start:grid": "yarn workspace cevitxe-example-grid start",
     "start:todo": "yarn workspace cevitxe-example-todo start",
     "start:signal-server": "yarn workspace cevitxe-signal-server start",
-    "dev": "run-p watch test:watch",
+    "dev": "yarn dev:grid",
     "dev:log": "run-p watch test:log",
     "dev:signal-server": "yarn workspace cevitxe-signal-server dev",
     "dev:grid": "run-p watch dev:grid:wait",
