@@ -1,5 +1,3 @@
-/** @jsx jsx */
-import { css, jsx } from '@emotion/core'
 import {
   GetContextMenuItemsParams,
   GetMainMenuItemsParams,
@@ -28,6 +26,7 @@ import {
   updateItem,
 } from '../redux/actions'
 import { Loading } from './Loading'
+import React from 'react'
 
 const log = debug('cevitxe:grid')
 
@@ -172,7 +171,7 @@ export const Grid = () => {
   return (
     <div>
       {ready ? (
-        <div className="ag-theme-balham" css={styles.grid}>
+        <div className="ag-theme-balham" style={{ flexGrow: 5, height: '100vh' }}>
           <AgGridReact
             columnDefs={columns}
             defaultColDef={{
@@ -202,11 +201,4 @@ export const Grid = () => {
       )}
     </div>
   )
-}
-
-const styles = {
-  grid: css({
-    flexGrow: 5,
-    height: '100vh',
-  }),
 }

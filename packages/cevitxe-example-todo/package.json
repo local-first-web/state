@@ -12,7 +12,6 @@
     "dev": "yarn start"
   },
   "dependencies": {
-    "@emotion/core": "10",
     "cevitxe": "^0.4.2",
     "cevitxe-toolbar": "^0.4.2",
     "classnames": "2",

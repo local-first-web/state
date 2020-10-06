@@ -1,7 +1,4 @@
-import { CSSObject } from '@emotion/core'
 import { JSONSchema7 } from 'json-schema'
-
-export type Stylesheet = { [k: string]: CSSObject }
 
 export type GridState = {
   rows: {

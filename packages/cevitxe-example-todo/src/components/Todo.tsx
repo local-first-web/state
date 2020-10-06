@@ -65,7 +65,7 @@ export const Todo = ({ id, completed, content }: TodoType) => {
           checked={completed}
           onChange={() => dispatch(actions.toggleTodo(id))}
         />
-        <label onDoubleClick={enterEditMode}>{content}</label>
+        <Label onDoubleClick={enterEditMode}>{content}</Label>
         <button
           className="destroy"
           style={{ cursor: 'pointer' }}

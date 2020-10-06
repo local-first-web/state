@@ -1,10 +1,9 @@
-﻿/** @jsx jsx */
-import { jsx } from '@emotion/core'
-import { Fragment } from 'react'
+﻿import React, { Fragment } from 'react'
 
 import { Container, Group } from 'cevitxe-toolbar'
 import { useSelector } from 'react-redux'
 import { DataGenerator } from './DataGenerator'
+import { Label } from 'cevitxe-toolbar/dist/src/components/Label'
 
 export const Toolbar = () => (
   <Container>
@@ -20,7 +19,7 @@ const Rows = () => {
   })
   return (
     <Group>
-      <label>{rows} rows</label>
+      <Label>{rows} rows</Label>
     </Group>
   )
 }
@@ -31,7 +30,7 @@ const Loading = () => {
   })
   return loading ? (
     <Group>
-      <label>Loading...</label>
+      <Label>Loading...</Label>
     </Group>
   ) : (
     <Fragment></Fragment>

@@ -1,10 +1,9 @@
-/** @jsx jsx */
-import { jsx } from '@emotion/core'
 import { StoreManager } from 'cevitxe'
 import { ConnectionEvent } from 'cevitxe-types'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { StatusLight } from './StatusLight'
 import { Group } from './Group'
+import { Label } from './Label'
 
 const { OPEN, CLOSE, PEER, PEER_REMOVE } = ConnectionEvent
 
@@ -56,10 +55,10 @@ export const Status = ({ storeManager }: StatusProps) => {
   const statusMessage = online ? `online; ${peerCountMessage}` : 'offline'
   return (
     <Group title={statusMessage}>
-      <label>
+      <Label>
         <StatusLight online={online} />
-        {online ? <span css={{ marginLeft: '.5em' }}>{peers.length}</span> : ''}
-      </label>
+        {online ? <span style={{ marginLeft: '.5em' }}>{peers.length}</span> : ''}
+      </Label>
     </Group>
   )
 }

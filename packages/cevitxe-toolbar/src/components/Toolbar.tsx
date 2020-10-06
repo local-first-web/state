@@ -1,6 +1,4 @@
-﻿/** @jsx jsx */
-import { jsx } from '@emotion/core'
-import { StoreManager } from 'cevitxe'
+﻿import { StoreManager } from 'cevitxe'
 import { InviteButton } from './InviteButton'
 import debug from 'debug'
 import React, { useEffect, useState } from 'react'

@@ -1,6 +1,4 @@
-﻿/** @jsx jsx */
-import { jsx } from '@emotion/core'
-import { Transition } from '@windmill/react-ui'
+﻿import { Transition } from '@windmill/react-ui'
 import React, { FunctionComponent, useState } from 'react'
 import { Button } from './Button'
 
@@ -37,7 +35,7 @@ export const Dropdown: FunctionComponent<any> = ({ children, buttonText, disable
               <div
                 ref={ref}
                 className="absolute mt-2 w-56 border-gray-400 rounded-md shadow-lg "
-                css={{ transformOrigin: 'top left' }}
+                style={{ transformOrigin: 'top left' }}
               >
                 <div className="rounded-md bg-white shadow-xs">
                   <div

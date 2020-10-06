@@ -1,9 +1,10 @@
+import { Label } from './Label'
 import React from 'react'
 import { Group } from './Group'
 export const WelcomeMessage: React.FunctionComponent<{ name: string }> = ({ name }) => {
   return (
     <Group>
-      <label>Welcome, {name}!</label>
+      <Label>Welcome, {name}!</Label>
     </Group>
   )
 }

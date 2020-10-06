@@ -1,10 +1,7 @@
-/** @jsx jsx */
-
-import { css, jsx } from '@emotion/core'
 import { Windmill } from '@windmill/react-ui'
-import { Toolbar, theme } from 'cevitxe-toolbar'
+import { theme, Toolbar } from 'cevitxe-toolbar'
 import debug from 'debug'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Provider } from 'react-redux'
 import Redux from 'redux'
 import { storeManager } from '../redux/store'
@@ -24,7 +21,7 @@ export const Shell = () => {
 
   return (
     <Windmill theme={theme}>
-      <div css={styles.shell}>
+      <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100vh' }}>
         <div className="z-toolbar">
           <Toolbar storeManager={storeManager} onStoreReady={onStoreReady} />
           {appStore === undefined ? null : (
@@ -44,13 +41,4 @@ export const Shell = () => {
       </div>
     </Windmill>
   )
-}
-
-const styles = {
-  shell: css({
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100%',
-    height: '100vh',
-  }),
 }
