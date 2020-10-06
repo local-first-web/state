@@ -12,6 +12,7 @@ import 'ag-grid-community/dist/styles/ag-grid.css'
 import 'ag-grid-community/dist/styles/ag-theme-balham.css'
 import 'ag-grid-enterprise'
 import { AgGridReact } from 'ag-grid-react'
+import { CellEditor } from 'cevitxe-example-grid/src/components/CellEditor'
 import { debug } from 'debug'
 // import { useDialog } from 'muibox'
 import { useState } from 'react'
@@ -176,6 +177,7 @@ export const Grid = () => {
             columnDefs={columns}
             defaultColDef={{
               editable: true,
+              cellEditorFramework: CellEditor,
               resizable: true,
               sortable: true,
               filter: true,
