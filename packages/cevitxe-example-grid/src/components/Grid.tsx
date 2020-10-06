@@ -171,7 +171,7 @@ export const Grid = () => {
   return (
     <div>
       {ready ? (
-        <div className="ag-theme-balham" style={{ flexGrow: 5, height: '100vh' }}>
+        <div className="ag-theme-balham  flex-grow" style={{ height: '100vh' }}>
           <AgGridReact
             columnDefs={columns}
             defaultColDef={{

@@ -77,10 +77,10 @@ export const CellEditor = forwardRef<CellEditorHandle, ICellEditorParams>((props
 
   return (
     <input
+      className="w-full"
       ref={refInput}
       value={value}
       onChange={event => setValue(event.target.value)}
-      style={{ width: '100%' }}
     />
   )
 })

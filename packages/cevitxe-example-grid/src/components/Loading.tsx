@@ -3,23 +3,13 @@ import React from 'react'
 
 export const Loading = () => {
   return (
-    <div
-      style={{
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        right: 0,
-        bottom: 0,
-        textAlign: 'center',
-        paddingTop: '30%',
-      }}
-    >
-      <span style={{ letterSpacing: 3, fontSize: 10, color: 'gray', textTransform: 'uppercase' }}>
+    <div className="text-center mt-5">
+      <div className="m-8">
+        <Spinner name="ball-clip-rotate" color="blue" />
+      </div>
+      <div className="text-xs text-gray-500 uppercase text-center" style={{ letterSpacing: 8 }}>
         Loading...
-      </span>
-      <span style={{ display: 'block', margin: 30 }}>
-        <Spinner name="ball-clip-rotate" color="orange" />
-      </span>
+      </div>
     </div>
   )
 }
