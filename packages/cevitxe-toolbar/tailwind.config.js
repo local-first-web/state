@@ -1,4 +1,5 @@
-﻿const { colors } = require('tailwindcss/defaultTheme')
+﻿const windmill = require('@windmill/react-ui/config')
+const { colors } = require('tailwindcss/defaultTheme')
 
 module.exports = {
   purge: ['./src/**/*.tsx', './src/**/*.jsx', './public/**/*.html'],
