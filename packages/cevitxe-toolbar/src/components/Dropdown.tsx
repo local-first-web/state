@@ -1,6 +1,6 @@
 ﻿/** @jsx jsx */
 import { jsx } from '@emotion/core'
-import { Transition } from '@tailwindui/react'
+import { Transition } from '@windmill/react-ui'
 import React, { FunctionComponent, useState } from 'react'
 import { Button } from './Button'
 
@@ -33,7 +33,7 @@ export const Dropdown: FunctionComponent<any> = ({ children, buttonText, disable
             leaveFrom="transform opacity-100 scale-y-100 translate-y-0"
             leaveTo="transform opacity-0 scale-y-75 -translate-y-5"
           >
-            {ref => (
+            {(ref: any) => (
               <div
                 ref={ref}
                 className="absolute mt-2 w-56 border-gray-400 rounded-md shadow-lg "
