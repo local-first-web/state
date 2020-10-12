@@ -11,7 +11,9 @@ export const Dropdown: FunctionComponent<any> = ({ children, buttonText, disable
     <React.Fragment>
       <div className="relative text-left z-0" {...props}>
         <div className="">
-          <Button onFocus={toggle}>{buttonText}</Button>
+          <Button layout="outline" onFocus={toggle}>
+            {buttonText}
+          </Button>
         </div>
         {/* Background overlay */}
         <div
