@@ -5,7 +5,7 @@ export const Loading = () => {
   return (
     <div className="text-center mt-5">
       <div className="m-8">
-        <Spinner name="ball-clip-rotate" color="blue" />
+        <Spinner name="ball-clip-rotate" color="orange" />
       </div>
       <div className="text-xs text-gray-500 uppercase text-center" style={{ letterSpacing: 8 }}>
         Loading...
