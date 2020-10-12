@@ -1,24 +1,13 @@
-﻿const defaultTheme = require('@windmill/react-ui/lib/defaultTheme').default
-const merge = (...args: string[]) => args.flatMap(s => s.split(/\s+/)).join(' ')
-
-export const theme = {
-  modal: {
-    // base: merge('flex flex-row', defaultTheme.modal.base),
-  },
-  modalHeader: {
-    base: 'mt-3 mb-2 text-lg font-semibold text-gray-700 dark:text-gray-300',
-  },
-}
-
-/*
+﻿export const theme = {
   // Pagination
   pagination: {
-    base: 'flex flex-col justify-between text-xs sm:flex-row text-gray-600 dark:text-gray-400',
+    base:
+      'flex flex-col justify-between text-xs sm:flex-row text-neutral-600 dark:text-neutral-400',
   },
   // TableFooter
   tableFooter: {
     base:
-      'px-4 py-3 border-t dark:border-gray-700 bg-gray-50 text-gray-500 dark:text-gray-400 dark:bg-gray-800',
+      'px-4 py-3 border-t dark:border-neutral-700 bg-neutral-50 text-neutral-500 dark:text-neutral-400 dark:bg-neutral-800',
   },
   // TableRow
   tableRow: {
@@ -27,7 +16,7 @@ export const theme = {
   // TableHeader
   tableHeader: {
     base:
-      'text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800',
+      'text-xs font-semibold tracking-wide text-left text-neutral-500 uppercase border-b dark:border-neutral-700 bg-neutral-50 dark:text-neutral-400 dark:bg-neutral-800',
   },
   // TableContainer
   tableContainer: {
@@ -40,7 +29,7 @@ export const theme = {
   // TableBody
   tableBody: {
     base:
-      'bg-white divide-y dark:divide-gray-700 dark:bg-gray-800 text-gray-700 dark:text-gray-400',
+      'bg-white divide-y dark:divide-neutral-700 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-400',
   },
   // DropdownItem
   // this is the <li> that lives inside the Dropdown <ul>
@@ -51,7 +40,7 @@ export const theme = {
   // Dropdown
   dropdown: {
     base:
-      'absolute w-56 p-2 mt-2 text-gray-600 bg-white border border-gray-100 rounded-lg shadow-md min-w-max-content dark:text-gray-300 dark:border-gray-700 dark:bg-gray-700',
+      'absolute w-56 p-2 mt-2 text-neutral-600 bg-white border border-neutral-100 rounded-lg shadow-md min-w-max-content dark:text-neutral-300 dark:border-neutral-700 dark:bg-neutral-700',
     align: {
       left: 'left-0',
       right: 'right-0',
@@ -69,29 +58,29 @@ export const theme = {
   // Modal
   modal: {
     base:
-      'w-full px-6 py-4 overflow-hidden bg-white rounded-t-lg dark:bg-gray-800 sm:rounded-lg sm:m-4 sm:max-w-xl',
+      'w-full px-6 py-4 overflow-hidden bg-white rounded-t-lg dark:bg-neutral-800 sm:rounded-lg sm:m-4 sm:max-w-xl',
   },
   // ModalBody
   modalBody: {
-    base: 'mb-6 text-sm text-gray-700 dark:text-gray-400',
+    base: 'mb-6 text-sm text-neutral-700 dark:text-neutral-400',
   },
   // ModalFooter
   modalFooter: {
     base:
-      'flex flex-col items-center justify-end px-6 py-3 -mx-6 -mb-4 space-y-4 sm:space-y-0 sm:space-x-6 sm:flex-row bg-gray-50 dark:bg-gray-800',
+      'flex flex-col items-center justify-end px-6 py-3 -mx-6 -mb-4 space-y-4 sm:space-y-0 sm:space-x-6 sm:flex-row bg-neutral-50 dark:bg-neutral-800',
   },
   // ModalHeader
   modalHeader: {
-    base: 'mt-4 mb-2 text-lg font-semibold text-gray-700 dark:text-gray-300',
+    base: 'mt-4 mb-2 text-lg font-semibold text-neutral-700 dark:text-neutral-300',
   },
   // Badge
   badge: {
     base: 'inline-flex px-2 text-xs font-medium leading-5 rounded-full',
-    success: 'text-green-700 bg-green-100 dark:bg-green-700 dark:text-green-100',
-    danger: 'text-red-700 bg-red-100 dark:text-red-100 dark:bg-red-700',
-    warning: 'text-orange-700 bg-orange-100 dark:text-white dark:bg-orange-600',
-    neutral: 'text-gray-700 bg-gray-100 dark:text-gray-100 dark:bg-gray-700',
-    primary: 'text-purple-700 bg-purple-100 dark:text-white dark:bg-purple-600',
+    success: 'text-success-700 bg-success-100 dark:bg-success-700 dark:text-success-100',
+    danger: 'text-danger-700 bg-danger-100 dark:text-danger-100 dark:bg-danger-700',
+    warning: 'text-warning-700 bg-warning-100 dark:text-white dark:bg-warning-600',
+    neutral: 'text-neutral-700 bg-neutral-100 dark:text-neutral-100 dark:bg-neutral-700',
+    primary: 'text-primary-700 bg-primary-100 dark:text-white dark:bg-primary-600',
   },
   // Backdrop
   backdrop: {
@@ -100,60 +89,61 @@ export const theme = {
   },
   // Textarea
   textarea: {
-    base: 'block w-full text-sm dark:text-gray-300 form-textarea focus:outline-none',
+    base: 'block w-full text-sm dark:text-neutral-300 form-textarea focus:outline-none',
     active:
-      'focus:border-purple-400 dark:border-gray-600 dark:focus:border-gray-600 dark:bg-gray-700 dark:focus:shadow-outline-gray focus:shadow-outline-purple',
-    disabled: 'cursor-not-allowed opacity-50 bg-gray-300 dark:bg-gray-800',
+      'focus:border-primary-400 dark:border-neutral-600 dark:focus:border-neutral-600 dark:bg-neutral-700 dark:focus:shadow-outline-neutral focus:shadow-outline-primary',
+    disabled: 'cursor-not-allowed opacity-50 bg-neutral-300 dark:bg-neutral-800',
     valid:
-      'border-green-600 dark:bg-gray-700 focus:border-green-400 dark:focus:border-green-400 focus:shadow-outline-green dark:focus:shadow-outline-green',
+      'border-success-600 dark:bg-neutral-700 focus:border-success-400 dark:focus:border-success-400 focus:shadow-outline-success dark:focus:shadow-outline-success',
     invalid:
-      'border-red-600 dark:bg-gray-700 focus:border-red-400 dark:focus:border-red-400 focus:shadow-outline-red dark:focus:shadow-outline-red',
+      'border-danger-600 dark:bg-neutral-700 focus:border-danger-400 dark:focus:border-danger-400 focus:shadow-outline-danger dark:focus:shadow-outline-danger',
   },
   // Select
   select: {
-    base: 'block w-full text-sm dark:text-gray-300 focus:outline-none',
+    base: 'block w-full text-sm dark:text-neutral-300 focus:outline-none',
     active:
-      'focus:border-purple-400 dark:border-gray-600 dark:bg-gray-700 focus:shadow-outline-purple dark:focus:shadow-outline-gray dark:focus:border-gray-600',
+      'focus:border-primary-400 dark:border-neutral-600 dark:bg-neutral-700 focus:shadow-outline-primary dark:focus:shadow-outline-neutral dark:focus:border-neutral-600',
     select: 'form-select leading-5',
     multiple: 'form-multiselect',
-    disabled: 'cursor-not-allowed opacity-50 bg-gray-300 dark:bg-gray-800',
+    disabled: 'cursor-not-allowed opacity-50 bg-neutral-300 dark:bg-neutral-800',
     valid:
-      'border-green-600 dark:bg-gray-700 focus:border-green-400 dark:focus:border-green-400 focus:shadow-outline-green dark:focus:shadow-outline-green',
+      'border-success-600 dark:bg-neutral-700 focus:border-success-400 dark:focus:border-success-400 focus:shadow-outline-success dark:focus:shadow-outline-success',
     invalid:
-      'border-red-600 dark:bg-gray-700 focus:border-red-400 dark:focus:border-red-400 focus:shadow-outline-red dark:focus:shadow-outline-red',
+      'border-danger-600 dark:bg-neutral-700 focus:border-danger-400 dark:focus:border-danger-400 focus:shadow-outline-danger dark:focus:shadow-outline-danger',
   },
   // Label
   label: {
-    base: 'block text-sm text-gray-700 dark:text-gray-400',
+    base: 'block text-sm text-neutral-700 dark:text-neutral-400',
     // check and radio get this same style
     check: 'inline-flex items-center',
     disabled: 'opacity-50 cursor-not-allowed',
   },
   // Input
   input: {
-    base: 'block w-full text-sm focus:outline-none dark:text-gray-300 form-input leading-5',
+    base:
+      'block w-full text-sm font-mono focus:outline-none dark:text-neutral-300 form-input leading-5',
     active:
-      'focus:border-purple-400 dark:border-gray-600 focus:shadow-outline-purple dark:focus:border-gray-600 dark:focus:shadow-outline-gray dark:bg-gray-700',
-    disabled: 'cursor-not-allowed opacity-50 bg-gray-300 dark:bg-gray-800',
+      'focus:border-primary-400 dark:border-neutral-600 focus:shadow-outline-primary dark:focus:border-neutral-600 dark:focus:shadow-outline-neutral dark:bg-neutral-700',
+    disabled: 'cursor-not-allowed opacity-50 bg-neutral-300 dark:bg-neutral-800',
     valid:
-      'border-green-600 dark:bg-gray-700 focus:border-green-400 dark:focus:border-green-400 focus:shadow-outline-green dark:focus:shadow-outline-green',
+      'border-success-600 dark:bg-neutral-700 focus:border-success-400 dark:focus:border-success-400 focus:shadow-outline-success dark:focus:shadow-outline-success',
     invalid:
-      'border-red-600 dark:bg-gray-700 focus:border-red-400 dark:focus:border-red-400 focus:shadow-outline-red dark:focus:shadow-outline-red',
+      'border-danger-600 dark:bg-neutral-700 focus:border-danger-400 dark:focus:border-danger-400 focus:shadow-outline-danger dark:focus:shadow-outline-danger',
     radio:
-      'text-purple-600 form-radio focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray',
+      'text-primary-600 form-radio focus:border-primary-400 focus:outline-none focus:shadow-outline-primary dark:focus:shadow-outline-neutral',
     checkbox:
-      'text-purple-600 form-checkbox focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray',
+      'text-primary-600 form-checkbox focus:border-primary-400 focus:outline-none focus:shadow-outline-primary dark:focus:shadow-outline-neutral',
   },
   // HelperText
   helperText: {
     base: 'text-xs',
-    valid: 'text-green-600 dark:text-green-400',
-    invalid: 'text-red-600 dark:text-red-400',
+    valid: 'text-success-600 dark:text-success-400',
+    invalid: 'text-danger-600 dark:text-danger-400',
   },
   // Card
   card: {
     base: 'min-w-0 rounded-lg shadow-xs overflow-hidden',
-    default: 'bg-white dark:bg-gray-800',
+    default: 'bg-white dark:bg-neutral-800',
   },
   cardBody: {
     base: 'p-4',
@@ -166,8 +156,8 @@ export const theme = {
     size: {
       larger: 'px-10 py-4 rounded-lg',
       large: 'px-5 py-3 rounded-lg',
-      regular: 'px-4 py-2 rounded-lg text-sm',
-      small: 'px-3 py-1 rounded-md text-sm',
+      regular: 'px-3 py-1 rounded-md text-sm',
+      small: 'px-2 py-1 rounded-sm text-xs',
       icon: {
         larger: 'p-4 rounded-lg',
         large: 'p-3 rounded-lg',
@@ -186,26 +176,26 @@ export const theme = {
       right: 'ml-2 -mr-1',
     },
     primary: {
-      base: 'text-white bg-purple-600 border border-transparent',
-      active: 'active:bg-purple-600 hover:bg-purple-700 focus:shadow-outline-purple',
+      base: 'text-white bg-primary-600 border border-transparent',
+      active: 'active:bg-primary-600 hover:bg-primary-700 focus:shadow-outline-primary',
       disabled: 'opacity-50 cursor-not-allowed',
     },
     outline: {
-      base: 'text-gray-600 border-gray-300 border dark:text-gray-400 focus:outline-none',
+      base: 'text-neutral-600 border-neutral-300 border dark:text-neutral-400 focus:outline-none',
       active:
-        'active:bg-transparent hover:border-gray-500 focus:border-gray-500 active:text-gray-500 focus:shadow-outline-gray',
-      disabled: 'opacity-50 cursor-not-allowed bg-gray-300',
+        'active:bg-transparent hover:border-neutral-500 focus:border-neutral-500 active:text-neutral-500 focus:shadow-outline-neutral',
+      disabled: 'opacity-50 cursor-not-allowed bg-neutral-300',
     },
     link: {
-      base: 'text-gray-600 dark:text-gray-400 focus:outline-none border border-transparent',
+      base: 'text-neutral-600 dark:text-neutral-400 focus:outline-none border border-transparent',
       active:
-        'active:bg-transparent hover:bg-gray-100 focus:shadow-outline-gray dark:hover:bg-gray-500 dark:hover:text-gray-300 dark:hover:bg-opacity-10',
+        'active:bg-transparent hover:bg-neutral-100 focus:shadow-outline-neutral dark:hover:bg-neutral-500 dark:hover:text-neutral-300 dark:hover:bg-opacity-10',
       disabled: 'opacity-50 cursor-not-allowed',
     },
     // this is the button that lives inside the DropdownItem
     dropdownItem: {
       base:
-        'inline-flex items-center cursor-pointer w-full px-2 py-1 text-sm font-medium transition-colors duration-150 rounded-md hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-gray-200',
+        'inline-flex items-center cursor-pointer w-full px-2 py-1 text-sm font-medium transition-colors duration-150 rounded-md hover:bg-neutral-100 hover:text-neutral-800 dark:hover:bg-neutral-800 dark:hover:text-neutral-200',
     },
   },
-*/
+}
