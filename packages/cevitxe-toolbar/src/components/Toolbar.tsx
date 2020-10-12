@@ -8,7 +8,7 @@ import { StringParam, useQueryParam } from 'use-query-params'
 import { localUser } from '../lib/localUser'
 import { randomDiscoveryKey } from '../lib/randomName'
 import { getTeam } from '../lib/team'
-import { Button } from './Button'
+import { Button } from '@windmill/react-ui'
 import { Group } from './Group'
 import { Status } from './Status'
 import { TeamDropdown } from './TeamDropdown'
@@ -89,7 +89,9 @@ export const Toolbar = ({
         <InviteButton />
       </Group>
       <Group>
-        <Button onClick={newClick}>📄 New</Button>
+        <Button layout="outline" onClick={newClick}>
+          📄 New
+        </Button>
       </Group>
       <Status storeManager={storeManager} />
       {children}
