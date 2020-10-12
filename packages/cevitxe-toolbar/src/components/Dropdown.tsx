@@ -1,6 +1,6 @@
 ﻿import { Transition } from '@windmill/react-ui'
 import React, { FunctionComponent, useState } from 'react'
-import { Button } from './Button'
+import { Button } from '@windmill/react-ui'
 
 export const Dropdown: FunctionComponent<any> = ({ children, buttonText, disabled, ...props }) => {
   const [isOpen, setIsOpen] = useState(false)
