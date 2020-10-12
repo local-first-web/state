@@ -6,11 +6,11 @@ import { DataGenerator } from './DataGenerator'
 import { Label } from 'cevitxe-toolbar/dist/src/components/Label'
 
 export const Toolbar = () => (
-  <Container>
+  <React.Fragment>
     <DataGenerator />
     <Loading />
     <Rows />
-  </Container>
+  </React.Fragment>
 )
 
 const Rows = () => {

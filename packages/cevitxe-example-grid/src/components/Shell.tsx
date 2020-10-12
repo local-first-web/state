@@ -23,12 +23,13 @@ export const Shell = () => {
     <Windmill theme={theme}>
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100vh' }}>
         <div className="z-toolbar">
-          <Toolbar storeManager={storeManager} onStoreReady={onStoreReady} />
-          {appStore === undefined ? null : (
-            <Provider store={appStore}>
-              <GridToolbar />
-            </Provider>
-          )}
+          <Toolbar storeManager={storeManager} onStoreReady={onStoreReady}>
+            {appStore === undefined ? null : (
+              <Provider store={appStore}>
+                <GridToolbar />
+              </Provider>
+            )}
+          </Toolbar>
         </div>
 
         {appStore === undefined ? (
