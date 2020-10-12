@@ -1,7 +1,7 @@
 ﻿const windmill = require('@windmill/react-ui/config')
 const { colors } = require('tailwindcss/defaultTheme')
 
-module.exports = {
+module.exports = windmill({
   purge: ['./src/**/*.tsx', './src/**/*.jsx', './public/**/*.html'],
   theme: {
     extend: {
@@ -19,9 +19,12 @@ module.exports = {
         modal: 120,
       },
       colors: {
-        primary: colors.indigo,
+        primary: colors.teal,
         secondary: colors.blue,
         neutral: colors.gray,
+        success: colors.green,
+        warning: colors.orange,
+        danger: colors.red,
       },
     },
   },
@@ -30,4 +33,4 @@ module.exports = {
     removeDeprecatedGapUtilities: true,
     purgeLayersByDefault: true,
   },
-}
+})
