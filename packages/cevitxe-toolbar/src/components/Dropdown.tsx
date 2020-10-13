@@ -8,7 +8,7 @@ export const Dropdown: FunctionComponent<any> = ({ children, buttonText, disable
   const close = () => setTimeout(() => setIsOpen(false))
 
   return (
-    <React.Fragment>
+    <>
       <div className="relative text-left z-0" {...props}>
         <div className="">
           <Button layout="outline" onFocus={toggle}>
@@ -54,6 +54,6 @@ export const Dropdown: FunctionComponent<any> = ({ children, buttonText, disable
           </Transition>
         </div>
       </div>
-    </React.Fragment>
+    </>
   )
 }
