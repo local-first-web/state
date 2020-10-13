@@ -1,6 +1,6 @@
 import { Dropdown, Group, MenuItem } from 'cevitxe-toolbar'
 import { Label } from 'cevitxe-toolbar/dist/src/components/Label'
-import React, { Fragment, useState } from 'react'
+import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { clearCollection, loadCollection, loadSchema } from 'redux/actions'
 import { nextFrame } from '../utils/nextFrame'
@@ -58,10 +58,10 @@ export function DataGenerator() {
         ))}
       </Dropdown>
       {progress > 0 && (
-        <Fragment>
+        <>
           <ProgressBar percentComplete={progress} />
           <Label>{`${progress}%`}</Label>
-        </Fragment>
+        </>
       )}
     </Group>
   )
