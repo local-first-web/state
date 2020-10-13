@@ -1,16 +1,15 @@
-﻿import React, { Fragment } from 'react'
-
-import { Container, Group } from 'cevitxe-toolbar'
+﻿import { Group } from 'cevitxe-toolbar'
+import { Label } from 'cevitxe-toolbar/dist/src/components/Label'
+import React from 'react'
 import { useSelector } from 'react-redux'
 import { DataGenerator } from './DataGenerator'
-import { Label } from 'cevitxe-toolbar/dist/src/components/Label'
 
 export const Toolbar = () => (
-  <React.Fragment>
+  <>
     <DataGenerator />
     <Loading />
     <Rows />
-  </React.Fragment>
+  </>
 )
 
 const Rows = () => {
@@ -33,6 +32,6 @@ const Loading = () => {
       <Label>Loading...</Label>
     </Group>
   ) : (
-    <Fragment></Fragment>
+    <></>
   )
 }
