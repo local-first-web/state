@@ -1,5 +1,4 @@
-﻿// import { Button } from './Button'
-import {
+﻿import {
   Label,
   Input,
   HelperText,
@@ -26,7 +25,7 @@ const ModalIcon: FC = ({ children }) => (
 
 export const InviteButton: FC = () => {
   const [isOpen, setIsOpen] = useState(false)
-  const input = useRef<HTMLInputElement>()
+  const input = useRef<HTMLInputElement>(null)
 
   const open = () => {
     setTimeout(() => setIsOpen(!isOpen))
