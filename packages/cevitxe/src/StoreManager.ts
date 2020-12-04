@@ -4,7 +4,7 @@ import { ConnectionEvent, ProxyReducer, RepoSnapshot, Snapshot } from 'cevitxe-t
 import cuid from 'cuid'
 import debug from 'debug'
 import { EventEmitter } from 'events'
-import { applyMiddleware, createStore, Middleware, Store } from 'redux'
+import * as Redux from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
 import { ConnectionManager } from './ConnectionManager'
 import { DEFAULT_SIGNAL_SERVERS } from './constants'
@@ -25,13 +25,13 @@ export class StoreManager<T> extends EventEmitter {
   private proxyReducer: ProxyReducer
   private initialState: Snapshot | RepoSnapshot
   private urls: string[]
-  private middlewares: Middleware[] // TODO: accept an `enhancer` object instead
+  private middlewares: Redux.Middleware[] // TODO: accept an `enhancer` object instead
   private repo?: Repo
   private connectionManager?: ConnectionManager
   private collections: string[]
   private log: debug.Debugger
 
-  public store?: Store
+  public store?: Redux.Store
 
   constructor({
     databaseName,
@@ -57,6 +57,7 @@ export class StoreManager<T> extends EventEmitter {
   private getStore = async (discoveryKey: string, isCreating: boolean = false) => {
     this.log(`${isCreating ? 'creating' : 'joining'} ${discoveryKey}`)
 
+    // Store our client ID
     const clientId = localStorage.getItem('clientId') || newid()
     localStorage.setItem('clientId', clientId)
 
@@ -68,9 +69,16 @@ export class StoreManager<T> extends EventEmitter {
       collections: this.collections,
     })
 
+    // Initialize the repo to get our initial state
     const state = await this.repo.init(this.initialState, isCreating)
-    // Create Redux store to expose to app
-    this.store = this.createReduxStore(state)
+
+    // Use the initial state to create a Redux store
+    const reducer = getReducer(this.proxyReducer, this.repo)
+    const cevitxeMiddleware = getMiddleware(this.proxyReducer, this.repo)
+    const enhancer = composeWithDevTools(
+      Redux.applyMiddleware(...this.middlewares, cevitxeMiddleware)
+    )
+    this.store = Redux.createStore(reducer, state, enhancer)
 
     // Connect to discovery server to find peers and sync up with them
     this.connectionManager = new ConnectionManager({
@@ -80,6 +88,7 @@ export class StoreManager<T> extends EventEmitter {
       urls: this.urls,
     })
 
+    // Pass connection events on to application
     pipeEvents({
       source: this.connectionManager,
       target: this,
@@ -87,15 +96,6 @@ export class StoreManager<T> extends EventEmitter {
     })
 
     return this.store
-  }
-
-  private createReduxStore(state: RepoSnapshot) {
-    if (!this.repo) throw new Error(`Can't create Redux store without repo`)
-    // TODO put arguments in the same order (this.proxyReducer, this.repo)
-    const reducer = getReducer(this.proxyReducer, this.repo)
-    const cevitxeMiddleware = getMiddleware(this.repo, this.proxyReducer)
-    const enhancer = composeWithDevTools(applyMiddleware(...this.middlewares, cevitxeMiddleware))
-    return createStore(reducer, state, enhancer)
   }
 
   public get connectionCount() {
@@ -125,7 +125,7 @@ export interface StoreManagerOptions<T> {
   proxyReducer: ProxyReducer
 
   /** Redux middlewares to add to the store. */
-  middlewares?: Middleware[]
+  middlewares?: Redux.Middleware[]
 
   /** The starting state of a blank document. */
   initialState: Snapshot | RepoSnapshot

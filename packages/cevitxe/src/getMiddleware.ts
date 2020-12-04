@@ -8,12 +8,12 @@ import { toArray } from './toArray'
 const log = debug('cevitxe:middleware')
 
 export type MiddlewareFactory = (
-  feed: Repo,
   proxyReducer: ProxyReducer,
+  feed: Repo,
   discoveryKey?: string
 ) => Middleware
 
-export const getMiddleware: MiddlewareFactory = (repo, proxyReducer) => {
+export const getMiddleware: MiddlewareFactory = (proxyReducer, repo) => {
   return store => next => async action => {
     // BEFORE CHANGES
     // ... nothing to do here
