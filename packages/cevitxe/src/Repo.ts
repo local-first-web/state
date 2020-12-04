@@ -20,7 +20,7 @@ import { Collection } from './Collection'
 import { DELETED, GLOBAL } from './constants'
 
 /**
- * A Repo manages a set of Automerge documents. For each document, it persists:
+ * A Repo provides persistence for a set of Automerge documents. For each document, it persists:
  *   1. the document history (in an append-only log of changes), and
  *   2. a snapshot of the document's latest state.
  *
