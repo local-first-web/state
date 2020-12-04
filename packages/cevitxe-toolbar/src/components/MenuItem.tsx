@@ -1,6 +1,6 @@
 ﻿import React, { FunctionComponent } from 'react'
 
-export const MenuItem: FunctionComponent<any> = ({ children, className, ...props }) => {
+const MenuItem: FunctionComponent<any> = ({ children, className, ...props }) => {
   return (
     <button
       className={`
@@ -17,3 +17,5 @@ export const MenuItem: FunctionComponent<any> = ({ children, className, ...props
     </button>
   )
 }
+
+export { MenuItem }

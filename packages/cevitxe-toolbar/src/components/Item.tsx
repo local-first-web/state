@@ -1,7 +1,7 @@
 ﻿import React, { FunctionComponent } from 'react'
 import { Button } from './Button'
 
-export const Item: FunctionComponent<any> = ({ children, className, ...props }) => {
+const Item: FunctionComponent<any> = ({ children, className, ...props }) => {
   return (
     <Button
       className={[
@@ -19,3 +19,5 @@ export const Item: FunctionComponent<any> = ({ children, className, ...props }) 
     </Button>
   )
 }
+
+export { Item }

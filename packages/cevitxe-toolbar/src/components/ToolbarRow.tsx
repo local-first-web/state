@@ -1,7 +1,7 @@
 import React from 'react'
 import { FunctionComponent } from 'react'
 
-export const Container: FunctionComponent = ({ children }) => {
+const Container: FunctionComponent = ({ children }) => {
   return (
     <div
       className="
@@ -14,3 +14,5 @@ export const Container: FunctionComponent = ({ children }) => {
     </div>
   )
 }
+
+export { Container }

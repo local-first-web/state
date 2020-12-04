@@ -1,5 +1,4 @@
-import { Dropdown, Group, MenuItem } from 'cevitxe-toolbar'
-import { Label } from 'cevitxe-toolbar/dist/src/components/Label'
+import { Dropdown, DropdownCaret, Group, Label, MenuItem } from 'cevitxe-toolbar'
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { clearCollection, loadCollection, loadSchema } from 'redux/actions'
@@ -13,7 +12,7 @@ import { ProgressBar } from './ProgressBar'
  */
 const generator = new GeneratorWorker()
 
-export function DataGenerator() {
+const DataGenerator = () => {
   const dispatch = useDispatch()
   const [progress, setProgress] = useState(0)
 
@@ -43,7 +42,16 @@ export function DataGenerator() {
   return (
     <Group>
       <Dropdown
-        buttonText={progress ? '⌚ Generating...' : '⚙ Generate data'}
+        button={
+          progress ? (
+            '⌚ Generating...'
+          ) : (
+            <>
+              ⚙ Generate data
+              <DropdownCaret />
+            </>
+          )
+        }
         disabled={progress > 0}
       >
         {datasetSizes.map(nRows => (
@@ -66,3 +74,5 @@ export function DataGenerator() {
     </Group>
   )
 }
+
+export { DataGenerator }

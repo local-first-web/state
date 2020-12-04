@@ -11,7 +11,7 @@ interface StatusProps {
   storeManager: StoreManager<any>
 }
 
-export const Status = ({ storeManager }: StatusProps) => {
+const Status = ({ storeManager }: StatusProps) => {
   const [online, setOnline] = useState<boolean>(false)
   const [peers, setPeers] = useState<string[]>([])
 
@@ -62,3 +62,5 @@ export const Status = ({ storeManager }: StatusProps) => {
     </Group>
   )
 }
+
+export { Status }

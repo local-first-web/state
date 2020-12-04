@@ -1,5 +1,5 @@
 ﻿const windmill = require('@windmill/react-ui/config')
-const { colors } = require('tailwindcss/defaultTheme')
+const { colors, fontSize } = require('tailwindcss/defaultTheme')
 
 module.exports = windmill({
   purge: ['./src/**/*.tsx', './src/**/*.jsx', './public/**/*.html'],
@@ -25,6 +25,10 @@ module.exports = windmill({
         success: colors.green,
         warning: colors.orange,
         danger: colors.red,
+      },
+      fontSize: {
+        xxs: '0.65rem',
+        ...fontSize,
       },
     },
   },

@@ -23,7 +23,7 @@ const ModalIcon: FC = ({ children }) => (
   </div>
 )
 
-export const InviteButton: FC = () => {
+const InviteButton: FC = () => {
   const [isOpen, setIsOpen] = useState(false)
   const input = useRef<HTMLInputElement>(null)
 
@@ -44,7 +44,7 @@ export const InviteButton: FC = () => {
 
   return (
     <div className="relative">
-      <Button layout="outline" onClick={open}>
+      <Button layout="link" onClick={open}>
         💌 Invite
       </Button>
       <Modal isOpen={isOpen} onClose={close} style={{ width: 400 }}>
@@ -76,3 +76,5 @@ export const InviteButton: FC = () => {
     </div>
   )
 }
+
+export { InviteButton }

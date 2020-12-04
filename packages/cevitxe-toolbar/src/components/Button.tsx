@@ -1,6 +1,6 @@
 ﻿import React from 'react'
 
-export const Button: React.FC<ButtonProps & ExtendElement<'button'>> = ({
+const Button: React.FC<ButtonProps & ExtendElement<'button'>> = ({
   variant = 'default',
   size = 'md',
   className = '',
@@ -54,3 +54,5 @@ type ButtonProps = {
 
 type JsxElementName = keyof JSX.IntrinsicElements
 type ExtendElement<t extends JsxElementName> = React.PropsWithoutRef<JSX.IntrinsicElements[t]>
+
+export { Button }

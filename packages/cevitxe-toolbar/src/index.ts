@@ -1,5 +1,6 @@
 ﻿export * from './components/Button'
 export * from './components/Dropdown'
+export * from './components/DropdownCaret'
 export * from './components/Group'
 export * from './components/Label'
 export * from './components/MenuItem'

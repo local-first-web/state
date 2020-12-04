@@ -17,7 +17,7 @@ import { WelcomeMessage } from './WelcomeMessage'
 
 import '@ibm/plex/css/ibm-plex.min.css'
 
-export const Toolbar = ({
+const Toolbar = ({
   storeManager,
   onStoreReady,
   children,
@@ -99,7 +99,9 @@ export const Toolbar = ({
   )
 }
 
-export interface ToolbarProps<T> {
+interface ToolbarProps<T> {
   storeManager: StoreManager<T>
   onStoreReady: (store: Redux.Store, discoveryKey: string) => void
 }
+
+export { Toolbar, ToolbarProps }

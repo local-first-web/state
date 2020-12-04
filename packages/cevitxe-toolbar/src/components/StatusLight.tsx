@@ -1,6 +1,6 @@
 ﻿import React from 'react'
 
-export const StatusLight = ({ online }: { online: boolean }) => (
+const StatusLight = ({ online }: { online: boolean }) => (
   <div style={{ display: 'inline-block' }}>
     <span
       style={{
@@ -14,3 +14,5 @@ export const StatusLight = ({ online }: { online: boolean }) => (
     ></span>
   </div>
 )
+
+export { StatusLight }

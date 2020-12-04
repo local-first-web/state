@@ -31,16 +31,9 @@
     base:
       'bg-white divide-y dark:divide-neutral-700 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-400',
   },
-  // DropdownItem
-  // this is the <li> that lives inside the Dropdown <ul>
-  // you're probably looking for the dropdownItem style inside button
-  dropdownItem: {
-    base: 'mb-2 last:mb-0',
-  },
   // Dropdown
   dropdown: {
-    base:
-      'absolute w-56 p-2 mt-2 text-neutral-600 bg-white border border-neutral-100 rounded-lg shadow-md min-w-max-content dark:text-neutral-300 dark:border-neutral-700 dark:bg-neutral-700',
+    base: `absolute w-56 mt-2 text-neutral-600 bg-white border border-neutral-100 rounded-lg shadow-md min-w-max-content dark:text-neutral-300 dark:border-neutral-700 dark:bg-neutral-700`,
     align: {
       left: 'left-0',
       right: 'right-0',
