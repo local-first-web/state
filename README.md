@@ -1,4 +1,4 @@
-<img src='https://github.com/local-first-web/branding/raw/main/svg/state-localfirst-icon-name-box.svg' height=100 />
+<img src='https://raw.githubusercontent.com/local-first-web/branding/main/svg/state-localfirst-icon-name.svg' height=100 />
 
 `@localfirst/state` is a wrapper for a Redux store that gives your app offline capabilities and secure
 peer-to-peer synchronization superpowers.
