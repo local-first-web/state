@@ -19,8 +19,25 @@ import { EMPTY_CLOCK, getClock, mergeClocks } from './clocks'
 import { Collection } from './Collection'
 import { DELETED, GLOBAL } from './constants'
 
+/*
+
+What is a Repo?
+
+A Repo is a simple persistence layer backed by the database of your choice (indexedDB, MongoDb, etc.)
+
+
+
+It doesn't know anything about networking. A Synchronizer uses it to 
+
+
+
+
+
+
+*/
+
 /**
- * A Repo provides persistence for a set of Automerge documents. For each document, it persists:
+ * A Repo provides persistence for a set of Automerge documents. For each document, it stores:
  *   1. the document history (in an append-only log of changes), and
  *   2. a snapshot of the document's latest state.
  *
