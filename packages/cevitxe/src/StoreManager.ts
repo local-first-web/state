@@ -15,6 +15,32 @@ import { Repo } from './Repo'
 
 let log = debug('cevitxe:StoreManager')
 
+// TODO
+
+/*
+This API is janky and the 'storeManager' name is awkward. Prefer to focus on the Redux store that
+you get from this - 
+
+```ts
+import {createStore, joinStore} from 'local-first-state'
+
+const store = await createStore( ... ) 
+// OR 
+const store = await joinStore( ... )
+```
+
+Here `store` is a ConnectedStore, which is an *enhanced* Redux store.
+
+- It is a `Redux.Store`, an you can work with it as such; it has `getState` and `dispatch` etc. 
+- It is also an `EventEmitter` so you can subscribe to `connect`, `disconnect`, `connectPeer`,
+  `disconnectPeer`.
+
+Next: 
+
+- [ ] createStore and joinStore should match Redux.createStore API as much as possible
+- [ ] rename ConnectionEvents: `connect`, `disconnect`, `connectPeer`, `disconnectPeer`.
+*/
+
 const { OPEN, CLOSE, PEER: PEER_ADD, PEER_REMOVE } = ConnectionEvent
 /**
  * A StoreManager generates a Redux store with persistence (via the Repo class), networking (via
@@ -141,7 +167,7 @@ export interface StoreManagerOptions<T> {
 }
 
 // Use shorter IDs
-A.uuid.setFactory(cuid)
+A.uuid.setFactory(cuid) // TODO this probably belongs somewhere else
 
 const pipeEvents = ({
   source,
