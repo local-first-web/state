@@ -1,6 +1,6 @@
-<img src='logo.svg' width='500' alt='' />
+<img src='https://github.com/local-first-web/branding/raw/main/svg/state-localfirst-icon-name-box.svg' height=100 />
 
-Cevitxe is a wrapper for a Redux store that gives your app offline capabilities and secure
+`@localfirst/state` is a wrapper for a Redux store that gives your app offline capabilities and secure
 peer-to-peer synchronization superpowers.
 
 ## Why?
@@ -44,7 +44,6 @@ Two demo React applications are included:
     </td>
   </tr>
 </table>
-
 
 ### Use Cevitxe in your app
 
