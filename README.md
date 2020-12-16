@@ -1,12 +1,18 @@
-<img src='https://raw.githubusercontent.com/local-first-web/branding/main/svg/state-localfirst-icon-name.svg' height=100 />
+<img src='https://raw.githubusercontent.com/local-first-web/branding/main/svg/state-localfirst-icon-name-box.svg' height=100 />
 
-`@localfirst/state` is a wrapper for a Redux store that gives your app offline capabilities and secure
+`@localfirst/state` is **an automatically replicated Redux store** that gives your app offline capabilities and secure
 peer-to-peer synchronization superpowers.
+
+> 🚧 **Work in progress**
 
 ## Why?
 
+📱🤝 You're building a [local-first](http://inkandswitch.com/local-first.html) app to enable distributed collaboration [without a central server](http://medium.com/all-the-things/a-web-application-with-no-web-server-61000a6aed8f) using web technologies (maybe vanilla JS, React, or Electron).
+
+You're familiar with the Redux
+
 Distributed, offline-first technologies are promising for a lot of reasons, but they're unfamiliar
-to most web application developers. Cevitxe provides offline storage and peer-to-peer
+to most web application developers. This library provides offline storage and peer-to-peer
 synchronization capabilities, and exposes them via a familiar Redux store that can be used in a
 vanilla JS, React, or Electron application.
 
@@ -14,7 +20,7 @@ vanilla JS, React, or Electron application.
 
 ## How?
 
-Cevitxe provides three services:
+This library provides three services:
 
 - **Data replication & synchronization**, using the [Automerge](https://github.com/automerge/automerge) library
 - **Networking** with peers, via a lightweight [signal server](../packages/cevitxe-signal-server) for discovery and relay
@@ -22,9 +28,7 @@ Cevitxe provides three services:
 
 🡒 [Read more](docs/how.md)
 
-## Getting started
-
-### Run the examples
+## Example apps
 
 Two demo React applications are included:
 
@@ -45,7 +49,7 @@ Two demo React applications are included:
   </tr>
 </table>
 
-### Use Cevitxe in your app
+## Getting started
 
 ```bash
 yarn add cevitxe
@@ -79,7 +83,7 @@ export const Index = () => {
 }
 ```
 
-🡒 [More on how to use Cevitxe in your app](docs/getting-started.md)
+🡒 [More on how to use `@localfirst/state` in your app](docs/getting-started.md)
 
 ## Work in progress
 
