@@ -122,7 +122,7 @@ export const Index = () => {
       establish a direct connection between the two peers, using browser-to-browser communication
       technologies like WebRTC. For now, we've found WebRTC too unreliable to be worth the trouble. [#43](https://github.com/DevResults/cevitxe/issues/43)
 
-* [ ] **Command-line deployment for signal server**  
+* [x] **Command-line deployment for signal server**  
        We've manually gotten our signal server up and running on Heroku. We'd like to script this
       and/or include configuration files to make it possible to deploy instances of the signal
       server to multiple providers such as Heroku, Zeit Now, and Netlify. [#44](https://github.com/DevResults/cevitxe/issues/44)
