@@ -1,7 +1,7 @@
 import A from 'automerge'
 import { Repo } from './Repo'
-import { Server } from 'cevitxe-signal-server'
-import { newid } from 'cevitxe-signal-client'
+import { Server } from '@localfirst/relay'
+import { newid } from '@localfirst/relay-client'
 import { Connection } from './Connection'
 
 import { WebSocket } from 'mock-socket'

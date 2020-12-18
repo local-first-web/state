@@ -1,5 +1,5 @@
-import { newid } from 'cevitxe-signal-client'
-import { Server } from 'cevitxe-signal-server'
+import { newid } from '@localfirst/relay-client'
+import { Server } from '@localfirst/relay'
 import { ProxyReducer } from 'cevitxe-types'
 import { getPortPromise as getAvailablePort } from 'portfinder'
 import { pause as _yield } from './pause'

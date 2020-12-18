@@ -1,5 +1,5 @@
 ﻿import { IdbAdapter } from '.'
-import { newid } from 'cevitxe-signal-client'
+import { newid } from '@localfirst/relay-client'
 
 const setup = async () => {
   const storage = new IdbAdapter({ discoveryKey: 'silly-coder', databaseName: `test-${newid()}` })

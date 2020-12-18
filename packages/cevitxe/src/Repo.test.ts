@@ -1,5 +1,5 @@
 ﻿import A from 'automerge'
-import { newid } from 'cevitxe-signal-client'
+import { newid } from '@localfirst/relay-client'
 import { Repo } from './Repo'
 
 describe('Repo', () => {

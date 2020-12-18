@@ -1,5 +1,5 @@
 ﻿import A from 'automerge'
-import { newid } from 'cevitxe-signal-client'
+import { newid } from '@localfirst/relay-client'
 import { StorageAdapter } from 'cevitxe-storage-abstract'
 import { IdbAdapter } from 'cevitxe-storage-indexeddb'
 import {

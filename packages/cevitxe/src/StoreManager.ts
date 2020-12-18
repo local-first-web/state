@@ -1,5 +1,5 @@
 import A from 'automerge'
-import { newid } from 'cevitxe-signal-client'
+import { newid } from '@localfirst/relay-client'
 import { ConnectionEvent, ProxyReducer, RepoSnapshot, Snapshot } from 'cevitxe-types'
 import cuid from 'cuid'
 import debug from 'debug'

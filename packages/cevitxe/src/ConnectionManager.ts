@@ -1,5 +1,5 @@
 ﻿import { EventEmitter } from 'events'
-import { Client, newid, Peer } from 'cevitxe-signal-client'
+import { Client, newid, Peer } from '@localfirst/relay-client'
 import debug from 'debug'
 import * as Redux from 'redux'
 import { Connection } from './Connection'
