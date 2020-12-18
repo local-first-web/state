@@ -14,12 +14,12 @@
   },
   "dependencies": {
     "automerge": "0",
-    "cevitxe-signal-client": "^0.4.2",
     "cevitxe-storage-abstract": "^0.4.2",
     "debug": "4",
     "idb": "herbcaudill/idb#add-with-async-ittr-cjs-d-ts"
   },
   "devDependencies": {
+    "@localfirst/relay-client": "^1.0.7",
     "@types/debug": "4",
     "@types/jest": "25",
     "fake-indexeddb": "2",

@@ -13,7 +13,7 @@
     "noUnusedParameters": false,
     "outDir": "dist",
     "preserveSymlinks": true,
-    "skipLibCheck": true, // see note in cevitxe-types/tsconfig.json
+    "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
     "target": "es6",
