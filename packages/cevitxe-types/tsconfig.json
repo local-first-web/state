@@ -12,17 +12,9 @@
     "moduleResolution": "node",
     "noEmit": false,
     "outDir": "dist",
-    "skipLibCheck": true, // *
+    "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
     "target": "es6"
   }
 }
-
-// * Was getting build errors like this:
-//
-// ../../node_modules/@types/mocha/index.d.ts:2680:13 - error TS2403: Subsequent variable
-// declarations must have the same type.  Variable 'beforeEach' must be of type 'Lifecycle', but
-// here has type 'HookFunction'.
-//
-// This is due to type conflicts between cypress and jest; see https://github.com/cypress-io/cypress/issues/6690
