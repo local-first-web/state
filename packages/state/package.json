@@ -44,7 +44,7 @@
     "redux-devtools-extension": "2",
     "redux": "4",
     "rimraf": "3",
-    "ts-jest": "25",
+    "ts-jest": "26",
     "tslib": "1",
     "typescript": "4"
   },

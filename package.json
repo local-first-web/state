@@ -7,7 +7,7 @@
     "prebuild": "cpx ./README.md ./packages/state/",
     "build": "lerna run build",
     "build:css": "yarn workspace toolbar run build:css",
-    "build:quick": "tsc -b packages/storage-indexeddb packages/toolbar packages/state",
+    "build:quick": "tsc -b packages/storage-indexeddb examples/toolbar packages/state",
     "start": "run-p watch start:grid",
     "start:grid": "yarn workspace grid start",
     "start:todo": "yarn workspace todo start",

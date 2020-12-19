@@ -15,3 +15,5 @@ build
 
 **/cypress/videos
 **/cypress/screenshots
+
+globalConfig.json
