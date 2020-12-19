@@ -34,7 +34,6 @@
     "uuid": "3"
   },
   "devDependencies": {
-    "@localfirst/types": "1",
     "@testing-library/cypress": "6",
     "@testing-library/jest-dom": "5",
     "@testing-library/react": "10",

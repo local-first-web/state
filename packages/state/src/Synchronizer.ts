@@ -4,7 +4,7 @@ import { EMPTY_CLOCK, getMissingChanges, isMoreRecent, mergeClocks } from './clo
 import * as message from './Message'
 import { Message } from './Message'
 import { Repo } from './Repo'
-import { Clock, ClockMap, RepoHistory, RepoSnapshot } from '@localfirst/types'
+import { Clock, ClockMap, RepoHistory, RepoSnapshot } from './types'
 
 /**
  * One instance of `Synchronizer` keeps one local document in sync with one remote peer's replica of the
@@ -198,7 +198,7 @@ export class Synchronizer {
   /** Sends a single message containing each documentId along with our clock value for it */
   private async advertiseAll() {
     this.log('advertiseAll')
-    const clocks = Object.keys(this.repo.getAllClocks()).map(documentId => ({
+    const clocks = Object.keys(this.repo.getAllClocks()).map((documentId) => ({
       documentId,
       clock: this.getOurClock(documentId),
     }))

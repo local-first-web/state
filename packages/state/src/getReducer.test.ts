@@ -1,13 +1,13 @@
 import { getReducer } from './getReducer'
 import { repoFromSnapshot } from './repoTestHelpers'
-import { ProxyReducer, ChangeManifest } from '@localfirst/types'
+import { ProxyReducer, ChangeManifest } from './types'
 
 describe('getReducer', () => {
   describe('single change function', () => {
     const proxyReducer: ProxyReducer = (state, { type, payload }) => {
       switch (type) {
         case 'WHATEVER':
-          return s => {
+          return (s) => {
             s.settings.foo = payload
           }
         default:
@@ -47,7 +47,7 @@ describe('getReducer', () => {
           return {
             collection: 'teachers',
             id: payload.id,
-            fn: row => Object.assign(row, payload),
+            fn: (row) => Object.assign(row, payload),
           } as ChangeManifest<any>
       }
     }) as ProxyReducer

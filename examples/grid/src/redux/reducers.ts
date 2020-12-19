@@ -1,7 +1,7 @@
-import { ChangeFn, ProxyReducer } from '@localfirst/types'
+import { ChangeFn, ProxyReducer } from '@localfirst/state'
 import { inferSchema } from 'inferSchema'
 import { JSONSchema7 } from 'json-schema'
-import { GridState } from '@localfirst/types'
+import { GridState } from '../types'
 import * as actions from './actions'
 
 const toArray = <T>(x: T | T[] | null) => (x === null ? [] : Array.isArray(x) ? x : [x])
@@ -11,7 +11,7 @@ export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) 
   switch (type) {
     case actions.ITEM_ADD: {
       const newRows = toArray(payload)
-      return newRows.map(newRow => {
+      return newRows.map((newRow) => {
         const { id } = newRow
         const fn = (row: any) => Object.assign(row, newRow)
         return { collection, id, fn }
@@ -42,7 +42,7 @@ export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) 
 
     case actions.COLLECTION_LOAD: {
       const newRows = toArray(payload.collection)
-      return newRows.map(newRow => {
+      return newRows.map((newRow) => {
         const { id } = newRow
         const fn = (row: any) => Object.assign(row, newRow)
         return { collection, id, fn }
@@ -55,19 +55,19 @@ export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) 
       }
 
     case actions.SCHEMA_INFER:
-      return s => {
+      return (s) => {
         s.schema = inferSchema(payload.sampleData)
       }
 
     case actions.FIELD_ADD:
-      return s => {
+      return (s) => {
         const fieldId = payload.id
         s.schema.properties = s.schema.properties || {}
         s.schema.properties[fieldId] = { description: 'New Field' }
       }
 
     case actions.FIELD_RENAME:
-      return s => {
+      return (s) => {
         const fieldSchema = s.schema.properties![payload.id] as JSONSchema7
         fieldSchema.description = payload.description
       }
@@ -95,7 +95,7 @@ export const proxyReducer: ProxyReducer<GridState> = (state, { type, payload }) 
       const { id: fieldId, type: newType } = payload
 
       // update schema
-      const schemaChange: ChangeFn<GridState> = s => {
+      const schemaChange: ChangeFn<GridState> = (s) => {
         const fieldSchema = s.schema.properties![fieldId] as JSONSchema7
         fieldSchema.type = newType
       }

@@ -1,6 +1,7 @@
 import A from 'automerge'
 import { AnyAction } from 'redux'
 export { ChangeFn } from 'automerge'
+import { Clock, Snapshot, SnapshotRecord, ChangeSet } from '@localfirst/storage-abstract'
 
 // change function operating on a specific item in a collection
 type CollectionChange<T> = {
@@ -37,15 +38,6 @@ export type ProxyReducer<T = any> = (
 ) => null | ChangeManifest<T> | ChangeManifest<T>[]
 
 /**
- * A vector clock provides a logical ordering of events and states in a distributed system. It
- *  associates each actor in a system with a counter that is incremented each time that actor makes a
- *  change. See https://en.wikipedia.org/wiki/Vector_clock.
- */
-export declare type Clock = {
-  [actorId: string]: number
-}
-
-/**
  * For each document, we have a `Clock`. A ClockMap maps all documentIds that we have to the
  * corresponding `Clock`. */
 export declare type ClockMap = {
@@ -60,30 +52,11 @@ export interface ChangeMap {
 }
 
 /**
- * Every time one or more changes are made, we store them in a `ChangeSet`.
- */
-export interface ChangeSet {
-  /** The ID of the document */
-  documentId: string
-  /** The name of the collection this ChangeSet applies to */
-  collection?: string
-  /** One or more Automerge changes made to the document */
-  changes: A.Change[]
-}
-
-/**
  * `RepoHistory` is an object mapping each `documentId` to an array of changes representing the
  * corresponding document's entire history.
  */
 export declare type RepoHistory = {
   [documentId: string]: A.Change[]
-}
-
-/**
- * A snapshot is the state of a document at a specific point in time, with no Automerge metadata.
- */
-export interface Snapshot {
-  [key: string]: any
 }
 
 /**
@@ -93,20 +66,6 @@ export interface Snapshot {
  */
 export interface RepoSnapshot {
   [documentId: string]: Snapshot | null
-}
-
-/**
- * We store each `Snapshot` along with some metadata in a `SnapshotRecord`.
- */
-export interface SnapshotRecord {
-  /** The ID of the document */
-  documentId: string
-  /** The name of the collection this SnapshotRecord applies to */
-  collection?: string
-  /** The snapshot itself */
-  snapshot: Snapshot
-  /** The vector clock when the snapshot was taken  */
-  clock: Clock
 }
 
 // connection events
@@ -122,3 +81,5 @@ export enum ConnectionEvent {
   MESSAGE = 'message',
   DATA = 'data',
 }
+
+export * from '@localfirst/storage-abstract'

@@ -1,5 +1,5 @@
 ﻿import * as R from 'ramda'
-import { Clock } from '@localfirst/types'
+import { Clock } from './types'
 import A from 'automerge'
 import { Map } from 'immutable'
 

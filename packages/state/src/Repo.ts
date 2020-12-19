@@ -12,7 +12,7 @@ import {
   isFunction,
   RepoHistory,
   RepoSnapshot,
-} from '@localfirst/types'
+} from './types'
 import debug from 'debug'
 import { clone } from 'ramda'
 import { EMPTY_CLOCK, getClock, mergeClocks } from './clocks'

@@ -1,5 +1,5 @@
 import A from 'automerge'
-import { RepoSnapshot, RepoHistory, Clock, ClockMap } from '@localfirst/types'
+import { RepoSnapshot, RepoHistory, Clock, ClockMap } from './types'
 
 /** Kick off our interaction with a peer by telling them how many documents we have */
 export const HELLO = 'HELLO'

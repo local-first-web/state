@@ -1,4 +1,4 @@
-﻿import { ChangeSet, SnapshotRecord } from '@localfirst/types'
+﻿import { ChangeSet, SnapshotRecord } from './types'
 
 export abstract class StorageAdapter {
   storageKey: string
@@ -20,3 +20,5 @@ export abstract class StorageAdapter {
   abstract putSnapshot(snapshotRecord: SnapshotRecord): Promise<void>
   abstract deleteSnapshot(snapshotId: string): Promise<void>
 }
+
+export * from './types'

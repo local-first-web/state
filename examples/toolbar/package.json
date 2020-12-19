@@ -31,7 +31,6 @@
     "use-query-params": "0"
   },
   "devDependencies": {
-    "@localfirst/types": "1",
     "@types/jest": "25",
     "@types/query-string": "6",
     "@types/use-persisted-state": "0",

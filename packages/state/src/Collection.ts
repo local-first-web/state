@@ -1,4 +1,4 @@
-import { RepoSnapshot, Snapshot } from '@localfirst/types'
+import { RepoSnapshot, Snapshot } from './types'
 import { DELETED, GLOBAL } from './constants'
 
 /**

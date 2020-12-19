@@ -12,7 +12,6 @@
     "watch": "tsc --watch"
   },
   "devDependencies": {
-    "@localfirst/types": "1",
     "typescript": "4"
   }
 }

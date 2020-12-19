@@ -1,9 +1,7 @@
-﻿import { StorageAdapter } from '@localfirst/storage-abstract'
-import { ChangeSet, SnapshotRecord } from '@localfirst/types'
-
-// TODO: can we get off my fork of idb?
-import { IDBPDatabase, openDB, DBSchema } from 'idb/with-async-ittr-cjs'
+﻿import { ChangeSet, SnapshotRecord, StorageAdapter } from '@localfirst/storage-abstract'
 import debug from 'debug'
+// TODO: can we get off my fork of idb?
+import { DBSchema, IDBPDatabase, openDB } from 'idb/with-async-ittr-cjs'
 
 /**
  * We use a single database with two object stores: `changes`, containing changesets in sequential

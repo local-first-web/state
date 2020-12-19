@@ -1,6 +1,6 @@
 import { newid } from '@localfirst/relay-client'
 import { Server } from '@localfirst/relay'
-import { ProxyReducer } from '@localfirst/types'
+import { ProxyReducer } from './types'
 import { getPortPromise as getAvailablePort } from 'portfinder'
 import { pause as _yield } from './pause'
 import { StoreManager } from './StoreManager'
@@ -22,18 +22,18 @@ describe('StoreManager', () => {
   const simpleProxyReducer = ((state, { type, payload }) => {
     switch (type) {
       case 'ADD_TEACHER':
-        return s => {
+        return (s) => {
           for (const teacher of toArray(payload)) {
             s.teachers[teacher.id] = teacher
           }
         }
       case 'REMOVE_TEACHER':
-        return s => {
+        return (s) => {
           delete s.teachers[payload.id]
         }
       case 'ADD_PHONE': {
         const { id, phone } = payload
-        return s => s.teachers[id].phones.push(phone)
+        return (s) => s.teachers[id].phones.push(phone)
       }
       default:
         return null
@@ -44,10 +44,10 @@ describe('StoreManager', () => {
     switch (type) {
       case 'ADD_TEACHER': {
         const newTeachers = toArray(payload)
-        return newTeachers.map(newTeacher => ({
+        return newTeachers.map((newTeacher) => ({
           collection: 'teachers',
           id: newTeacher.id,
-          fn: teacher => {
+          fn: (teacher) => {
             Object.assign(teacher, newTeacher)
           },
         }))
@@ -63,7 +63,7 @@ describe('StoreManager', () => {
         return {
           collection: 'teachers',
           id: updatedTeacher.id,
-          fn: teacher => {
+          fn: (teacher) => {
             Object.assign(teacher, updatedTeacher)
           },
         }
@@ -73,7 +73,7 @@ describe('StoreManager', () => {
         return {
           collection: 'teachers',
           id,
-          fn: teacher => {
+          fn: (teacher) => {
             teacher.phones.push(phone)
           },
         }

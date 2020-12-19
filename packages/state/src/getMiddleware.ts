@@ -1,4 +1,4 @@
-import { ProxyReducer } from '@localfirst/types'
+import { ProxyReducer } from './types'
 import debug from 'debug'
 import { Middleware } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
@@ -14,7 +14,7 @@ export type MiddlewareFactory = (
 ) => Middleware
 
 export const getMiddleware: MiddlewareFactory = (repo, proxyReducer) => {
-  return store => next => async action => {
+  return (store) => (next) => async (action) => {
     // BEFORE CHANGES
     // ... nothing to do here
 

@@ -1,6 +1,6 @@
 ﻿import { EventEmitter } from 'events'
 import { Message } from './Message'
-import { ConnectionEvent } from '@localfirst/types'
+import { ConnectionEvent } from './types'
 
 const { DATA } = ConnectionEvent
 

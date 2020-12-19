@@ -1,6 +1,5 @@
-import A from 'automerge'
 import { newid } from '@localfirst/relay-client'
-import { ConnectionEvent, ProxyReducer, RepoSnapshot, Snapshot } from '@localfirst/types'
+import A from 'automerge'
 import cuid from 'cuid'
 import debug from 'debug'
 import { EventEmitter } from 'events'
@@ -11,6 +10,7 @@ import { DEFAULT_RELAYS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getReducer } from './getReducer'
 import { Repo } from './Repo'
+import { ConnectionEvent, ProxyReducer, RepoSnapshot, Snapshot } from './types'
 
 let log = debug('lf:StoreManager')
 

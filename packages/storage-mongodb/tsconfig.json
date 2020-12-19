@@ -16,5 +16,5 @@
     "sourceMap": true,
     "target": "es5"
   },
-  "references": [{ "path": "../types" }, { "path": "../storage-abstract" }]
+  "references": [{ "path": "../storage-abstract" }]
 }

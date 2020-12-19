@@ -1,10 +1,10 @@
-﻿import { EventEmitter } from 'events'
-import { Client, newid, Peer } from '@localfirst/relay-client'
+﻿import { Client, newid, Peer } from '@localfirst/relay-client'
+import { ConnectionEvent } from './types'
 import debug from 'debug'
+import { EventEmitter } from 'events'
 import * as Redux from 'redux'
 import { Connection } from './Connection'
 import { Repo } from './Repo'
-import { ConnectionEvent } from '@localfirst/types'
 
 const log = debug('lf:connectionmanager')
 const { OPEN, CLOSE, PEER, PEER_REMOVE } = ConnectionEvent
@@ -53,7 +53,9 @@ export class ConnectionManager extends EventEmitter {
   }
 
   public async close() {
-    const closeAllConnections = Object.keys(this.connections).map(peerId => this.removePeer(peerId))
+    const closeAllConnections = Object.keys(this.connections).map((peerId) =>
+      this.removePeer(peerId)
+    )
     await Promise.all(closeAllConnections)
     this.connections = {}
   }
