@@ -30,7 +30,7 @@
     "redux": "4",
     "redux-logger": "3",
     "tailwindcss": "^1.7.6",
-    "toolbar": "^1.0.3",
+    "@localfirst/toolbar": "^1.0.3",
     "uuid": "3"
   },
   "devDependencies": {

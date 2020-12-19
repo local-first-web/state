@@ -22,7 +22,7 @@
     "react-redux": "7",
     "react-scripts": "3",
     "redux": "4",
-    "toolbar": "^1.0.3",
+    "@localfirst/toolbar": "^1.0.3",
     "uuid": "8"
   },
   "devDependencies": {
