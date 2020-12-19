@@ -4,6 +4,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
+    "prebuild": "cpx ./README.md ./packages/state/",
     "build": "lerna run build",
     "build:css": "yarn workspace toolbar run build:css",
     "build:quick": "tsc -b packages/storage-indexeddb packages/toolbar packages/state",
@@ -39,6 +40,7 @@
   },
   "devDependencies": {
     "@types/jest": "25",
+    "cpx": "^1.5.0",
     "cross-env": "6",
     "jest": "25",
     "lerna": "3",
