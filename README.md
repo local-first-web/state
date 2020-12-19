@@ -22,8 +22,8 @@ This library provides two services:
 - **Data replication & synchronization**, using the
   [Automerge](https://github.com/automerge/automerge) library
 - **Persistence** to a local or remote data store. You can use the provided adapters for
-  [IndexedDb](../packages/cevitxe-storage-indexeddb) or
-  [MongoDb](../packages/cevitxe-storage-mongodb), or provide your own.
+  [IndexedDb](../packages/storage-indexeddb) or
+  [MongoDb](../packages/storage-mongodb), or provide your own.
 
 🡒 [Read more](docs/how.md)
 

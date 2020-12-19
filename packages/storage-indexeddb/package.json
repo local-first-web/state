@@ -1,0 +1,42 @@
+{
+  "name": "storage-indexeddb",
+  "description": "IndexedDB storage adapter for Cevitxe",
+  "version": "0.4.2",
+  "license": "MIT",
+  "private": false,
+  "main": "dist/src/index.js",
+  "typings": "dist/src/index.d.ts",
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "test": "jest"
+  },
+  "dependencies": {
+    "automerge": "0",
+    "storage-abstract": "^0.4.2",
+    "debug": "4",
+    "idb": "herbcaudill/idb#add-with-async-ittr-cjs-d-ts"
+  },
+  "devDependencies": {
+    "@localfirst/relay-client": "^1.0.7",
+    "@types/debug": "4",
+    "@types/jest": "25",
+    "fake-indexeddb": "2",
+    "jest": "25",
+    "rimraf": "3",
+    "ts-jest": "25",
+    "tslib": "1",
+    "typescript": "3"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ],
+    "setupFiles": [
+      "fake-indexeddb/auto"
+    ]
+  }
+}

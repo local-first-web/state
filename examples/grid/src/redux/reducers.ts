@@ -1,4 +1,4 @@
-import { ChangeFn, ProxyReducer } from 'cevitxe-types'
+import { ChangeFn, ProxyReducer } from 'types'
 import { inferSchema } from 'inferSchema'
 import { JSONSchema7 } from 'json-schema'
 import { GridState } from 'types'

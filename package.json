@@ -6,7 +6,7 @@
   "scripts": {
     "build": "lerna run build",
     "build:css": "yarn workspace toolbar run build:css",
-    "build:quick": "tsc -b packages/cevitxe-storage-indexeddb packages/toolbar packages/cevitxe",
+    "build:quick": "tsc -b packages/storage-indexeddb packages/toolbar packages/cevitxe",
     "start": "run-p watch start:grid",
     "start:grid": "yarn workspace grid start",
     "start:todo": "yarn workspace todo start",
@@ -70,9 +70,9 @@
   },
   "jest": {
     "projects": [
-      "<rootDir>/packages/cevitxe",
-      "<rootDir>/packages/cevitxe-storage-indexeddb",
-      "<rootDir>/packages/cevitxe-storage-mongodb",
+      "<rootDir>/packages/state",
+      "<rootDir>/packages/storage-indexeddb",
+      "<rootDir>/packages/storage-mongodb",
       "<rootDir>/examples/grid"
     ]
   }

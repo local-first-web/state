@@ -20,7 +20,7 @@
   "dependencies": {
     "@emotion/core": "10",
     "cevitxe": "^0.4.2",
-    "cevitxe-types": "^0.4.2",
+    "types": "^0.4.2",
     "formik": "^2.0.1-rc.13",
     "friendly-words": "1",
     "react": "16",

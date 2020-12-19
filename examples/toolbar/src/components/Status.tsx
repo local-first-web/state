@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
 import { StoreManager } from 'cevitxe'
-import { ConnectionEvent } from 'cevitxe-types'
+import { ConnectionEvent } from 'types'
 import { useEffect, useState } from 'react'
 import { StatusLight } from './StatusLight'
 import { Group } from './Group'
