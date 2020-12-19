@@ -1,1 +1,1 @@
-﻿export const nextFrame = () => new Promise(ok => requestAnimationFrame(ok))
+﻿export const nextFrame = () => new Promise<void>(ok => requestAnimationFrame(ok))

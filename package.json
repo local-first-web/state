@@ -39,17 +39,14 @@
     "esm": "3"
   },
   "devDependencies": {
-    "@types/jest": "25",
-    "cpx": "^1.5.0",
-    "cross-env": "6",
-    "jest": "25",
+    "@types/jest": "26",
+    "cpx": "1",
+    "cross-env": "7",
+    "jest": "26",
     "lerna": "3",
     "npm-run-all": "4",
-    "ts-jest": "25",
-    "wait-on": "3"
-  },
-  "resolutions": {
-    "jest": "25.3"
+    "ts-jest": "26",
+    "wait-on": "5"
   },
   "engines": {
     "yarn": ">=1.17.0"

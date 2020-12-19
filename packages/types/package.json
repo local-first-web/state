@@ -12,6 +12,6 @@
   "devDependencies": {
     "automerge": "0",
     "redux": "4",
-    "typescript": "3"
+    "typescript": "4"
   }
 }

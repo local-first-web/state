@@ -21,11 +21,8 @@ export const Toolbar = ({
 }: React.PropsWithChildren<ToolbarProps<any>>) => {
   // Hooks
   const [discoveryKey, setDiscoveryKey] = useQueryParam('id', StringParam)
-  const [, setAppStore] = useState()
-  const [inputHasFocus, setInputHasFocus] = useState(false)
+  const [, setAppStore] = useState<Redux.Store>()
   const [busy, setBusy] = useState(false)
-
-  const input = useRef<HTMLInputElement>() as React.RefObject<HTMLInputElement>
 
   // join or create store on load
   useEffect(() => {

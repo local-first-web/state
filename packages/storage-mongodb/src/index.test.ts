@@ -1,7 +1,7 @@
 ﻿import { MongoAdapter } from '.'
 import { newid } from '@localfirst/relay-client'
 
-const pause = (t = 100) => new Promise(yes => setTimeout(() => yes(), t))
+const pause = (t = 100) => new Promise<void>(yes => setTimeout(() => yes(), t))
 
 describe('MongoAdapter', () => {
   const setup = async () => {

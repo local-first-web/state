@@ -13,6 +13,6 @@
   },
   "devDependencies": {
     "@localfirst/types": "1",
-    "typescript": "3"
+    "typescript": "4"
   }
 }
