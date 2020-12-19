@@ -5,7 +5,7 @@ export abstract class StorageAdapter {
 
   constructor(options: { discoveryKey: string; databaseName: string }) {
     const { databaseName, discoveryKey } = options
-    this.storageKey = `cevitxe_${databaseName}_${discoveryKey.substr(0, 12)}`
+    this.storageKey = `@localfirst_state_${databaseName}_${discoveryKey.substr(0, 12)}`
   }
 
   abstract open(): Promise<void>

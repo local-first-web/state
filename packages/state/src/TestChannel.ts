@@ -1,11 +1,9 @@
 ﻿import { EventEmitter } from 'events'
 import { Message } from './Message'
-import debug from 'debug'
 import { ConnectionEvent } from 'types'
 
 const { DATA } = ConnectionEvent
 
-const log = debug('HIDE:cevitxe:testchannel')
 /**
  * Simplest possible communications channel, for testing.
  *
@@ -25,9 +23,7 @@ export class TestChannel extends EventEmitter {
   addPeer() {
     this.peers++
     if (this.peers > 1) {
-      log('sending buffer')
       for (const { id, msg } of this.buffer) {
-        log('emitting', id, msg)
         this.emit(DATA, id, msg)
       }
       this.buffer = []
@@ -36,10 +32,8 @@ export class TestChannel extends EventEmitter {
 
   write(id: string, msg: Message) {
     if (this.peers > 1) {
-      log('emitting', id, msg)
       this.emit(DATA, id, msg)
     } else {
-      log('buffering', id, msg)
       this.buffer.push({ id, msg })
     }
   }

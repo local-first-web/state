@@ -28,16 +28,17 @@ conflict resolution is
 Let's assume you have an application that works with one or more JSON documents. For example, a
 single "document" might represent a task list, a row in a spreadsheet-like table, or a chat conversation.
 
-Cevitxe exposes a repository of documents to your application as a **Redux store**. Internally, each
-one is represented by both a snapshot of its current state and a history of Automerge changes.
+`@localfirst/state` exposes a repository of documents to your application as a **Redux store**.
+Internally, each one is represented by both a snapshot of its current state and a history of
+Automerge changes.
 
 ### Networking
 
-In the background, whenever you are online, Cevitxe connects to any peers that are using the same
+In the background, whenever you are online, `@localfirst/state` connects to any peers that are using the same
 repository, sending out a stream of changes as the user modifies the dataset, and applying incoming
 changes from peers.
 
-To discover peers, Cevitxe provides a lightweight [relay](https://github.com/local-first-web/relay) service.
+To discover peers, you can use [@localfirst/relay](https://github.com/local-first-web/relay) service.
 
 ### Persistence
 
@@ -45,7 +46,7 @@ Each peer stores the entire repository locally, in the form of a complete histor
 each document, along with a snapshot of each document's most recent state. By default IndexedDB is
 used, but you can use any of the provided adapters, or build your own.
 
-Cevitxe currently includes the following data storage adapters:
+This library currently includes the following data storage adapters:
 
 - IndexedDb
 - MongoDb

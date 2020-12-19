@@ -18,7 +18,7 @@ let log = debug('lf:StoreManager')
 const { OPEN, CLOSE, PEER: PEER_ADD, PEER_REMOVE } = ConnectionEvent
 /**
  * A StoreManager generates a Redux store with persistence (via the Repo class), networking (via
- * cevitxe-signal-client), and magical synchronization with peers (via automerge)
+ * @localfirst/relay-client), and magical synchronization with peers (via automerge)
  */
 export class StoreManager<T> extends EventEmitter {
   private databaseName: string
@@ -93,8 +93,8 @@ export class StoreManager<T> extends EventEmitter {
     if (!this.repo) throw new Error(`Can't create Redux store without repo`)
     // TODO put arguments in the same order (this.proxyReducer, this.repo)
     const reducer = getReducer(this.proxyReducer, this.repo)
-    const cevitxeMiddleware = getMiddleware(this.repo, this.proxyReducer)
-    const enhancer = composeWithDevTools(applyMiddleware(...this.middlewares, cevitxeMiddleware))
+    const middleware = getMiddleware(this.repo, this.proxyReducer)
+    const enhancer = composeWithDevTools(applyMiddleware(...this.middlewares, middleware))
     return createStore(reducer, state, enhancer)
   }
 
@@ -121,7 +121,7 @@ export class StoreManager<T> extends EventEmitter {
 }
 
 export interface StoreManagerOptions<T> {
-  /** A Cevitxe proxy reducer that returns a ChangeMap (map of change functions) for each action. */
+  /** A proxy reducer that returns a ChangeMap (map of change functions) for each action. */
   proxyReducer: ProxyReducer
 
   /** Redux middlewares to add to the store. */
@@ -130,7 +130,8 @@ export interface StoreManagerOptions<T> {
   /** The starting state of a blank document. */
   initialState: Snapshot | RepoSnapshot
 
-  /** A name for the storage feed, to distinguish this application's data from any other Cevitxe data stored on the same machine. */
+  /** A name for the storage feed, to distinguish this application's data from any other
+   * @localfirst/state data stored on the same machine. */
   databaseName: string
 
   /** The address(es) of one or more signal servers to try. */

@@ -1,6 +1,6 @@
 {
   "name": "storage-indexeddb",
-  "description": "IndexedDB storage adapter for Cevitxe",
+  "description": "IndexedDB storage adapter for @localfirst/state",
   "version": "0.4.2",
   "license": "MIT",
   "private": false,

@@ -1,6 +1,6 @@
 {
   "name": "storage-abstract",
-  "description": "Abstract base class for Cevitxe storage adapters",
+  "description": "Abstract base class for @localfirst/state storage adapters",
   "version": "0.4.2",
   "license": "MIT",
   "private": false,

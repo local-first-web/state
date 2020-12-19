@@ -1,6 +1,6 @@
 {
   "name": "toolbar",
-  "description": "Toolbar component for managing document IDs in Cevitxe examples.",
+  "description": "Shared toolbar component for managing document keys in @localfirst/state examples.",
   "version": "0.4.2",
   "license": "MIT",
   "private": false,

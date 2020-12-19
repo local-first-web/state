@@ -34,6 +34,6 @@ unfamiliar territory. Without a server, how do peers talk to each other? Where i
 How do we make sure that concurrent (and possibly conflicting) changes get replicated correctly
 between peers?
 
-Cevitxe intends to **bridge that gap** by combining the **familiar interface** of a Redux store with
+This library intends to **bridge that gap** by combining the **familiar interface** of a Redux store with
 **peer-to-peer networking**, **offline capabilities**, and **automatic synchronization** and conflict
 resolution superpowers.

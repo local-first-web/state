@@ -24,7 +24,7 @@ import { Clock, ClockMap, RepoHistory, RepoSnapshot } from 'types'
  * - `receive` (method on the connection object) should be called by the network stack when a
  *   message is received from the remote peer.
  *
- * In this context, networking is provided by the Cevitxe `Connection` class.
+ * In this context, networking is provided by the `ConnectionManager`.
  *
  * The document to be synced is managed by a `Repo`. Whenever it is changed locally, call `setDoc()`
  * on the Repo. The connection registers a callback on the repo, and it figures out whenever there

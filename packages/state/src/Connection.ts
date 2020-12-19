@@ -10,7 +10,7 @@ const log = debug('lf:connection')
 
 /**
  * A `Connection` keeps one local document synchronized with one peer's replica of the same
- * document. It uses `Synchronizer` for the synchronization logic, and integrates it with Cevitxe's
+ * document. It uses `Synchronizer` for the synchronization logic, and integrates it with our
  * networking stack and with the Redux store.
  */
 export class Connection extends EventEmitter {

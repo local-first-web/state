@@ -2,7 +2,7 @@
 
 import { Keychain } from 'types'
 
-const keychainId = (databaseName: string) => `cevitxe/${databaseName}/keychain`
+const keychainId = (databaseName: string) => `@localfirst/state/${databaseName}/keychain`
 
 // Retrieves the keys for a given discovery key from local storage,
 // or generates new ones and stores them.
