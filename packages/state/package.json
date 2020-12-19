@@ -1,5 +1,5 @@
 {
-  "name": "cevitxe",
+  "name": "@localfirst/state",
   "description": "CRDT-based distributed state management for Redux",
   "version": "0.4.2",
   "license": "MIT",
@@ -16,25 +16,25 @@
     "test:log": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 yarn test"
   },
   "dependencies": {
+    "@localfirst/relay-client": "^1.0.7",
     "@stablelib/base64": "1",
     "@stablelib/utf8": "1",
     "automerge": "0",
-    "@localfirst/relay-client": "^1.0.7",
-    "storage-abstract": "^0.4.2",
-    "storage-indexeddb": "^0.4.2",
-    "types": "0.4.2",
     "cuid": "2",
     "debug": "4",
     "fast-memoize": "2",
     "immutable": "4.0.0-rc.12",
     "scryptsy": "2",
-    "tweetnacl": "1"
+    "storage-abstract": "^0.4.2",
+    "storage-indexeddb": "^0.4.2",
+    "tweetnacl": "1",
+    "types": "0.4.2"
   },
   "devDependencies": {
+    "@localfirst/relay": "^1.0.7",
     "@types/debug": "4",
     "@types/jest": "25",
     "@types/scryptsy": "2",
-    "@localfirst/relay": "^1.0.7",
     "fake-indexeddb": "2",
     "jest": "25",
     "mock-socket": "8",
@@ -42,8 +42,8 @@
     "p-event": "4",
     "portfinder": "1",
     "prettier": "1",
-    "redux": "4",
     "redux-devtools-extension": "2",
+    "redux": "4",
     "rimraf": "3",
     "ts-jest": "25",
     "tslib": "1",

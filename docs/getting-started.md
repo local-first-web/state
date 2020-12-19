@@ -59,7 +59,7 @@ yarn add cevitxe
 Cevitxe exposes the `StoreManager` object, which wraps a Redux store and has a similar API.
 
 ```js
-import { StoreManager } from 'cevitxe'
+import { StoreManager } from '@localfirst/state'
 import { proxyReducer } from './reducers'
 import { logger } from './logger'
 

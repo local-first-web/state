@@ -1,5 +1,5 @@
 {
-  "name": "cevitxe-root",
+  "name": "@localfirst/state-monorepo",
   "version": "0.1.8",
   "license": "MIT",
   "private": true,

@@ -57,7 +57,7 @@ yarn add cevitxe
 ```
 
 ```js
-import { StoreManager } from 'cevitxe'
+import { StoreManager } from '@localfirst/state'
 import { Provider } from 'react-redux'
 
 const storeManager = new StoreManager({

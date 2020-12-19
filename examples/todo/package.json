@@ -1,6 +1,6 @@
 {
   "name": "todo",
-  "description": "TodoMVC implemented with React-Redux & Cevitxe.",
+  "description": "TodoMVC implemented @localfirst/state.",
   "version": "0.4.2",
   "license": "MIT",
   "private": true,
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@emotion/core": "10",
-    "cevitxe": "^0.4.2",
+    "@localfirst/state": "^0.4.2",
     "toolbar": "^0.4.2",
     "classnames": "2",
     "debug": "4",

@@ -1,6 +1,6 @@
 {
   "name": "grid",
-  "description": "Grid implemented with React-Redux & Cevitxe.",
+  "description": "Grid implemented with @localfirst/state.",
   "version": "0.4.2",
   "license": "MIT",
   "private": true,
@@ -15,7 +15,7 @@
     "ag-grid-community": "21",
     "ag-grid-enterprise": "21",
     "ag-grid-react": "21",
-    "cevitxe": "^0.4.2",
+    "@localfirst/state": "^0.4.2",
     "toolbar": "^0.4.2",
     "types": "^0.4.2",
     "core-js": "3",

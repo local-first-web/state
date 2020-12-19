@@ -1,4 +1,4 @@
-import { StoreManager } from 'cevitxe'
+import { StoreManager } from '@localfirst/state'
 import { emptyGrid } from '../ag-grid/emptyGrid'
 import { proxyReducer } from './reducers'
 import { GridState } from 'types'
