@@ -11,7 +11,7 @@ import { storeManager } from '../redux/store'
 import { App } from './App'
 import { Loading } from './Loading'
 
-const log = debug('cevitxe:grid:shell')
+const log = debug('lf:grid:shell')
 
 export const Shell = () => {
   const [appStore, setAppStore] = useState<Redux.Store>()

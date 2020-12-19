@@ -6,7 +6,7 @@ import { Repo } from './Repo'
 import { Synchronizer } from './Synchronizer'
 import { Message } from './Message'
 
-const log = debug('cevitxe:connection')
+const log = debug('lf:connection')
 
 /**
  * A `Connection` keeps one local document synchronized with one peer's replica of the same

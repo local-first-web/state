@@ -58,7 +58,7 @@ export class Synchronizer {
     this.repo = repo
     this.send = send
     this.theirClock = {}
-    this.log = debug(`cevitxe:synchronizer:${repo.databaseName}`)
+    this.log = debug(`lf:synchronizer:${repo.databaseName}`)
   }
 
   // PUBLIC METHODS

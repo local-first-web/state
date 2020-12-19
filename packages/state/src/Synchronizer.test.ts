@@ -7,7 +7,7 @@ import { pause as _yield } from './pause'
 import debug from 'debug'
 import { newid } from '@localfirst/relay-client'
 
-const log = debug('cevitxe:test')
+const log = debug('lf:test')
 
 export interface BirdCount {
   [bird: string]: number

@@ -53,7 +53,7 @@ export class Repo<T = any> {
     storage = new IdbAdapter({ databaseName, discoveryKey }),
     collections = [],
   }: RepoOptions) {
-    this.log = debug(`cevitxe:repo:${databaseName}`)
+    this.log = debug(`lf:repo:${databaseName}`)
 
     this.databaseName = databaseName
     this.clientId = clientId

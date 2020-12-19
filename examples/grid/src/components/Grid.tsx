@@ -28,7 +28,7 @@ import {
 } from '../redux/actions'
 import { Loading } from './Loading'
 
-const log = debug('cevitxe:grid')
+const log = debug('lf:grid')
 
 export const Grid = () => {
   const dispatch = useDispatch()

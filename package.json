@@ -30,7 +30,7 @@
     "test": "jest",
     "test:todo:e2e": "yarn workspace todo test:e2e",
     "test:grid:e2e": "yarn workspace grid test:e2e",
-    "test:log": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 yarn test",
+    "test:log": "cross-env DEBUG='lf*' DEBUG_COLORS=1 yarn test",
     "test:watch": "jest --watch",
     "purge": "scripts/purge.bat"
   },

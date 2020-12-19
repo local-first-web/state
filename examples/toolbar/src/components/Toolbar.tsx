@@ -34,7 +34,7 @@ export const Toolbar = ({
     else createStore()
   }, []) // only runs on first render
 
-  const log = debug(`cevitxe:toolbar:${discoveryKey}`)
+  const log = debug(`lf:toolbar:${discoveryKey}`)
   log('render')
 
   // 'new' button click

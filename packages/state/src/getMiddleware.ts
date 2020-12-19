@@ -5,7 +5,7 @@ import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
 import { Repo } from './Repo'
 import { toArray } from './toArray'
 
-const log = debug('cevitxe:middleware')
+const log = debug('lf:middleware')
 
 export type MiddlewareFactory = (
   feed: Repo,

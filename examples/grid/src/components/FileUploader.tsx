@@ -2,7 +2,7 @@
 import { useDispatch } from 'react-redux'
 import { addItem, inferSchema, clearCollection } from '../redux/actions'
 import debug from 'debug'
-const log = debug('cevitxe:grid:fileuploader')
+const log = debug('lf:grid:fileuploader')
 
 export const FileUploader = () => {
   const dispatch = useDispatch()

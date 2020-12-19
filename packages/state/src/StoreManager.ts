@@ -13,7 +13,7 @@ import { getReducer } from './getReducer'
 import { getKnownDiscoveryKeys } from './keys'
 import { Repo } from './Repo'
 
-let log = debug('cevitxe:StoreManager')
+let log = debug('lf:StoreManager')
 
 const { OPEN, CLOSE, PEER: PEER_ADD, PEER_REMOVE } = ConnectionEvent
 /**
@@ -48,7 +48,7 @@ export class StoreManager<T> extends EventEmitter {
     this.databaseName = databaseName
     this.urls = urls
     this.collections = collections
-    this.log = debug(`cevitxe:storemanager`)
+    this.log = debug(`lf:storemanager`)
   }
 
   joinStore = (discoveryKey: string) => this.getStore(discoveryKey, false)

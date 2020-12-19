@@ -30,7 +30,7 @@ export class IdbAdapter extends StorageAdapter {
 
   constructor(options: { discoveryKey: string; databaseName: string }) {
     super(options)
-    this.log = debug(`cevitxe:idbadapter:${this.storageKey}`)
+    this.log = debug(`lf:idbadapter:${this.storageKey}`)
   }
 
   async open() {

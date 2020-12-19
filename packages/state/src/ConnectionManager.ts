@@ -6,7 +6,7 @@ import { Connection } from './Connection'
 import { Repo } from './Repo'
 import { ConnectionEvent } from 'types'
 
-const log = debug('cevitxe:connectionmanager')
+const log = debug('lf:connectionmanager')
 const { OPEN, CLOSE, PEER, PEER_REMOVE } = ConnectionEvent
 
 /**
