@@ -103,6 +103,10 @@ export class StoreManager<T> extends EventEmitter {
     return this.connectionManager.connectionCount
   }
 
+  public get knownDiscoveryKeys() {
+    return getKnownDiscoveryKeys(this.databaseName)
+  }
+
   /**
    * Close all connections and the repo's database
    */
@@ -130,7 +134,7 @@ export interface StoreManagerOptions<T> {
    * @localfirst/state data stored on the same machine. */
   databaseName: string
 
-  /** The address(es) of one or more signal servers to try. */
+  /** The address(es) of one or more relays to try. */
   urls?: string[]
 
   /** The names of any collections that we need to manage */
