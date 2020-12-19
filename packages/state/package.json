@@ -1,7 +1,7 @@
 {
   "name": "@localfirst/state",
   "description": "CRDT-based distributed state management for Redux",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "MIT",
   "private": false,
   "main": "dist/src/index.js",

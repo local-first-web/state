@@ -1,7 +1,7 @@
 {
   "name": "toolbar",
   "description": "Shared toolbar component for managing document keys in @localfirst/state examples.",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "MIT",
   "private": false,
   "main": "dist/src/index.js",
@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@emotion/react": "11",
-    "@localfirst/state": "^1.0.2",
+    "@localfirst/state": "^1.0.3",
     "formik": "^2.0.1-rc.13",
     "friendly-words": "1",
     "react": "16",
