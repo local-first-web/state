@@ -26,8 +26,7 @@
     "immutable": "4.0.0-rc.12",
     "scryptsy": "2",
     "@localfirst/storage-abstract": "1",
-    "@localfirst/storage-indexeddb": "1",
-    "tweetnacl": "1"
+    "@localfirst/storage-indexeddb": "1"
   },
   "devDependencies": {
     "@localfirst/relay": "^1.0.7",
