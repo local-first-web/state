@@ -7,7 +7,7 @@ import { EventEmitter } from 'events'
 import { applyMiddleware, createStore, Middleware, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
 import { ConnectionManager } from './ConnectionManager'
-import { DEFAULT_SIGNAL_SERVERS } from './constants'
+import { DEFAULT_RELAYS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getReducer } from './getReducer'
 import { getKnownDiscoveryKeys } from './keys'
@@ -37,7 +37,7 @@ export class StoreManager<T> extends EventEmitter {
     databaseName,
     proxyReducer,
     initialState,
-    urls = DEFAULT_SIGNAL_SERVERS,
+    urls = DEFAULT_RELAYS,
     middlewares = [],
     collections = [],
   }: StoreManagerOptions<T>) {
@@ -103,10 +103,6 @@ export class StoreManager<T> extends EventEmitter {
     return this.connectionManager.connectionCount
   }
 
-  public get knownDiscoveryKeys() {
-    return getKnownDiscoveryKeys(this.databaseName)
-  }
-
   /**
    * Close all connections and the repo's database
    */
@@ -152,4 +148,4 @@ const pipeEvents = ({
   source: EventEmitter
   target: EventEmitter
   events: ConnectionEvent[]
-}) => events.forEach(event => source.on(event, payload => target.emit(event, payload)))
+}) => events.forEach((event) => source.on(event, (payload) => target.emit(event, payload)))
