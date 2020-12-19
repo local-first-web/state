@@ -79,10 +79,10 @@ export const storeManager = new StoreManager({
   // See below to learn what a proxy reducer is
   proxyReducer,
 
-  // Point it to known signal servers
+  // Point it to known relay servers
   urls: [
-    'https://signalserver.myapplication.com/',
-    'https://signalserver-qrsxyz.now.sh/', //..
+    'https://myrelay.myapplication.com/',
+    'https://myrelay-qrsxyz.now.sh/', //..
   ],
 
   // If you want, pass it an array of Redux middlewares
@@ -97,8 +97,8 @@ The `StoreManager` you've created gives you a genuine Redux store that you can u
 There are two ways to get a store: You can **create** one, or you can **join** one.
 
 Either way you need a **discovery key**. This key can be any string that uniquely identifies a
-document. This could be a UUID; it just needs to be unique among applications using your signal
-server.
+document. This could be a UUID; it just needs to be unique among applications using your relay
+service.
 
 ```jsx
 import { createStore, joinStore } from '@localfirst/state'
@@ -187,7 +187,7 @@ If you were using Automerge directly, this is what that would look like:
 
 ```js
 // Using the Automerge change function
-newState = Automerge.change(prevState, s => {
+newState = Automerge.change(prevState, (s) => {
   // `s` is a mutable proxy to the contents of `prevState`
   s.filter = someNewValue
 })
@@ -205,12 +205,12 @@ const proxyReducer = ({ type, payload }) => {
   switch (type) {
     case SET_FILTER:
       // act directly on a proxy
-      return state => (state.visibilityFilter = payload.filter)
+      return (state) => (state.visibilityFilter = payload.filter)
 
     case ADD_TODO: {
       const { id, content } = payload
       // act directly on a proxy
-      return state => {
+      return (state) => {
         state.todoList.push(id)
         state.todoMap[id] = { id, content, completed: false }
       }
@@ -323,7 +323,7 @@ To **read** from anything in a collection, your selectors don't change: you can 
 directly.
 
 ```ts
-const thisTeacher = useSelector(state => state.teachers[id])
+const thisTeacher = useSelector((state) => state.teachers[id])
 ```
 
 ##### Collection reducers
