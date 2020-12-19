@@ -68,5 +68,11 @@
       "<rootDir>/packages/storage-mongodb",
       "<rootDir>/examples/grid"
     ]
+  },
+  "publishConfig": {
+    "ignore": [
+      "examples/grid",
+      "examples/todo"
+    ]
   }
 }
