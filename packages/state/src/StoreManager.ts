@@ -10,7 +10,6 @@ import { ConnectionManager } from './ConnectionManager'
 import { DEFAULT_RELAYS } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getReducer } from './getReducer'
-import { getKnownDiscoveryKeys } from './keys'
 import { Repo } from './Repo'
 
 let log = debug('lf:StoreManager')
@@ -101,10 +100,6 @@ export class StoreManager<T> extends EventEmitter {
   public get connectionCount() {
     if (!this.connectionManager) throw new Error('no connectionManager')
     return this.connectionManager.connectionCount
-  }
-
-  public get knownDiscoveryKeys() {
-    return getKnownDiscoveryKeys(this.databaseName)
   }
 
   /**

@@ -37,24 +37,6 @@ export type ProxyReducer<T = any> = (
 ) => null | ChangeManifest<T> | ChangeManifest<T>[]
 
 /**
- * A keychain maps a discovery key (the id we share to the signal server) with a public/private
- * keypair (which we use for storage etc). The discovery key can be any string that we think is
- * going to be unique on our signal hub servers.
- * > Note: we're not currently encrypting anything
- */
-export interface Keychain {
-  [discoveryKey: string]: KeyPair
-}
-
-/**
- * > Note: we're not currently encrypting anything
- */
-export interface KeyPair {
-  key: CryptoKey
-  secretKey: CryptoKey
-}
-
-/**
  * A vector clock provides a logical ordering of events and states in a distributed system. It
  *  associates each actor in a system with a counter that is incremented each time that actor makes a
  *  change. See https://en.wikipedia.org/wiki/Vector_clock.
