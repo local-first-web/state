@@ -6,7 +6,7 @@
   "scripts": {
     "build": "lerna run build",
     "build:css": "yarn workspace toolbar run build:css",
-    "build:quick": "tsc -b packages/storage-indexeddb packages/toolbar packages/cevitxe",
+    "build:quick": "tsc -b packages/storage-indexeddb packages/toolbar packages/state",
     "start": "run-p watch start:grid",
     "start:grid": "yarn workspace grid start",
     "start:todo": "yarn workspace todo start",
@@ -26,7 +26,7 @@
     "watch": "run-p watch:build:quick watch:build:css",
     "watch:build:quick": "yarn build:quick --watch",
     "watch:build:css": "yarn build:css --watch",
-    "wait": "wait-on ./packages/cevitxe/dist/src/index.js",
+    "wait": "wait-on ./packages/state/dist/src/index.js",
     "test": "jest",
     "test:todo:e2e": "yarn workspace todo test:e2e",
     "test:grid:e2e": "yarn workspace grid test:e2e",
