@@ -18,17 +18,23 @@
     "mongodb": "3"
   },
   "devDependencies": {
-    "@localfirst/storage-abstract": "1",
     "@localfirst/relay-client": "1",
+    "@localfirst/storage-abstract": "1",
     "@shelf/jest-mongodb": "1",
     "@types/debug": "4",
     "@types/jest": "26",
     "@types/mongodb": "3",
+    "mongodb-memory-server": "6",
     "jest": "26",
     "jest-environment-node": "26",
     "rimraf": "3",
     "ts-jest": "26",
     "tslib": "2",
     "typescript": "4"
+  },
+  "config": {
+    "mongodbMemoryServer": {
+      "version": "4.4.2"
+    }
   }
 }
