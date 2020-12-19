@@ -3,7 +3,7 @@
     cy.wait(100).visit('/')
   })
 
-  // Test for http://github.com/DevResults/cevitxe/issues/56
+  // Test for http://github.com/local-first-web/state/issues/56
 
   it(`shouldn't crash following 'Clear completed'`, function() {
     // Create 2 todos

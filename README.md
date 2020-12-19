@@ -93,7 +93,7 @@ export const Index = () => {
       local storage and sync components would live in the worker, thus freeing the UI context of all
       the expensive overhead of the system. We'll need a coarse-grained query API to query and
       retrieve a view of a set of rows, aggregate information, etc.
-      [#45](https://github.com/DevResults/cevitxe/issues/45)
+      [#45](https://github.com/local-first-web/state/issues/45)
   - [ ] order + range / count
   - [ ] filter
   - [ ] aggregation, projection, etc. (might be entirely out of scope)
@@ -104,14 +104,14 @@ export const Index = () => {
       propagate. One solution would be to leave a client running on a computer that's never turned
       off. We'd like to provide a "superpeer" (don't call it a server!!) that can be inexpensively
       deployed using the command line to cloud hosting providers.
-      [#41](https://github.com/DevResults/cevitxe/issues/41)
+      [#41](https://github.com/local-first-web/state/issues/41)
 
 * [ ] **More storage adapters**  
        We currently only provide browser-based persistent storage using IndexedDb. A superpeer
       running in a serverless function would need access to a third-party hosted datastore like
       Redis, MongoDB or DynamoDB. An installable Electron app might prefer to work with
       self-contained, portable documents in the file system; or with a database like Sqlite.
-      [#42](https://github.com/DevResults/cevitxe/issues/42)
+      [#42](https://github.com/local-first-web/state/issues/42)
 
   - [x] IndexedDb
   - [ ] Sqlite
@@ -125,7 +125,7 @@ export const Index = () => {
       relay**, piping their two WebSocket connections together. In the future, Cevitxe will
       establish a direct connection between the two peers, using browser-to-browser communication
       technologies like WebRTC. For now, we've found WebRTC too unreliable to be worth the trouble.
-      [#43](https://github.com/DevResults/cevitxe/issues/43)
+      [#43](https://github.com/local-first-web/state/issues/43)
 
 * [ ] **Swarm of signal servers**  
        Currently if we see a configuration with more than one URL for signal servers, we just pick
@@ -134,7 +134,7 @@ export const Index = () => {
       they'll never be introduced even if they have the same discovery key.) That's because servers
       don't know anything about each other. We'd like to implement a swarm such that any number of
       signal servers can be deployed, and the user will be directed to the best one.
-      [#27](https://github.com/DevResults/cevitxe/issues/27)
+      [#27](https://github.com/local-first-web/state/issues/27)
 
 ### Limitations
 
