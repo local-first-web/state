@@ -23,5 +23,5 @@
   },
   "include": ["src", "@types"],
   "exclude": ["public", "cypress"],
-  "references": [{ "path": "../cevitxe" }, { "path": "../cevitxe-toolbar" }]
+  "references": [{ "path": "../../packages/cevitxe" }, { "path": "../toolbar" }]
 }

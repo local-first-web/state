@@ -35,7 +35,7 @@ jobs:
           browser: chrome
           headless: true
           install: false
-          working-directory: packages/cevitxe-example-grid
+          working-directory: packages/grid
           start: yarn start
           wait-on: 'http://localhost:3000'
 
@@ -45,6 +45,6 @@ jobs:
           browser: chrome
           headless: true
           install: false
-          working-directory: packages/cevitxe-example-todo
+          working-directory: packages/todo
           start: yarn start
           wait-on: 'http://localhost:3000'

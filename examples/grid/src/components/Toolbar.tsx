@@ -2,7 +2,7 @@
 import { jsx } from '@emotion/core'
 import { Fragment } from 'react'
 
-import { Container, Group } from 'cevitxe-toolbar'
+import { Container, Group } from 'toolbar'
 import { useSelector } from 'react-redux'
 import { DataGenerator } from './DataGenerator'
 

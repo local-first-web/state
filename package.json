@@ -5,11 +5,11 @@
   "private": true,
   "scripts": {
     "build": "lerna run build",
-    "build:css": "yarn workspace cevitxe-toolbar run build:css",
-    "build:quick": "tsc -b packages/cevitxe-storage-indexeddb packages/cevitxe-toolbar packages/cevitxe",
+    "build:css": "yarn workspace toolbar run build:css",
+    "build:quick": "tsc -b packages/cevitxe-storage-indexeddb packages/toolbar packages/cevitxe",
     "start": "run-p watch start:grid",
-    "start:grid": "yarn workspace cevitxe-example-grid start",
-    "start:todo": "yarn workspace cevitxe-example-todo start",
+    "start:grid": "yarn workspace grid start",
+    "start:todo": "yarn workspace todo start",
     "start:relay": "node ./scripts/start-relay-server.js",
     "dev": "run-p watch test:watch",
     "dev:log": "run-p watch test:log",
@@ -28,8 +28,8 @@
     "watch:build:css": "yarn build:css --watch",
     "wait": "wait-on ./packages/cevitxe/dist/src/index.js",
     "test": "jest",
-    "test:todo:e2e": "yarn workspace cevitxe-example-todo test:e2e",
-    "test:grid:e2e": "yarn workspace cevitxe-example-grid test:e2e",
+    "test:todo:e2e": "yarn workspace todo test:e2e",
+    "test:grid:e2e": "yarn workspace grid test:e2e",
     "test:log": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 yarn test",
     "test:watch": "jest --watch",
     "purge": "scripts/purge.bat"
@@ -73,7 +73,7 @@
       "<rootDir>/packages/cevitxe",
       "<rootDir>/packages/cevitxe-storage-indexeddb",
       "<rootDir>/packages/cevitxe-storage-mongodb",
-      "<rootDir>/packages/cevitxe-example-grid"
+      "<rootDir>/examples/grid"
     ]
   }
 }

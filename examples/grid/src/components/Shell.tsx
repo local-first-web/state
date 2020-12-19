@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { css, jsx } from '@emotion/core'
-import { Toolbar } from 'cevitxe-toolbar'
+import { Toolbar } from 'toolbar'
 import debug from 'debug'
 import { DialogProvider } from 'muibox'
 import { useState } from 'react'

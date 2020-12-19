@@ -1,5 +1,5 @@
 {
-  "name": "cevitxe-example-grid",
+  "name": "grid",
   "description": "Grid implemented with React-Redux & Cevitxe.",
   "version": "0.4.2",
   "license": "MIT",
@@ -16,7 +16,7 @@
     "ag-grid-enterprise": "21",
     "ag-grid-react": "21",
     "cevitxe": "^0.4.2",
-    "cevitxe-toolbar": "^0.4.2",
+    "toolbar": "^0.4.2",
     "cevitxe-types": "^0.4.2",
     "core-js": "3",
     "debug": "4",

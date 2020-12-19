@@ -36,13 +36,13 @@ Two demo React applications are included:
 <table>
   <tr>
     <td>
-      <h4><code>cevitxe-example-todo</code></h4>
+      <h4><code>todo</code></h4>
       <img src='images/screen.todo.png'  width='400' /> 
       <p>An implementation of TodoMVC</p> 
       <p>To run: <code>yarn dev:todo:start</code> </p> 
     </td>
     <td>
-      <h4><code>cevitxe-example-grid</code></h4>
+      <h4><code>grid</code></h4>
       <img src='images/screen.grid.png' width='400' /> 
       <p>A simple table editor</p> 
       <p>To run: <code>yarn dev:grid:start</code> </p>

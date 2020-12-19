@@ -18,14 +18,14 @@ Two demo React applications are included. Source code is in the `examples` direc
 <table>
   <tr>
     <td>
-      <h4><code>cevitxe-example-todo</code></h4>
+      <h4><code>todo</code></h4>
       <img src='../images/screen.todo.png'  width='400' /> 
       <p>An implementation of TodoMVC</p> 
       <p>To run: <code>yarn start:todo</code> </p> 
       <p>To run in dev mode: <code>yarn dev:todo</code> </p> 
     </td>
     <td>
-      <h4><code>cevitxe-example-grid</code></h4>
+      <h4><code>grid</code></h4>
       <img src='../images/screen.grid.png' width='400' /> 
       <p>A simple table editor</p> 
       <p>To run: <code>yarn start:grid</code> </p>
@@ -399,7 +399,7 @@ case DROP_TEACHERS: {
 
 ###### Combining different types of reducers
 
-You might need a reducer that changes collection data as well as non-collection data. For example, in the grid example, [this reducer](https://github.com/DevResults/cevitxe/blob/68d89dd3d11b4a134b9ca0408eef6ab6978d3b3f/packages/cevitxe-example-grid/src/redux/reducers.ts#L75-L93) modifies a global schema object to delete a field, and then deletes the corresponding data from each row.
+You might need a reducer that changes collection data as well as non-collection data. For example, in the grid example, [this reducer](https://github.com/DevResults/cevitxe/blob/68d89dd3d11b4a134b9ca0408eef6ab6978d3b3f/packages/grid/src/redux/reducers.ts#L75-L93) modifies a global schema object to delete a field, and then deletes the corresponding data from each row.
 
 In this case you can return an array that combines change functions (for the global changes) and change manifests (for the changes to collection items).
 

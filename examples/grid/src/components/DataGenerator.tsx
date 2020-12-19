@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core'
-import { DropdownWrapper, Group, MenuItem } from 'cevitxe-toolbar'
+import { DropdownWrapper, Group, MenuItem } from 'toolbar'
 import { Fragment, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { clearCollection, loadCollection, loadSchema } from 'redux/actions'
