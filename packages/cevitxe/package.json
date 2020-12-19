@@ -11,7 +11,6 @@
     "build": "tsc",
     "lint": "tsc -p tsconfig.strict.json --noEmit",
     "watch": "tsc --watch",
-    "start:relay": "node start-relay-server.js",
     "test": "jest",
     "test:debug": "node --inspect-brk=11580 node_modules\\jest\\bin\\jest.js --runInBand",
     "test:log": "cross-env DEBUG='cevitxe*' DEBUG_COLORS=1 yarn test"

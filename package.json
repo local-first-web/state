@@ -10,7 +10,7 @@
     "start": "run-p watch start:grid",
     "start:grid": "yarn workspace cevitxe-example-grid start",
     "start:todo": "yarn workspace cevitxe-example-todo start",
-    "start:relay": "yarn workspace cevitxe start:relay",
+    "start:relay": "node ./scripts/start-relay-server.js",
     "dev": "run-p watch test:watch",
     "dev:log": "run-p watch test:log",
     "dev:grid": "run-p watch dev:grid:wait",
@@ -54,7 +54,8 @@
   },
   "workspaces": {
     "packages": [
-      "packages/*"
+      "packages/*",
+      "examples/*"
     ],
     "nohoist": [
       "**/jest/**",
