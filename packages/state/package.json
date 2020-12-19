@@ -1,7 +1,7 @@
 {
   "name": "@localfirst/state",
   "description": "CRDT-based distributed state management for Redux",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "license": "MIT",
   "private": false,
   "main": "dist/src/index.js",
@@ -17,8 +17,8 @@
   },
   "dependencies": {
     "@localfirst/relay-client": "1",
-    "@localfirst/storage-abstract": "^1.0.1",
-    "@localfirst/storage-indexeddb": "^1.0.1",
+    "@localfirst/storage-abstract": "^1.0.2",
+    "@localfirst/storage-indexeddb": "^1.0.2",
     "@stablelib/base64": "1",
     "@stablelib/utf8": "1",
     "automerge": "0",
