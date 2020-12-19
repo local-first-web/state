@@ -1,7 +1,7 @@
 {
   "name": "@localfirst/storage-indexeddb",
   "description": "IndexedDB storage adapter for @localfirst/state",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "private": false,
   "main": "dist/src/index.js",
@@ -18,8 +18,8 @@
     "idb": "herbcaudill/idb#add-with-async-ittr-cjs-d-ts"
   },
   "devDependencies": {
-    "@localfirst/storage-abstract": "1",
     "@localfirst/relay-client": "1",
+    "@localfirst/storage-abstract": "^1.0.1",
     "@types/debug": "4",
     "@types/jest": "26",
     "fake-indexeddb": "3",
