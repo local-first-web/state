@@ -1,5 +1,5 @@
 ﻿import * as R from 'ramda'
-import { Clock } from 'types'
+import { Clock } from '@localfirst/types'
 import A from 'automerge'
 import { Map } from 'immutable'
 
@@ -25,7 +25,7 @@ export const isMoreRecent = (clock1: Clock, clock2: Clock | undefined) => {
   return actors.some(clockIsMoreRecent)
 }
 
-// TODO: These probably should be top-level Automerge functions; submit PR
+// TODO replace these with native Automerge functions
 const _A = {
   ...A,
   getMissingChanges: (ourDoc: A.Doc<any>, theirClock: A.Clock): A.Change[] => {

@@ -1,4 +1,4 @@
-import { ProxyReducer } from 'types'
+import { ProxyReducer } from '@localfirst/types'
 import debug from 'debug'
 import { Middleware } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'

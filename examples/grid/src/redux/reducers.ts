@@ -1,7 +1,7 @@
-import { ChangeFn, ProxyReducer } from 'types'
+import { ChangeFn, ProxyReducer } from '@localfirst/types'
 import { inferSchema } from 'inferSchema'
 import { JSONSchema7 } from 'json-schema'
-import { GridState } from 'types'
+import { GridState } from '@localfirst/types'
 import * as actions from './actions'
 
 const toArray = <T>(x: T | T[] | null) => (x === null ? [] : Array.isArray(x) ? x : [x])

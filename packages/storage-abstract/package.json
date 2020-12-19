@@ -1,7 +1,7 @@
 {
-  "name": "storage-abstract",
+  "name": "@localfirst/storage-abstract",
   "description": "Abstract base class for @localfirst/state storage adapters",
-  "version": "0.4.2",
+  "version": "1.0.0",
   "license": "MIT",
   "private": false,
   "main": "dist/src/index.js",
@@ -12,7 +12,7 @@
     "watch": "tsc --watch"
   },
   "devDependencies": {
-    "types": "^0.4.2",
+    "@localfirst/types": "1",
     "typescript": "3"
   }
 }

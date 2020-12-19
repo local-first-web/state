@@ -1,7 +1,7 @@
 {
   "name": "toolbar",
   "description": "Shared toolbar component for managing document keys in @localfirst/state examples.",
-  "version": "0.4.2",
+  "version": "1.0.0",
   "license": "MIT",
   "private": false,
   "main": "dist/src/index.js",
@@ -19,19 +19,19 @@
   },
   "dependencies": {
     "@emotion/core": "10",
-    "@localfirst/state": "^0.4.2",
-    "types": "^0.4.2",
+    "taco-js": "0",
+    "@localfirst/state": "1",
     "formik": "^2.0.1-rc.13",
     "friendly-words": "1",
     "react": "16",
     "react-dom": "^16.0.1",
     "redux": "4",
-    "@localfirst/auth": "1",
     "tailwindcss": "^1.7.6",
     "use-persisted-state": "0",
     "use-query-params": "0"
   },
   "devDependencies": {
+    "@localfirst/types": "1",
     "@types/jest": "25",
     "@types/query-string": "6",
     "@types/use-persisted-state": "0",

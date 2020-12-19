@@ -1,7 +1,7 @@
 ﻿import A from 'automerge'
 import { newid } from '@localfirst/relay-client'
-import { StorageAdapter } from 'storage-abstract'
-import { IdbAdapter } from 'storage-indexeddb'
+import { StorageAdapter } from '@localfirst/storage-abstract'
+import { IdbAdapter } from '@localfirst/storage-indexeddb'
 import {
   ChangeManifest,
   ChangeSet,
@@ -12,7 +12,7 @@ import {
   isFunction,
   RepoHistory,
   RepoSnapshot,
-} from 'types'
+} from '@localfirst/types'
 import debug from 'debug'
 import { clone } from 'ramda'
 import { EMPTY_CLOCK, getClock, mergeClocks } from './clocks'

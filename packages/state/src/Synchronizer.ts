@@ -4,7 +4,7 @@ import { EMPTY_CLOCK, getMissingChanges, isMoreRecent, mergeClocks } from './clo
 import * as message from './Message'
 import { Message } from './Message'
 import { Repo } from './Repo'
-import { Clock, ClockMap, RepoHistory, RepoSnapshot } from 'types'
+import { Clock, ClockMap, RepoHistory, RepoSnapshot } from '@localfirst/types'
 
 /**
  * One instance of `Synchronizer` keeps one local document in sync with one remote peer's replica of the

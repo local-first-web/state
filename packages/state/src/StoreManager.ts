@@ -1,6 +1,6 @@
 import A from 'automerge'
 import { newid } from '@localfirst/relay-client'
-import { ConnectionEvent, ProxyReducer, RepoSnapshot, Snapshot } from 'types'
+import { ConnectionEvent, ProxyReducer, RepoSnapshot, Snapshot } from '@localfirst/types'
 import cuid from 'cuid'
 import debug from 'debug'
 import { EventEmitter } from 'events'

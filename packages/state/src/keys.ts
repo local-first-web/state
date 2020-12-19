@@ -1,6 +1,6 @@
 // ignore file coverage
 
-import { Keychain } from 'types'
+import { Keychain } from '@localfirst/types'
 
 const keychainId = (databaseName: string) => `@localfirst/state/${databaseName}/keychain`
 

@@ -1,6 +1,6 @@
 import { getReducer } from './getReducer'
 import { repoFromSnapshot } from './repoTestHelpers'
-import { ProxyReducer, ChangeManifest } from 'types/src'
+import { ProxyReducer, ChangeManifest } from '@localfirst/types'
 
 describe('getReducer', () => {
   describe('single change function', () => {

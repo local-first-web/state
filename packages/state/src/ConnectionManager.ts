@@ -4,7 +4,7 @@ import debug from 'debug'
 import * as Redux from 'redux'
 import { Connection } from './Connection'
 import { Repo } from './Repo'
-import { ConnectionEvent } from 'types'
+import { ConnectionEvent } from '@localfirst/types'
 
 const log = debug('lf:connectionmanager')
 const { OPEN, CLOSE, PEER, PEER_REMOVE } = ConnectionEvent

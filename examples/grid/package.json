@@ -1,7 +1,7 @@
 {
   "name": "grid",
   "description": "Grid implemented with @localfirst/state.",
-  "version": "0.4.2",
+  "version": "1.0.0",
   "license": "MIT",
   "private": true,
   "main": "src/index.tsx",
@@ -15,9 +15,8 @@
     "ag-grid-community": "21",
     "ag-grid-enterprise": "21",
     "ag-grid-react": "21",
-    "@localfirst/state": "^0.4.2",
-    "toolbar": "^0.4.2",
-    "types": "^0.4.2",
+    "@localfirst/state": "1",
+    "toolbar": "1",
     "core-js": "3",
     "debug": "4",
     "faker": "4",
@@ -35,6 +34,7 @@
     "uuid": "3"
   },
   "devDependencies": {
+    "@localfirst/types": "1",
     "@testing-library/cypress": "6",
     "@testing-library/jest-dom": "5",
     "@testing-library/react": "10",

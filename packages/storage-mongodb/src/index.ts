@@ -1,5 +1,5 @@
-﻿import { StorageAdapter } from 'storage-abstract'
-import { ChangeSet, SnapshotRecord } from 'types'
+﻿import { StorageAdapter } from '@localfirst/storage-abstract'
+import { ChangeSet, SnapshotRecord } from '@localfirst/types'
 import { MongoClient, Db, Collection } from 'mongodb'
 
 // TODO e2e test with actual mongo db

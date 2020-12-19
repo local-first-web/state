@@ -1,7 +1,7 @@
 {
   "name": "@localfirst/state",
   "description": "CRDT-based distributed state management for Redux",
-  "version": "0.4.2",
+  "version": "1.0.0",
   "license": "MIT",
   "private": false,
   "main": "dist/src/index.js",
@@ -16,7 +16,7 @@
     "test:log": "cross-env DEBUG='lf*' DEBUG_COLORS=1 yarn test"
   },
   "dependencies": {
-    "@localfirst/relay-client": "^1.0.7",
+    "@localfirst/relay-client": "1",
     "@stablelib/base64": "1",
     "@stablelib/utf8": "1",
     "automerge": "0",
@@ -25,13 +25,13 @@
     "fast-memoize": "2",
     "immutable": "4.0.0-rc.12",
     "scryptsy": "2",
-    "storage-abstract": "^0.4.2",
-    "storage-indexeddb": "^0.4.2",
-    "tweetnacl": "1",
-    "types": "0.4.2"
+    "@localfirst/storage-abstract": "1",
+    "@localfirst/storage-indexeddb": "1",
+    "tweetnacl": "1"
   },
   "devDependencies": {
     "@localfirst/relay": "^1.0.7",
+    "@localfirst/types": "1",
     "@types/debug": "4",
     "@types/jest": "25",
     "@types/scryptsy": "2",

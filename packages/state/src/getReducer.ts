@@ -1,4 +1,4 @@
-import { ProxyReducer, RepoSnapshot } from 'types'
+import { ProxyReducer, RepoSnapshot } from '@localfirst/types'
 import { AnyAction, Reducer } from 'redux'
 import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
 import { Repo } from './Repo'

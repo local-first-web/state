@@ -1,5 +1,7 @@
-﻿import { StorageAdapter } from 'storage-abstract'
-import { ChangeSet, SnapshotRecord } from 'types'
+﻿import { StorageAdapter } from '@localfirst/storage-abstract'
+import { ChangeSet, SnapshotRecord } from '@localfirst/types'
+
+// TODO: can we get off my fork of idb?
 import { IDBPDatabase, openDB, DBSchema } from 'idb/with-async-ittr-cjs'
 import debug from 'debug'
 

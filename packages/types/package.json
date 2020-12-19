@@ -1,7 +1,7 @@
 {
-  "name": "types",
+  "name": "@localfirst/types",
   "private": true,
-  "version": "0.4.2",
+  "version": "1.0.0",
   "license": "MIT",
   "main": "dist/src/index.js",
   "typings": "dist/src/index.d.ts",

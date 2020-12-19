@@ -1,4 +1,4 @@
-﻿import { ChangeSet, SnapshotRecord } from 'types'
+﻿import { ChangeSet, SnapshotRecord } from '@localfirst/types'
 
 export abstract class StorageAdapter {
   storageKey: string

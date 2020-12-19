@@ -1,7 +1,7 @@
 {
   "name": "todo",
   "description": "TodoMVC implemented @localfirst/state.",
-  "version": "0.4.2",
+  "version": "1.0.0",
   "license": "MIT",
   "private": true,
   "main": "src/index.tsx",
@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "@emotion/core": "10",
-    "@localfirst/state": "^0.4.2",
-    "toolbar": "^0.4.2",
+    "@localfirst/state": "1",
+    "toolbar": "1",
     "classnames": "2",
     "debug": "4",
     "npm-run-all": "4",
