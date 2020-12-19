@@ -18,7 +18,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@emotion/core": "10",
+    "@emotion/react": "11",
     "taco-js": "0",
     "@localfirst/state": "1",
     "formik": "^2.0.1-rc.13",

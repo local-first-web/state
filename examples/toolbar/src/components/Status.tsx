@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import { ConnectionEvent, StoreManager } from '@localfirst/state'
 import { useEffect, useState } from 'react'
 import { Group } from './Group'

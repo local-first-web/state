@@ -1,5 +1,5 @@
 ﻿/** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import { FunctionComponent, useState } from 'react'
 import { Button } from './Button'
 import { Dropdown } from './Dropdown'

@@ -10,7 +10,7 @@
     "test:e2e": "cypress open"
   },
   "dependencies": {
-    "@emotion/core": "10",
+    "@emotion/react": "11",
     "@material-ui/core": "3",
     "ag-grid-community": "21",
     "ag-grid-enterprise": "21",

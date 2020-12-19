@@ -35,9 +35,6 @@
     "test:watch": "jest --watch",
     "purge": "scripts/purge.bat"
   },
-  "dependencies": {
-    "esm": "3"
-  },
   "devDependencies": {
     "@types/jest": "26",
     "cpx": "1",
@@ -47,9 +44,6 @@
     "npm-run-all": "4",
     "ts-jest": "26",
     "wait-on": "5"
-  },
-  "engines": {
-    "yarn": ">=1.17.0"
   },
   "workspaces": {
     "packages": [

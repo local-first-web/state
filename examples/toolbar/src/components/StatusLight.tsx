@@ -1,5 +1,5 @@
 ﻿/** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 
 export const StatusLight = ({ online }: { online: boolean }) => (
   <div css={styles(online).statusLight}>

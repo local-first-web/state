@@ -1,5 +1,5 @@
 ﻿/** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import { FunctionComponent } from 'react'
 
 export const Button: FunctionComponent<any> = ({ children, className, ...props }) => {

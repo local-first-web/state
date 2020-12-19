@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import { DropdownWrapper, Group, MenuItem } from 'toolbar'
 import { Fragment, useState } from 'react'
 import { useDispatch } from 'react-redux'
@@ -23,7 +23,7 @@ export function DataGenerator() {
     dispatch(clearCollection())
     dispatch(loadSchema(dataGeneratorSchema))
 
-    generator.onmessage = async event => {
+    generator.onmessage = async (event) => {
       const { progress: reportedProgress, result } = event.data
 
       await nextFrame()
@@ -47,7 +47,7 @@ export function DataGenerator() {
         buttonText={progress ? '⌚ Generating...' : '⚙ Generate data'}
         disabled={progress > 0}
       >
-        {datasetSizes.map(nRows => (
+        {datasetSizes.map((nRows) => (
           <MenuItem
             key={nRows}
             type="button"

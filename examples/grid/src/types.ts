@@ -1,4 +1,4 @@
-import { CSSObject } from '@emotion/core'
+import { CSSObject } from '@emotion/react'
 import { JSONSchema7 } from 'json-schema'
 
 export type Stylesheet = { [k: string]: CSSObject }

@@ -23,5 +23,6 @@
   },
   "include": ["src", "@types"],
   "exclude": ["public", "cypress"],
+  "types": ["@emotion/react"],
   "references": [{ "path": "../../packages/state" }, { "path": "../toolbar" }]
 }

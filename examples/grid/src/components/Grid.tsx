@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { css, jsx } from '@emotion/core'
+import { css, jsx } from '@emotion/react'
 import {
   GetContextMenuItemsParams,
   GetMainMenuItemsParams,
@@ -183,7 +183,7 @@ export const Grid = () => {
             }}
             rowData={rowCollection}
             deltaRowDataMode={true}
-            getRowNodeId={item => item.id}
+            getRowNodeId={(item) => item.id}
             onCellKeyDown={handleKeyDown}
             onModelUpdated={handleModelUpdated}
             getMainMenuItems={getMainMenu}

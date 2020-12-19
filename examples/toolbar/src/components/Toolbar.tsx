@@ -1,5 +1,5 @@
 ﻿/** @jsx jsx */
-import { jsx } from '@emotion/core'
+import { jsx } from '@emotion/react'
 import { StoreManager } from '@localfirst/state'
 import debug from 'debug'
 import React, { useEffect, useRef, useState } from 'react'
