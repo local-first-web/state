@@ -4,9 +4,6 @@ import { useDispatch } from 'react-redux'
 import { actions } from '../redux/actions'
 import { Todo as TodoType } from '../types'
 
-const ENTER_KEY = 13
-const ESCAPE_KEY = 27
-
 export const Todo = ({ id, completed, content }: TodoType) => {
   const dispatch = useDispatch()
 
@@ -17,12 +14,11 @@ export const Todo = ({ id, completed, content }: TodoType) => {
   // input.current will contain a reference to the editing input
   const input = useRef<HTMLInputElement>() as React.RefObject<HTMLInputElement>
 
-  // side effect: need to select all content in the input when going into editing mode
-  // this will only fire when `editing` changes
-  const selectAllOnEdit = () => {
+  useEffect(() => {
+    // side effect: need to select all content in the input when going into editing mode
+    // this will only fire when `editing` changes
     if (editing && input.current) input.current.select()
-  }
-  useEffect(selectAllOnEdit, [editing])
+  }, [editing])
 
   // we save when the user has either tabbed or clicked away, or hit Enter
   const save: FormEventHandler<HTMLInputElement> = (e: React.FormEvent<HTMLInputElement>) => {
@@ -38,13 +34,11 @@ export const Todo = ({ id, completed, content }: TodoType) => {
   }
 
   // listen for special keys
-  const onKeyDown: KeyboardEventHandler<HTMLInputElement> = e => {
-    if (e.keyCode === ESCAPE_KEY) {
-      // ESC: abort editing
+  const onKeyDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
+    if (e.key === 'Escape') {
       restoreContent()
       leaveEditMode()
-    } else if (e.keyCode === ENTER_KEY) {
-      // ENTER: persist the edited content
+    } else if (e.key === 'Enter') {
       save(e)
     }
   }
@@ -52,7 +46,7 @@ export const Todo = ({ id, completed, content }: TodoType) => {
   const enterEditMode = () => setEditing(true)
   const leaveEditMode = () => setEditing(false)
 
-  const updateContent: FormEventHandler<HTMLInputElement> = e =>
+  const updateContent: FormEventHandler<HTMLInputElement> = (e) =>
     setEditContent((e.target as HTMLInputElement).value)
   const restoreContent = () => setEditContent(content)
 
@@ -65,7 +59,7 @@ export const Todo = ({ id, completed, content }: TodoType) => {
           checked={completed}
           onChange={() => dispatch(actions.toggleTodo(id))}
         />
-        <label onDoubleClick={enterEditMode}>{content}</label>
+        <label onClick={enterEditMode}>{content}</label>
         <button
           className="destroy"
           style={{ cursor: 'pointer' }}
