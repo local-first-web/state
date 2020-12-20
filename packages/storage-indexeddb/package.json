@@ -1,7 +1,7 @@
 {
   "name": "@localfirst/storage-indexeddb",
   "description": "IndexedDB storage adapter for @localfirst/state",
-  "version": "1.0.2",
+  "version": "1.0.7",
   "license": "MIT",
   "private": false,
   "main": "dist/src/index.js",
