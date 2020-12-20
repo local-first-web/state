@@ -17,6 +17,7 @@
     "@localfirst/toolbar": "^1.0.4",
     "classnames": "2",
     "debug": "4",
+    "friendly-words": "1",
     "npm-run-all": "4",
     "react": "17",
     "react-dom": "^16.0.1",
