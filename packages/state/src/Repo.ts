@@ -1,7 +1,12 @@
-﻿import A from 'automerge'
-import { newid } from '@localfirst/relay-client'
+﻿import { newid } from '@localfirst/relay-client'
 import { StorageAdapter } from '@localfirst/storage-abstract'
 import { IdbAdapter } from '@localfirst/storage-indexeddb'
+import A from 'automerge'
+import debug from 'debug'
+import { clone } from 'ramda'
+import { EMPTY_CLOCK, getClock, mergeClocks } from './clocks'
+import { Collection } from './Collection'
+import { DELETED, GLOBAL } from './constants'
 import {
   ChangeManifest,
   ChangeSet,
@@ -13,11 +18,6 @@ import {
   RepoHistory,
   RepoSnapshot,
 } from './types'
-import debug from 'debug'
-import { clone } from 'ramda'
-import { EMPTY_CLOCK, getClock, mergeClocks } from './clocks'
-import { Collection } from './Collection'
-import { DELETED, GLOBAL } from './constants'
 
 /**
  * A Repo manages a set of Automerge documents. For each document, it persists:
