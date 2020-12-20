@@ -1,7 +1,7 @@
 {
   "name": "todo",
   "description": "TodoMVC implemented using @localfirst/state.",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "license": "MIT",
   "private": true,
   "main": "src/index.tsx",
@@ -12,7 +12,7 @@
     "dev": "yarn start"
   },
   "dependencies": {
-    "@localfirst/state": "^1.0.4",
+    "@localfirst/state": "^1.0.5",
     "classnames": "2",
     "debug": "4",
     "friendly-words": "1",
@@ -21,8 +21,8 @@
     "react-redux": "7",
     "react-scripts": "3",
     "redux": "4",
-    "uuid": "8",
-    "use-query-params": "0"
+    "use-query-params": "0",
+    "uuid": "8"
   },
   "devDependencies": {
     "@testing-library/cypress": "6",

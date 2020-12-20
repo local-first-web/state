@@ -1,7 +1,7 @@
 {
   "name": "grid",
   "description": "Grid implemented with @localfirst/state.",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "license": "MIT",
   "private": true,
   "main": "src/index.tsx",
@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@emotion/react": "11",
-    "@localfirst/state": "^1.0.4",
-    "@localfirst/toolbar": "^1.0.4",
+    "@localfirst/state": "^1.0.5",
+    "@localfirst/toolbar": "^1.0.5",
     "ag-grid-community": "21",
     "ag-grid-enterprise": "21",
     "ag-grid-react": "21",
