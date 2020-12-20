@@ -1,5 +1,5 @@
-/** @jsx jsx */
-import { css, jsx } from '@emotion/react'
+/** @jsxImportSource @emotion/react */
+import { css } from '@emotion/react'
 import {
   GetContextMenuItemsParams,
   GetMainMenuItemsParams,
@@ -13,7 +13,7 @@ import 'ag-grid-community/dist/styles/ag-theme-balham.css'
 import 'ag-grid-enterprise'
 import { AgGridReact } from 'ag-grid-react'
 import { debug } from 'debug'
-import { useDialog } from 'muibox'
+// import { useDialog } from 'muibox'
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { buildColumnFromSchema } from '../ag-grid/buildColumnFromSchema'
@@ -46,7 +46,7 @@ export const Grid = () => {
     return Object.entries(properties).map(([field, schema]) => buildColumnFromSchema(field, schema))
   })
 
-  const dialog = useDialog()
+  // const dialog = useDialog()
 
   const [nextRowId, setNextRowId] = useState<string>()
   const [nextColumn, setNextColumn] = useState<string>()
@@ -123,14 +123,14 @@ export const Grid = () => {
     action: () => {
       const colDef = params.column.getColDef()
       const current = colDef.headerName
-      dialog
-        .prompt({
-          message: 'Rename Field',
-          required: true,
-          defaultValue: current,
-        })
-        .then((newName: string) => dispatch(renameField(colDef.field!, newName)))
-        .catch(() => {})
+      // dialog
+      //   .prompt({
+      //     message: 'Rename Field',
+      //     required: true,
+      //     defaultValue: current,
+      //   })
+      //   .then((newName: string) => dispatch(renameField(colDef.field!, newName)))
+      //   .catch(() => {})
     },
   })
 

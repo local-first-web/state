@@ -6,11 +6,11 @@ import { EventEmitter } from 'events'
 import { applyMiddleware, createStore, Middleware, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
 import { ConnectionManager } from './ConnectionManager'
-import { DEFAULT_RELAYS } from './constants'
+import { CLOSE, DEFAULT_RELAYS, OPEN, PEER, PEER_REMOVE } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getReducer } from './getReducer'
 import { Repo } from './Repo'
-import { ConnectionEvent, ProxyReducer, RepoSnapshot, Snapshot } from './types'
+import { ProxyReducer, RepoSnapshot, Snapshot } from './types'
 
 let log = debug('lf:StoreManager')
 
@@ -40,7 +40,6 @@ Next:
 - [ ] rename ConnectionEvents: `connect`, `disconnect`, `connectPeer`, `disconnectPeer`.
 */
 
-const { OPEN, CLOSE, PEER: PEER_ADD, PEER_REMOVE } = ConnectionEvent
 /**
  * A StoreManager generates a Redux store with persistence (via the Repo class), networking (via
  * @localfirst/relay-client), and magical synchronization with peers (via automerge)
@@ -108,7 +107,7 @@ export class StoreManager<T> extends EventEmitter {
     pipeEvents({
       source: this.connectionManager,
       target: this,
-      events: [OPEN, CLOSE, PEER_ADD, PEER_REMOVE],
+      events: [OPEN, CLOSE, PEER, PEER_REMOVE],
     })
 
     return this.store
@@ -172,5 +171,5 @@ const pipeEvents = ({
 }: {
   source: EventEmitter
   target: EventEmitter
-  events: ConnectionEvent[]
+  events: string[]
 }) => events.forEach((event) => source.on(event, (payload) => target.emit(event, payload)))

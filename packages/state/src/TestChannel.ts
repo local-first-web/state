@@ -1,8 +1,6 @@
 ﻿import { EventEmitter } from 'events'
+import { DATA } from './constants'
 import { Message } from './Message'
-import { ConnectionEvent } from './types'
-
-const { DATA } = ConnectionEvent
 
 /**
  * Simplest possible communications channel, for testing.

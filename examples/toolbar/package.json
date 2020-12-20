@@ -22,7 +22,7 @@
     "@localfirst/state": "^1.0.4",
     "formik": "^2.0.1-rc.13",
     "friendly-words": "1",
-    "react": "16",
+    "react": "17",
     "react-dom": "^16.0.1",
     "redux": "4",
     "taco-js": "0",

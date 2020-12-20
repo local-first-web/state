@@ -1,5 +1,4 @@
-﻿/** @jsx jsx */
-import { jsx } from '@emotion/react'
+﻿/** @jsxImportSource @emotion/react */
 import { FunctionComponent } from 'react'
 import { Button } from './Button'
 

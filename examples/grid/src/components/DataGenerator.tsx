@@ -1,6 +1,4 @@
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
-import { DropdownWrapper, Group, MenuItem } from 'toolbar'
+import { DropdownWrapper, Group, MenuItem } from '@localfirst/toolbar'
 import { Fragment, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { clearCollection, loadCollection, loadSchema } from 'redux/actions'

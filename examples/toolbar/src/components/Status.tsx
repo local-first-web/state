@@ -1,11 +1,8 @@
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
-import { ConnectionEvent, StoreManager } from '@localfirst/state'
+/** @jsxImportSource @emotion/react */
+import { CLOSE, OPEN, PEER, PEER_REMOVE, StoreManager } from '@localfirst/state'
 import { useEffect, useState } from 'react'
 import { Group } from './Group'
 import { StatusLight } from './StatusLight'
-
-const { OPEN, CLOSE, PEER, PEER_REMOVE } = ConnectionEvent
 
 interface StatusProps {
   storeManager: StoreManager<any>

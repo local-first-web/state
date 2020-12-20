@@ -1,5 +1,5 @@
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema'
-import uuid from 'uuid'
+import { v4 as uuid } from 'uuid'
 
 export function inferSchema(sampleData: any): JSONSchema7 {
   //no error handling or anything for now

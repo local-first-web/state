@@ -1,5 +1,6 @@
-import React from 'react'
+/** @jsxImportSource @emotion/react */
 import { Group } from './Group'
+
 export const WelcomeMessage: React.FunctionComponent<{ name: string }> = ({ name }) => {
   return (
     <Group>

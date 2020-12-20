@@ -1,8 +1,7 @@
-﻿/** @jsx jsx */
-import { jsx } from '@emotion/react'
+﻿/** @jsxImportSource @emotion/react */
 import { StoreManager } from '@localfirst/state'
 import debug from 'debug'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Redux from 'redux'
 import { StringParam, useQueryParam } from 'use-query-params'
 import { localUser } from '../lib/localUser'

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Provider } from 'react-redux'
 import Redux from 'redux'
-import { Toolbar } from 'toolbar'
+import { Toolbar } from '@localfirst/toolbar'
 
 import { Todos } from '.'
 import { storeManager } from '../redux/store'

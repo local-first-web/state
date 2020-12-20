@@ -1,4 +1,4 @@
-import uuid from 'uuid'
+import { v4 as uuid } from 'uuid'
 import { JSONSchema7 } from 'json-schema'
 
 export const SCHEMA_LOAD = 'SCHEMA_LOAD'

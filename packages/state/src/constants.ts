@@ -9,3 +9,13 @@ export const DELETED = '__DELETED'
 
 // global documentId
 export const GLOBAL = '__global'
+
+// connection events
+export const OPEN = 'open'
+export const READY = 'ready'
+export const CLOSE = 'close'
+export const ERROR = 'error'
+export const PEER = 'peer'
+export const PEER_REMOVE = 'peer_remove'
+export const MESSAGE = 'message'
+export const DATA = 'data'

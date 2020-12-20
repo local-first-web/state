@@ -1,5 +1,4 @@
-﻿/** @jsx jsx */
-import { jsx } from '@emotion/react'
+﻿/** @jsxImportSource @emotion/react */
 import { FunctionComponent } from 'react'
 
 export const Group: FunctionComponent<any> = ({ children, ...props }) => {

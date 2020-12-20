@@ -1,13 +1,11 @@
-﻿import uuid from 'uuid'
+﻿import { v4 as uuid } from 'uuid'
 import faker from 'faker'
 
 let i = 0
 
 export function randomRow() {
   return {
-    id: uuid()
-      .slice(18, 36)
-      .replace(/-/gi, ''),
+    id: uuid().slice(18, 36).replace(/-/gi, ''),
     name: faker.name.findName(),
     email: faker.internet.email(),
     age: faker.random.number({ min: 18, max: 100 }),

@@ -1,13 +1,12 @@
 ﻿import { Client, newid, Peer } from '@localfirst/relay-client'
-import { ConnectionEvent } from './types'
 import debug from 'debug'
 import { EventEmitter } from 'events'
 import * as Redux from 'redux'
 import { Connection } from './Connection'
+import { PEER, OPEN, CLOSE, PEER_REMOVE } from './constants'
 import { Repo } from './Repo'
 
 const log = debug('lf:connectionmanager')
-const { OPEN, CLOSE, PEER, PEER_REMOVE } = ConnectionEvent
 
 /**
  * Wraps a Client and creates a Connection instance for each peer we connect to.

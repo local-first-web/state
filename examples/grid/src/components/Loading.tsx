@@ -1,6 +1,5 @@
-/** @jsx jsx */
-
-import { css, jsx } from '@emotion/react'
+/** @jsxImportSource @emotion/react */
+import { css } from '@emotion/react'
 import Spinner from 'react-spinkit'
 
 export const Loading = () => {

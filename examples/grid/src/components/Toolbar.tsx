@@ -1,8 +1,6 @@
-﻿/** @jsx jsx */
-import { jsx } from '@emotion/react'
+﻿/** @jsxImportSource @emotion/react */
+import { Container, Group } from '@localfirst/toolbar'
 import { Fragment } from 'react'
-
-import { Container, Group } from 'toolbar'
 import { useSelector } from 'react-redux'
 import { DataGenerator } from './DataGenerator'
 
