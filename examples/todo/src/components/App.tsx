@@ -1,23 +1,24 @@
-import React, { useState } from 'react'
+import { randomDiscoveryKey } from 'lib/randomName'
+import React from 'react'
 import { Provider } from 'react-redux'
-import Redux from 'redux'
-import { Toolbar } from '@localfirst/toolbar'
-
+import { useQueryParam } from 'use-query-params'
 import { Todos } from '.'
-import { storeManager } from '../redux/store'
+import { useStore } from '../redux/useStore'
 
-export function App() {
-  const [appStore, setAppStore] = useState<Redux.Store>()
-  const onStoreReady = (store: Redux.Store) => setAppStore(store)
+export const App: React.FC = () => {
+  const [key, setKey] = useQueryParam<string>('key')
 
-  return (
-    <>
-      <Toolbar storeManager={storeManager} onStoreReady={onStoreReady} />
-      {appStore && (
-        <Provider store={appStore}>
-          <Todos />
-        </Provider>
-      )}
-    </>
-  )
+  const generateNewKey = () => {
+    const newKey = randomDiscoveryKey()
+    setKey(newKey)
+    return newKey
+  }
+
+  const appStore = useStore(key, generateNewKey)
+
+  return appStore ? (
+    <Provider store={appStore}>
+      <Todos />
+    </Provider>
+  ) : null
 }
