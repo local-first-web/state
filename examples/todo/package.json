@@ -12,7 +12,6 @@
     "dev": "yarn start"
   },
   "dependencies": {
-    "@emotion/react": "11",
     "@localfirst/state": "^1.0.4",
     "classnames": "2",
     "debug": "4",
