@@ -31,15 +31,6 @@ export function Todos() {
           <ClearCompletedButton />
         </footer>
       </section>
-      <footer className="info">
-        <p>Double-click to edit a todo</p>
-        <p>
-          Created by <a href="http://github.com/herbcaudill/">Herb Caudill</a>
-        </p>
-        <p>
-          Maybe at some point part of <a href="http://todo.com">TodoMVC</a>
-        </p>
-      </footer>
     </div>
   )
 }
