@@ -11,12 +11,9 @@ const initialState = {
 
 const middlewares = [logger]
 
-const urls = process.env.REACT_APP_RELAYS ? process.env.REACT_APP_RELAYS.split(',') : undefined
-
 export const storeManager = new StoreManager<State>({
   databaseName: 'todo',
   proxyReducer,
   initialState,
-  urls,
   middlewares,
 })
