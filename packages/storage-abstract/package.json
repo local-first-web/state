@@ -1,7 +1,7 @@
 {
   "name": "@localfirst/storage-abstract",
   "description": "Abstract base class for @localfirst/state storage adapters",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "license": "MIT",
   "private": false,
   "main": "dist/src/index.js",
