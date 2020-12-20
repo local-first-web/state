@@ -1,6 +1,6 @@
 {
   "name": "todo",
-  "description": "TodoMVC implemented @localfirst/state.",
+  "description": "TodoMVC implemented using @localfirst/state.",
   "version": "1.0.4",
   "license": "MIT",
   "private": true,
