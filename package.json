@@ -23,7 +23,6 @@
     "dev:todo:start": "run-p start:relay watch start:todo",
     "dev:todo:e2e": "run-p dev:todo test:todo:e2e",
     "lint": "lerna run lint",
-    "prepublish": "yarn build",
     "pub": "lerna publish --yes",
     "watch": "run-p watch:build:quick watch:build:css",
     "watch:build:quick": "yarn build:quick --watch",
