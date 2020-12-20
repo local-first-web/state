@@ -1,7 +1,7 @@
 {
   "name": "todo",
   "description": "TodoMVC implemented using @localfirst/state.",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "license": "MIT",
   "private": true,
   "main": "src/index.tsx",
@@ -12,7 +12,7 @@
     "dev": "yarn start"
   },
   "dependencies": {
-    "@localfirst/state": "^1.0.9",
+    "@localfirst/state": "^1.0.10",
     "classnames": "2",
     "debug": "4",
     "friendly-words": "1",
