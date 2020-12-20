@@ -14,7 +14,6 @@
   "dependencies": {
     "@emotion/react": "11",
     "@localfirst/state": "^1.0.4",
-    "@localfirst/toolbar": "^1.0.4",
     "classnames": "2",
     "debug": "4",
     "friendly-words": "1",
