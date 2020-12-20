@@ -9,6 +9,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "tsc",
+    "prepublish": "yarn build",
     "lint": "tsc -p tsconfig.strict.json --noEmit",
     "watch": "tsc --watch",
     "test": "jest",
