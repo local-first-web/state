@@ -18,7 +18,7 @@ export const Todo = ({ id, completed, content }: TodoType) => {
     // side effect: need to select all content in the input when going into editing mode
     // this will only fire when `editing` changes
     if (editing && input.current) input.current.select()
-  }, [editing])
+  }, [editing, input])
 
   // we save when the user has either tabbed or clicked away, or hit Enter
   const save: FormEventHandler<HTMLInputElement> = (e: React.FormEvent<HTMLInputElement>) => {
