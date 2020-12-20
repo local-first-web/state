@@ -1,4 +1,0 @@
-export const key =
-  '922e233117982b2fddaed3ad6adf8fc7bde6b4d8d8802a67663fdedbfedf00ea'
-export const secretKey =
-  '6ed567d0e9cdfa7392c0514e67561c94b9c6a91cd07bc0b647eb3d777e87c5ad922e233117982b2fddaed3ad6adf8fc7bde6b4d8d8802a67663fdedbfedf00ea'
