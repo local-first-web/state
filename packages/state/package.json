@@ -16,7 +16,7 @@
     "test:log": "cross-env DEBUG='lf*' DEBUG_COLORS=1 yarn test"
   },
   "dependencies": {
-    "@localfirst/relay-client": "1",
+    "@localfirst/relay-client": "^1.0.9",
     "@localfirst/storage-abstract": "^1.0.2",
     "@localfirst/storage-indexeddb": "^1.0.2",
     "@stablelib/base64": "1",

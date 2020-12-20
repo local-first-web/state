@@ -18,7 +18,7 @@
     "idb": "herbcaudill/idb#add-with-async-ittr-cjs-d-ts"
   },
   "devDependencies": {
-    "@localfirst/relay-client": "1",
+    "@localfirst/relay-client": "^1.0.9",
     "@localfirst/storage-abstract": "^1.0.2",
     "@types/debug": "4",
     "@types/jest": "26",

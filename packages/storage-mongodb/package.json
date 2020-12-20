@@ -18,7 +18,7 @@
     "mongodb": "3"
   },
   "devDependencies": {
-    "@localfirst/relay-client": "1",
+    "@localfirst/relay-client": "^1.0.9",
     "@localfirst/storage-abstract": "^1.0.2",
     "@shelf/jest-mongodb": "1",
     "@types/debug": "4",
