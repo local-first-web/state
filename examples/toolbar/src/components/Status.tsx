@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { CLOSE, OPEN, PEER, PEER_REMOVE, StoreManager } from '@localfirst/state'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Group } from './Group'
 import { StatusLight } from './StatusLight'
 
@@ -50,12 +50,18 @@ export const Status = ({ storeManager }: StatusProps) => {
       ? `one peer is connected`
       : `${peers.length} other peers are connected`
   const statusMessage = online ? `online; ${peerCountMessage}` : 'offline'
+
+  const peerItems = peers.map(p => <li key={p}>{p}</li>)
+
   return (
     <Group title={statusMessage}>
       <label>
         <StatusLight online={online} />
-        {online ? <span css={{ marginLeft: '.5em' }}>{peers.length}</span> : ''}
+        {online ? <span style={{ marginLeft: '.5em' }}>{peers.length}</span> : ''}
       </label>
+      <ul>
+        {peerItems}
+      </ul>
     </Group>
   )
 }
