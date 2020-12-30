@@ -17712,6 +17712,17 @@ taco-js@0:
     ramda "0"
     xstate "4"
 
+"taco-js@github:philschatz/auth#fix-invite-seed":
+  version "0.2.1"
+  resolved "https://codeload.github.com/philschatz/auth/tar.gz/7edcf68dd66eece6c18bf82cb82bbb856ab9874f"
+  dependencies:
+    "@herbcaudill/crypto" "0"
+    debug "4"
+    fast-memoize "2"
+    msgpack-lite "0"
+    ramda "0"
+    xstate "4"
+
 tailwindcss@1, tailwindcss@^1.7.6:
   version "1.9.6"
   resolved "https://registry.yarnpkg.com/tailwindcss/-/tailwindcss-1.9.6.tgz#0c5089911d24e1e98e592a31bfdb3d8f34ecf1a0"

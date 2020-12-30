@@ -19,7 +19,7 @@ export const Toolbar = ({
   children,
 }: React.PropsWithChildren<ToolbarProps<any>>) => {
   // Hooks
-  const [discoveryKey, setDiscoveryKey] = useQueryParam('id', StringParam)
+  const [discoveryKey, setDiscoveryKey] = useQueryParam('key', StringParam)
   const [, setAppStore] = useState<Redux.Store>()
   const [busy, setBusy] = useState(false)
 

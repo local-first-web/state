@@ -5,7 +5,8 @@ import debug from 'debug'
 import { EventEmitter } from 'events'
 import { applyMiddleware, createStore, Middleware, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
-import { ConnectionManager } from './ConnectionManager'
+import * as Auth from 'taco-js'
+import { ConnectionManager, Invitation } from './ConnectionManager'
 import { CLOSE, DEFAULT_RELAYS, OPEN, PEER, PEER_REMOVE } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getReducer } from './getReducer'
@@ -96,8 +97,41 @@ export class StoreManager<T> extends EventEmitter {
     // Create Redux store to expose to app
     this.store = this.createReduxStore(state)
 
+    let invitationOrTeam: Invitation | Promise<Auth.Team>
+    let TEAM_PROMISE: Promise<Auth.Team> | undefined = (window as any).__TEAM_PROMISE
+    
+    if (TEAM_PROMISE) {
+      invitationOrTeam = TEAM_PROMISE
+    } else {
+
+      const invitationStr = prompt('Enter Invitation string or leave blank to create a new Team')
+      if (invitationStr) {
+        // Promise we will have a team eventually. And squirrel away the resolve function so we can call it when we have the team
+        ;(window as any).__TEAM_PROMISE = new Promise((resolve) => { (window as any).__TEAM_RESOLVE = resolve })
+
+        const [username, invitationSeed] = invitationStr.split('+')
+        invitationOrTeam = {username, invitationSeed}
+      } else {
+        // Create a new team
+        const user = Auth.createUser({
+          userName: 'Alice',
+          deviceName: 'Laptop',
+          deviceType: 1
+        })
+        const team = Auth.createTeam('dream', {user})
+        invitationOrTeam = Promise.resolve(team)
+
+        ;(window as any).__TEAM_PROMISE = Promise.resolve(team)
+  
+        // Generate an invitation and alert the user so they can use it:
+        const {invitationSeed} = team.invite('Bob')
+        alert(`Invite using this: Bob+${invitationSeed}`)
+      }
+    }
+
     // Connect to discovery server to find peers and sync up with them
     this.connectionManager = new ConnectionManager({
+      invitationOrTeam,
       discoveryKey,
       dispatch: this.store.dispatch,
       repo: this.repo,

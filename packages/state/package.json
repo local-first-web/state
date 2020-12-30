@@ -28,7 +28,8 @@
     "fast-memoize": "2",
     "immutable": "4.0.0-rc.12",
     "redux-devtools-extension": "2",
-    "scryptsy": "2"
+    "scryptsy": "2",
+    "taco-js": "github:philschatz/auth#fix-invite-seed"
   },
   "devDependencies": {
     "@localfirst/relay": "^1.0.7",
