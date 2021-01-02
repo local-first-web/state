@@ -69,3 +69,8 @@ export interface RepoSnapshot {
 }
 
 export * from '@localfirst/storage-abstract'
+
+export function ensure<T>(arg: T | undefined) {
+  if (!arg) { throw new Error('BUG: Assertion failed and argument was undefined at this point in time')}
+  return arg
+}

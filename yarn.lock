@@ -17700,21 +17700,9 @@ table@^6.0.4:
     slice-ansi "^4.0.0"
     string-width "^4.2.0"
 
-taco-js@0:
+"taco-js@github:philschatz/auth#975fe719f774b1e46811aa4344b65a0d4cec5a3c":
   version "0.2.1"
-  resolved "https://registry.yarnpkg.com/taco-js/-/taco-js-0.2.1.tgz#7643fbb45cfabfae826067d222f30cf1881a4473"
-  integrity sha512-lipvIwKK0HlmCRGBb2JtBrU1E8PJVXPM8m2uroEgT7UbhzKv2MWBK7Z9xtwro/pZ7GI8fHhH6USmOQSbhrciww==
-  dependencies:
-    "@herbcaudill/crypto" "0"
-    debug "4"
-    fast-memoize "2"
-    msgpack-lite "0"
-    ramda "0"
-    xstate "4"
-
-"taco-js@github:philschatz/auth#fix-invite-seed":
-  version "0.2.1"
-  resolved "https://codeload.github.com/philschatz/auth/tar.gz/7edcf68dd66eece6c18bf82cb82bbb856ab9874f"
+  resolved "https://codeload.github.com/philschatz/auth/tar.gz/975fe719f774b1e46811aa4344b65a0d4cec5a3c"
   dependencies:
     "@herbcaudill/crypto" "0"
     debug "4"

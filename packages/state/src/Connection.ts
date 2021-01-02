@@ -40,12 +40,22 @@ export class Connection extends EventEmitter {
     log('receive %o', message)
     if (message.action === 'AUTH:JOIN') {
       const proof = message.payload
-      this.team.admit(proof)
-      log('admitted user to team')
-      this.peerSocket?.send(JSON.stringify({action: 'AUTH:ADMITTED', payload: this.team.chain}))
+      try {
+        this.team.admit(proof)
+        log('admitted user to team')
+        this.peerSocket?.send(JSON.stringify({action: 'AUTH:ADMITTED', payload: this.team.chain}))  
+      } catch(e) {
+        console.error('Admission to team failed', e)
+        return
+      }
     } else {
       if (message.action === 'ENCRYPTED') {
-        message = JSON.parse(this.team.decrypt(message.envelope))
+        try {
+          message = JSON.parse(this.team.decrypt(message.envelope))
+        } catch (e) {
+          console.error(e) // Decryption problem. Log it and move on
+          return
+        }
         if (!this.team.verify(message)) {
           throw new Error('ERROR! Signed with unknown keys')
         }

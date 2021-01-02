@@ -11,7 +11,8 @@ import { CLOSE, DEFAULT_RELAYS, OPEN, PEER, PEER_REMOVE } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getReducer } from './getReducer'
 import { Repo } from './Repo'
-import { ProxyReducer, RepoSnapshot, Snapshot } from './types'
+import { ProxyReducer, RepoSnapshot, Snapshot, ensure } from './types'
+import { getTeamManager } from './TeamManager'
 
 let log = debug('lf:StoreManager')
 
@@ -82,6 +83,11 @@ export class StoreManager<T> extends EventEmitter {
   private getStore = async (discoveryKey: string, isCreating: boolean = false) => {
     this.log(`${isCreating ? 'creating' : 'joining'} ${discoveryKey}`)
 
+    // userStore and Toolbar both call joinStore and end up creating different Repo instances. Let's just reuse them.
+    if (this.store) {
+      return this.store
+    }
+
     const clientId = localStorage.getItem('clientId') || newid()
     localStorage.setItem('clientId', clientId)
 
@@ -96,19 +102,20 @@ export class StoreManager<T> extends EventEmitter {
     const state = await this.repo.init(this.initialState, isCreating)
     // Create Redux store to expose to app
     this.store = this.createReduxStore(state)
+    return this.store
+  }
 
-    let invitationOrTeam: Invitation | Promise<Auth.Team>
-    let TEAM_PROMISE: Promise<Auth.Team> | undefined = (window as any).__TEAM_PROMISE
+  async listenToConnections(discoveryKey: string) {
+
+    let invitationOrTeam: Invitation | Auth.Team
+    let maybeTeam: Auth.Team | undefined = await getTeamManager().instantiateTeamIfAvailable(ensure(this.repo), discoveryKey)
     
-    if (TEAM_PROMISE) {
-      invitationOrTeam = TEAM_PROMISE
+    if (maybeTeam) {
+      invitationOrTeam = maybeTeam
     } else {
 
       const invitationStr = prompt('Enter Invitation string or leave blank to create a new Team')
       if (invitationStr) {
-        // Promise we will have a team eventually. And squirrel away the resolve function so we can call it when we have the team
-        ;(window as any).__TEAM_PROMISE = new Promise((resolve) => { (window as any).__TEAM_RESOLVE = resolve })
-
         const [username, invitationSeed] = invitationStr.split('+')
         invitationOrTeam = {username, invitationSeed}
       } else {
@@ -118,23 +125,29 @@ export class StoreManager<T> extends EventEmitter {
           deviceName: 'Laptop',
           deviceType: 1
         })
-        const team = Auth.createTeam('dream', {user})
-        invitationOrTeam = Promise.resolve(team)
-
-        ;(window as any).__TEAM_PROMISE = Promise.resolve(team)
-  
-        // Generate an invitation and alert the user so they can use it:
-        const {invitationSeed} = team.invite('Bob')
-        alert(`Invite using this: Bob+${invitationSeed}`)
+        const t = Auth.createTeam('dream', {user})
+        const team = await getTeamManager().instantiateTeamDefinitely(ensure(this.repo), discoveryKey, t.chain)
+        invitationOrTeam = team
       }
     }
+
+    // Generate an invitation and alert the user so they can use it:
+    if (invitationOrTeam instanceof Auth.Team) {
+      if (invitationOrTeam.memberIsAdmin(invitationOrTeam.context.user.userName)) {
+        const username = `Friend${(new Number(Math.round(Math.random() * 0x10000)).toString())}`
+        const {invitationSeed} = invitationOrTeam.invite(username)
+        console.log(`Invite using this:\n${username}+${invitationSeed}`)
+        alert(`Invite using this:\n${username}+${invitationSeed}`)
+      }
+    }
+    
 
     // Connect to discovery server to find peers and sync up with them
     this.connectionManager = new ConnectionManager({
       invitationOrTeam,
       discoveryKey,
-      dispatch: this.store.dispatch,
-      repo: this.repo,
+      dispatch: ensure(this.store).dispatch,
+      repo: ensure(this.repo),
       urls: this.urls,
     })
 
@@ -143,8 +156,6 @@ export class StoreManager<T> extends EventEmitter {
       target: this,
       events: [OPEN, CLOSE, PEER, PEER_REMOVE],
     })
-
-    return this.store
   }
 
   private createReduxStore(state: RepoSnapshot) {

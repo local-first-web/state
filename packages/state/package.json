@@ -29,7 +29,7 @@
     "immutable": "4.0.0-rc.12",
     "redux-devtools-extension": "2",
     "scryptsy": "2",
-    "taco-js": "github:philschatz/auth#fix-invite-seed"
+    "taco-js": "github:philschatz/auth#975fe719f774b1e46811aa4344b65a0d4cec5a3c"
   },
   "devDependencies": {
     "@localfirst/relay": "^1.0.7",
