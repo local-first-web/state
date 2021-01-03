@@ -8,7 +8,7 @@ import { composeWithDevTools } from 'redux-devtools-extension'
 import * as Auth from 'taco-js'
 import querystring from 'query-string'
 import { ConnectionManager, Invitation } from './ConnectionManager'
-import { CLOSE, DEFAULT_RELAYS, OPEN, PEER, PEER_REMOVE } from './constants'
+import { CLOSE, DEFAULT_RELAYS, OPEN, PEER, PEER_REMOVE, PEER_UPDATE } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getReducer } from './getReducer'
 import { Repo } from './Repo'
@@ -165,7 +165,7 @@ export class StoreManager<T> extends EventEmitter {
     pipeEvents({
       source: this.connectionManager,
       target: this,
-      events: [OPEN, CLOSE, PEER, PEER_REMOVE],
+      events: [OPEN, CLOSE, PEER, PEER_REMOVE, PEER_UPDATE],
     })
   }
 
@@ -228,4 +228,4 @@ const pipeEvents = ({
   source: EventEmitter
   target: EventEmitter
   events: string[]
-}) => events.forEach((event) => source.on(event, (payload) => target.emit(event, payload)))
+}) => events.forEach((event) => source.on(event, (...payload) => target.emit(event, ...payload)))

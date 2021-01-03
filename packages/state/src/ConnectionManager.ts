@@ -5,7 +5,7 @@ import A from 'automerge'
 import * as Redux from 'redux'
 import * as Auth from 'taco-js'
 import { Connection } from './Connection'
-import { PEER, OPEN, CLOSE, PEER_REMOVE, MESSAGE } from './constants'
+import { PEER, OPEN, CLOSE, PEER_REMOVE, PEER_UPDATE } from './constants'
 import { Repo } from './Repo'
 import { performAuthHandshake } from './TeamManager'
 
@@ -51,9 +51,13 @@ export class ConnectionManager extends EventEmitter {
       this.invitationOrTeam = team
     }
 
-    if (socket) this.connections[peer.id] = new Connection(team, this.repo, socket, this.dispatch)
+    if (socket) {
+      const c = new Connection(team, this.repo, socket, this.dispatch)
+      this.connections[peer.id] = c
+      c.on(PEER_UPDATE, () => this.emit(PEER_UPDATE, Object.keys(this.connections), Object.values(this.connections).map(c => c.getAuthenticatedUser())))
+    }
     peer.on(CLOSE, () => this.removePeer(peer.id))
-    this.emit(PEER, Object.keys(this.connections))
+    this.emit(PEER, Object.keys(this.connections), Object.values(this.connections).map(c => c.getAuthenticatedUser()))
     log('added peer', peer.id)
   
   }
@@ -61,7 +65,7 @@ export class ConnectionManager extends EventEmitter {
   private removePeer = (peerId: string) => {
     if (this.connections[peerId]) this.connections[peerId].close()
     delete this.connections[peerId]
-    this.emit(PEER_REMOVE, Object.keys(this.connections))
+    this.emit(PEER_REMOVE, Object.keys(this.connections), Object.values(this.connections).map(c => c.getAuthenticatedUser()))
     log('removed peer', peerId)
   }
 

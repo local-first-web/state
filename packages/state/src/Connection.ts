@@ -2,7 +2,7 @@ import debug from 'debug'
 import { EventEmitter } from 'events'
 import { AnyAction, Dispatch } from 'redux'
 import * as Auth from 'taco-js'
-import { RECEIVE_MESSAGE_FROM_PEER } from './constants'
+import { RECEIVE_MESSAGE_FROM_PEER, PEER_UPDATE } from './constants'
 import { Repo } from './Repo'
 import { Synchronizer } from './Synchronizer'
 import { Message } from './Message'
@@ -20,7 +20,7 @@ export class Connection extends EventEmitter {
   private peerSocket: WebSocket | null
   private dispatch: Dispatch<AnyAction>
   private repo: Repo<any>
-
+  private authenticatedUser: {generation: number, name: string, type: 'ADMIN' | 'MEMBER'} | undefined
   constructor(team: Auth.Team, repo: Repo<any>, peerSocket: WebSocket, dispatch: Dispatch<AnyAction>) {
     super()
     log('new connection')
@@ -59,6 +59,10 @@ export class Connection extends EventEmitter {
         if (!this.team.verify(message)) {
           throw new Error('ERROR! Signed with unknown keys')
         }
+        if (JSON.stringify(this.authenticatedUser) !== JSON.stringify(message.author)) {
+          this.authenticatedUser = message.author
+          this.emit(PEER_UPDATE, this.authenticatedUser)
+        }
         message = message.contents
       }
       this.emit('receive', message)
@@ -93,4 +97,6 @@ export class Connection extends EventEmitter {
     this.peerSocket.close()
     this.peerSocket = null
   }
+
+  getAuthenticatedUser = () => this.authenticatedUser
 }
