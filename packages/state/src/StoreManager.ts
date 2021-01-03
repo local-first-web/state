@@ -6,6 +6,7 @@ import { EventEmitter } from 'events'
 import { applyMiddleware, createStore, Middleware, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
 import * as Auth from 'taco-js'
+import querystring from 'query-string'
 import { ConnectionManager, Invitation } from './ConnectionManager'
 import { CLOSE, DEFAULT_RELAYS, OPEN, PEER, PEER_REMOVE } from './constants'
 import { getMiddleware } from './getMiddleware'
@@ -113,12 +114,14 @@ export class StoreManager<T> extends EventEmitter {
     if (maybeTeam) {
       invitationOrTeam = maybeTeam
     } else {
-
-      const invitationStr = prompt('Enter Invitation string or leave blank to create a new Team')
-      if (invitationStr) {
-        const [username, invitationSeed] = invitationStr.split('+')
-        invitationOrTeam = {username, invitationSeed}
-      } else {
+      const {invitationUser, invitationSeed} = querystring.parse(window.location.search, {
+        parseBooleans: false,
+        parseNumbers: false,
+        arrayFormat: "none"
+      })
+      if (invitationUser && invitationSeed) {
+        invitationOrTeam = {username: invitationUser.toString(), invitationSeed: invitationSeed.toString()}
+      } else if (confirm('You were not given an invitation to this page. Do you want to create a new Team?')) {
         // Create a new team
         const user = Auth.createUser({
           userName: 'Alice',
@@ -128,6 +131,9 @@ export class StoreManager<T> extends EventEmitter {
         const t = Auth.createTeam('dream', {user})
         const team = await getTeamManager().instantiateTeamDefinitely(ensure(this.repo), discoveryKey, t.chain)
         invitationOrTeam = team
+      } else {
+        alert('You have chosen not to create or join a team. There is nothing left to do. Closing.')
+        return
       }
     }
 
@@ -136,8 +142,13 @@ export class StoreManager<T> extends EventEmitter {
       if (invitationOrTeam.memberIsAdmin(invitationOrTeam.context.user.userName)) {
         const username = `Friend${(new Number(Math.round(Math.random() * 0x10000)).toString())}`
         const {invitationSeed} = invitationOrTeam.invite(username)
-        console.log(`Invite using this:\n${username}+${invitationSeed}`)
-        alert(`Invite using this:\n${username}+${invitationSeed}`)
+        const qs = querystring.stringify({
+          ...querystring.parse(window.location.search),
+          invitationUser: username,
+          invitationSeed
+        })
+        window.history.replaceState(null, '', `?${qs}`)
+        alert(`Invite a person by copying and pasting the URL in the browser to your friend`)
       }
     }
     

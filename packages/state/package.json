@@ -27,6 +27,7 @@
     "debug": "4",
     "fast-memoize": "2",
     "immutable": "4.0.0-rc.12",
+    "query-string": "^6.13.8",
     "redux-devtools-extension": "2",
     "scryptsy": "2",
     "taco-js": "github:philschatz/auth#975fe719f774b1e46811aa4344b65a0d4cec5a3c"

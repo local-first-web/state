@@ -6,6 +6,7 @@ import { Repo } from './Repo'
 
 const pendingSaves: Promise<any>[] = []
 
+const AUTH_KEY = '_AUTH'
 
 // A Team is associated with a discoveryKey and may be in one of the following states:
 // - loaded
@@ -28,9 +29,8 @@ export class TeamManager {
             this.teams.set(discoveryKey, [undefined, invitation])
         } else {
             // Try loading the team from Storage
-            const authKey = `${discoveryKey}:AUTH`
-            if (repo.has(authKey)) {
-                const state = await repo.get(authKey)
+            if (repo.has(AUTH_KEY)) {
+                const state = await repo.get(AUTH_KEY)
                 const user = Auth.loadUser()
                 const team = new Auth.Team({
                     source: state,
@@ -43,13 +43,12 @@ export class TeamManager {
     }
 
     async instantiateTeamDefinitely(repo: Repo, discoveryKey: string, state: any): Promise<Auth.Team> {
-        const authKey = `${discoveryKey}:AUTH`
         let team = this.teams.get(discoveryKey)
         if (team && team[0]) {
             throw new Error('BUG: Should not already have a team loaded up')
         } else {
             // Try loading the team from Storage
-            repo.set(authKey, A.from(removeUndefined(state)))
+            repo.set(AUTH_KEY, A.from(removeUndefined(state)))
             const user = Auth.loadUser()
             const team = new Auth.Team({
                 source: state,
@@ -62,18 +61,15 @@ export class TeamManager {
     }
 
     async addTeam(repo: Repo, discoveryKey: string, team: Auth.Team) {
-        const authKey = `${discoveryKey}:AUTH`
         if (this.teams.has(discoveryKey)) {
             throw new Error('BUG? seems this already has a Team')
         }
         this.teams.set(discoveryKey, [team, undefined])
-        await repo.set(authKey, A.from(removeUndefined(team.chain)))
+        await repo.set(AUTH_KEY, A.from(removeUndefined(team.chain)))
         this.addListener(repo, discoveryKey, team)
     }
 
-    private addListener(repo: Repo, discoveryKey: string, team: Auth.Team) {
-        const authKey = `${discoveryKey}:AUTH`
-        
+    private addListener(repo: Repo, discoveryKey: string, team: Auth.Team) {        
         team.on('updated', async ({head: headId}: {head: string}) => {
             const headNode = removeUndefined(team.chain.links[headId])
             // Perform saves in order. Otherwise the storage gets corrupted
@@ -82,7 +78,7 @@ export class TeamManager {
                 pendingSaves.splice(0, pendingSaves.length) // clear when done saving
             }
 
-            pendingSaves.push(repo.change(authKey, (doc) => {
+            pendingSaves.push(repo.change(AUTH_KEY, (doc) => {
                 if (!doc.root) {
                     doc.root = headId
                 }
