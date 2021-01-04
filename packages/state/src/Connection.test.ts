@@ -2,7 +2,7 @@ import A from 'automerge'
 import { Repo } from './Repo'
 import { Server } from '@localfirst/relay'
 import { newid } from '@localfirst/relay-client'
-import * as Auth from 'taco-js'
+import * as Auth from '@philschatz/auth'
 import { Connection } from './Connection'
 
 import { WebSocket } from 'mock-socket'

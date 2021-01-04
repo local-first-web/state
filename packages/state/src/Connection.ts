@@ -1,7 +1,7 @@
 import debug from 'debug'
 import { EventEmitter } from 'events'
 import { AnyAction, Dispatch } from 'redux'
-import * as Auth from 'taco-js'
+import * as Auth from '@philschatz/auth'
 import { RECEIVE_MESSAGE_FROM_PEER, PEER_UPDATE } from './constants'
 import { Repo } from './Repo'
 import { Synchronizer } from './Synchronizer'

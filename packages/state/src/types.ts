@@ -2,6 +2,7 @@ import A from 'automerge'
 import { AnyAction } from 'redux'
 export { ChangeFn } from 'automerge'
 import { Clock, Snapshot, SnapshotRecord, ChangeSet } from '@localfirst/storage-abstract'
+export { Snapshot } from '@localfirst/storage-abstract'
 
 // change function operating on a specific item in a collection
 type CollectionChange<T> = {

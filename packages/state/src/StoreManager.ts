@@ -5,7 +5,7 @@ import debug from 'debug'
 import { EventEmitter } from 'events'
 import { applyMiddleware, createStore, Middleware, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
-import * as Auth from 'taco-js'
+import * as Auth from '@philschatz/auth'
 import querystring from 'query-string'
 import { ConnectionManager, Invitation } from './ConnectionManager'
 import { CLOSE, DEFAULT_RELAYS, OPEN, PEER, PEER_REMOVE, PEER_UPDATE } from './constants'
@@ -133,13 +133,13 @@ export class StoreManager<T> extends EventEmitter {
         invitationOrTeam = team
       } else {
         alert('You have chosen not to create or join a team. There is nothing left to do. Closing.')
-        return
+        throw new Error('Did not choose to join a team or create a new team')
       }
     }
 
     // Generate an invitation and alert the user so they can use it:
     if (invitationOrTeam instanceof Auth.Team) {
-      if (invitationOrTeam.memberIsAdmin(invitationOrTeam.context.user.userName)) {
+      if (invitationOrTeam.memberIsAdmin(invitationOrTeam.userName)) {
         const username = `Friend${(new Number(Math.round(Math.random() * 0x10000)).toString())}`
         const {invitationSeed} = invitationOrTeam.invite(username)
         const qs = querystring.stringify({

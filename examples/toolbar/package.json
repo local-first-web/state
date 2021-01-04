@@ -20,12 +20,12 @@
   "dependencies": {
     "@emotion/react": "11",
     "@localfirst/state": "^1.0.12",
+    "@philschatz/auth": "0.0.2",
     "formik": "^2.0.1-rc.13",
     "friendly-words": "1",
     "react": "17",
     "react-dom": "^16.0.1",
     "redux": "4",
-    "taco-js": "github:philschatz/auth#975fe719f774b1e46811aa4344b65a0d4cec5a3c",
     "tailwindcss": "^1.7.6",
     "use-persisted-state": "0",
     "use-query-params": "0"

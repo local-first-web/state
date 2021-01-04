@@ -2967,6 +2967,18 @@
     "@octokit/openapi-types" "^2.0.0"
     "@types/node" ">= 8"
 
+"@philschatz/auth@0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@philschatz/auth/-/auth-0.0.2.tgz#48cada0f86da3fd09c097b7fb6c49a3b77d399c7"
+  integrity sha512-GsSgbzB0cVDwYnE5OZgo95uJHfM62+dQ6PbjtVNW7KhFE+tF4XqVRXSGRIDlQP0QO+7sXiYBWSSLRAZv9xPGrw==
+  dependencies:
+    "@herbcaudill/crypto" "0"
+    debug "4"
+    fast-memoize "2"
+    msgpack-lite "0"
+    ramda "0"
+    xstate "4"
+
 "@pmmmwh/react-refresh-webpack-plugin@0.4.2":
   version "0.4.2"
   resolved "https://registry.yarnpkg.com/@pmmmwh/react-refresh-webpack-plugin/-/react-refresh-webpack-plugin-0.4.2.tgz#1f9741e0bde9790a0e13272082ed7272a083620d"
@@ -17708,17 +17720,6 @@ table@^6.0.4:
     lodash "^4.17.20"
     slice-ansi "^4.0.0"
     string-width "^4.2.0"
-
-"taco-js@github:philschatz/auth#975fe719f774b1e46811aa4344b65a0d4cec5a3c":
-  version "0.2.1"
-  resolved "https://codeload.github.com/philschatz/auth/tar.gz/975fe719f774b1e46811aa4344b65a0d4cec5a3c"
-  dependencies:
-    "@herbcaudill/crypto" "0"
-    debug "4"
-    fast-memoize "2"
-    msgpack-lite "0"
-    ramda "0"
-    xstate "4"
 
 tailwindcss@1, tailwindcss@^1.7.6:
   version "1.9.6"

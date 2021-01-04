@@ -1,8 +1,9 @@
 import { EventEmitter } from 'events'
 import A from 'automerge'
-import * as Auth from 'taco-js'
+import * as Auth from '@philschatz/auth'
 import { MESSAGE } from './constants'
 import { Repo } from './Repo'
+import { ensure } from './types'
 
 const pendingSaves: Promise<any>[] = []
 
@@ -14,7 +15,7 @@ const AUTH_KEY = '_AUTH'
 // - invited-to
 export class TeamManager {
 
-    private teams: Map<string, [Promise<Auth.Team>? , Invitation?]> = new Map()
+    private teams: Map<string, [Auth.Team? , Invitation?]> = new Map()
 
     getInvitation(discoveryKey: string) {
         const t = this.teams.get(discoveryKey)
@@ -30,8 +31,8 @@ export class TeamManager {
         } else {
             // Try loading the team from Storage
             if (repo.has(AUTH_KEY)) {
-                const state = await repo.get(AUTH_KEY)
-                const user = Auth.loadUser()
+                const state = ensure(await repo.get(AUTH_KEY)) as Auth.TeamSignatureChain
+                const user = ensure(Auth.loadUser())
                 const team = new Auth.Team({
                     source: state,
                     context: {user}
@@ -49,7 +50,7 @@ export class TeamManager {
         } else {
             // Try loading the team from Storage
             repo.set(AUTH_KEY, A.from(removeUndefined(state)))
-            const user = Auth.loadUser()
+            const user = ensure(Auth.loadUser())
             const team = new Auth.Team({
                 source: state,
                 context: {user}
@@ -91,7 +92,7 @@ export class TeamManager {
                     // Loop over all the previous nodes and ensure they were added (out of sync updated events)
                     let curr = headNode
                     while (true) {
-                        const prevId = curr.body.prev
+                        const prevId = (curr.body as any).prev
                         if (!prevId) {
                             break
                         }
