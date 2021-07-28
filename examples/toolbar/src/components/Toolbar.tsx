@@ -19,7 +19,7 @@ export const Toolbar = ({
   children,
 }: React.PropsWithChildren<ToolbarProps<any>>) => {
   // Hooks
-  const [discoveryKey, setDiscoveryKey] = useQueryParam('id', StringParam)
+  const [discoveryKey, setDiscoveryKey] = useQueryParam('key', StringParam)
   const [, setAppStore] = useState<Redux.Store>()
   const [busy, setBusy] = useState(false)
 
@@ -39,6 +39,7 @@ export const Toolbar = ({
     const newDiscoveryKey = randomDiscoveryKey()
     setDiscoveryKey(newDiscoveryKey)
     const newStore = await storeManager.createStore(newDiscoveryKey)
+    await storeManager.listenToConnections(newDiscoveryKey)
     setAppStore(newStore)
     onStoreReady(newStore, newDiscoveryKey)
     setBusy(false)
@@ -52,6 +53,7 @@ export const Toolbar = ({
     setBusy(true)
     setDiscoveryKey(newDiscoveryKey)
     const newStore = await storeManager.joinStore(newDiscoveryKey)
+    await storeManager.listenToConnections(newDiscoveryKey)
     setAppStore(newStore)
     onStoreReady(newStore, newDiscoveryKey)
     setBusy(false)

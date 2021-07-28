@@ -2,6 +2,7 @@ import A from 'automerge'
 import { Repo } from './Repo'
 import { Server } from '@localfirst/relay'
 import { newid } from '@localfirst/relay-client'
+import * as Auth from '@philschatz/auth'
 import { Connection } from './Connection'
 
 import { WebSocket } from 'mock-socket'
@@ -33,6 +34,13 @@ describe('Connection', () => {
   let repo: Repo<FooState>
   let server: Server
 
+  const user = Auth.createUser({
+    userName: 'Alice',
+    deviceName: 'Laptop',
+    deviceType: 1
+  })
+  const team = Auth.createTeam('dream', {user})
+
   beforeAll(async () => {
     server = new Server({ port })
     await server.listen({ silent: true })
@@ -58,7 +66,7 @@ describe('Connection', () => {
 
   it('should send messages to the peer when local state changes', async () => {
     const peer = new WebSocket(url)
-    const _ = new Connection(repo, peer, fakeDispatch)
+    const _ = new Connection(team, repo, peer, fakeDispatch)
     await _yield()
 
     expect(peer.send).toHaveBeenCalled()
@@ -71,7 +79,7 @@ describe('Connection', () => {
 
   it('should call close on peer when close is called', () => {
     const peer = new WebSocket(url)
-    const connection = new Connection(repo, peer, fakeDispatch)
+    const connection = new Connection(team, repo, peer, fakeDispatch)
     connection.close()
     expect(peer.close).toHaveBeenCalled()
   })

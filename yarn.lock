@@ -2967,6 +2967,18 @@
     "@octokit/openapi-types" "^2.0.0"
     "@types/node" ">= 8"
 
+"@philschatz/auth@0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@philschatz/auth/-/auth-0.0.2.tgz#48cada0f86da3fd09c097b7fb6c49a3b77d399c7"
+  integrity sha512-GsSgbzB0cVDwYnE5OZgo95uJHfM62+dQ6PbjtVNW7KhFE+tF4XqVRXSGRIDlQP0QO+7sXiYBWSSLRAZv9xPGrw==
+  dependencies:
+    "@herbcaudill/crypto" "0"
+    debug "4"
+    fast-memoize "2"
+    msgpack-lite "0"
+    ramda "0"
+    xstate "4"
+
 "@pmmmwh/react-refresh-webpack-plugin@0.4.2":
   version "0.4.2"
   resolved "https://registry.yarnpkg.com/@pmmmwh/react-refresh-webpack-plugin/-/react-refresh-webpack-plugin-0.4.2.tgz#1f9741e0bde9790a0e13272082ed7272a083620d"
@@ -15495,6 +15507,15 @@ query-string@^5.0.0:
     object-assign "^4.1.0"
     strict-uri-encode "^1.0.0"
 
+query-string@^6.13.8:
+  version "6.13.8"
+  resolved "https://registry.yarnpkg.com/query-string/-/query-string-6.13.8.tgz#8cf231759c85484da3cf05a851810d8e825c1159"
+  integrity sha512-jxJzQI2edQPE/NPUOusNjO/ZOGqr1o2OBa/3M00fU76FsLXDVbJDv/p7ng5OdQyorKrkRz1oqfwmbe5MAMePQg==
+  dependencies:
+    decode-uri-component "^0.2.0"
+    split-on-first "^1.0.0"
+    strict-uri-encode "^2.0.0"
+
 querystring-es3@^0.2.0:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/querystring-es3/-/querystring-es3-0.2.1.tgz#9ec61f79049875707d69414596fd907a4d711e73"
@@ -17699,18 +17720,6 @@ table@^6.0.4:
     lodash "^4.17.20"
     slice-ansi "^4.0.0"
     string-width "^4.2.0"
-
-taco-js@0:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/taco-js/-/taco-js-0.2.1.tgz#7643fbb45cfabfae826067d222f30cf1881a4473"
-  integrity sha512-lipvIwKK0HlmCRGBb2JtBrU1E8PJVXPM8m2uroEgT7UbhzKv2MWBK7Z9xtwro/pZ7GI8fHhH6USmOQSbhrciww==
-  dependencies:
-    "@herbcaudill/crypto" "0"
-    debug "4"
-    fast-memoize "2"
-    msgpack-lite "0"
-    ramda "0"
-    xstate "4"
 
 tailwindcss@1, tailwindcss@^1.7.6:
   version "1.9.6"

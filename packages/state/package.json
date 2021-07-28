@@ -18,8 +18,9 @@
   },
   "dependencies": {
     "@localfirst/relay-client": "^1.0.9",
-    "@localfirst/storage-abstract": "^1.0.2",
+    "@localfirst/storage-abstract": "^1.0.6",
     "@localfirst/storage-indexeddb": "^1.0.10",
+    "@philschatz/auth": "0.0.2",
     "@stablelib/base64": "1",
     "@stablelib/utf8": "1",
     "automerge": "0",
@@ -27,6 +28,7 @@
     "debug": "4",
     "fast-memoize": "2",
     "immutable": "4.0.0-rc.12",
+    "query-string": "^6.13.8",
     "redux-devtools-extension": "2",
     "scryptsy": "2"
   },

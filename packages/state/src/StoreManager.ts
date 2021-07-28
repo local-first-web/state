@@ -5,12 +5,15 @@ import debug from 'debug'
 import { EventEmitter } from 'events'
 import { applyMiddleware, createStore, Middleware, Store } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
-import { ConnectionManager } from './ConnectionManager'
-import { CLOSE, DEFAULT_RELAYS, OPEN, PEER, PEER_REMOVE } from './constants'
+import * as Auth from '@philschatz/auth'
+import querystring from 'query-string'
+import { ConnectionManager, Invitation } from './ConnectionManager'
+import { CLOSE, DEFAULT_RELAYS, OPEN, PEER, PEER_REMOVE, PEER_UPDATE } from './constants'
 import { getMiddleware } from './getMiddleware'
 import { getReducer } from './getReducer'
 import { Repo } from './Repo'
-import { ProxyReducer, RepoSnapshot, Snapshot } from './types'
+import { ProxyReducer, RepoSnapshot, Snapshot, ensure } from './types'
+import { getTeamManager } from './TeamManager'
 
 let log = debug('lf:StoreManager')
 
@@ -81,6 +84,11 @@ export class StoreManager<T> extends EventEmitter {
   private getStore = async (discoveryKey: string, isCreating: boolean = false) => {
     this.log(`${isCreating ? 'creating' : 'joining'} ${discoveryKey}`)
 
+    // userStore and Toolbar both call joinStore and end up creating different Repo instances. Let's just reuse them.
+    if (this.store) {
+      return this.store
+    }
+
     const clientId = localStorage.getItem('clientId') || newid()
     localStorage.setItem('clientId', clientId)
 
@@ -95,22 +103,70 @@ export class StoreManager<T> extends EventEmitter {
     const state = await this.repo.init(this.initialState, isCreating)
     // Create Redux store to expose to app
     this.store = this.createReduxStore(state)
+    return this.store
+  }
+
+  async listenToConnections(discoveryKey: string) {
+
+    let invitationOrTeam: Invitation | Auth.Team
+    let maybeTeam: Auth.Team | undefined = await getTeamManager().instantiateTeamIfAvailable(ensure(this.repo), discoveryKey)
+    
+    if (maybeTeam) {
+      invitationOrTeam = maybeTeam
+    } else {
+      const {invitationUser, invitationSeed} = querystring.parse(window.location.search, {
+        parseBooleans: false,
+        parseNumbers: false,
+        arrayFormat: "none"
+      })
+      if (invitationUser && invitationSeed) {
+        invitationOrTeam = {username: invitationUser.toString(), invitationSeed: invitationSeed.toString()}
+      } else if (confirm('You were not given an invitation to this page. Do you want to create a new Team?')) {
+        // Create a new team
+        const user = Auth.createUser({
+          userName: 'Alice',
+          deviceName: 'Laptop',
+          deviceType: 1
+        })
+        const t = Auth.createTeam('dream', {user})
+        const team = await getTeamManager().instantiateTeamDefinitely(ensure(this.repo), discoveryKey, t.chain)
+        invitationOrTeam = team
+      } else {
+        alert('You have chosen not to create or join a team. There is nothing left to do. Closing.')
+        throw new Error('Did not choose to join a team or create a new team')
+      }
+    }
+
+    // Generate an invitation and alert the user so they can use it:
+    if (invitationOrTeam instanceof Auth.Team) {
+      if (invitationOrTeam.memberIsAdmin(invitationOrTeam.userName)) {
+        const username = `Friend${(new Number(Math.round(Math.random() * 0x10000)).toString())}`
+        const {invitationSeed} = invitationOrTeam.invite(username)
+        const qs = querystring.stringify({
+          ...querystring.parse(window.location.search),
+          invitationUser: username,
+          invitationSeed
+        })
+        window.history.replaceState(null, '', `?${qs}`)
+        alert(`Invite a person by copying and pasting the URL in the browser to your friend`)
+      }
+    }
+    
 
     // Connect to discovery server to find peers and sync up with them
     this.connectionManager = new ConnectionManager({
+      invitationOrTeam,
       discoveryKey,
-      dispatch: this.store.dispatch,
-      repo: this.repo,
+      dispatch: ensure(this.store).dispatch,
+      repo: ensure(this.repo),
       urls: this.urls,
     })
 
     pipeEvents({
       source: this.connectionManager,
       target: this,
-      events: [OPEN, CLOSE, PEER, PEER_REMOVE],
+      events: [OPEN, CLOSE, PEER, PEER_REMOVE, PEER_UPDATE],
     })
-
-    return this.store
   }
 
   private createReduxStore(state: RepoSnapshot) {
@@ -172,4 +228,4 @@ const pipeEvents = ({
   source: EventEmitter
   target: EventEmitter
   events: string[]
-}) => events.forEach((event) => source.on(event, (payload) => target.emit(event, payload)))
+}) => events.forEach((event) => source.on(event, (...payload) => target.emit(event, ...payload)))

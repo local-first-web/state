@@ -44,7 +44,7 @@ import { Clock, ClockMap, RepoHistory, RepoSnapshot } from './types'
  */
 export class Synchronizer {
   public repo: Repo<any>
-  private send: (msg: Message) => void
+  private send: (msg: Message, forcePlaintext?: boolean) => void
   private theirClock: ClockMap
   private isOpen = false
   private log: debug.Debugger
@@ -171,7 +171,7 @@ export class Synchronizer {
   private async sendHello() {
     const documentCount = this.repo.count
     this.log('sending hello', documentCount)
-    this.send({ type: message.HELLO, documentCount })
+    this.send({ type: message.HELLO, documentCount }, true/*forcePlaintext*/)
   }
 
   /** Checks whether we have more recent information than they do; if so, sends changes */

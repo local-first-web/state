@@ -1,4 +1,4 @@
-﻿import { loadUser, createUser } from 'taco-js'
+﻿import { loadUser, createUser } from '@philschatz/auth'
 import { randomUserName } from './randomName'
 
 const _createUser = () => {

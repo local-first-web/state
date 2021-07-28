@@ -1,8 +1,9 @@
 /** @jsxImportSource @emotion/react */
 import { CLOSE, OPEN, PEER, PEER_REMOVE, StoreManager } from '@localfirst/state'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Group } from './Group'
 import { StatusLight } from './StatusLight'
+import { PEER_UPDATE } from '@localfirst/state/dist/src/constants'
 
 interface StatusProps {
   storeManager: StoreManager<any>
@@ -12,8 +13,8 @@ export const Status = ({ storeManager }: StatusProps) => {
   const [online, setOnline] = useState<boolean>(false)
   const [peers, setPeers] = useState<string[]>([])
 
-  const onPeer = (updatedPeers: string[]) => {
-    setPeers(updatedPeers)
+  const onPeer = (updatedPeers: string[], updatedAuthenticatedUserInfo: {generation: number, name: string, type: 'ADMIN' | 'MEMBER'}[]) => {
+    setPeers(updatedAuthenticatedUserInfo.map((v, i) => `${(v && v.type) === 'ADMIN' ? '👑' : ''} ${(v && v.name) ? v.name : `?${updatedPeers[i]}?`}`))
   }
 
   const onOpen = () => {
@@ -31,6 +32,7 @@ export const Status = ({ storeManager }: StatusProps) => {
     storeManager.on(CLOSE, onClose)
     storeManager.on(PEER, onPeer)
     storeManager.on(PEER_REMOVE, onPeer)
+    storeManager.on(PEER_UPDATE, onPeer)
     return removeListeners // return cleanup function
   }
 
@@ -50,12 +52,41 @@ export const Status = ({ storeManager }: StatusProps) => {
       ? `one peer is connected`
       : `${peers.length} other peers are connected`
   const statusMessage = online ? `online; ${peerCountMessage}` : 'offline'
+
+  const peerItems = peers.map(p => <li key={p}><button>{getAvatar(p)}{p}</button></li>)
+
   return (
     <Group title={statusMessage}>
       <label>
         <StatusLight online={online} />
-        {online ? <span css={{ marginLeft: '.5em' }}>{peers.length}</span> : ''}
+        {online ? <span style={{ marginLeft: '.5em' }}>{peers.length} online</span> : ''}
       </label>
+      <ul>
+        {peerItems}
+      </ul>
     </Group>
   )
+}
+
+
+const avatars = [
+  '👶', // Baby
+  '🧒', // Child
+  '🧑', // Person
+  '👱', // Person: Blond Hair
+  '🧔', // Person: Beard
+  '👨‍🦰', // Man: Red Hair
+  '👨‍🦳', // Man: White Hair
+  '👩', // Woman
+  '👩‍🦰', // Woman: Red Hair
+  '🧑‍🦰', // Person: Red Hair
+  '👩‍🦱', // Woman: Curly Hair
+  '🧑‍🦳', // Person: White Hair
+  '👱‍♀️', // Woman: Blond Hair
+  '🧓', // Older Person
+]
+const hashCode = (s: string) => s.split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0)
+function getAvatar(username: string) {
+  if (username.endsWith('?')) { return null }
+ return avatars[Math.abs(hashCode(username)) % avatars.length]
 }
