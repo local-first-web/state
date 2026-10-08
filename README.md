@@ -1,6 +1,8 @@
 <img src='https://raw.githubusercontent.com/local-first-web/branding/main/svg/state-h.svg'
 width='600' alt="@localfirst/state logo" />
 
+> **This project is no longer maintained.**
+
 `@localfirst/state` is **an automatically replicated Redux store** that gives your app offline
 capabilities and secure peer-to-peer synchronization superpowers.
 
